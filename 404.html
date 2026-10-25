@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page not found</title>
+<script>
+(function(){
+  var alias={'ponte.html':'pontedeldiavolo.html','ponte-del-diavolo.html':'pontedeldiavolo.html','pente':'pente.html','zertz':'zertz.html','pontedeldiavolo':'pontedeldiavolo.html'};
+  var p=location.pathname, low=p.toLowerCase(), i=low.lastIndexOf('/'), file=low.slice(i+1);
+  if(alias[file]) low=low.slice(0,i+1)+alias[file];
+  if(low!==p) location.replace(low+location.search+location.hash);
+})();
+</script>
+<style>
+body{font-family:system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 16px;color:#222;background:#fff}
+a{color:#9C2E3A}
+@media (prefers-color-scheme:dark){body{color:#eee;background:#151515}a{color:#E1737D}}
+</style>
+</head>
+<body>
+<h1>Page not found</h1>
+<p>Available games:</p>
+<ul>
+<li><a href="/games/pente.html">Pente</a></li>
+<li><a href="/games/pontedeldiavolo.html">Ponte del Diavolo</a></li>
+<li><a href="/games/zertz.html">Zèrtz</a></li>
+</ul>
+</body>
+</html>
