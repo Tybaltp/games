@@ -132,13 +132,45 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 @media (max-width:860px){.app{grid-template-columns:minmax(0,1fr);gap:18px}.board-wrap{max-width:100%}h1{font-size:34px}.log ol{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:680px){.cards{grid-template-columns:minmax(0,1fr)}.landing h1{font-size:48px}}
 @media (max-width:480px){.log ol{grid-template-columns:repeat(3,minmax(0,1fr))}.level{margin-left:0}}
+/* ---- jeu : l'essentiel toujours dans la fenêtre ---- */
+.grow{flex:1}
+.topbar{padding-block:8px 0}
+.app{padding-block:8px 12px;align-items:start}
+.board-wrap{max-width:min(100%,calc(100vh - 64px));max-width:min(100%,calc(100svh - 64px))}
+.board-col{position:sticky;top:8px}
+.side{position:sticky;top:8px;max-height:calc(100vh - 60px);max-height:calc(100svh - 60px);gap:12px}
+.essentials{display:flex;flex-direction:column;gap:12px;flex:none}
+.secondary{display:flex;flex-direction:column;gap:14px;flex:1 1 auto;min-height:0;overflow:auto;padding-right:2px}
+.secondary h1{font-size:28px}
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.opt.snd{cursor:default;flex:1 1 160px}
+.opt.snd input[type=range]{flex:1;min-width:60px;width:auto;height:auto;accent-color:var(--accent)}
+@media (max-width:860px){
+ .app{display:flex;flex-direction:column;gap:10px;padding-block:6px 24px}
+ .side,.essentials{display:contents}
+ .board-col{position:static;order:2;width:100%}
+ .board-wrap{max-width:min(100%,calc(100vh - 290px));max-width:min(100%,calc(100svh - 290px));min-width:min(100%,240px)}
+ .players{order:1;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+ .player{grid-template-columns:18px minmax(0,1fr) auto;gap:6px;padding:4px 0;border-bottom:0}
+ .player .pstone{width:16px;height:16px}
+ .pname{font-size:14px}.pname small{display:none}
+ .slots{margin-top:2px}.slot{width:14px;height:9px}.mini{width:4px;height:4px}
+ .clock{font-size:18px;min-width:62px;padding:2px 6px}
+ .status{order:3;padding:8px 12px}.status .main{font-size:16px}.status .sub{font-size:13px;margin-top:2px}
+ .actions{order:4}.review{order:5}.controls{order:6}.opts{order:7}
+ .secondary{order:8;overflow:visible;margin-top:10px}
+ .actions .btn{padding:9px 12px}
+}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}.thinking .dot{animation:none}}
 </style>
 </head>
 <body>
 <div class="topbar gutter">
+ <span class="net" id="net" hidden><i></i><span id="netTxt"></span></span>
+ <span class="grow"></span>
  <button class="small" id="homeBtn" hidden></button>
  <div class="seg" role="group" aria-label="Langue / Language"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div>
+</div>
 </div>
 
 <main class="landing gutter" id="home">
@@ -185,25 +217,31 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 <div class="app gutter" id="game" hidden>
  <div class="board-col"><div class="board-wrap"><canvas id="cv"></canvas></div></div>
  <aside class="side">
-  <header>
-   <div class="head"><h1>Pente</h1><span class="net" id="net" hidden><i></i><span id="netTxt"></span></span></div>
-   <div class="tags" id="tags"></div>
-  </header>
-  <section class="status" id="status"><div class="main"><span class="dot"></span><span id="smain"></span></div><div class="sub" id="ssub"></div></section>
-  <section class="players" id="players"></section>
-  <section class="actions" id="actions"></section>
-  <section class="controls" id="aiControls">
-   <button class="btn" id="bUndo" data-i18n="undo"></button>
-   <button class="btn" id="bHint" data-i18n="hint"></button>
-   <label class="level" for="gLevel"><span data-i18n="level"></span><select id="gLevel"></select></label>
-  </section>
-  <label class="opt" for="optConfirm" id="optWrap"><input type="checkbox" id="optConfirm"> <span data-i18n="confirmOpt"></span></label>
-  <div class="opt" style="cursor:default"><label class="opt" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds"></span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-  <section class="block review" id="review" hidden></section>
-  <section class="block invite" id="invite" hidden></section>
-  <details class="block rules" id="resumeBlk" hidden><summary data-i18n="resumeCodeT"></summary><p class="note" style="margin:8px 0" data-i18n="resumeLast"></p><button class="btn" id="rcCopy" data-i18n="copyResume"></button><div class="link" style="margin-top:8px"><input id="rcTxt" readonly hidden aria-label="Resume code"></div></details>
-  <section class="block log"><h2 data-i18n="moves"></h2><ol id="log"></ol></section>
-  <details class="block rules"><summary data-i18n="rules"></summary><ul class="rulesList"></ul></details>
+  <div class="essentials">
+   <section class="players" id="players"></section>
+   <section class="status" id="status"><div class="main"><span class="dot"></span><span id="smain"></span></div><div class="sub" id="ssub"></div></section>
+   <section class="actions" id="actions"></section>
+   <section class="block review" id="review" hidden></section>
+   <section class="controls" id="aiControls">
+    <button class="btn" id="bUndo" data-i18n="undo"></button>
+    <button class="btn" id="bHint" data-i18n="hint"></button>
+    <label class="level" for="gLevel"><span data-i18n="level"></span><select id="gLevel"></select></label>
+   </section>
+   <div class="opts">
+    <label class="opt" for="optConfirm" id="optWrap"><input type="checkbox" id="optConfirm"> <span data-i18n="confirmOpt"></span></label>
+    <div class="opt snd"><label class="opt" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds"></span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume"></div>
+   </div>
+  </div>
+  <div class="secondary">
+   <header>
+    <h1>Pente</h1>
+    <div class="tags" id="tags"></div>
+   </header>
+   <section class="block invite" id="invite" hidden></section>
+   <details class="block rules" id="resumeBlk" hidden><summary data-i18n="resumeCodeT"></summary><p class="note" style="margin:8px 0" data-i18n="resumeLast"></p><button class="btn" id="rcCopy" data-i18n="copyResume"></button><div class="link" style="margin-top:8px"><input id="rcTxt" readonly hidden aria-label="Resume code"></div></details>
+   <section class="block log"><h2 data-i18n="moves"></h2><ol id="log"></ol></section>
+   <details class="block rules"><summary data-i18n="rules"></summary><ul class="rulesList"></ul></details>
+  </div>
  </aside>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -816,6 +854,7 @@ function applyStatic(){document.documentElement.lang=lang;
  setNet(netState[0],netState[1]);render();}
 
 function render(){
+ $('net').hidden=!mode||mode==='ai';
  $('homeBtn').hidden=!mode;$('homeBtn').textContent=homeArm?t('leaveQ'):t('home');$('homeBtn').classList.toggle('armed',homeArm);
  if(!S||!mode){draw();return;}
  const ts=turnSeat(S),mine=!!ts&&ts===mySeat&&!S.paused,p=placing();
