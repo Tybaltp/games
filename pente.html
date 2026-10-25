@@ -447,7 +447,7 @@ fr:{
  obs0:"Aucun observateur.",obs1:"1 observateur connecté.",obsN:"{n} observateurs connectés.",
  watching:"Vous observez",gameT:"Partie",codeLine:"Code {code}",
  moves:"Coups",noStones:"Aucune pierre posée.",
- review:"Revoir la partie",reviewStart:"Position de départ",reviewPos:"Après le coup {k} sur {n}",
+ review:"Revoir la partie",rvEnter:"Mode révision",rvNone:"Un joueur peut lancer la révision.",rvYouCtrl:"Vous avez la main. Cliquez sur le plateau pour jouer une variante (les couleurs alternent).",rvCtrlBy:"{name} a la main.",rvAlt:"variante : {n} coup(s)",rvBack:"Revenir à la partie",rvGive:"Donner la main à {name}",rvExit:"Quitter la révision",reviewStart:"Position de départ",reviewPos:"Après le coup {k} sur {n}",
  first:"Début",prev:"Coup précédent",next:"Coup suivant",last:"Fin",
  youWin:"Vous gagnez",youLose:"Vous perdez",xWins:"{name} gagne",draw:"Partie nulle",winBy:"{color} gagne par {reason}.",boardFull:"Plateau plein.",
  res_resign:"abandon",res_time:"dépassement du temps",res_five:"cinq alignées",res_line:"une ligne de {n}",res_caps:"cinq paires capturées",
@@ -512,7 +512,7 @@ en:{
  obs0:"No spectators.",obs1:"1 spectator connected.",obsN:"{n} spectators connected.",
  watching:"Watching",gameT:"Game",codeLine:"Code {code}",
  moves:"Moves",noStones:"No stones yet.",
- review:"Review the game",reviewStart:"Starting position",reviewPos:"After move {k} of {n}",
+ review:"Review the game",rvEnter:"Review mode",rvNone:"A player can start the review.",rvYouCtrl:"You have control. Click the board to play a variation (colours alternate).",rvCtrlBy:"{name} has control.",rvAlt:"variation: {n} move(s)",rvBack:"Back to the game",rvGive:"Give control to {name}",rvExit:"Leave review",reviewStart:"Starting position",reviewPos:"After move {k} of {n}",
  first:"Start",prev:"Previous move",next:"Next move",last:"End",
  youWin:"You win",youLose:"You lose",xWins:"{name} wins",draw:"Draw",winBy:"{color} wins by {reason}.",boardFull:"Board full.",
  res_resign:"resignation",res_time:"time",res_five:"five in a row",res_line:"a line of {n}",res_caps:"capturing five pairs",
@@ -727,6 +727,7 @@ function onHostData(c,d){if(!d||typeof d!=='object'||mode!=='host')return;
     toast(t(back?'t_back':'t_joined',{name:S.names[seat]||t('guestDefault')}));}
    else{try{c.send({k:'refused',m:'t_refused'});}catch(_){}setTimeout(()=>{try{c.close();}catch(_){}},800);return;}}
   conns.add(c);changed();return;}
+ if(d.k==='rv'&&c.seat&&c===oppConn&&d.a){rvApply(c.seat,d.a);changed();return;}
  if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a){const err=act(S,c.seat,d.a,Date.now());if(err){try{c.send({k:'err',m:err});}catch(_){}}changed(!err);}}
 function rematch(firstOpt){const f=firstOpt==='me'?mySeat:other(mySeat);const v=(S.ver||0)+1;S=newState(code,f,S.names,S.th,(S.game||1)+1,S.tc);S.ver=v;
  tent=[];localMode='';review=null;resignArm=false;changed(true);}
@@ -768,7 +769,7 @@ function placing(){if(!S||!mySeat||pending||S.result||S.paused||review!==null)re
  if(S.phase==='choose'&&localMode==='add2')return {colors:[1,2],make:st=>({t:'add2',stones:st})};
  if(S.phase==='play')return {colors:[S.toMove],make:st=>({t:'move',i:st[0]})};
  return null;}
-function onCell(i){const p=placing();if(!p||busy==='hint')return;const k=tent.indexOf(i);
+function onCell(i){if(S&&S.rv&&S.rv.on){if(S.rv.ctrl===mySeat)rvOp({op:'alt',i});return;}const p=placing();if(!p||busy==='hint')return;const k=tent.indexOf(i);
  if(k>=0){tent.splice(k,1);clearHint();render();return;}
  if(S.B[i])return;
  if(tent.length<p.colors.length)tent.push(i);else if(p.colors.length===1)tent=[i];else{toast(t('t_allPlaced'));return;}
@@ -889,9 +890,15 @@ function render(){
 
  // revue
  const rv=$('review');
- if(S.result&&S.log.length){const n=S.log.length,k=review===null?n:review;rv.hidden=false;
-  rv.innerHTML=`<h2>${t('review')}</h2><div class="row"><button class="btn" id="rv0" aria-label="${t('first')}" ${k===0?'disabled':''}>«</button><button class="btn" id="rvP" aria-label="${t('prev')}" ${k===0?'disabled':''}>‹</button><button class="btn" id="rvN" aria-label="${t('next')}" ${k===n?'disabled':''}>›</button><button class="btn" id="rvE" aria-label="${t('last')}" ${k===n?'disabled':''}>»</button></div><p>${k===0?t('reviewStart'):t('reviewPos',{k,n})}</p>`;
-  on('rv0',()=>goReview(0));on('rvP',()=>goReview(k-1));on('rvN',()=>goReview(k+1));on('rvE',()=>goReview(n));}
+ if(S.result&&S.log.length){rv.hidden=false;const R=S.rv&&S.rv.on?S.rv:null;
+  if(!R){rv.innerHTML=`<h2>${t('review')}</h2>`+(mySeat?`<button class="btn" id="rvGo">${t('rvEnter')}</button>`:`<p>${t('rvNone')}</p>`);on('rvGo',()=>rvOp({op:'enter'}));}
+  else{const n=S.log.length,k=R.k,me=R.ctrl===mySeat,d0=!me||k===0?'disabled':'',d1=!me||k===n?'disabled':'';
+   let x=`<h2>${t('review')}</h2><div class="row"><button class="btn" id="rv0" aria-label="${t('first')}" ${d0}>«</button><button class="btn" id="rvP" aria-label="${t('prev')}" ${d0}>‹</button><button class="btn" id="rvN" aria-label="${t('next')}" ${d1}>›</button><button class="btn" id="rvE" aria-label="${t('last')}" ${d1}>»</button></div>`;
+   x+=`<p>${k===0?t('reviewStart'):t('reviewPos',{k,n})}${R.alt.length?' · '+t('rvAlt',{n:R.alt.length}):''}</p><p>${me?t('rvYouCtrl'):esc(t('rvCtrlBy',{name:nameOf(R.ctrl)}))}</p>`;
+   if(me){if(R.alt.length)x+=`<button class="btn primary" id="rvBack">${t('rvBack')}</button>`;if(mode!=='ai')x+=`<button class="btn" id="rvGive">${esc(t('rvGive',{name:nameOf(other(mySeat))}))}</button>`;x+=`<button class="btn" id="rvExit">${t('rvExit')}</button>`;}
+   rv.innerHTML=x;
+   on('rv0',()=>goReview(0));on('rvP',()=>rvOp({op:'step',d:-1}));on('rvN',()=>rvOp({op:'step',d:1}));on('rvE',()=>goReview(n));
+   on('rvBack',()=>rvOp({op:'back'}));on('rvGive',()=>rvOp({op:'give'}));on('rvExit',()=>rvOp({op:'exit'}));}}
  else rv.hidden=true;
 
  // invitation
@@ -907,13 +914,30 @@ function render(){
  else inv.hidden=true;
 
  // journal
- const cur=review===null?S.log.length:review;
+ const cur=S.rv&&S.rv.on?S.rv.k:S.log.length;
  $('log').innerHTML=S.log.length?S.log.map((m,k)=>`<li${S.result?` data-k="${k+1}" style="cursor:pointer"`:''}><span class="n">${k+1}</span><span class="mini ${m.c===1?'b':'w'}"></span><span class="${S.result&&k+1===cur?'cur':''}">${coord(m.i)}</span>${m.cap?` <span class="x">×${m.cap}</span>`:''}</li>`).join(''):`<li class="empty">${t('noStones')}</li>`;
  if(S.result)$('log').querySelectorAll('[data-k]').forEach(li=>li.onclick=()=>goReview(+li.dataset.k));
- const lg=document.querySelector('.log');if(review===null)lg.scrollTop=lg.scrollHeight;
+ const lg=document.querySelector('.log');if(!(S.rv&&S.rv.on))lg.scrollTop=lg.scrollHeight;
  draw();}
-function goReview(k){if(!S||!S.result)return;const n=S.log.length;k=Math.max(0,Math.min(n,k));review=k===n?null:k;render();}
-function viewState(){if(review!==null&&S.result)return replay(S.log,review);return {B:S.B,caps:S.caps,lastCap:S.lastCap||[],last:S.log.length?S.log[S.log.length-1].i:-1};}
+function goReview(k){if(!S||!S.result||!S.rv||!S.rv.on||S.rv.ctrl!==mySeat)return;rvOp({op:'nav',k});}
+function rvView(){const R=S.rv,base=replay(S.log,R.k),B=base.B,caps=base.caps;let lastCap=base.lastCap,last=base.last;
+ let next=1;if(R.k>0){const e=S.log[R.k-1];next=e.o&&(R.k===S.log.length||!S.log[R.k].o)?2:3-e.c;}
+ for(const m of R.alt){const cap=capture(B,m.i,m.c);caps[m.c]+=cap.length/2;lastCap=cap;last=m.i;next=3-m.c;}
+ return {B,caps,lastCap,last,next};}
+function rvApply(seat,a){if(!S||!S.result||!S.log.length||!a)return;const n=S.log.length,R=S.rv;
+ if(a.op==='enter'){if(!(R&&R.on))S.rv={on:true,ctrl:seat,k:n,alt:[]};return;}
+ if(!R||!R.on||R.ctrl!==seat)return;
+ if(a.op==='nav'){R.k=Math.max(0,Math.min(n,a.k|0));R.alt=[];}
+ else if(a.op==='step'){R.k=Math.max(0,Math.min(n,R.k+(a.d|0)));R.alt=[];}
+ else if(a.op==='back')R.alt=[];
+ else if(a.op==='alt'){const i=a.i;if(!Number.isInteger(i)||i<0||i>=NN)return;const V=rvView();if(V.B[i])return;R.alt.push({i,c:V.next});}
+ else if(a.op==='give'){if(mode!=='ai')R.ctrl=other(seat);}
+ else if(a.op==='exit')S.rv=null;}
+function rvOp(a){if(!S)return;
+ if(mode==='ai'){rvApply(mySeat,a);render();}
+ else if(mode==='host'){rvApply(mySeat,a);changed();}
+ else if(mode==='guest'&&conn&&conn.open)conn.send({k:'rv',a});}
+function viewState(){if(S.rv&&S.rv.on&&S.result)return rvView();if(review!==null&&S.result)return replay(S.log,review);return {B:S.B,caps:S.caps,lastCap:S.lastCap||[],last:S.log.length?S.log[S.log.length-1].i:-1};}
 function linkRow(id,label,url){return `<div class="link"><label for="${id}">${esc(label)}</label><input id="${id}" readonly value="${esc(url)}"><button class="btn" data-copy="${id}">${t('copy')}</button></div>`;}
 function copyInput(inp){const v=inp.value;if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(()=>toast(t('copied')),()=>{inp.select();toast(t('copySel'));});else{inp.select();toast(t('copySel'));}}
 function copyText(v){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(()=>toast(v),()=>toast(v));else toast(v);}
@@ -951,7 +975,8 @@ function draw(){const {s,cell,pad}=geom();if(!s)return;const dpr=window.devicePi
   const hc=tent.length<p.colors.length?p.colors[tent.length]:(p.colors.length===1?p.colors[0]:0);
   if(hover>=0&&hc&&!S.B[hover]&&tent.indexOf(hover)<0&&busy!=='hint')stone(P(hover%N),P((hover/N)|0),r,hc,.4);}
  else if(hint>=0&&!S.B[hint]){ctx.save();ctx.strokeStyle=MK;ctx.lineWidth=2;ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(P(hint%N),P((hint/N)|0),r*.85,0,7);ctx.stroke();ctx.restore();}
- if(S.result&&S.result.line&&review===null){const L=S.result.line,a=L[0],b=L[L.length-1];ctx.save();ctx.strokeStyle=MK;ctx.globalAlpha=.85;ctx.lineWidth=Math.max(3,cell*.16);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P(a%N),P((a/N)|0));ctx.lineTo(P(b%N),P((b/N)|0));ctx.stroke();ctx.restore();}}
+ if(S.rv&&S.rv.on&&S.rv.alt.length){ctx.save();ctx.font=`700 ${cell*.4}px Figtree, system-ui, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';S.rv.alt.forEach((m,j)=>{if(V.B[m.i]===m.c){ctx.fillStyle=m.c===1?'#fff':'#222';ctx.fillText(String(j+1),P(m.i%N),P((m.i/N)|0)+1);}});ctx.restore();}
+ if(S.result&&S.result.line&&review===null&&!(S.rv&&S.rv.on)){const L=S.result.line,a=L[0],b=L[L.length-1];ctx.save();ctx.strokeStyle=MK;ctx.globalAlpha=.85;ctx.lineWidth=Math.max(3,cell*.16);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P(a%N),P((a/N)|0));ctx.lineTo(P(b%N),P((b/N)|0));ctx.stroke();ctx.restore();}}
 function cellAt(e){const {cell,pad}=geom();const rc=cv.getBoundingClientRect();const x=Math.round((e.clientX-rc.left-pad)/cell),y=Math.round((e.clientY-rc.top-pad)/cell);
  if(x<0||x>=N||y<0||y>=N)return -1;return y*N+x;}
 cv.addEventListener('pointermove',e=>{const i=cellAt(e);if(i!==hover){hover=i;draw();}cv.style.cursor=placing()?'pointer':'default';});
@@ -959,8 +984,8 @@ cv.addEventListener('pointerleave',()=>{hover=-1;draw();});
 cv.addEventListener('click',e=>{const i=cellAt(e);if(i>=0)onCell(i);});
 new ResizeObserver(()=>draw()).observe(cv);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
-document.addEventListener('keydown',e=>{if(!S||!S.result||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;const n=S.log.length,k=review===null?n:review;
- if(e.key==='ArrowLeft'){goReview(k-1);e.preventDefault();}else if(e.key==='ArrowRight'){goReview(k+1);e.preventDefault();}
+document.addEventListener('keydown',e=>{if(!S||!S.result||!S.rv||!S.rv.on||S.rv.ctrl!==mySeat||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;const n=S.log.length,k=S.rv.k;
+ if(e.key==='ArrowLeft'){rvOp({op:'step',d:-1});e.preventDefault();}else if(e.key==='ArrowRight'){rvOp({op:'step',d:1});e.preventDefault();}
  else if(e.key==='Home'){goReview(0);e.preventDefault();}else if(e.key==='End'){goReview(n);e.preventDefault();}});
 
 /* ================= navigation ================= */
