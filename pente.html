@@ -144,20 +144,33 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .secondary h1{font-size:28px}
 .opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .opt.snd{cursor:default;flex:1 1 160px}
+.actions{flex-direction:row;flex-wrap:wrap}
+.players{gap:8px}
+.player{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;border-bottom:1px solid var(--rule)}
+.player:last-child{border-bottom:1px solid var(--rule)}
+.player.turn{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.player .pname{font-size:16px;font-weight:700}
+.player .clock{font-size:24px;font-weight:700}
+.player .clock.run{color:var(--ink);border-color:var(--ink);background:var(--bg)}
+.slot{width:20px;height:12px}.mini{width:6px;height:6px}
+.review{border-top:0;padding-top:0}
+.actions>.btn{flex:1 1 140px;justify-content:center}
+.actions>.btn:has(small){flex-basis:100%;justify-content:flex-start}
+.actions>.row,.actions>.note{flex:1 1 100%}
 .opt.snd input[type=range]{flex:1;min-width:60px;width:auto;height:auto;accent-color:var(--accent)}
 @media (max-width:860px){
- .app{display:flex;flex-direction:column;gap:10px;padding-block:6px 24px}
+ .app{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-block:6px 24px}
  .side,.essentials{display:contents}
  .board-col{position:static;order:2;width:100%}
  .board-wrap{max-width:min(100%,calc(100vh - 290px));max-width:min(100%,calc(100svh - 290px));min-width:min(100%,240px)}
  .players{order:1;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
- .player{grid-template-columns:18px minmax(0,1fr) auto;gap:6px;padding:4px 0;border-bottom:0}
+ .player{grid-template-columns:18px minmax(0,1fr) auto;gap:8px;padding:6px 10px}
  .player .pstone{width:16px;height:16px}
- .pname{font-size:14px}.pname small{display:none}
- .slots{margin-top:2px}.slot{width:14px;height:9px}.mini{width:4px;height:4px}
- .clock{font-size:18px;min-width:62px;padding:2px 6px}
+ .player .pname{font-size:15px}.pname small{display:none}
+ .slots{margin-top:3px;gap:2px}.slot{width:16px;height:10px}.mini{width:5px;height:5px}
+ .player .clock{font-size:21px;min-width:70px;padding:3px 8px}
  .status{order:3;padding:8px 12px}.status .main{font-size:16px}.status .sub{font-size:13px;margin-top:2px}
- .actions{order:4}.review{order:5}.controls{order:6}.opts{order:7}
+ .review{order:4}.actions{order:5}.controls{order:6}.opts{order:7}
  .secondary{order:8;overflow:visible;margin-top:10px}
  .actions .btn{padding:9px 12px}
 }
@@ -220,8 +233,8 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
   <div class="essentials">
    <section class="players" id="players"></section>
    <section class="status" id="status"><div class="main"><span class="dot"></span><span id="smain"></span></div><div class="sub" id="ssub"></div></section>
-   <section class="actions" id="actions"></section>
    <section class="block review" id="review" hidden></section>
+   <section class="actions" id="actions"></section>
    <section class="controls" id="aiControls">
     <button class="btn" id="bUndo" data-i18n="undo"></button>
     <button class="btn" id="bHint" data-i18n="hint"></button>
@@ -895,7 +908,7 @@ function render(){
   const roleTxt=col?CN(col):(seat===first?t('firstP'):t('secondP'));
   const nm=(S.phase==='wait'&&!(S.th&&S.th[seat]))?t('waiting'):nameOf(seat)+(S.phase==='wait'&&hasGuest()&&isReady(seat)?' ✓':'');
   const small=(isMe(seat)&&mode!=='ai'?t('you')+', ':'')+roleTxt;
-  return `<div class="player"><span class="pstone ${col===1?'b':col===2?'w':'u'}"></span><div style="min-width:0"><div class="pname">${esc(nm)} <small>· ${esc(small)}</small></div>${col?`<div class="slots" aria-label="${esc(t('captured',{n}))}">${slots}</div>`:''}</div>${S.tc?`<div class="clock" id="clk-${seat}">${fmt(remaining(seat))}</div>`:'<span></span>'}</div>`;}).join('');
+  return `<div class="player${ts===seat&&!S.paused?' turn':''}"><span class="pstone ${col===1?'b':col===2?'w':'u'}"></span><div style="min-width:0"><div class="pname">${esc(nm)} <small>· ${esc(small)}</small></div>${col?`<div class="slots" aria-label="${esc(t('captured',{n}))}">${slots}</div>`:''}</div>${S.tc?`<div class="clock" id="clk-${seat}">${fmt(remaining(seat))}</div>`:'<span></span>'}</div>`;}).join('');
  tickClocks();
 
  // actions
