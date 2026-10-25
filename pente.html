@@ -144,7 +144,18 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .secondary h1{font-size:28px}
 .opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .opt.snd{cursor:default;flex:1 1 160px}
-.actions{flex-direction:row;flex-wrap:wrap}
+.actions{flex-direction:row;flex-wrap:nowrap;min-height:44px}
+.actions:empty{display:flex}
+.actions>.row{display:contents}
+.actions>*{flex:1 1 0;min-width:0}
+.actions .btn{justify-content:center;padding:9px 6px;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actions .btn small{display:none}
+.actions .btn>span:not(.pstone){overflow:hidden;text-overflow:ellipsis}
+.actions .note{align-self:center;margin:0}
+.status{height:66px;overflow:hidden}
+.status .main,.status .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status .main span:last-child{overflow:hidden;text-overflow:ellipsis}
+.review p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .players{gap:8px}
 .player{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;border-bottom:1px solid var(--rule)}
 .player:last-child{border-bottom:1px solid var(--rule)}
@@ -154,9 +165,7 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .player .clock.run{color:var(--ink);border-color:var(--ink);background:var(--bg)}
 .slot{width:20px;height:12px}.mini{width:6px;height:6px}
 .review{border-top:0;padding-top:0}
-.actions>.btn{flex:1 1 140px;justify-content:center}
-.actions>.btn:has(small){flex-basis:100%;justify-content:flex-start}
-.actions>.row,.actions>.note{flex:1 1 100%}
+
 .opt.snd input[type=range]{flex:1;min-width:60px;width:auto;height:auto;accent-color:var(--accent)}
 @media (max-width:860px){
  .app{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-block:6px 24px}
@@ -169,9 +178,9 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
  .player .pname{font-size:15px}.pname small{display:none}
  .slots{margin-top:3px;gap:2px}.slot{width:16px;height:10px}.mini{width:5px;height:5px}
  .player .clock{font-size:21px;min-width:70px;padding:3px 8px}
- .status{order:3;padding:8px 12px}.status .main{font-size:16px}.status .sub{font-size:13px;margin-top:2px}
- .review{order:4}.actions{order:5}.controls{order:6}.opts{order:7}
- .secondary{order:8;overflow:visible;margin-top:10px}
+ .status{order:8;padding:8px 12px;height:58px}.status .main{font-size:16px}.status .sub{font-size:13px;margin-top:2px}
+ .review{order:3}.actions{order:4}.controls{order:6}.opts{order:7}
+ .secondary{order:9;overflow:visible;margin-top:10px}
  .actions .btn{padding:9px 12px}
 }
 @media (prefers-reduced-motion:reduce){.toast{transition:none}.thinking .dot{animation:none}}
@@ -232,7 +241,6 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
  <aside class="side">
   <div class="essentials">
    <section class="players" id="players"></section>
-   <section class="status" id="status"><div class="main"><span class="dot"></span><span id="smain"></span></div><div class="sub" id="ssub"></div></section>
    <section class="block review" id="review" hidden></section>
    <section class="actions" id="actions"></section>
    <section class="controls" id="aiControls">
@@ -244,6 +252,7 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
     <label class="opt" for="optConfirm" id="optWrap"><input type="checkbox" id="optConfirm"> <span data-i18n="confirmOpt"></span></label>
     <div class="opt snd"><label class="opt" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds"></span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume"></div>
    </div>
+   <section class="status" id="status"><div class="main"><span class="dot"></span><span id="smain"></span></div><div class="sub" id="ssub"></div></section>
   </div>
   <div class="secondary">
    <header>
@@ -498,7 +507,7 @@ fr:{
  obs0:"Aucun observateur.",obs1:"1 observateur connecté.",obsN:"{n} observateurs connectés.",
  watching:"Vous observez",gameT:"Partie",codeLine:"Code {code}",
  moves:"Coups",noStones:"Aucune pierre posée.",
- review:"Revoir la partie",rvEnter:"Mode révision",rvNone:"Un joueur peut lancer la révision.",rvYouCtrl:"Vous avez la main. Cliquez sur le plateau pour jouer une variante (les couleurs alternent).",rvCtrlBy:"{name} a la main.",rvAlt:"variante : {n} coup(s)",rvBack:"Revenir à la partie",rvGive:"Donner la main à {name}",rvExit:"Quitter la révision",reviewStart:"Position de départ",reviewPos:"Après le coup {k} sur {n}",
+ review:"Revoir la partie",rvEnter:"Mode révision",rvNone:"Un joueur peut lancer la révision.",rvYouCtrl:"Vous avez la main : cliquez pour jouer une variante.",rvCtrlBy:"{name} a la main.",rvAlt:"variante : {n} coup(s)",rvBack:"Revenir à la partie",rvGive:"Donner la main à {name}",rvExit:"Quitter la révision",reviewStart:"Position de départ",reviewPos:"Après le coup {k} sur {n}",
  first:"Début",prev:"Coup précédent",next:"Coup suivant",last:"Fin",
  youWin:"Vous gagnez",youLose:"Vous perdez",xWins:"{name} gagne",draw:"Partie nulle",winBy:"{color} gagne par {reason}.",boardFull:"Plateau plein.",
  res_resign:"abandon",res_time:"dépassement du temps",res_five:"cinq alignées",res_line:"une ligne de {n}",res_caps:"cinq paires capturées",
@@ -524,9 +533,9 @@ fr:{
  n_connecting:"Connexion…",n_opening:"Ouverture de la partie…",n_online:"En ligne",n_connected:"Connecté",n_reconnect:"Reconnexion au serveur…",
  n_busy:"Code encore occupé, nouvel essai…",n_unreach:"Serveur de connexion injoignable",n_hostNF:"Hôte introuvable, nouvel essai…",n_lost:"Connexion perdue, nouvel essai…",n_nolib:"Bibliothèque de connexion non chargée",
  t_nolib:"Impossible de charger PeerJS : vérifiez la connexion Internet.",t_oppLeft:"Adversaire déconnecté.",t_joined:"{name} a rejoint la partie.",
- st_bothHere:"Les deux joueurs sont là",st_bothHereSub:"Les pendules démarrent quand vous avez tous deux cliqué sur « Commencer la partie ».",st_waitStart:"En attente de {name}",st_waitStartSub:"La partie commence dès qu'il clique sur « Commencer la partie ».",st_waitBoth:"En attente du départ des deux joueurs",
+ st_bothHere:"Les deux joueurs sont là",st_bothHereSub:"Cliquez sur « Commencer la partie ».",st_waitStart:"En attente de {name}",st_waitStartSub:"Il doit cliquer sur « Commencer la partie ».",st_waitBoth:"En attente du départ des deux joueurs",
  startGame:"Commencer la partie",waitingOpp:"En attente de l'adversaire…",e_started:"La partie a déjà commencé.",e_noOpp:"L'adversaire n'a pas encore rejoint la partie.",e_paused:"Partie en pause : les deux joueurs doivent être connectés.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez encore l'observer : cliquez sur Observer.",st_paused:"Partie en pause",st_pausedHost:"En attente du retour de {name}. Les pendules sont arrêtées.",st_pausedGuest:"Reconnexion… Les pendules sont arrêtées jusqu'à votre retour à tous les deux.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
+ t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez encore l'observer : cliquez sur Observer.",st_paused:"Partie en pause",st_pausedHost:"{name} déconnecté · pendules arrêtées",st_pausedGuest:"Reconnexion… · pendules arrêtées",st_pausedWatch:"Joueur déconnecté · pendules arrêtées",
  t_takeover:"L'hôte est injoignable : vous hébergez maintenant la partie.",t_back:"{name} est de retour.",t_oppPause:"Adversaire déconnecté : les pendules sont arrêtées.",sounds:"Sons",volume:"Volume",
  resumeTitle:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",resumeNote:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",iAm:"Je suis {name}",e_badResume:"Ce code de reprise n'est pas valide.",
  resumeCodeT:"Code de reprise",resumeLast:"En dernier recours, si la connexion ne peut pas être rétablie : l'un ou l'autre joueur colle ce code dans « Reprendre une partie » sur la page d'accueil.",copyResume:"Copier le code de reprise",resumeCopied:"Code de reprise copié.",
@@ -563,7 +572,7 @@ en:{
  obs0:"No spectators.",obs1:"1 spectator connected.",obsN:"{n} spectators connected.",
  watching:"Watching",gameT:"Game",codeLine:"Code {code}",
  moves:"Moves",noStones:"No stones yet.",
- review:"Review the game",rvEnter:"Review mode",rvNone:"A player can start the review.",rvYouCtrl:"You have control. Click the board to play a variation (colours alternate).",rvCtrlBy:"{name} has control.",rvAlt:"variation: {n} move(s)",rvBack:"Back to the game",rvGive:"Give control to {name}",rvExit:"Leave review",reviewStart:"Starting position",reviewPos:"After move {k} of {n}",
+ review:"Review the game",rvEnter:"Review mode",rvNone:"A player can start the review.",rvYouCtrl:"You have control: click to play a variation.",rvCtrlBy:"{name} has control.",rvAlt:"variation: {n} move(s)",rvBack:"Back to the game",rvGive:"Give control to {name}",rvExit:"Leave review",reviewStart:"Starting position",reviewPos:"After move {k} of {n}",
  first:"Start",prev:"Previous move",next:"Next move",last:"End",
  youWin:"You win",youLose:"You lose",xWins:"{name} wins",draw:"Draw",winBy:"{color} wins by {reason}.",boardFull:"Board full.",
  res_resign:"resignation",res_time:"time",res_five:"five in a row",res_line:"a line of {n}",res_caps:"capturing five pairs",
@@ -589,9 +598,9 @@ en:{
  n_connecting:"Connecting…",n_opening:"Opening the game…",n_online:"Online",n_connected:"Connected",n_reconnect:"Reconnecting to the server…",
  n_busy:"Code still in use, retrying…",n_unreach:"Connection server unreachable",n_hostNF:"Host not found, retrying…",n_lost:"Connection lost, retrying…",n_nolib:"Connection library not loaded",
  t_nolib:"Could not load PeerJS: check your Internet connection.",t_oppLeft:"Opponent disconnected.",t_joined:"{name} joined the game.",
- st_bothHere:"Both players are here",st_bothHereSub:"The clocks start once you both click “Start the game”.",st_waitStart:"Waiting for {name}",st_waitStartSub:"The game starts once they click “Start the game”.",st_waitBoth:"Waiting for both players to start",
+ st_bothHere:"Both players are here",st_bothHereSub:"Click “Start the game”.",st_waitStart:"Waiting for {name}",st_waitStartSub:"They need to click “Start the game”.",st_waitBoth:"Waiting for both players to start",
  startGame:"Start the game",waitingOpp:"Waiting for your opponent…",e_started:"The game has already started.",e_noOpp:"Your opponent has not joined yet.",e_paused:"The game is paused until both players are connected.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",st_paused:"Game paused",st_pausedHost:"Waiting for {name} to reconnect. The clocks are stopped.",st_pausedGuest:"Reconnecting… The clocks are stopped until you are both back.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
+ t_refused:"Two players are already in this game. You can still watch it: click Watch.",st_paused:"Game paused",st_pausedHost:"{name} disconnected · clocks stopped",st_pausedGuest:"Reconnecting… · clocks stopped",st_pausedWatch:"Player disconnected · clocks stopped",
  t_takeover:"The host is unreachable: you now host the game.",t_back:"{name} is back.",t_oppPause:"Opponent disconnected: the clocks are stopped.",sounds:"Sounds",volume:"Volume",
  resumeTitle:"Resume a game",resumeCode:"Resume code",load:"Load",resumeNote:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",iAm:"I am {name}",e_badResume:"This resume code is not valid.",
  resumeCodeT:"Resume code",resumeLast:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",copyResume:"Copy the resume code",resumeCopied:"Resume code copied.",
@@ -915,12 +924,13 @@ function render(){
  let h='';
  if(p&&busy!=='hint'){const need=p.colors.length;
   if(confirmOn)h+=`<button class="btn primary" id="aOk" ${tent.length===need?'':'disabled'}>${t(need===1?'confirm1':'confirmN')}</button>`;
-  if(tent.length&&need>1)h+=`<button class="btn" id="aClr">${t('removeStones')}</button>`;
+  if(need>1)h+=`<button class="btn" id="aClr" ${tent.length?'':'disabled'}>${t('removeStones')}</button>`;
   if(S.phase==='choose'&&localMode==='add2')h+=`<button class="btn" id="aBack">${t('backChoice')}</button>`;}
  else if(mine&&!pending&&(S.phase==='choose'||S.phase==='choose1')&&busy!=='hint'){
   h+=`<button class="btn" id="aB"><span class="pstone b"></span><span>${t('takeBlack')}<small>${t('takeBlackSub')}</small></span></button>`+
      `<button class="btn" id="aW"><span class="pstone w"></span><span>${t('takeWhite')}<small>${t('takeWhiteSub')}</small></span></button>`;
   if(S.phase==='choose')h+=`<button class="btn" id="aX"><span>${t('add2')}<small>${esc(t('add2Sub',{name:nameOf(first)}))}</small></span></button>`;}
+ if(!h&&mySeat&&confirmOn&&!S.result&&S.phase!=='wait'&&!(mine&&(S.phase==='choose'||S.phase==='choose1')))h+=`<button class="btn primary" disabled>${t('confirm1')}</button>`;
  if(S.result){
   if(mode==='host')h+=`<div class="row"><button class="btn primary" id="aR1">${t('rematchMe')}</button><button class="btn" id="aR2">${t('rematchThem')}</button></div>`;
   else if(mode==='ai')h+=`<button class="btn primary" id="aNew">${t('newGame')}</button>`;
@@ -947,7 +957,7 @@ function render(){
   else{const n=S.log.length,k=R.k,me=R.ctrl===mySeat,d0=!me||k===0?'disabled':'',d1=!me||k===n?'disabled':'';
    let x=`<h2>${t('review')}</h2><div class="row"><button class="btn" id="rv0" aria-label="${t('first')}" ${d0}>«</button><button class="btn" id="rvP" aria-label="${t('prev')}" ${d0}>‹</button><button class="btn" id="rvN" aria-label="${t('next')}" ${d1}>›</button><button class="btn" id="rvE" aria-label="${t('last')}" ${d1}>»</button></div>`;
    x+=`<p>${k===0?t('reviewStart'):t('reviewPos',{k,n})}${R.alt.length?' · '+t('rvAlt',{n:R.alt.length}):''}</p><p>${me?t('rvYouCtrl'):esc(t('rvCtrlBy',{name:nameOf(R.ctrl)}))}</p>`;
-   if(me){if(R.alt.length)x+=`<button class="btn primary" id="rvBack">${t('rvBack')}</button>`;if(mode!=='ai')x+=`<button class="btn" id="rvGive">${esc(t('rvGive',{name:nameOf(other(mySeat))}))}</button>`;x+=`<button class="btn" id="rvExit">${t('rvExit')}</button>`;}
+   if(me){x+=`<button class="btn primary" id="rvBack" ${R.alt.length?'':'disabled'}>${t('rvBack')}</button>`;if(mode!=='ai')x+=`<button class="btn" id="rvGive">${esc(t('rvGive',{name:nameOf(other(mySeat))}))}</button>`;x+=`<button class="btn" id="rvExit">${t('rvExit')}</button>`;}
    rv.innerHTML=x;
    on('rv0',()=>goReview(0));on('rvP',()=>rvOp({op:'step',d:-1}));on('rvN',()=>rvOp({op:'step',d:1}));on('rvE',()=>goReview(n));
    on('rvBack',()=>rvOp({op:'back'}));on('rvGive',()=>rvOp({op:'give'}));on('rvExit',()=>rvOp({op:'exit'}));}}
