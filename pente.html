@@ -148,7 +148,7 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .actions:empty{display:flex}
 .actions>.row{display:contents}
 .actions>*{flex:1 1 0;min-width:0}
-.actions .btn{justify-content:center;padding:9px 6px;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.actions .btn{justify-content:center;padding:9px 4px;font-size:13px;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .actions .btn small{display:none}
 .actions .btn>span:not(.pstone){overflow:hidden;text-overflow:ellipsis}
 .actions .note{align-self:center;margin:0}
@@ -242,6 +242,7 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
   <div class="essentials">
    <section class="players" id="players"></section>
    <section class="block review" id="review" hidden></section>
+   <section class="actions" id="swapRow" hidden></section>
    <section class="actions" id="actions"></section>
    <section class="controls" id="aiControls">
     <button class="btn" id="bUndo" data-i18n="undo"></button>
@@ -921,23 +922,25 @@ function render(){
  tickClocks();
 
  // actions
- let h='';
+ let h='',sw='';
  if(p&&busy!=='hint'){const need=p.colors.length;
   if(confirmOn)h+=`<button class="btn primary" id="aOk" ${tent.length===need?'':'disabled'}>${t(need===1?'confirm1':'confirmN')}</button>`;
   if(need>1)h+=`<button class="btn" id="aClr" ${tent.length?'':'disabled'}>${t('removeStones')}</button>`;
-  if(S.phase==='choose'&&localMode==='add2')h+=`<button class="btn" id="aBack">${t('backChoice')}</button>`;}
+  if(S.phase==='choose'&&localMode==='add2')sw+=`<button class="btn" id="aBack">${t('backChoice')}</button>`;}
  else if(mine&&!pending&&(S.phase==='choose'||S.phase==='choose1')&&busy!=='hint'){
-  h+=`<button class="btn" id="aB"><span class="pstone b"></span><span>${t('takeBlack')}<small>${t('takeBlackSub')}</small></span></button>`+
-     `<button class="btn" id="aW"><span class="pstone w"></span><span>${t('takeWhite')}<small>${t('takeWhiteSub')}</small></span></button>`;
-  if(S.phase==='choose')h+=`<button class="btn" id="aX"><span>${t('add2')}<small>${esc(t('add2Sub',{name:nameOf(first)}))}</small></span></button>`;}
- if(!h&&mySeat&&confirmOn&&!S.result&&S.phase!=='wait'&&!(mine&&(S.phase==='choose'||S.phase==='choose1')))h+=`<button class="btn primary" disabled>${t('confirm1')}</button>`;
+  sw+=`<button class="btn" id="aB" title="${esc(t('takeBlack')+' — '+t('takeBlackSub'))}"><span class="pstone b"></span><span>${t('black')}</span></button>`+
+     `<button class="btn" id="aW" title="${esc(t('takeWhite')+' — '+t('takeWhiteSub'))}"><span class="pstone w"></span><span>${t('white')}</span></button>`;
+  if(S.phase==='choose')sw+=`<button class="btn" id="aX" title="${esc(t('add2')+' — '+t('add2Sub',{name:nameOf(first)}))}"><span>${lang==='fr'?'+2 pierres':'+2 stones'}</span></button>`;}
+ if(!h&&mySeat&&confirmOn&&!S.result&&S.phase!=='wait')h+=`<button class="btn primary" disabled>${t('confirm1')}</button>`;
  if(S.result){
   if(mode==='host')h+=`<div class="row"><button class="btn primary" id="aR1">${t('rematchMe')}</button><button class="btn" id="aR2">${t('rematchThem')}</button></div>`;
   else if(mode==='ai')h+=`<button class="btn primary" id="aNew">${t('newGame')}</button>`;
   else if(mySeat)h+=`<p class="note">${t('hostRematch')}</p>`;}
  else if(mySeat&&S.phase==='wait'&&hasGuest())h+=isReady(mySeat)?`<button class="btn primary" disabled>${t('waitingOpp')}</button>`:`<button class="btn primary" id="aStart">${t('startGame')}</button>`;
  else if(mySeat&&S.phase!=='wait')h+=resignArm?`<div class="row"><button class="btn danger" id="aRes2">${t('resignConfirm')}</button><button class="btn" id="aRes0">${t('keepPlaying')}</button></div>`:`<button class="btn danger" id="aRes">${t('resign')}</button>`;
- $('actions').innerHTML=h;
+ $('actions').innerHTML=h;$('swapRow').innerHTML=sw;$('swapRow').hidden=!sw;
+ document.querySelectorAll('#actions button,#swapRow button').forEach(b=>{if(!b.title)b.title=b.textContent.trim();});
+ $('status').title=main+(sub?' — '+sub:'');
  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f;};
  on('aOk',commit);on('aClr',()=>{tent=[];clearHint();render();});on('aBack',()=>{tent=[];localMode='';clearHint();render();});
  on('aB',()=>sendAct({t:'pick',color:1}));on('aW',()=>sendAct({t:'pick',color:2}));on('aX',()=>{localMode='add2';tent=[];clearHint();render();});
@@ -1037,11 +1040,12 @@ function draw(){const {s,cell,pad}=geom();if(!s)return;const dpr=window.devicePi
   const hc=tent.length<p.colors.length?p.colors[tent.length]:(p.colors.length===1?p.colors[0]:0);
   if(hover>=0&&hc&&!S.B[hover]&&tent.indexOf(hover)<0&&busy!=='hint')stone(P(hover%N),P((hover/N)|0),r,hc,.4);}
  else if(hint>=0&&!S.B[hint]){ctx.save();ctx.strokeStyle=MK;ctx.lineWidth=2;ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(P(hint%N),P((hint/N)|0),r*.85,0,7);ctx.stroke();ctx.restore();}
- if(S.rv&&S.rv.on&&S.rv.alt.length){ctx.save();ctx.font=`700 ${cell*.4}px Figtree, system-ui, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';S.rv.alt.forEach((m,j)=>{if(V.B[m.i]===m.c){ctx.fillStyle=m.c===1?'#fff':'#222';ctx.fillText(String(j+1),P(m.i%N),P((m.i/N)|0)+1);}});ctx.restore();}
+ if(S.rv&&S.rv.on&&S.rv.ctrl===mySeat&&hover>=0&&!V.B[hover])stone(P(hover%N),P((hover/N)|0),r,V.next,.4);
+ if(S.rv&&S.rv.on&&S.rv.alt.length){ctx.save();ctx.font=`700 ${cell*.4}px Figtree, system-ui, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';S.rv.alt.forEach((m,j)=>{if(j<S.rv.alt.length-1&&V.B[m.i]===m.c){ctx.fillStyle=m.c===1?'#fff':'#222';ctx.fillText(String(j+1),P(m.i%N),P((m.i/N)|0)+1);}});ctx.restore();}
  if(S.result&&S.result.line&&review===null&&!(S.rv&&S.rv.on)){const L=S.result.line,a=L[0],b=L[L.length-1];ctx.save();ctx.strokeStyle=MK;ctx.globalAlpha=.85;ctx.lineWidth=Math.max(3,cell*.16);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P(a%N),P((a/N)|0));ctx.lineTo(P(b%N),P((b/N)|0));ctx.stroke();ctx.restore();}}
 function cellAt(e){const {cell,pad}=geom();const rc=cv.getBoundingClientRect();const x=Math.round((e.clientX-rc.left-pad)/cell),y=Math.round((e.clientY-rc.top-pad)/cell);
  if(x<0||x>=N||y<0||y>=N)return -1;return y*N+x;}
-cv.addEventListener('pointermove',e=>{const i=cellAt(e);if(i!==hover){hover=i;draw();}cv.style.cursor=placing()?'pointer':'default';});
+cv.addEventListener('pointermove',e=>{const i=cellAt(e);if(i!==hover){hover=i;draw();}cv.style.cursor=(placing()||(S&&S.rv&&S.rv.on&&S.rv.ctrl===mySeat))?'pointer':'default';});
 cv.addEventListener('pointerleave',()=>{hover=-1;draw();});
 cv.addEventListener('click',e=>{const i=cellAt(e);if(i>=0)onCell(i);});
 new ResizeObserver(()=>draw()).observe(cv);
