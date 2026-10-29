@@ -79,6 +79,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items
 @media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
 .boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
 svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0 auto;touch-action:manipulation;user-select:none}
+.nav{display:flex;align-items:center;justify-content:center;gap:6px}
+.nav button{padding:6px 10px;min-width:40px;font-size:15px;line-height:1}
+.nav span{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);min-width:13ch;text-align:center}
+.log div.nav{cursor:pointer}.log div.nav:hover b{text-decoration:underline}
+.log div.cur{background:var(--accent-soft);border-radius:3px}.log div.cur b{color:var(--accent)}
 .notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:8px;font-weight:500;font-size:14px;text-align:center;border:1px solid transparent}
 .notice.on{background:var(--panel);border-color:var(--line)}
 .notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
@@ -180,6 +185,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
   <div class="boardwrap">
     <div class="players" id="playersTop"></div>
     <svg id="board" viewBox="0 0 872 872" role="img" aria-label="Ponte del Diavolo board"></svg>
+    <div class="nav" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <div class="notice" id="notice" aria-live="polite"></div>
   </div>
   <aside class="side">
@@ -197,7 +203,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm" id="startBtns"></div></div>
     <div class="card" id="pieCard" hidden><h2 data-i18n="pieTtl">Your choice</h2><div class="confirm"><button type="button" class="primary" id="b-light" data-i18n="takeLight">Take Light</button><button type="button" id="b-dark" data-i18n="playDark">Play Dark</button></div></div>
     <div class="card" id="moveCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm" id="moveBtns"></div></div>
-    <div class="card" id="endCard" hidden><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button></div>
+    <div class="card" id="endCard" hidden><div class="confirm"><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button><button type="button" id="homeBtn" data-i18n="home">Home</button></div></div>
     <div class="card" id="myCard" hidden>
       <div class="confirm" id="passBox" hidden><button type="button" id="b-pass" data-i18n="pass">Pass</button></div>
       <label class="toggle" for="hints"><input type="checkbox" id="hints" checked> <span data-i18n="hints">Show playable squares</span></label>
@@ -336,6 +342,7 @@ const I18N={fr:{
  connected:"{n} connecté(s)",
  start:"Départ",startBtn:"Démarrer la partie",waitingOpp:"En attente de l'adversaire…",leaveSeat:"Quitter la place",ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",
  pieTtl:"Votre choix",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",
+ nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
  yourMove:"Votre coup",confirmMv:"Confirmer le coup",clear:"Effacer",endTurn:"Finir le tour",newGame:"Nouvelle partie",
  pass:"Passer",passEnd:"Passer et finir",hints:"Montrer les cases jouables",needConfirm:"Confirmer chaque coup avant l'envoi",sounds:"Sons",
  resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
@@ -384,6 +391,7 @@ const I18N={fr:{
  connected:"{n} connected",
  start:"Start",startBtn:"Start the game",waitingOpp:"Waiting for your opponent…",leaveSeat:"Leave seat",ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",
  pieTtl:"Your choice",takeLight:"Take Light",playDark:"Play Dark",
+ nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
  yourMove:"Your move",confirmMv:"Confirm move",clear:"Clear",endTurn:"End turn",newGame:"New game",
  pass:"Pass",passEnd:"Pass and end",hints:"Show playable squares",needConfirm:"Confirm each move before sending",sounds:"Sounds",
  resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
@@ -425,6 +433,7 @@ function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefin
 const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
 function applyStatic(){document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
   $('rules').innerHTML=t('rules');$('nick').placeholder=t('nick');
   const sel=$('cTc'),cur=sel.value||store.get('pdd-tc','20+10');
@@ -530,7 +539,7 @@ function closeNet(){
   clearTimeout(net.retryT); clearTimeout(net.connT); clearTimeout(net.sendTimer);
   Object.assign(net,{peer:null,host:false,conns:new Set(),conn:null,code:null,doc:null,gid:null,data:null,st:null,gone:false,sending:false,obsKey:null,lastMove:null,sitSent:false,
     lostSince:0,lost:false,retryT:null,connT:null,err:''});
-  inp=newInput();
+  inp=newInput(); navAt=null;
 }
 const saveKey=c=>'pdd-game-'+String(c).toUpperCase();
 function savedDoc(c){ try{ const d=JSON.parse(store.get(saveKey(c),'null')); return d&&d.code===String(c).toUpperCase()?d:null; }catch(e){ return null; } }
@@ -805,8 +814,8 @@ setInterval(()=>{
 /* ---------- board rendering ---------- */
 // The real position is drawn from the game state; the tiles or bridge being prepared appear in transparency.
 function renderBoard(){
-  const c=ctx(), st=c.st, d=net.data, real=d?stFromDoc(d):newState(), out=[];
-  const last = d?.last;
+  const nv=navView(), c=nv?{st:nv.st,active:false}:ctx(), st=c.st, d=net.data, real=nv?nv.st:(d?stFromDoc(d):newState()), out=[];
+  const last = nv?nv.last:d?.last;
   const X=k=>M+k*CS, Y=r=>M+r*CS;
   out.push(`<rect x="0" y="0" width="872" height="872" rx="10" fill="var(--water-deep)"/>`);
   out.push(`<rect x="${M}" y="${M}" width="${CS*N}" height="${CS*N}" fill="var(--water)"/>`);
@@ -876,12 +885,37 @@ function renderBoard(){
 /* ---------- panel rendering ---------- */
 function tieNote(a,b){ return a.pts===b.pts ? (a.islands!==b.islands?t('tb_isl'): a.bridges!==b.bridges?t('tb_brg'):'') : ''; }
 function compare(a,b){ return a.pts!==b.pts?Math.sign(a.pts-b.pts):a.islands!==b.islands?Math.sign(a.islands-b.islands):Math.sign(a.bridges-b.bridges); }
-function renderLog(entries){
+function renderLog(entries,d){
+  const can=navAllowed(d), cur=can?(navAt??navMoves(d).length):-1;
   let n=0; $('log').innerHTML = entries.length ? entries.map(e=>{
     const txt=e.text!==undefined?e.text:e.k?t(e.k,e.v):moveText(e.m);
-    if(e.p===0) return `<div><span></span><b>${esc(txt)}</b></div>`; n++; return `<div><span>${n}.</span><b>${NAME(e.p)} — ${esc(txt)}</b></div>`;}).join('') : `<div><span></span>${esc(t('noMoves'))}</div>`;
-  $('log').scrollTop=1e6;
+    if(e.p===0) return `<div><span></span><b>${esc(txt)}</b></div>`; n++; return `<div data-k="${n}" class="${can?'nav':''}${n===cur?' cur':''}"><span>${n}.</span><b>${NAME(e.p)} — ${esc(txt)}</b></div>`;}).join('') : `<div><span></span>${esc(t('noMoves'))}</div>`;
+  if(can) $('log').querySelectorAll('[data-k]').forEach(el=>el.onclick=()=>goNav(+el.dataset.k));
+  const sel=navAt!==null&&$('log').querySelector('.cur'); if(sel) sel.scrollIntoView({block:'nearest'}); else $('log').scrollTop=1e6;
 }
+/* ---------- navigation in the game ---------- */
+// navAt: null = live; k = position after the first k moves of the move list. Allowed for everyone once the game is over,
+// and for spectators during the game; never for a player while the game is on. Clocks keep showing the real time.
+let navAt=null;
+const navMoves=d=>(d?.log||[]).filter(e=>e.p!==0);
+function navAllowed(d){ return !!d&&d.phase!=='waiting'&&(d.phase==='over'||!mySeat(d))&&navMoves(d).every(e=>e.m!==undefined||e.k); }
+function posAt(d,k){ const st=newState(); let last=null;
+  for(const e of navMoves(d).slice(0,k)){ if(e.m){ const m=e.m.type==='b'?{type:'b',a:e.m.a,e:findEdge(e.m.a,e.m.b)}:e.m; if(m.type==='t'||m.e) applyMove(st,m,e.p); } last={p:e.p,m:e.m||null}; }
+  return {st,last}; }
+function navView(){ const d=net.data; if(navAt===null) return null; if(!navAllowed(d)){ navAt=null; return null; } return posAt(d,navAt); }
+function goNav(k){ const d=net.data; if(!navAllowed(d)) return; const n=navMoves(d).length; navAt=k>=n?null:Math.max(0,k); inp=newInput(); renderAll(); }
+function renderNav(d){ const can=navAllowed(d); $('nav').hidden=!can; if(!can) return;
+  const n=navMoves(d).length, k=navAt??n; $('navPos').textContent=t('nav_pos',{k,n});
+  $('navFirst').disabled=$('navPrev').disabled=k<=0; $('navNext').disabled=$('navLast').disabled=navAt===null; }
+$('navFirst').onclick=()=>goNav(0);
+$('navPrev').onclick=()=>goNav((navAt??navMoves(net.data).length)-1);
+$('navNext').onclick=()=>goNav((navAt??navMoves(net.data).length)+1);
+$('navLast').onclick=()=>goNav(Infinity);
+document.addEventListener('keydown',e=>{ if($('game').hidden||!navAllowed(net.data)||e.altKey||e.ctrlKey||e.metaKey) return;
+  const tg=e.target; if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable)) return;
+  const n=navMoves(net.data).length, k=navAt??n;
+  if(e.key==='ArrowLeft') goNav(k-1); else if(e.key==='ArrowRight') goNav(k+1); else if(e.key==='Home') goNav(0); else if(e.key==='End') goNav(Infinity); else return;
+  e.preventDefault(); });
 // Exceptional messages only, on the reserved line under the board
 function notice(txt,cls){ const n=$('notice'); n.className='notice'+(txt?' on'+(cls?' '+cls:''):''); n.textContent=txt||''; }
 function renderPlayers(d,real){
@@ -901,7 +935,7 @@ function renderPlayers(d,real){
   document.querySelectorAll('[data-sit]').forEach(b=>b.onclick=()=>takeSeat(b.dataset.sit));
 }
 function renderPanel(){
-  const d=net.data, inGame=!!net.gid, seat=mySeat(d), real=d?stFromDoc(d):newState();
+  const d=net.data, inGame=!!net.gid, seat=mySeat(d), nv=navView(), real=nv?nv.st:(d?stFromDoc(d):newState());
   const myTurn = !!(d&&seat && d.turnSeat===seat && !net.sending && !d.paused);
   if(myTurn&&ACTIVE.includes(d.phase)&&!lastMine&&d.moveNo>1) tone(660,.18,.05); lastMine=myTurn&&ACTIVE.includes(d?.phase);
   renderPlayers(d,real);
@@ -955,7 +989,8 @@ function renderPanel(){
     $('passBox').hidden=!canP; $('b-pass').textContent=t(colorOfSeat(d,seat)===2||d.finalTurn?'passEnd':'pass');
     if($('resignAsk').hidden) $('resignBox').hidden=false; }
   $('rcBoxD').hidden=!(d&&inGame&&seat&&d.phase!=='waiting');
-  renderLog(d&&inGame?(d.log||[]):[]);
+  renderLog(d&&inGame?(d.log||[]):[],d);
+  renderNav(d);
 }
 function renderAll(){ renderBoard(); renderPanel(); }
 
@@ -988,6 +1023,7 @@ $('b-pass').onclick=()=>netPass(false);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;netResign();};
+$('homeBtn').onclick=()=>{ closeNet(); showLanding(); };
 $('newGame').onclick=()=>{ if(net.data&&net.data.code){ store.del(saveKey(net.data.code)); store.del('pdd-last'); } closeNet(); showLanding(); };
 
 /* ---------- landing ---------- */

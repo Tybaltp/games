@@ -86,6 +86,11 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:2px}
 ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
 ol.log .n{color:var(--muted)}
+ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.navbar{display:flex;align-items:center;justify-content:center;gap:6px}
+.navbar button{min-width:44px;padding:6px 10px}
+.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
 details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 details summary{cursor:pointer;font-weight:600}
 details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
@@ -155,6 +160,7 @@ a{color:inherit}
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
     <div class="board"><svg id="svg" viewBox="-340 -390 680 780" role="img" aria-label="Volo board"></svg></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <div class="notice" id="notice"></div>
   </div>
   <aside class="side">
@@ -172,7 +178,7 @@ a{color:inherit}
     <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
     <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancelMove">Cancel the move</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
-    <div class="card" id="endCard" hidden><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button></div>
+    <div class="card" id="endCard" hidden><div class="confirm"><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button><button type="button" id="homeBtn" data-i18n="home">Home</button></div></div>
     <div class="card" id="myCard" hidden>
       <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
       <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
@@ -279,6 +285,7 @@ function VoloEngine(){
 const SIZE=120;
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18N={fr:{
+ nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",orangeIs:"Orange (commence)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
@@ -313,6 +320,7 @@ const I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`
 },en:{
+ nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",orangeIs:"Orange (plays first)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
@@ -352,6 +360,7 @@ function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefin
 const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
 function applyStatic(){document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
   document.getElementById('rules').innerHTML=t('rules');
   const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('volo-tc'));}catch(e){return null;}})()||'20+10';
@@ -516,13 +525,24 @@ function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
 function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st[TURN]===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
 
-function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.result),turn=r.st[TURN];
-  const mine=isMyTurn(r),legal=r.over?[]:E.gen(r.st);
+// Navigation through the moves: for everyone once the game is over, for spectators at any time.
+// navAt=null follows the game live; otherwise the board shows the position after navAt moves.
+let navAt=null,navKey=null,navVal=null;
+const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch'));
+function navPos(k){const key=view.moves.slice(0,k).join(',');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view.size,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
+function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
+function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.result);
+  if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
+  const d=navAt===null?r:navPos(navAt),turn=d.st[TURN];
+  const mine=navAt===null&&isMyTurn(r),legal=r.over||navAt!==null?[]:E.gen(r.st);
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st[TURN]===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
   const hm=mine&&!ui.pending&&!ui.basemv&&ui.sel.length&&ui.hover>=0?legal.find(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===ui.hover):null;
   const gm=ui.basemv?null:(ui.pending||hm);
   const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
-  drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
+  if(navAt!==null)drawBoard(d.st,d.st,[],false,d.last);
+  else drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
+  {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
+    if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
   const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const canPass=legal.some(m=>m.t==='x'),onlyPass=legal.length===1&&canPass;
   if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
@@ -536,10 +556,10 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else quiet();
   const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
   const host=wide?$('playersSide'):$('playersTop');host.textContent='';
-  for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&turn===p?' active':'');el.id='pl'+p;
+  for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="bird c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
-    const ty=document.createElement('div');ty.className='tally';const on=E.count(r.st,p),fl=E.flockCount(r.st,p);
+    const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
     ty.innerHTML=`<span title="${t('sky')}">${on}</span><span title="${t('reserve')}">${E.MAX-on}</span><span title="${t('flocks')}">${fl}</span>`;
     el.append(h,ck,ty);host.appendChild(el);}
   tick();
@@ -553,12 +573,13 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}}$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!(role==='host'&&r.over);
+  $('endCard').hidden=!r.over;$('newGame').hidden=role!=='host';
   const ol=$('log');ol.textContent='';
-  r.log.forEach((e,j)=>{const li=document.createElement('li');const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+  const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
+  r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
     const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);ol.appendChild(li);});
-  ol.scrollTop=ol.scrollHeight;}
+  const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
 let audioCtx=null,lastMine=false;
 document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('volo-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
@@ -625,6 +646,14 @@ $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tr
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
 $('newGame').onclick=()=>{LS.del('volo-p2p-host');LS.del('volo-p2p-guest');location.hash='';location.reload();};
+$('navFirst').onclick=()=>navGo(0);
+$('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
+$('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
+$('navLast').onclick=()=>navGo(null);
+document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
+  const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
+// Home: leave the game and come back to Volo's own start page
+$('homeBtn').onclick=()=>{C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
 let hoverT=0;
 function hoverCell(i){if(!view||ui.pending||ui.basemv||!ui.sel.length)return;if(i===ui.hover)return;
