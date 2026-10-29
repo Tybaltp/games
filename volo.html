@@ -146,7 +146,7 @@ a{color:inherit}
       </form>
       <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
     </div>
-    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="VOLO1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
@@ -294,7 +294,7 @@ const I18N={fr:{
  nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",orangeIs:"Orange (commence)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
+ inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",regions:"Régions",regionsTxt:"Votre coup sépare les oiseaux adverses en plusieurs régions. Cliquez un oiseau de la région qui reste ; les autres s'envolent.",cancelMove:"Annuler le coup",
  start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
@@ -329,7 +329,7 @@ const I18N={fr:{
  nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",orangeIs:"Orange (plays first)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
+ inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",regions:"Regions",regionsTxt:"Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.",cancelMove:"Cancel the move",
  start:"Start",startBtn:"Start the game",pass:"Pass",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
@@ -575,7 +575,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
     if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn');else if(onlyPass)status(t('st_mustPass'),'turn');else quiet();}
   else quiet();
   const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
-  const host=wide?$('playersSide'):$('playersTop');host.textContent='';
+  const host=wide?$('playersSide'):$('playersTop');host.textContent='';(wide?$('playersTop'):$('playersSide')).textContent='';
   for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="bird c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
@@ -726,7 +726,7 @@ function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));retu
 function init(){const s0=E.init();drawBoard(s0,s0,[],false,null);
   const saved=LS.get('volo-p2p-host',null),sg=LS.get('volo-p2p-guest',null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
-  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;}
+  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').dataset.i18n='inProgressGuest';$('resumeTxt').textContent=t('inProgressGuest');}
   status(t('st_home'));
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}

@@ -33,16 +33,24 @@ a:hover .t,a:focus-visible .t{color:var(--accent)}
 <li><a href="pontedeldiavolo.html"><span class="t">Ponte del Diavolo</span><span class="d" data-i18n="ponte"></span></a></li>
 <li><a href="zertz.html"><span class="t">Zèrtz</span><span class="d" data-i18n="zertz"></span></a></li>
 <li><a href="volo.html"><span class="t">Volo</span><span class="d" data-i18n="volo"></span></a></li>
+<li><a href="arimaa.html"><span class="t">Arimaa</span><span class="d" data-i18n="arimaa"></span></a></li>
+<li><a href="gyges.html"><span class="t">Gygès</span><span class="d" data-i18n="gyges"></span></a></li>
+<li><a href="tintas.html"><span class="t">Tintas</span><span class="d" data-i18n="tintas"></span></a></li>
+<li><a href="diagonalblocks.html"><span class="t">Diagonal Blocks Duo</span><span class="d" data-i18n="dblocks"></span></a></li>
 </ul>
 </main>
 <script>
 const I18N={
  fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
      pente:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",ponte:"Bâtissez des îles de quatre tuiles et reliez-les par des ponts.",
-     zertz:"Des billes communes sur un plateau d'anneaux qui rétrécit.",volo:"Réunissez tous vos oiseaux en une seule nuée."},
+     zertz:"Des billes communes sur un plateau d'anneaux qui rétrécit.",volo:"Réunissez tous vos oiseaux en une seule nuée.",
+     arimaa:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",gyges:"Des anneaux neutres qui rebondissent jusqu\u2019au but adverse.",
+     tintas:"Un pion commun, sept couleurs : collectionnez-en une.",dblocks:"Posez vos polyominos coin contre coin, couvrez le plus de cases."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
      pente:"Five in a row, or capture five pairs. Swap2 opening.",ponte:"Build islands of four tiles and link them with bridges.",
-     zertz:"Shared marbles on a shrinking board of rings.",volo:"Gather all your birds into a single flock."}};
+     zertz:"Shared marbles on a shrinking board of rings.",volo:"Gather all your birds into a single flock.",
+     arimaa:"Get a rabbit to the far side: push, pull, traps.",gyges:"Neutral rings bounce their way to the opponent\u2019s goal.",
+     tintas:"One shared pawn, seven colours: collect a full set.",dblocks:"Place your polyominoes corner to corner, cover the most squares."}};
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
 function apply(){document.documentElement.lang=lang;document.title=I18N[lang].title;
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=I18N[lang][e.dataset.i18n]);

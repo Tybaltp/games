@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arimaa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<style>
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}
+/* Layout: board on the left, game column on the right; stacked on phones */
+:root{
+  --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6a645a;--line:#ddd7cb;
+  --wood:#e2d3b1;--wood-edge:#c9b386;--sq:#f3ead6;--gridl:#c2ad82;--trap:#e3b4a2;--trapk:#a5563f;--coord:#7b6a4a;
+  --g1:#f3c13a;--g3:#7d560a;--gk:#3b2800;--s1:#6f7d8b;--s3:#28323c;--sk:#ffffff;
+  --accent:#2f7d8c;--accent-ink:#ffffff;--danger:#cf4a35;
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
+  --wood:#3a3226;--wood-edge:#2a241b;--sq:#4a4234;--gridl:#2c261d;--trap:#7a463a;--trapk:#e19a83;--coord:#b9a888;
+  --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
+  --wood:#3a3226;--wood-edge:#2a241b;--sq:#4a4234;--gridl:#2c261d;--trap:#7a463a;--trapk:#e19a83;--coord:#b9a888;
+  --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.02em;margin:0;line-height:1}
+h1 span{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;margin-left:.4em}
+select,button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+button:hover:not(:disabled),select:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+.boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
+.board{position:relative}
+.notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:10px;font-weight:500;font-size:.9rem;text-align:center;border:1px solid transparent}
+.notice.on{background:var(--panel);border-color:var(--line)}
+.notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.legend{margin:0;text-align:center;font-size:.78rem;color:var(--muted)}
+.legend span{white-space:nowrap}
+.legend b{font-family:var(--f-display);color:var(--ink)}
+.players{display:flex;justify-content:space-between;gap:8px}
+.players.side-only{flex-direction:column}
+.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
+.player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.player.active .who{color:var(--ink)}
+.player .clock{font-size:1.4rem;line-height:1.1}
+.player .tally{display:flex;gap:8px;font-size:.72rem;overflow:hidden;letter-spacing:-.01em}
+.player .tally span::before{content:attr(title) ' ';color:var(--muted)}
+.player .tally span{color:var(--ink);font-weight:500;white-space:pre}
+.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.side details.prominent summary{color:var(--ink);font-size:1rem}
+.side details.prominent .link input{font-size:.95rem;padding:9px 10px}
+.side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
+.side details > *:not(summary){margin-top:8px}
+.side details .link,.side details .hint{margin-top:6px}
+@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
+.board{background:linear-gradient(var(--wood),var(--wood-edge));border-radius:16px;padding:8px;min-width:0}
+.board svg{display:block;width:100%;height:auto;max-height:80vh;margin:0 auto;touch-action:manipulation}
+.status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
+.status.turn{border-color:var(--accent)}
+.status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.card h2{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.steps{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--ink);white-space:pre}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.home{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;width:100%}
+@media (min-width:760px){.home{max-width:880px;display:grid;grid-template-columns:1fr 1fr;align-items:start}
+  .home > #resumeCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
+.home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
+.home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
+.home details{padding:10px 14px}
+.home details .card{margin-top:10px}
+.who{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
+.tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.pc{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
+.pc.c0{background:var(--g1);border:1.5px solid var(--g3)}
+.pc.c1{background:var(--s1);border:1.5px solid var(--s3)}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.8rem;max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
+ol.log .n{color:var(--muted)}
+ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.navbar{display:flex;align-items:center;justify-content:center;gap:6px}
+.navbar button{min-width:44px;padding:6px 10px}
+.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+details summary{cursor:pointer;font-weight:600}
+details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
+details li{margin:.25em 0}
+.cell{cursor:pointer}
+.pl{font-family:var(--f-display);font-weight:800;font-size:25px;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{opacity:.45}}}
+
+[hidden]{display:none!important}
+.view{display:flex;flex-direction:column;gap:16px}
+a{color:inherit}
+.form{display:flex;flex-direction:column;gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
+.clock{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.clock.run{color:var(--ink)}
+.clock.idle{color:var(--muted)}
+.clock.low{color:var(--danger)}
+.link{display:flex;gap:6px}
+.link input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.78rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.confirm{display:flex;gap:8px}
+.confirm button{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
+.empty{color:var(--muted);margin:0}
+.txt{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+#watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1>Arimaa<span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <div class="card primary-card">
+      <h2 data-i18n="create">Create a game</h2>
+      <form class="form" id="createForm">
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <label for="cFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="cFirst"><option value="me" selected data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+    </div>
+    <div class="card primary-card">
+      <h2 data-i18n="join">Join a game with a code</h2>
+      <form class="form" id="joinForm">
+        <label for="jCode"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+        <p class="hint" id="joinErr"></p>
+      </form>
+      <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+    </div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="ARIMAA1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="board"><svg id="svg" viewBox="-22 -4 506 508" role="img" aria-label="Arimaa board"></svg></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="notice" id="notice"></div>
+    <p class="legend" id="legend"></p>
+  </div>
+  <aside class="side">
+    <div class="players side-only" id="playersSide"></div>
+    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
+      <p class="hint" id="watchInfo"></p>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+    </details>
+    <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt" style="font-family:var(--f-mono)"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
+    <div class="card" id="setupCard" hidden><h2 data-i18n="setupH">Setup</h2><p class="hint" data-i18n="setupTxt"></p><div class="confirm"><button type="button" id="setupReset" data-i18n="setupReset">Default</button><button type="button" class="primary" id="setupGo" data-i18n="setupGo">Confirm the setup</button></div></div>
+    <div class="card" id="turnCard" hidden><h2><span data-i18n="yourTurn">Your turn</span><span class="steps" id="stepCnt"></span></h2><div class="confirm"><button type="button" id="undoStep" data-i18n="undoStep">Undo step</button><button type="button" class="primary" id="endTurn" data-i18n="endTurn">End turn</button></div></div>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <div class="card" id="myCard" hidden>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+    </div>
+    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
+      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+  </aside>
+</main>
+</section>
+</div>
+<script>
+// ===== Arimaa rules engine =====
+// Board: 64 squares, index = row*8+col, row 0 = rank 1 (Gold's home), col 0 = file a.
+// Values: 0 empty; Gold 1..6, Silver -1..-6 (1 rabbit, 2 cat, 3 dog, 4 horse, 5 camel, 6 elephant).
+function ArimaaEngine(){
+  const LET='RCDHME',DIRS='nsew',TRAPS=[18,21,42,45];          // c3 f3 c6 f6
+  const isTrap=new Uint8Array(64);TRAPS.forEach(i=>isTrap[i]=1);
+  const NB=new Int8Array(256);
+  for(let i=0;i<64;i++){const r=i>>3,c=i&7;NB[i*4]=r<7?i+8:-1;NB[i*4+1]=r>0?i-8:-1;NB[i*4+2]=c<7?i+1:-1;NB[i*4+3]=c>0?i-1:-1;}
+  const sq=i=>'abcdefgh'[i&7]+((i>>3)+1);
+  const letter=v=>v>0?LET[v-1]:LET[-v-1].toLowerCase();
+  const sgn=s=>s===0?1:-1;
+  const dirOf=(f,t)=>t-f===8?0:t-f===-8?1:t-f===1?2:3;
+  // Starting squares of a side, in setup-code order: Gold a1..h1 then a2..h2, Silver a8..h8 then a7..h7.
+  const SETUP_SQ=[[...Array(16)].map((_,k)=>k),[...Array(16)].map((_,k)=>k<8?56+k:40+k)];
+  const SETUP_SET='CCDDEHHMRRRRRRRR';
+  const DEFAULT=['RRRRRRRRHDCEMCDH','RRRRRRRRHDCMECDH'];
+  function friendNear(b,i){const s=Math.sign(b[i]);for(let d=0;d<4;d++){const j=NB[i*4+d];if(j>=0&&b[j]&&Math.sign(b[j])===s)return true;}return false;}
+  // frozen: next to a stronger enemy and to no friendly piece
+  function frozen(b,i){const v=b[i];if(!v)return false;let st=false;
+    for(let d=0;d<4;d++){const j=NB[i*4+d];if(j<0)continue;const w=b[j];if(!w)continue;if(Math.sign(w)===Math.sign(v))return false;if(Math.abs(w)>Math.abs(v))st=true;}return st;}
+  const canGo=(v,d)=>Math.abs(v)!==1||(v>0?d!==1:d!==0);      // rabbits never step back
+  function captures(b){const out=[];for(const t of TRAPS)if(b[t]&&!friendNear(b,t)){out.push([t,b[t]]);b[t]=0;}return out;}
+  // Actions: {k:'m',f,t} single step; {k:'P',a,e,to} push (enemy e -> to, own a -> e); {k:'L',a,to,e} pull (own a -> to, enemy e -> a).
+  function actions(b,s,left){const out=[];if(left<1)return out;const g=sgn(s);
+    for(let i=0;i<64;i++){const v=b[i];if(!v||Math.sign(v)!==g||frozen(b,i))continue;
+      const empt=[];for(let d=0;d<4;d++){const j=NB[i*4+d];if(j>=0&&!b[j])empt.push([d,j]);}
+      for(const [d,j] of empt)if(canGo(v,d))out.push({k:'m',f:i,t:j});
+      if(left<2||Math.abs(v)===1)continue;
+      for(let d=0;d<4;d++){const e=NB[i*4+d];if(e<0)continue;const w=b[e];if(!w||Math.sign(w)===g||Math.abs(w)>=Math.abs(v))continue;
+        for(let d2=0;d2<4;d2++){const to=NB[e*4+d2];if(to>=0&&!b[to])out.push({k:'P',a:i,e,to});}
+        for(const [,j] of empt)out.push({k:'L',a:i,to:j,e});}}
+    return out;}
+  const code=a=>a.k==='m'?'m'+a.f+'.'+a.t:a.k==='P'?'P'+a.a+'.'+a.e+'.'+a.to:'L'+a.a+'.'+a.to+'.'+a.e;
+  function step(b,f,t,toks,caps){const v=b[f];b[t]=v;b[f]=0;toks.push(letter(v)+sq(f)+DIRS[dirOf(f,t)]);
+    for(const [c,w] of captures(b)){toks.push(letter(w)+sq(c)+'x');caps.push([c,w]);}}
+  // A push or pull is one indivisible action of two steps; captures are checked after each step.
+  function apply(b,a){const nb=b.slice(),toks=[],caps=[],mv=[];
+    if(a.k==='m'){step(nb,a.f,a.t,toks,caps);mv.push([a.f,a.t]);}
+    else if(a.k==='P'){step(nb,a.e,a.to,toks,caps);step(nb,a.a,a.e,toks,caps);mv.push([a.e,a.to],[a.a,a.e]);}
+    else{step(nb,a.a,a.to,toks,caps);step(nb,a.e,a.a,toks,caps);mv.push([a.a,a.to],[a.e,a.a]);}
+    return {b:nb,toks,caps,mv,n:a.k==='m'?1:2};}
+  const bkey=b=>{let s='';for(let i=0;i<64;i++)s+=String.fromCharCode(b[i]+70);return s;};
+  // setup: returns {b,toks} or null if the code is not a valid arrangement
+  function setup(b,s,c){if(typeof c!=='string'||!/^S[RCDHME]{16}$/.test(c))return null;const L=c.slice(1);
+    if(L.split('').sort().join('')!==SETUP_SET)return null;const nb=b.slice(),toks=[];
+    SETUP_SQ[s].forEach((i,k)=>{const v=(LET.indexOf(L[k])+1)*sgn(s);nb[i]=v;toks.push(letter(v)+sq(i));});
+    return {b:nb,toks};}
+  // a turn: 1..4 steps, changes the position, does not create a 3rd repetition (same position, same side to move)
+  function turn(b,s,c,reps){if(typeof c!=='string'||!c)return null;const parts=c.split(',');let cur=b,used=0;const toks=[],caps=[],mv=[];
+    for(const p of parts){const a=actions(cur,s,4-used).find(x=>code(x)===p);if(!a)return null;const r=apply(cur,a);cur=r.b;used+=r.n;toks.push(...r.toks);caps.push(...r.caps);mv.push(...r.mv);}
+    if(used<1||used>4||bkey(cur)===bkey(b)||(reps.get(bkey(cur)+(1-s))||0)>=2)return null;
+    return {b:cur,toks,caps,mv,used};}
+  // does side s have at least one legal turn? (depth-first, stops at the first one)
+  function hasLegal(b,s,reps){const k0=bkey(b),seen=new Set();
+    function dfs(c,left){for(const a of actions(c,s,left)){const r=apply(c,a),k=bkey(r.b);
+        if(k!==k0&&(reps.get(k+(1-s))||0)<2)return true;
+        const l2=left-r.n;if(l2>0&&!seen.has(k+l2)){seen.add(k+l2);if(dfs(r.b,l2))return true;}}
+      return false;}
+    return dfs(b,4);}
+  const rabbits=(b,s)=>{let n=0;const v=sgn(s);for(let i=0;i<64;i++)if(b[i]===v)n++;return n;};
+  const pieces=(b,s)=>{let n=0,g=sgn(s);for(let i=0;i<64;i++)if(b[i]&&Math.sign(b[i])===g)n++;return n;};
+  const atGoal=(b,s)=>{const row=s===0?7:0,v=sgn(s);for(let c=0;c<8;c++)if(b[row*8+c]===v)return true;return false;};
+  // after a turn by p (q = 1-p to move): checks in the official order
+  function outcome(b,p,reps){const q=1-p;
+    if(atGoal(b,p))return {w:p,why:'w_goal'};
+    if(atGoal(b,q))return {w:q,why:'w_goal'};
+    if(!rabbits(b,q))return {w:p,why:'w_rabbits'};
+    if(!rabbits(b,p))return {w:q,why:'w_rabbits'};
+    if(!hasLegal(b,q,reps))return {w:p,why:actions(b,q,4).length?'w_rep':'w_immob'};
+    return null;}
+  return {LET,TRAPS,isTrap,NB,SETUP_SQ,DEFAULT,sq,letter,sgn,frozen,actions,code,apply,bkey,setup,turn,hasLegal,outcome,rabbits,pieces};
+}
+// ===== Arimaa peer to peer =====
+const SIZE='arimaa';
+const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
+const I18N={fr:{
+ nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",goldIs:"Or (commence)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
+ join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
+ inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
+ resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
+ yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
+ setupH:"Mise en place",setupTxt:"Cliquez deux de vos cases l'une après l'autre pour échanger leurs pièces.",setupReset:"Par défaut",setupGo:"Valider la disposition",
+ yourTurn:"Votre tour",steps:"pas {k}/4",undoStep:"Annuler le pas",endTurn:"Terminer le tour",
+ start:"Départ",startBtn:"Démarrer la partie",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
+ invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
+ fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
+ hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
+ rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
+ noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",gold:"Or",silver:"Argent",
+ t_pieces:"pièces",t_rabbits:"lapins",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
+ noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
+ st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
+ st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
+ t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
+ draw:"Partie interrompue : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
+ st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
+ st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
+ st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",
+ st_enemyTo:"Cliquez où va la pièce adverse : une case vide pour la pousser, votre pièce pour la tirer.",st_pusher:"Cliquez la pièce qui pousse.",st_pullTo:"Cliquez la case où va votre pièce qui tire.",
+ st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
+ ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
+ w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
+ legend:"<span><b>E</b> éléphant</span> · <span><b>M</b> chameau</span> · <span><b>H</b> cheval</span> · <span><b>D</b> chien</span> · <span><b>C</b> chat</span> · <span><b>R</b> lapin</span>",
+ pn:["lapin","chat","chien","cheval","chameau","éléphant"],
+ rules:`<summary>Règles en bref</summary><ul>
+ <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
+ <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
+ <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
+ <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
+ <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez la pièce adverse, puis sa destination.</li>
+ <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
+ <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
+ <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
+ <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
+ <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
+},en:{
+ nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ sub:"peer to peer",create:"Create a game",nick:"Your nickname",goldIs:"Gold (plays first)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
+ join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
+ inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
+ resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
+ yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
+ setupH:"Setup",setupTxt:"Click two of your squares one after the other to swap their pieces.",setupReset:"Default",setupGo:"Confirm the setup",
+ yourTurn:"Your turn",steps:"step {k}/4",undoStep:"Undo step",endTurn:"End turn",
+ start:"Start",startBtn:"Start the game",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
+ invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
+ fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
+ hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
+ rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
+ noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",gold:"Gold",silver:"Silver",
+ t_pieces:"pieces",t_rabbits:"rabbits",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
+ noPeer:"The connection library could not load: check your Internet access, then reload the page.",
+ st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
+ st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
+ t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
+ draw:"Game stopped: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
+ st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
+ st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
+ st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",
+ st_enemyTo:"Click where the opposing piece goes: an empty square to push it, your piece to pull it.",st_pusher:"Click the piece that pushes.",st_pullTo:"Click the square your pulling piece moves to.",
+ st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
+ ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
+ w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
+ legend:"<span><b>E</b> elephant</span> · <span><b>M</b> camel</span> · <span><b>H</b> horse</span> · <span><b>D</b> dog</span> · <span><b>C</b> cat</span> · <span><b>R</b> rabbit</span>",
+ pn:["rabbit","cat","dog","horse","camel","elephant"],
+ rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
+ <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
+ <li><b>Setup</b>: Gold arranges its 16 pieces freely on ranks 1 and 2, then Silver on ranks 7 and 8. Each setup counts as a move; the opponent only sees it once confirmed.</li>
+ <li><b>Turn</b>: Gold starts. 1 to 4 steps, shared among your pieces as you like. A step: one square forward, backward or sideways onto an empty square. Rabbits never step back. You cannot pass, and the turn must change the position.</li>
+ <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. Click the opposing piece, then its destination.</li>
+ <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
+ <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
+ <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
+ <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
+ <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
+}};
+let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
+function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
+const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
+function applyStatic(){document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
+  document.getElementById('rules').innerHTML=t('rules');document.getElementById('legend').innerHTML=t('legend');
+  const rc=document.getElementById('resumeTxt');if(rc&&rc.dataset.guest)rc.textContent=t('inProgressGuest');
+  const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('arimaa-tc'));}catch(e){return null;}})()||'20+10';
+  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status(t('st_home'));});
+applyStatic();
+const E=ArimaaEngine();
+const $=id=>document.getElementById(id);
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+const MYID=pickTabId('arimaa',(()=>{try{return JSON.parse(localStorage.getItem('arimaa-p2p-cid'));}catch(e){return null;}})());
+const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
+
+function pickTabId(key,seed){const R=()=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(16)))s+=a[b%a.length];return s;};
+  try{const L=localStorage,S1=sessionStorage;let id=S1.getItem(key+'-tab');
+    if(!id){let ids=[];try{ids=JSON.parse(L.getItem(key+'-tabs')||'[]')||[];}catch(e){}if(!ids.length&&seed)ids=[seed];const now=Date.now();
+      id=ids.slice().reverse().find(x=>now-(+L.getItem(key+'-alive-'+x)||0)>5000);
+      if(!id){id=R();ids.push(id);}L.setItem(key+'-tabs',JSON.stringify(ids.filter((x,k)=>ids.indexOf(x)===k).slice(-10)));S1.setItem(key+'-tab',id);}
+    const beat=()=>{try{L.setItem(key+'-alive-'+id,String(Date.now()));}catch(e){}};beat();setInterval(beat,1500);return id;}catch(e){return R();}}
+function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t.charCodeAt(k);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
+
+// ---------- game replay ----------
+// moves[0] = Gold's setup, moves[1] = Silver's setup, then one full turn per entry, Gold and Silver alternately (seat = index % 2).
+let memoKey='',memoVal=null;
+function replay(size,moves,result){const key=moves.join('|')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
+  let b=new Int8Array(64);const reps=new Map(),log=[];let last=null,over=null;
+  for(let k=0;k<moves.length;k++){const p=k%2,code=moves[k];
+    if(k<2){const r=E.setup(b,p,code);if(!r){over={w:-1,why:'w_bad'};break;}b=r.b;log.push({p,txt:r.toks.join(' ')});last={mv:[],caps:[],setup:true};
+      if(k===1)reps.set(E.bkey(b)+'0',1);continue;}
+    const r=E.turn(b,p,code,reps);if(!r){over={w:-1,why:'w_bad'};break;}
+    b=r.b;const kk=E.bkey(b)+(1-p);reps.set(kk,(reps.get(kk)||0)+1);
+    log.push({p,txt:r.toks.join(' ')});last={mv:r.mv,caps:r.caps};
+    const o=E.outcome(b,p,reps);if(o){over=o;break;}}
+  if(!over&&result)over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
+  memoKey=key;memoVal={st:{b,turn:moves.length%2,n:moves.length,reps},log,last,over};return memoVal;}
+
+// ---------- network (PeerJS) ----------
+// Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
+let role=null;          // 'host' | 'guest' | 'watch'
+let peer=null;
+let view=null;          // public state shown {size,names,first,moves,clock,running,elapsed,result,guestOn,watchers,recvAt}
+let mySeat=-1;
+let ui={},sending=false;resetUi();
+const H={};             // host-only state
+
+function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;
+  const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent=txt;}}
+function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
+function peerOpts(){return {debug:1};}
+function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
+
+// --- host ---
+function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
+  running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
+  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null};}
+// Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
+// colours swapped (the players exchange seats), same time control.
+function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g.size,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
+  if(op==='ask'&&(!rm||rm.st==='no'))g.rematch={from:s,st:'ask'};
+  else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
+  else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
+  else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
+    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.result=null;g.rematch=null;
+    g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
+    mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
+  else return;
+  hostBroadcast();}
+function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});}
+// The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
+function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
+  const r=replay(g.size,g.moves,g.result),absentTurn=!r.over&&r.st.turn!==mySeat,want=!live&&absentTurn;
+  if(want&&!g.paused){if(g.running&&!r.over){const tt=r.st.turn;g.clock[tt]=Math.max(0,g.clock[tt]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
+  else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
+const PID=c=>'arimaa-p2p-'+c;
+const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
+function hostSave(){const g=H.game;LS.set('arimaa-p2p-host',{code:H.code,guestCid:H.guestCid,game:g,elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});}
+function hostReady(s){const g=H.game;if(g.started||g.result||!g.names[0]||!g.names[1])return;g.ready[s]=true;
+  if(g.ready[0]&&g.ready[1]){g.started=true;g.running=true;H.turnStart=Date.now();}hostBroadcast();}
+function hostBroadcast(bump){if(bump)H.game.ver=(H.game.ver||0)+1;hostSyncPause();hostSave();const pub=hostPublic();
+  for(const c of H.conns)if(c.open)c.send({t:'state',game:pub});
+  showState(pub);}
+function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
+  if(saved){Object.assign(H,{code:saved.code,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
+  H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);
+  if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
+  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
+  setHash('host-'+H.code);status(t('st_open'));showGame();
+  const me=newPeer(H.peerId);peer=me;
+  me.on('open',()=>{if(peer!==me)return;fillCodes();hostBroadcast();});
+  me.on('connection',conn=>{if(peer!==me){try{conn.close();}catch(e){}return;}conn.on('data',d=>{if(peer===me)hostOnData(conn,d);});conn.on('close',()=>{if(peer===me)hostDrop(conn);});conn.on('error',()=>{if(peer===me)hostDrop(conn);});});
+  me.on('disconnected',()=>{if(peer!==me)return;status(t('st_lostMm'));setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500);});
+  me.on('error',e=>{if(peer!==me)return;
+    if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
+    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
+function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||LS.get('arimaa-name','')||t('p1');role=null;
+  if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.st.turn]=Math.max(0,pub.clock[r.st.turn]-pub.elapsed);}
+  clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
+function becomeHost(){if(!view)return;LS.del('arimaa-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
+  const rem=remaining(),v=view;
+  H.code=C.code;H.guestCid=null;H.game={size:v.size,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
+    ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0};
+  if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
+  H.turnStart=Date.now();hostStart(null);}
+function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
+function hostOnData(conn,d){if(!d||typeof d!=='object')return;const g=H.game;
+  if(d.t==='hello'){
+    const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
+    if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
+    if(d.role==='play'&&s>=0&&s!==mySeat){
+      if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
+      g.th[s]=th;H.guestCid=d.cid;H.guestConn=conn;conn.seat=s;H.conns.add(conn);if(d.name)g.names[s]=String(d.name).slice(0,24);
+      const o=d.s;if(o&&typeof o==='object'&&o.size===g.size&&Array.isArray(o.moves)&&o.moves.length>g.moves.length&&g.moves.every((x,k)=>o.moves[k]===x)){
+        g.moves=o.moves.slice();g.clock=o.clock.slice();g.result=o.result||null;g.started=!!o.started;g.running=!!o.started;g.paused=true;H.turnStart=Date.now();}
+      conn.send({t:'welcome',role:'guest',seat:s});hostBroadcast();return;}
+    if(d.role==='play'){conn.send({t:'reject',why:'t_refused'});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
+    H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
+  if(conn!==H.guestConn)return;
+  const s=conn.seat;
+  if(d.t==='move')hostMove(s,d.n,d.code,conn);
+  if(d.t==='start')hostReady(s);
+  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
+  if(d.t==='rematch')rematchOp(s,d.op);}
+// the host checks every setup and turn with the rules engine before accepting it
+function legalCode(r,code){if(typeof code!=='string')return false;if(r.st.n<2)return !!E.setup(r.st.b,r.st.turn,code);return !!E.turn(r.st.b,r.st.turn,code,r.st.reps);}
+function hostMove(s,n,code,conn){const g=H.game;if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
+  const r=replay(g.size,g.moves,g.result);if(r.over||r.st.turn!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
+  if(!legalCode(r,code)){conn&&conn.send({t:'nack'});return false;}
+  const now=Date.now();
+  if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
+  g.moves.push(code);g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
+let saveTick=0;
+setInterval(()=>{if(role!=='host'||!H.game)return;if(++saveTick%25===0)hostSave();if(H.game.result||!H.game.running||H.game.paused||!H.game.tc)return;const g=H.game,r=replay(g.size,g.moves,g.result);if(r.over)return;
+  const t=r.st.turn;if(g.clock[t]-(Date.now()-H.turnStart)<=0){g.clock[t]=0;g.result={winner:1-t,reason:'time'};hostBroadcast();}},200);
+
+// --- guest / spectator ---
+let C={};   // {code,cid,name,conn,retry}
+function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4){$('joinErr').textContent=t('codeLen');return;}
+  clearTimeout(C.t);clearTimeout(C.ct);C={code,host:PID(code),play:!asWatch,name:nm,cid:MYID,retry:0,lostSince:0};
+  $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+code);
+  role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));
+  const sv=LS.get('arimaa-p2p-guest',null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
+  if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
+  const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
+  me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view)status(t('st_noTable'));}
+    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
+  me.on('disconnected',()=>setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500));}
+function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.connect(C.host,{reliable:true});C.conn=conn;clearTimeout(C.ct);
+  C.ct=setTimeout(()=>{if(C.conn===conn&&!conn.open)clientLost();},7000);
+  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,s:mySeat>=0&&view?view:null});});
+  conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
+  conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
+function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;
+  if(view&&!view.paused&&view.started&&!view.result){const r=replay(view.size,view.moves,view.result);
+    if(!r.over&&r.st.turn!==mySeat){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();}renderGame();}
+  clientRetry();}
+function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.stop)return;
+  if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
+  if(peer&&peer.open)clientConnect();else{if(peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}clientLost();}},3500);}
+function clientOnData(d){if(!d||typeof d!=='object')return;
+  if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);}
+  else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
+  else if(d.t==='state'){sending=false;C.lostSince=0;showState(d.game);}
+  else if(d.t==='nack'){sending=false;status(t('st_nack'));resetUi();renderGame();}}
+
+// ---------- game view ----------
+function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;}
+function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('status').hidden=false;$('joinErr').textContent=msg||'';status(msg||t('st_home'));}
+function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'',prevSeat=ui.seat;
+  view={...g,recvAt:Date.now()};
+  if(role==='guest'&&mySeat>=0){if(g.result)LS.del('arimaa-p2p-guest');else LS.set('arimaa-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
+  if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result)||prevSeat!==mySeat)resetUi();
+  renderGame();}
+// ui: steps of the turn being prepared (local preview, sent only when the turn is finished), current selection, setup arrangement
+function resetUi(){ui={acts:[],sel:-1,enemy:-1,via:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1,seat:mySeat};}
+function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.cand=[];ui.candKind='';}
+function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
+const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
+function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st.turn===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
+// position of the turn being prepared
+function preview(r){let b=r.st.b,used=0;const caps=[],toks=[],mv=[];for(const a of ui.acts){const x=E.apply(b,a);b=x.b;used+=x.n;caps.push(...x.caps);toks.push(...x.toks);mv.push(...x.mv);}return {b,used,caps,toks,mv};}
+function endState(r,pv){if(!pv.used)return 'none';if(E.bkey(pv.b)===E.bkey(r.st.b))return 'same';if((r.st.reps.get(E.bkey(pv.b)+(1-r.st.turn))||0)>=2)return 'rep';return 'ok';}
+function setupBoard(r){if(!ui.setup)ui.setup=E.DEFAULT[mySeat].split('');const b=r.st.b.slice();E.SETUP_SQ[mySeat].forEach((i,k)=>{b[i]=(E.LET.indexOf(ui.setup[k])+1)*E.sgn(mySeat);});return b;}
+
+// Navigation through the moves: for everyone once the game is over, for spectators at any time.
+// navAt=null follows the game live; otherwise the board shows the position after navAt moves.
+let navAt=null,navKey=null,navVal=null;
+const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch'));
+function navPos(k){const key=view.moves.slice(0,k).join('|');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view.size,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
+function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
+function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.result);
+  if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
+  const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
+  const mine=navAt===null&&isMyTurn(r),setupPhase=r.st.n<2;
+  const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
+  const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  let pv=null,es='none';
+  if(navAt!==null)drawBoard({real:d.st.b,shown:d.st.b,last:d.last});
+  else if(mine&&setupPhase)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
+  else if(mine){pv=preview(r);es=endState(r,pv);drawBoard({real:r.st.b,shown:pv.b,pv,hl:ui.pending?null:highlights(pv)});}
+  else drawBoard({real:r.st.b,shown:r.st.b,last:r.last});
+  {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
+    if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
+  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
+  else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
+  else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
+  else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
+  else if(ui.pending||sending)quiet();
+  else if(mine&&setupPhase)status(t('st_setup'),'turn');
+  else if(mine){if(ui.cand.length)status(t(ui.candKind==='push'?'st_pusher':'st_pullTo'),'turn');else if(ui.enemy>=0)status(t('st_enemyTo'),'turn');
+    else if(es==='same')status(t('st_same'));else if(es==='rep')status(t('st_rep3'));else quiet();}
+  else if(setupPhase&&navAt===null)status(t('st_oppSetup',{n:nm(r.st.turn)}));
+  else quiet();
+  const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
+  const host=wide?$('playersSide'):$('playersTop');host.textContent='';(wide?$('playersTop'):$('playersSide')).textContent='';
+  const pad=n=>String(n).padStart(2,' ');
+  for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
+    const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="pc c${p}" title="${t(p?'silver':'gold')}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
+    const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
+    const ty=document.createElement('div');ty.className='tally';const placed=d.st.n>p;
+    ty.innerHTML=`<span title="${t('t_pieces')}">${pad(placed?E.pieces(d.st.b,p):16)}</span><span title="${t('t_rabbits')}">${pad(placed?E.rabbits(d.st.b,p):8)}</span>`;
+    el.append(h,ck,ty);host.appendChild(el);}
+  tick();
+  $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=ui.pendingTxt||'';
+  $('setupCard').hidden=!(mine&&setupPhase);
+  $('turnCard').hidden=!(mine&&!setupPhase&&!ui.pending);
+  if(pv){$('stepCnt').textContent=t('steps',{k:pv.used});$('undoStep').disabled=!ui.acts.length;$('endTurn').disabled=es!=='ok';}
+  $('myCard').hidden=!(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started);
+  const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
+  if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
+    $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+    if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}}$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
+  $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
+  $('endCard').hidden=!r.over;
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'),rm=view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
+    $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
+    $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
+  const ol=$('log');ol.textContent='';
+  const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
+  r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+    const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
+    const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);ol.appendChild(li);});
+  const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
+let audioCtx=null,lastMine=false;
+document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
+let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('arimaa-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
+function sndSave(){try{localStorage.setItem('arimaa-sound',JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}
+function sndBind(){const c=document.getElementById('sndOn'),r=document.getElementById('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
+  c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
+  r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
+function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
+let cdSec=null;
+function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
+  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
+  cdSec=s;}
+function tick(){if(!view||!view.tc)return;const r=replay(view.size,view.moves,view.result),rem=remaining();
+  countdown(mySeat>=0&&view.running&&!r.over&&r.st.turn===mySeat,rem[Math.max(0,mySeat)]);
+  for(const p of [0,1]){const el=$('clock'+p);if(!el)continue;el.textContent=fmt(rem[p]);
+    const run=view.running&&!r.over&&r.st.turn===p;el.className='clock '+(run?'run':'idle')+(rem[p]<60000?' low':'');}}
+setInterval(tick,250);
+window.addEventListener('resize',()=>{if(view)renderGame();});
+
+// ---------- input ----------
+// Squares to highlight on the preview position for the current selection state
+function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),sel:-1};
+  if(ui.cand.length){ui.cand.forEach(o=>hl.cand.add(o.sq));hl.sel=ui.enemy;return hl;}
+  if(ui.enemy>=0){hl.sel=ui.enemy;for(const a of acts){if(a.k==='P'&&a.e===ui.enemy)hl.dest.add(a.to);if(a.k==='L'&&a.e===ui.enemy)hl.dest.add(a.a);}return hl;}
+  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k!=='m'&&(ui.sel<0||a.a===ui.sel))hl.enemy.add(a.e);
+    if(ui.sel>=0&&a.k==='m'&&a.f===ui.sel)hl.dest.add(a.t);}
+  hl.sel=ui.sel;return hl;}
+function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+  if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
+    if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;tone(520,.06,.03);}
+    renderGame();return;}
+  const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
+  const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
+  if(ui.cand.length){const c=ui.cand.find(o=>o.sq===i);if(c){doAct(c.act);return;}clearSel();}
+  else if(ui.enemy>=0){
+    const ps=acts.filter(a=>a.k==='P'&&a.e===ui.enemy&&a.to===i),ls=acts.filter(a=>a.k==='L'&&a.e===ui.enemy&&a.a===i);
+    const opts=ps.length?ps.map(a=>({sq:a.a,act:a})):ls.map(a=>({sq:a.to,act:a}));
+    if(opts.length){const v=ps.length?opts.find(o=>o.sq===ui.via):null;if(opts.length===1||v){doAct((v||opts[0]).act);return;}
+      ui.cand=opts;ui.candKind=ps.length?'push':'pull';renderGame();return;}
+    const was=ui.enemy;clearSel();if(i===was){renderGame();return;}}
+  else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
+    const via=ui.sel;clearSel();if(i===via){renderGame();return;}
+    if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===via)){ui.enemy=i;ui.via=via;renderGame();return;}}
+  if(mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i)){ui.sel=i;renderGame();return;}
+  if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i)){ui.enemy=i;ui.via=-1;renderGame();return;}
+  renderGame();}
+function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();}
+function endTurn(){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
+  const pv=preview(r);if(endState(r,pv)!=='ok')return;clearSel();const code=ui.acts.map(E.code).join(',');
+  if($('needConfirm').checked){ui.pending=code;ui.pendingTxt=pv.toks.join(' ');renderGame();}else send(code);}
+function send(code){if(sending)return;ui.pending=null;const n=view.moves.length;
+  if(role==='host'){hostMove(mySeat,n,code,null);return;}
+  if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
+  sending=true;C.conn.send({t:'move',n,code});renderGame();}
+$('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
+$('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
+$('undoStep').onclick=()=>{if(ui.pending)return;clearSel();ui.acts.pop();renderGame();};
+$('endTurn').onclick=endTurn;
+$('setupReset').onclick=()=>{if(mySeat<0)return;ui.setup=E.DEFAULT[mySeat].split('');ui.swap=-1;renderGame();};
+$('setupGo').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n>=2)return;setupBoard(r);send('S'+ui.setup.join(''));};
+$('needConfirm').checked=LS.get('arimaa-confirm',true);
+$('needConfirm').onchange=e=>LS.set('arimaa-confirm',e.target.checked);
+$('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
+$('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
+$('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
+  if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
+$('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
+$('newGame').onclick=()=>rmSend('ask');
+$('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
+$('navFirst').onclick=()=>navGo(0);
+$('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
+$('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
+$('navLast').onclick=()=>navGo(null);
+document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
+  const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
+// Home: leave the game and come back to Arimaa's own start page
+$('homeBtn').onclick=()=>{C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
+$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickSq(+g.dataset.i);});
+
+// ---------- invitation codes ----------
+function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
+  $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
+  if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=base+'#watch-'+code;}}
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
+  const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
+  try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
+
+// ---------- start screen ----------
+$('hName').value=LS.get('arimaa-name','');$('jName').value=LS.get('arimaa-name','');
+$('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  const nm=$('hName').value.trim()||t('p1');LS.set('arimaa-name',nm);
+  const first=$('cFirst').value==='me'?'host':'guest';const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('arimaa-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
+  const names=first==='host'?[nm,'']:['',nm];
+  const th=[null,null];th[first==='host'?0:1]=hh(MYID);
+  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
+  H.turnStart=Date.now();hostStart(null);});
+function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  const nm=$('jName').value.trim().slice(0,24);if(nm)LS.set('arimaa-name',nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
+$('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
+$('jWatch').onclick=()=>joinClick(true);
+$('resumeBtn').onclick=()=>{const s=LS.get('arimaa-p2p-host',null);if(s&&s.game&&!s.game.result){hostStart(s);return;}const sg=LS.get('arimaa-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||LS.get('arimaa-name','')||t('p2'),false);};
+function exportCode(){const v=view,c=remaining();const p={size:v.size,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
+  return 'ARIMAA1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
+function importCode(t){t=String(t||'').replace(/\s+/g,'');if(t.indexOf('ARIMAA1.')!==0)throw 0;
+  const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(8)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;p.size=SIZE;return p;}
+$('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=false;inp.select();
+  try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('rcCopy'),1500);},()=>{});}catch(e){}};
+$('rForm').addEventListener('submit',e=>{e.preventDefault();let p;try{p=importCode($('rIn').value);}catch(x){$('joinErr').textContent=t('badResume');$('rSeats').innerHTML='';return;}
+  const box=$('rSeats');box.innerHTML=[0,1].map(k=>`<button type="button" class="primary" data-rseat="${k}">${t('iam',{n:String(p.names[k]||t(k?'p2':'p1')).replace(/[&<>"']/g,'')})}</button>`).join('');
+  box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(+b.dataset.rseat,p));});
+function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  const th=[null,null];th[seat]=hh(MYID);
+  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
+    started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
+function init(){drawBoard({real:new Int8Array(64),shown:new Int8Array(64)});
+  const saved=LS.get('arimaa-p2p-host',null),sg=LS.get('arimaa-p2p-guest',null);
+  if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
+  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeTxt').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
+  status(t('st_home'));
+  const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
+  if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
+  $('jCode').value=m[2];
+  if(m[1]==='join'&&!LS.get('arimaa-name','')){$('joinErr').textContent=t('invited');$('jName').focus();return;}
+  joinClick(m[1]==='watch');}
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg',S=60;
+const X=i=>(i&7)*S,Y=i=>(7-(i>>3))*S;
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'pointer-events':'none'},g);if(op!==undefined)gr.setAttribute('opacity',op);
+  el('circle',{cx,cy,r:23,fill:gold?'var(--g1)':'var(--s1)',stroke:gold?'var(--g3)':'var(--s3)','stroke-width':2},gr);
+  const tx=el('text',{x:cx,y:cy+9,'text-anchor':'middle',class:'pl',fill:gold?'var(--gk)':'var(--sk)'},gr);tx.textContent=E.LET[Math.abs(v)-1];
+  const ti=el('title',{},gr);ti.textContent=t(gold?'gold':'silver')+' — '+I18N[lang].pn[Math.abs(v)-1];}
+const ring=(g,i,a)=>el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:a.r||27,fill:'none',stroke:a.c||'var(--accent)','stroke-width':a.w||3,...(a.dash?{'stroke-dasharray':a.dash}:{}),...(a.cls?{class:a.cls}:{}),'pointer-events':'none'},g);
+// o: {real, shown, last, pv (turn preview), hl (highlights), setup}
+function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,shown=o.shown;
+  for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
+    el('rect',{x,y,width:S,height:S,fill:trap?'var(--trap)':'var(--sq)',stroke:'var(--gridl)','stroke-width':1.2},g);
+    if(trap){el('rect',{x:x+9,y:y+9,width:S-18,height:S-18,rx:4,fill:'none',stroke:'var(--trapk)','stroke-width':1.6,'stroke-dasharray':'5 4',opacity:.8},g);}}
+  for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent='abcdefgh'[c];}
+  for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(r+1);}
+  const lay=el('g',{'pointer-events':'none'},svg);
+  if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
+    for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
+      if(rv&&v!==rv)piece(lay,i,rv,.25);
+      if(v&&v===rv)piece(lay,i,v);
+      else if(v){piece(lay,i,v,.72);ring(lay,i,{w:2.5,dash:'4 4'});}}
+    for(const [c,w] of o.pv.caps)if(!shown[c]){if(real[c]!==w)piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'4 4'});}}
+  else{for(let i=0;i<64;i++)if(shown[i])piece(lay,i,shown[i]);
+    const L=o.last;if(L&&L.mv){const ends=new Set(L.mv.map(m=>m[1])),starts=new Set(L.mv.map(m=>m[0]));
+      for(const s of starts)if(!shown[s])el('circle',{cx:X(s)+S/2,cy:Y(s)+S/2,r:5,fill:'var(--accent)',opacity:.7},lay);
+      for(const e of ends)if(shown[e])ring(lay,e,{w:3});
+      for(const [c,w] of L.caps){if(!shown[c])piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}}}
+  if(o.setup){for(const i of E.SETUP_SQ[mySeat])ring(lay,i,{w:1.5,r:26,c:'var(--accent)'});if(ui.swap>=0)ring(lay,E.SETUP_SQ[mySeat][ui.swap],{w:4,r:28});}
+  const hl=o.hl;
+  if(hl){for(const i of hl.own)if(i!==hl.sel)ring(lay,i,{w:1.6,r:26});
+    for(const i of hl.enemy)ring(lay,i,{w:2,r:26,dash:'2 3'});
+    if(hl.sel>=0)ring(lay,hl.sel,{w:4,r:28});
+    for(const i of hl.dest){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}
+    for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}}
+init();sndBind();
+</script>
+</body></html>
