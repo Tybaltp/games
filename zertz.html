@@ -66,7 +66,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .home{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;width:100%}
 @media (min-width:760px){.home{max-width:880px;display:grid;grid-template-columns:1fr 1fr;align-items:start}
-  .home > #resumeCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
+  .home > #resumeCard,.home > #aiCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
 .home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
 .home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
 .home details{padding:10px 14px}
@@ -113,6 +113,8 @@ a{color:inherit}
 .empty{color:var(--muted);margin:0}
 .txt{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
 #watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
+.lvl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
+.lvl select{flex:1;min-width:0}
 </style>
 </head><body>
 <div class="wrap">
@@ -141,6 +143,15 @@ a{color:inherit}
       </form>
       <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
     </div>
+    <div class="card" id="aiCard">
+      <h2 data-i18n="vsAI">Against the computer</h2>
+      <form class="form" id="aiForm">
+        <label for="aSize"><span data-i18n="board">Board</span><select id="aSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <label for="aFirst"><span data-i18n="firstIs">First player</span><select id="aFirst"><option value="me" selected data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <button type="submit" data-i18n="play">Play</button>
+      </form>
+    </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="ZERTZ1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
@@ -163,6 +174,11 @@ a{color:inherit}
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button></div>
     <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <div class="confirm"><button type="button" id="undoBtn" data-i18n="undo">Undo move</button><button type="button" id="hintBtn" data-i18n="hint">Hint</button></div>
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
       <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
@@ -299,6 +315,10 @@ const BASE=1200000,INC=10000,DEF_TC={base:BASE,inc:INC};
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
 const GOAL=[4,5,6];
+// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, time, random choice among near-best moves)
+const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,time:1500,noise:150},fort:{depth:3,fb:3,time:3000}};
+const HINT=LEVELS.fort;
+let level=(()=>{try{return JSON.parse(localStorage.getItem('zertz-level'));}catch(e){return null;}})();if(!LEVELS[level])level='moyen';
 const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
@@ -324,6 +344,11 @@ const I18N={fr:{
  st_oppGoneRun:"Adversaire déconnecté (sa pendule tourne). ",st_oppGone:"Adversaire déconnecté.",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance).",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour annuler.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
+ vsAI:"Contre l'ordinateur",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",
+ st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",hint_move:"Suggestion : {m}.",
+ ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",
+ ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",
+ ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",
  w_g0:"4 billes blanches",w_g1:"5 billes grises",w_g2:"6 billes noires",w_each:"3 billes de chaque couleur",w_nomove:"l'adversaire n'a plus de coup",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
  rules:`<summary>Règles en bref</summary><ul>
  <li>Les billes sont communes aux deux joueurs. Si une prise est possible, elle est obligatoire.</li>
@@ -357,6 +382,11 @@ const I18N={fr:{
  st_oppGoneRun:"Opponent disconnected (their clock is running). ",st_oppGone:"Opponent disconnected.",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted).",st_remove:"Remove a free ring (marked in red), or click the marble again to cancel.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
+ vsAI:"Against the computer",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",
+ st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",hint_move:"Hint: {m}.",
+ ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",
+ ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",
+ ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",
  w_g0:"4 white marbles",w_g1:"5 grey marbles",w_g2:"6 black marbles",w_each:"3 marbles of each colour",w_nomove:"the opponent has no move left",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
  rules:`<summary>Rules in brief</summary><ul>
  <li>Marbles are shared by both players. If a capture is possible, it is mandatory.</li>
@@ -374,7 +404,8 @@ function applyStatic(){document.documentElement.lang=lang;
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
   document.getElementById('rules').innerHTML=t('rules');
   const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('zertz-tc'));}catch(e){return null;}})()||'20+10';
-  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
+  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');
+  for(const id of ['aLevel','gLevel']){const s=document.getElementById(id);s.innerHTML=Object.keys(LEVELS).map(k=>`<option value="${k}">${t('lv_'+k)}</option>`).join('');s.value=level;}}
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status(t('st_home'));});
 applyStatic();
 const CN=k=>t('c'+k);
@@ -541,8 +572,8 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st[TURN]===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
   if(mine){const cols=E.colors(r.st);if(!cols.includes(ui.color))ui.color=cols[0]??0;}
   const shown=ui.pending?E.apply(r.st,ui.pending):r.st;
-  drawBoard(shown,legal,mine&&!ui.pending,ui.pending?{mv:ui.pending,removed:diff(r.st,shown),preview:true}:r.last);
-  const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  drawBoard(shown,legal,mine&&!ui.pending&&busy!=='hint',ui.pending?{mv:ui.pending,removed:diff(r.st,shown),preview:true}:r.last);
+  const nm=s=>role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const oppGone=mySeat>=0&&!r.over&&(role==='host'?!view.guestOn:false);
   const caps=legal.length&&legal[0].t===1;
   if(r.over){const why=t(r.over.why);status(r.over.w<0?t('interrupted',{why}):r.over.w===mySeat?t('youWin',{why}):t('wins',{n:nm(r.over.w),why}),'win');}
@@ -550,6 +581,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
   else if(ui.pending||sending)quiet();
+  else if(role==='ai'&&busy)status(t(busy==='hint'?'hintBusy':'st_aiThinking'));
   else if(mine){const h=caps?(ui.path?t('st_capPath'):t('st_capStart')):ui.at!==null?t('st_remove'):'';
     const msg=(oppGone?t('st_oppGoneRun'):'')+h;if(msg)status(msg,'turn');else quiet();}
   else if(oppGone)status(t('st_oppGone'));else quiet();
@@ -571,13 +603,16 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
     b.disabled=!(mine&&!ui.pending&&!caps&&cols.includes(k));b.onclick=()=>{ui.color=k;ui.at=null;renderGame();};cb.appendChild(b);}
   $('colorhint').textContent=mySeat<0?'':fromCap?t('h_empty'):caps&&mine?t('h_capt'):t('h_choose');
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending);
-  $('myCard').hidden=!(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started);
+  $('myCard').hidden=!(role==='ai'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('aiBox').hidden=role!=='ai';$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  if(role==='ai'){$('undoBtn').disabled=!r.log.some(e=>e.p===mySeat);$('hintBtn').disabled=!mine||!!busy||!!ui.pending;
+    $('aiInfo').textContent=hintMv?t('hint_move',{m:txtOf(hintMv)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  $('inviteBox').hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
+  $('inviteBox').hidden=role==='ai'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!(role==='host'&&r.over);
+  $('endCard').hidden=!((role==='host'||role==='ai')&&r.over);
   const ol=$('log');ol.textContent='';
   r.log.forEach((e,j)=>{const li=document.createElement('li');const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
@@ -618,6 +653,7 @@ function clickRing(i){if(!view||ui.pending)return;const r=replay(view.size,view.
 function choose(mv){ui.at=null;ui.path=null;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
+  if(role==='ai'){aiPlay(code);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
   sending=true;C.conn.send({t:'move',n,code});renderGame();}
 $('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
@@ -627,10 +663,43 @@ $('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
+  if(role==='ai'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{LS.del('zertz-p2p-host');location.hash='';location.reload();};
+$('newGame').onclick=()=>{if(role==='ai'){startAI(view.size,view.first==='ai'?1-mySeat:mySeat);return;}LS.del('zertz-p2p-host');location.hash='';location.reload();};
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
+
+// ---------- computer opponent ----------
+// The search runs in a worker built from the engine source, so the page stays responsive.
+let worker=null,reqId=0,cbs={},busy='',aiInfo=null,hintMv=null;
+function makeWorker(){const src=ZertzEngine.toString()+`
+const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
+self.onmessage=e=>{const m=e.data,r=ENG[m.size].search(Int8Array.from(m.st),m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,fb:r.fb}});};`;
+  worker=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));worker.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data.r);};}
+function stopAI(){if(worker)worker.terminate();worker=null;cbs={};busy='';}
+function ask(st,opt,cb){const msg={size:view.size,st:Array.from(st),opt};
+  try{if(!worker)makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
+  catch(e){worker=null;setTimeout(()=>cb(E.search(st,opt)),30);}}   // no worker (some file:// setups): search on the page
+function startAI(size,seat){stopAI();role='ai';mySeat=seat;C.stop=true;setHash('');
+  view={size,tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
+  ui={color:0,at:null,path:null,pending:null};aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
+function aiPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);ui.at=null;ui.path=null;ui.pending=null;hintMv=null;aiInfo=null;renderGame();aiStep();}
+function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.size,view.moves,view.result);if(r.over||r.st[TURN]===mySeat)return;
+  const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
+  ask(r.st,LEVELS[level],res=>{const wait=Math.max(0,400-(Date.now()-t0));setTimeout(()=>{if(role!=='ai'||view.moves.length!==n||busy!=='ai')return;busy='';
+    if(!res||!res.move){renderGame();return;}aiInfo=evalInfo(res);view.moves=view.moves.concat([enc(res.move)]);renderGame();},wait);});}
+function evalInfo(r){const s=r.score;if(!r.depth&&!r.fb)return {k:'ai_forced'};if(s>50000)return {k:'ai_win'};if(s<-50000)return {k:'ai_lost'};
+  return {k:Math.abs(s)<150?'ai_eq':s>0?(s>800?'ai_much':'ai_better'):(s<-800?'ai_muchWorse':'ai_worse'),d:r.depth};}
+$('undoBtn').onclick=()=>{if(role!=='ai')return;stopAI();const m=view.moves.slice();
+  // back to the last position where it was my turn, before my last move
+  const turnAt=k=>replay(view.size,m.slice(0,k),null).st[TURN];let k=m.length;
+  while(k>0){k--;if(turnAt(k)===mySeat)break;}
+  if(turnAt(k)!==mySeat)k=0;
+  view.moves=m.slice(0,k);view.result=null;ui={color:ui.color,at:null,path:null,pending:null};aiInfo=null;hintMv=null;renderGame();aiStep();};
+$('hintBtn').onclick=()=>{if(role!=='ai'||busy)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;const n=view.moves.length;busy='hint';renderGame();
+  ask(r.st,HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move){hintMv=res.move;if(res.move.t===0)ui.color=res.move.c;}renderGame();});};
+for(const id of ['aLevel','gLevel'])$(id).addEventListener('change',e=>{level=e.target.value;LS.set('zertz-level',level);$('aLevel').value=level;$('gLevel').value=level;});
+$('aiForm').addEventListener('submit',e=>{e.preventDefault();startAI(+$('aSize').value,$('aFirst').value==='me'?0:1);});
 
 // ---------- invitation codes ----------
 function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
@@ -699,6 +768,7 @@ function drawBoard(st,legal,interactive,last){const svg=$('svg');svg.textContent
     if(c)marble(g,x,y,c-1,last&&last.preview&&lm.t===0&&lm.at===i?.8:0);
     else if(interactive&&!caps&&ui.at===i)marble(g,x,y,ui.color,.85);
     if(lm&&lm.t===0&&lm.at===i&&c)el('circle',{cx:x,cy:y,r:27,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':last.preview?'4 4':''},g);
+    if(hintMv&&interactive&&(hintMv.t===1?hintMv.path[0]===i:hintMv.at===i))el('circle',{cx:x,cy:y,r:34,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'5 5'},g);
     if(starters.has(i))el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
     if(ui.path&&ui.path[ui.path.length-1]===i)el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':5},g);}
   const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};
