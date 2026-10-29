@@ -203,7 +203,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm" id="startBtns"></div></div>
     <div class="card" id="pieCard" hidden><h2 data-i18n="pieTtl">Your choice</h2><div class="confirm"><button type="button" class="primary" id="b-light" data-i18n="takeLight">Take Light</button><button type="button" id="b-dark" data-i18n="playDark">Play Dark</button></div></div>
     <div class="card" id="moveCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm" id="moveBtns"></div></div>
-    <div class="card" id="endCard" hidden><div class="confirm"><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button><button type="button" id="homeBtn" data-i18n="home">Home</button></div></div>
+    <div class="card" id="endCard" hidden><p class="hint" id="endTxt" hidden></p><div class="confirm" id="endBtns"></div></div>
     <div class="card" id="myCard" hidden>
       <div class="confirm" id="passBox" hidden><button type="button" id="b-pass" data-i18n="pass">Pass</button></div>
       <label class="toggle" for="hints"><input type="checkbox" id="hints" checked> <span data-i18n="hints">Show playable squares</span></label>
@@ -342,6 +342,8 @@ const I18N={fr:{
  connected:"{n} connecté(s)",
  start:"Départ",startBtn:"Démarrer la partie",waitingOpp:"En attente de l'adversaire…",leaveSeat:"Quitter la place",ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",
  pieTtl:"Votre choix",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",
+ rematch:"Rejouer",offerSent:"Proposition envoyée.",offerFrom:"{n} propose une nouvelle partie, couleurs inversées.",offerRefused:"{n} a refusé.",accept:"Accepter",decline:"Refuser",withdraw:"Annuler",
+ lg_rematch:"Nouvelle partie : {n} ouvre.",
  nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
  yourMove:"Votre coup",confirmMv:"Confirmer le coup",clear:"Effacer",endTurn:"Finir le tour",newGame:"Nouvelle partie",
  pass:"Passer",passEnd:"Passer et finir",hints:"Montrer les cases jouables",needConfirm:"Confirmer chaque coup avant l'envoi",sounds:"Sons",
@@ -391,6 +393,8 @@ const I18N={fr:{
  connected:"{n} connected",
  start:"Start",startBtn:"Start the game",waitingOpp:"Waiting for your opponent…",leaveSeat:"Leave seat",ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",
  pieTtl:"Your choice",takeLight:"Take Light",playDark:"Play Dark",
+ rematch:"Rematch",offerSent:"Offer sent.",offerFrom:"{n} offers a new game, colours swapped.",offerRefused:"{n} declined.",accept:"Accept",decline:"Decline",withdraw:"Withdraw",
+ lg_rematch:"New game: {n} opens.",
  nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
  yourMove:"Your move",confirmMv:"Confirm move",clear:"Clear",endTurn:"End turn",newGame:"New game",
  pass:"Pass",passEnd:"Pass and end",hints:"Show playable squares",needConfirm:"Confirm each move before sending",sounds:"Sounds",
@@ -551,6 +555,7 @@ function persist(){
   store.set('pdd-last',JSON.stringify({code:d.code,host:!!net.host}));
 }
 function applyDoc(d){
+  if((d.game||1)!==net.gameNo){ net.gameNo=d.game||1; navAt=null; }
   net.data=d; net.gone=false; net.sending=false; clearTimeout(net.sendTimer);
   const key=d.moveNo+'/'+(d.epoch||0);
   if(key!==net.obsKey){ if(d.moveNo!==net.lastMove){ net.lastMove=d.moveNo; inp=newInput(); } net.obsKey=key; net.obsAt=Date.now(); }
@@ -608,12 +613,31 @@ function hostApply(msg,fromId){
       d.log.push({p:0,k:'lg_start',v:{n:nickOf(d,'A')}}); }
     broadcast();
   }
+  // new game after the end: one player offers, the other accepts or declines; the offerer may withdraw
+  else if(msg.t==='offer'||msg.t==='offerCancel'||msg.t==='offerReply'){
+    const d=net.doc, seat=d.seats.A?.id===msg.id?'A':d.seats.B?.id===msg.id?'B':null;
+    if(!seat||d.phase!=='over'){ broadcast(); return; }
+    if(msg.t==='offer'){ d.offer={by:seat}; d.refusal=null; }
+    else if(msg.t==='offerCancel'){ if(d.offer&&d.offer.by===seat) d.offer=null; }
+    else if(d.offer&&d.offer.by!==seat){
+      if(msg.accept) rematch(d); else { d.offer=null; d.refusal={by:seat}; }
+    }
+    broadcast();
+  }
   else if(msg.t==='leave'){
     const d=net.doc; if(d.phase!=='waiting'){ broadcast(); return; }
     for(const k of ['A','B']) if(d.seats[k]?.id===msg.id) d.seats[k]=null;
     for(const k of ['A','B']) if(d.seats[k]) d.seats[k].ready=false;
     broadcast();
   }
+}
+// Same code, same connections, same two players. Roles swap: the player who placed the opening light tiles
+// now picks the colour, and the other one opens. Same time control, clocks back to the start; the game starts at once.
+function rematch(d){
+  const b=tcOf(d)?tcOf(d).base:0, A=d.seats.B, B=d.seats.A;
+  Object.assign(d,{seats:{A:{...A,ready:true},B:{...B,ready:true}},colorA:null,phase:'opening',cells:Array(NN).fill(0),bridges:[],toMove:1,finalTurn:false,
+    last:null,clock:{A:b,B:b},turnSeat:'A',moveNo:d.moveNo+1,epoch:(d.epoch||0)+1,paused:false,result:null,offer:null,refusal:null,game:(d.game||1)+1});
+  d.log=[{p:0,k:'lg_rematch',v:{n:A.nick}}];
 }
 function hostMsg(conn,m){
   if(m.t==='hello'){
@@ -982,7 +1006,7 @@ function renderPanel(){
       :(inp.oneLeft?`<button type="button" class="primary" id="b-one">${esc(t('endTurn'))}</button>`:'')+`<button type="button" id="b-cancel">${esc(t('clear'))}</button>`;
     const on=(id,f)=>{const el=$(id); if(el) el.onclick=f;};
     on('b-ok',()=>{ const m=inp.awaiting; inp.awaiting=null; commitInput(m); }); on('b-cancel',cancelInput); on('b-one',()=>finishInput({type:'t',cells:inp.draft.slice()})); }
-  $('endCard').hidden=!(inGame&&d&&d.phase==='over');
+  $('endCard').hidden=!(inGame&&d&&d.phase==='over'); if(!$('endCard').hidden) renderEnd(d,seat);
   const live=!!(d&&seat&&ACTIVE.includes(d.phase));
   $('myCard').hidden=!live;
   if(live){ const canP=d.phase==='play'&&myTurn&&!inp.awaiting&&!inp.draft.length&&!inp.bridge&&canPass(net.st,colorOfSeat(d,seat));
@@ -994,6 +1018,24 @@ function renderPanel(){
 }
 function renderAll(){ renderBoard(); renderPanel(); }
 
+/* ---------- end of game: new game offer, home ---------- */
+function oppReachable(d,seat){ const id=d.seats?.[seat==='A'?'B':'A']?.id; if(!id) return false;
+  return net.host?presentIds().has(id):!!(net.conn&&net.conn.open&&!net.lost); }
+function renderEnd(d,seat){
+  const o=seat==='A'?'B':'A', off=d.offer, b=(id,k,cls,dis)=>`<button type="button" id="${id}"${cls?` class="${cls}"`:''}${dis?' disabled':''}>${esc(t(k))}</button>`;
+  let txt='', btns='';
+  if(seat){
+    if(off&&off.by===seat){ txt=t('offerSent'); btns=b('offerCancel','withdraw'); }
+    else if(off){ txt=t('offerFrom',{n:nickOf(d,o)}); btns=b('offerYes','accept','primary')+b('offerNo','decline'); }
+    else { if(d.refusal&&d.refusal.by===o) txt=t('offerRefused',{n:nickOf(d,o)}); btns=b('newGame','rematch','primary',net.sending||!oppReachable(d,seat)); }
+  }
+  btns+=b('homeBtn','home');
+  $('endTxt').textContent=txt; $('endTxt').hidden=!txt; $('endBtns').innerHTML=btns;
+  const on=(id,f)=>{const el=$(id); if(el) el.onclick=f;};
+  on('newGame',()=>send({t:'offer',id:net.myId})); on('offerCancel',()=>send({t:'offerCancel',id:net.myId}));
+  on('offerYes',()=>send({t:'offerReply',id:net.myId,accept:true})); on('offerNo',()=>send({t:'offerReply',id:net.myId,accept:false}));
+  on('homeBtn',()=>{ closeNet(); showLanding(); });
+}
 /* ---------- invitation ---------- */
 function fillCodes(code,guest,d){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
   $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
@@ -1023,8 +1065,6 @@ $('b-pass').onclick=()=>netPass(false);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;netResign();};
-$('homeBtn').onclick=()=>{ closeNet(); showLanding(); };
-$('newGame').onclick=()=>{ if(net.data&&net.data.code){ store.del(saveKey(net.data.code)); store.del('pdd-last'); } closeNet(); showLanding(); };
 
 /* ---------- landing ---------- */
 let homeMsg={k:'st_home',err:false};

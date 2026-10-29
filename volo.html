@@ -178,7 +178,13 @@ a{color:inherit}
     <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
     <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancelMove">Cancel the move</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
-    <div class="card" id="endCard" hidden><div class="confirm"><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button><button type="button" id="homeBtn" data-i18n="home">Home</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
     <div class="card" id="myCard" hidden>
       <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
       <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
@@ -285,7 +291,7 @@ function VoloEngine(){
 const SIZE=120;
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18N={fr:{
- nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
+ nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",orangeIs:"Orange (commence)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
@@ -320,7 +326,7 @@ const I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`
 },en:{
- nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
+ nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",orangeIs:"Orange (plays first)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
@@ -417,7 +423,20 @@ function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
 // --- host ---
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
   running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
-  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0};}
+  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null};}
+// Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
+// colours swapped (the players exchange seats), same time control.
+function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g.size,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
+  if(op==='ask'&&(!rm||rm.st==='no'))g.rematch={from:s,st:'ask'};
+  else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
+  else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
+  else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
+    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.result=null;g.rematch=null;
+    g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
+    mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
+  else return;
+  hostBroadcast();}
+function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
   const r=replay(g.size,g.moves,g.result),absentTurn=!r.over&&r.st[TURN]!==mySeat,want=!live&&absentTurn;
@@ -471,7 +490,8 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;const g=H.game;
   const s=conn.seat;
   if(d.t==='move')hostMove(s,d.n,d.code,conn);
   if(d.t==='start')hostReady(s);
-  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}}
+  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
+  if(d.t==='rematch')rematchOp(s,d.op);}
 function hostMove(s,n,code,conn){const g=H.game;if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
   const r=replay(g.size,g.moves,g.result);if(r.over||r.st[TURN]!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
   const mv=E.gen(r.st).find(m=>enc(m)===code);if(!mv){conn&&conn.send({t:'nack'});return false;}
@@ -573,7 +593,11 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}}$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!r.over;$('newGame').hidden=role!=='host';
+  $('endCard').hidden=!r.over;
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'),rm=role==='ai'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
+    $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
+    $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
   const ol=$('log');ol.textContent='';
   const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
   r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
@@ -645,7 +669,8 @@ $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tru
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{LS.del('volo-p2p-host');LS.del('volo-p2p-guest');location.hash='';location.reload();};
+$('newGame').onclick=()=>rmSend('ask');
+$('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
 $('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);

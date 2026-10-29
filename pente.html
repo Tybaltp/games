@@ -167,7 +167,7 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .player .clock.run{color:var(--ink);border-color:var(--ink);background:var(--bg)}
 .cmd{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .cmd .actions{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px}
-.cmd .actions>#aHome{flex-basis:100%}
+.cmd .actions>#aHome,.cmd .actions>.note{flex-basis:100%}
 .cmd .actions:empty{display:none}
 .cmd .actions>.row{display:contents}
 .cmd .actions>*{flex:1 1 0;min-width:0}
@@ -518,7 +518,7 @@ fr:{
  takeBlack:"Prendre Noir",takeBlackSub:"Blanc joue le prochain coup.",takeWhite:"Prendre Blanc",takeWhiteSub:"Vous jouez le prochain coup.",
  add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",suggested:"Suggéré",
  resign:"Abandonner",resignConfirm:"Confirmer l'abandon",keepPlaying:"Continuer",
- rematchMe:"Revanche : j'ouvre",rematchThem:"Revanche : il ouvre",hostRematch:"L'hôte peut lancer une revanche.",newGame:"Nouvelle partie",
+ newGame:"Nouvelle partie",rematch:"Rejouer",of_sent:"Proposition envoyée.",of_withdraw:"Annuler",of_incoming:"{n} propose une nouvelle partie, couleurs inversées.",of_accept:"Accepter",of_decline:"Refuser",of_declined:"{n} a refusé.",
  undo:"Annuler",hint:"Suggestion",
  invite:"Inviter",linkOpp:"Lien pour l'adversaire",linkWatch:"Lien pour les observateurs",gameCode:"Code à envoyer",copy:"Copier",
  copied:"Lien copié.",copySel:"Sélectionné : copiez avec Ctrl+C / Cmd+C.",
@@ -591,7 +591,7 @@ en:{
  takeBlack:"Take Black",takeBlackSub:"White plays the next move.",takeWhite:"Take White",takeWhiteSub:"You play the next move.",
  add2:"Add 2 stones",add2Sub:"1 black, then 1 white; {name} then chooses.",suggested:"Suggested",
  resign:"Resign",resignConfirm:"Confirm resignation",keepPlaying:"Keep playing",
- rematchMe:"Rematch: I open",rematchThem:"Rematch: they open",hostRematch:"The host can start a rematch.",newGame:"New game",
+ newGame:"New game",rematch:"Rematch",of_sent:"Offer sent.",of_withdraw:"Withdraw",of_incoming:"{n} offers a new game, colours swapped.",of_accept:"Accept",of_decline:"Decline",of_declined:"{n} declined.",
  undo:"Undo",hint:"Hint",
  invite:"Invite",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",gameCode:"Code to send",copy:"Copy",
  copied:"Link copied.",copySel:"Selected: copy with Ctrl+C / Cmd+C.",
@@ -771,7 +771,7 @@ function doHint(){if(!canHint())return;const key=stateKey();busy='hint';render()
   else{hintOpt='aB';hint=-1;hintMsg={k:'hint_black'};}
   render();});}
 function undo(){if(mode!=='ai'||!hist.length)return;resetWorker();S=JSON.parse(hist.pop());tent=[];localMode='';clearHint();aiInfo=null;navAt=null;resignArm=false;toast(t('undone'));render();aiStep();}
-function newAIGame(){const f=S.first;resetWorker();S=newState(null,f,{H:'',G:''},null,(S.game||1)+1,null);S.phase='open';S.turnStart=Date.now();hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';resignArm=false;render();aiStep();}
+function newAIGame(){const f=other(S.first);resetWorker();S=newState(null,f,{H:'',G:''},null,(S.game||1)+1,null);S.phase='open';S.turnStart=Date.now();hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';resignArm=false;render();aiStep();}
 
 /* ================= réseau : hôte ================= */
 function peerOpts(){const q=new URLSearchParams(location.search).get('peer');if(!q)return {debug:0};const [host,port]=q.split(':');return {host,port:+port||9000,path:'/',secure:false,debug:0};}
@@ -825,9 +825,18 @@ function onHostData(c,d){if(!d||typeof d!=='object'||mode!=='host')return;
    else{try{c.send({k:'refused',m:'t_refused'});}catch(_){}setTimeout(()=>{try{c.close();}catch(_){}},800);return;}}
   conns.add(c);changed();return;}
  if(d.k==='rv'&&c.seat&&c===oppConn&&d.a){rvApply(c.seat,d.a);changed();return;}
+ if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a&&OFFERS.includes(d.a.t)){offerAct(c.seat,d.a);changed(true);return;}
  if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a){const err=act(S,c.seat,d.a,Date.now());if(err){try{c.send({k:'err',m:err});}catch(_){}}changed(!err);}}
-function rematch(firstOpt){const f=firstOpt==='me'?mySeat:other(mySeat);const v=(S.ver||0)+1;S=newState(code,f,S.names,S.th,(S.game||1)+1,S.tc);S.ver=v;
- tent=[];localMode='';navAt=null;resignArm=false;changed(true);}
+// New game offered by either player once the game is over: accepted, it starts at once under the same code,
+// colours swapped (the player who did not place the Swap2 opening places it), same clock, clocks reset.
+const OFFERS=['offer','withdraw','accept','decline'];
+function offerAct(seat,a){if(!S||!S.result||!seat)return;const o=S.offer;
+ if(a.t==='offer'){if(!(oppConn&&oppConn.open))return;S.offer={by:seat,st:'open'};}
+ else if(a.t==='withdraw'){if(o&&o.by===seat&&o.st==='open')S.offer=null;}
+ else if(a.t==='decline'){if(o&&o.by!==seat&&o.st==='open')o.st='declined';}
+ else if(a.t==='accept'){if(!(o&&o.by!==seat&&o.st==='open'))return;
+  const v=(S.ver||0)+1;S=newState(code,other(S.first),S.names,S.th,(S.game||1)+1,S.tc);S.ver=v;S.ready={H:true,G:true};S.phase='open';S.turnStart=Date.now();
+  tent=[];localMode='';navAt=null;resignArm=false;}}
 
 /* ================= réseau : invité / observateur ================= */
 function startGuest(){if(!peerReady())return;setNet('warn','n_connecting');
@@ -859,6 +868,7 @@ function onGuestData(d){if(!d||typeof d!=='object')return;
 
 /* ================= actions du joueur ================= */
 function sendAct(a){resignArm=false;
+ if(OFFERS.includes(a.t)&&mode==='host'){offerAct(mySeat,a);changed(true);return;}
  if(mode==='ai'){hist.push(JSON.stringify(S));const err=act(S,'H',a,Date.now());if(err){hist.pop();toast(t(err));}clearHint();aiInfo=null;render();aiStep();}
  else if(mode==='host'){const err=act(S,mySeat,a,Date.now());if(err)toast(t(err));changed(!err);}
  else if(conn&&conn.open){pending=true;conn.send({k:'act',a});render();}
@@ -959,9 +969,12 @@ function render(){
      `<button class="btn" id="aW" title="${esc(t('takeWhite')+' — '+t('takeWhiteSub'))}"><span class="pstone w"></span><span>${t('white')}</span></button>`;
   if(S.phase==='choose')sw+=`<button class="btn" id="aX" title="${esc(t('add2')+' — '+t('add2Sub',{name:nameOf(first)}))}"><span>${lang==='fr'?'+2 pierres':'+2 stones'}</span></button>`;}
  if(S.result){
-  if(mode==='host')h+=`<div class="row"><button class="btn primary" id="aR1">${t('rematchMe')}</button><button class="btn" id="aR2">${t('rematchThem')}</button></div>`;
-  else if(mode==='ai')h+=`<button class="btn primary" id="aNew">${t('newGame')}</button>`;
-  else if(mySeat)h+=`<p class="note">${t('hostRematch')}</p>`;
+  if(mode==='ai')h+=`<button class="btn primary" id="aNew">${t('rematch')}</button>`;
+  else if(mySeat){const o=S.offer,opp=nameOf(other(mySeat)),reach=mode==='host'?!!(oppConn&&oppConn.open):!!(conn&&conn.open);
+   if(o&&o.st==='open'&&o.by===mySeat)h+=`<p class="note">${t('of_sent')}</p><button class="btn" id="aOfW">${t('of_withdraw')}</button>`;
+   else if(o&&o.st==='open')h+=`<p class="note">${esc(t('of_incoming',{n:opp}))}</p><button class="btn primary" id="aOfA" ${reach?'':'disabled'}>${t('of_accept')}</button><button class="btn" id="aOfD">${t('of_decline')}</button>`;
+   else{if(o&&o.st==='declined'&&o.by===mySeat)h+=`<p class="note">${esc(t('of_declined',{n:opp}))}</p>`;
+    h+=`<button class="btn primary" id="aOf" ${reach?'':'disabled'}>${t('rematch')}</button>`;}}
   h+=`<button class="btn" id="aHome" style="justify-content:center">${t('home')}</button>`;}
  else if(mySeat&&S.phase==='wait'&&hasGuest())h+=isReady(mySeat)?`<button class="btn primary" disabled>${t('waitingOpp')}</button>`:`<button class="btn primary" id="aStart">${t('startGame')}</button>`;
  if(mySeat&&!S.result&&S.phase!=='wait')rs=resignArm?`<div class="row"><button class="btn danger" id="aRes2">${t('resignConfirm')}</button><button class="btn" id="aRes0">${t('keepPlaying')}</button></div>`:`<button class="btn danger" id="aRes">${t('resign')}</button>`;
@@ -971,7 +984,8 @@ function render(){
  on('aOk',commit);on('aClr',()=>{tent=[];clearHint();render();});on('aBack',()=>{tent=[];localMode='';clearHint();render();});
  on('aB',()=>sendAct({t:'pick',color:1}));on('aW',()=>sendAct({t:'pick',color:2}));on('aX',()=>{localMode='add2';tent=[];clearHint();render();});
  on('aRes',()=>{resignArm=true;render();});on('aRes0',()=>{resignArm=false;render();});on('aRes2',()=>sendAct({t:'resign'}));
- on('aStart',()=>sendAct({t:'start'}));on('aHome',goHome);on('aR1',()=>rematch('me'));on('aR2',()=>rematch('opp'));on('aNew',newAIGame);
+ on('aStart',()=>sendAct({t:'start'}));on('aHome',goHome);on('aNew',newAIGame);
+ on('aOf',()=>sendAct({t:'offer'}));on('aOfW',()=>sendAct({t:'withdraw'}));on('aOfA',()=>sendAct({t:'accept'}));on('aOfD',()=>sendAct({t:'decline'}));
  if(hintOpt){const e=$(hintOpt);if(e){e.classList.add('suggested');e.dataset.sugg=t('suggested');}}
  $('aiControls').hidden=mode!=='ai';
  if(mode==='ai'){$('bUndo').disabled=!hist.length;$('bHint').disabled=!canHint();

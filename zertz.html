@@ -193,7 +193,13 @@ a{color:inherit}
     <div class="card" id="poolCard"><h2><span data-i18n="pool">Shared pool</span> <span id="poolsum"></span></h2><div class="colors" id="colors"></div><p class="hint" id="colorhint"></p></div>
     <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
-    <div class="card" id="endCard" hidden><div class="confirm"><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button><button type="button" id="homeBtn" data-i18n="home">Home</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
     <div class="card" id="myCard" hidden>
       <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
         <div class="confirm"><button type="button" id="undoBtn" data-i18n="undo">Undo move</button><button type="button" id="hintBtn" data-i18n="hint">Hint</button></div>
@@ -354,7 +360,7 @@ const I18N={fr:{
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance).",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour annuler.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
+ nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  vsAI:"Contre l'ordinateur",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",
  st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",hint_move:"Suggestion : {m}.",
  ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",
@@ -392,7 +398,7 @@ const I18N={fr:{
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted).",st_remove:"Remove a free ring (marked in red), or click the marble again to cancel.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
+ nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  vsAI:"Against the computer",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",
  st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",hint_move:"Hint: {m}.",
  ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",
@@ -476,7 +482,20 @@ function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
 // --- host ---
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
   running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
-  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0};}
+  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null};}
+// Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
+// colours swapped (the players exchange seats), same time control.
+function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g.size,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
+  if(op==='ask'&&(!rm||rm.st==='no'))g.rematch={from:s,st:'ask'};
+  else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
+  else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
+  else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
+    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.result=null;g.rematch=null;
+    g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
+    mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
+  else return;
+  hostBroadcast();}
+function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
   const r=replay(g.size,g.moves,g.result),absentTurn=!r.over&&r.st[TURN]!==mySeat,want=!live&&absentTurn;
@@ -531,7 +550,8 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;const g=H.game;
   const s=conn.seat;
   if(d.t==='move')hostMove(s,d.n,d.code,conn);
   if(d.t==='start')hostReady(s);
-  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}}
+  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
+  if(d.t==='rematch')rematchOp(s,d.op);}
 function hostMove(s,n,code,conn){const g=H.game;if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
   const r=replay(g.size,g.moves,g.result);if(r.over||r.st[TURN]!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
   const mv=E.gen(r.st).find(m=>enc(m)===code);if(!mv){conn&&conn.send({t:'nack'});return false;}
@@ -638,7 +658,11 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!r.over;$('newGame').hidden=!(role==='host'||role==='ai');
+  $('endCard').hidden=!r.over;
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'),rm=role==='ai'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
+    $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
+    $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
   const ol=$('log');ol.textContent='';
   const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
   r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
@@ -706,7 +730,8 @@ $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tr
   if(role==='ai'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{if(role==='ai'){startAI(view.size,view.first==='ai'?1-mySeat:mySeat);return;}LS.del('zertz-p2p-host');LS.del('zertz-p2p-guest');location.hash='';location.reload();};
+$('newGame').onclick=()=>{if(role==='ai'){startAI(view.size,1-mySeat);return;}rmSend('ask');};
+$('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
 $('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
