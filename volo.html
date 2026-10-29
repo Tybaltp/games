@@ -164,12 +164,14 @@ a{color:inherit}
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
-      <div id="codesCard" hidden><p class="hint" id="watchInfo"></p>
+      <p class="hint" id="watchInfo"></p>
       <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
       <div id="linksBox" hidden>
-        <div><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
         <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
       </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
     <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
       <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
@@ -508,7 +510,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   const gm=ui.basemv?null:(ui.pending||hm);
   const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
   drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
-  const nm=s=>s===mySeat?t('you'):(view.names[s]||t(s===0?'p1':'p2'));
+  const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const oppGone=mySeat>=0&&!r.over&&(role==='host'?!view.guestOn:false);
   const canPass=legal.some(m=>m.t==='x'),onlyPass=legal.length===1&&canPass;
   if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
@@ -536,7 +538,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  $('codesCard').hidden=false;$('inviteBox').hidden=role!=='host';$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
+  $('inviteBox').hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!(role==='host'&&r.over);
   const ol=$('log');ol.textContent='';
@@ -620,9 +622,9 @@ if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointerleave',()=>hoverCell(-1));}
 
 // ---------- invitation codes ----------
-function fillCodes(){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
-  $('codeC').value=H.code;$('linksBox').hidden=!web;$('fileNote').hidden=web;
-  if(web){$('codeP').value=base+'#join-'+H.code;$('codeW').value=base+'#watch-'+H.code;}}
+function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
+  $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
+  if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=base+'#watch-'+code;}}
 document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
   const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
   try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
