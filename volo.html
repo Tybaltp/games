@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Volo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<style>
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}
+/* Layout: board on the left, game column on the right; stacked on phones */
+:root{
+  --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
+  --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--ghost:#355b75;
+  --o1:#ffb347;--o2:#e07a12;--o3:#8a4300;--b1:#6fb3ff;--b2:#1f6fd6;--b3:#0b3a7a;
+  --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --sky:#1d3b52;--sky-edge:#122838;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --sky:#1d3b52;--sky-edge:#122838;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.02em;margin:0;line-height:1}
+h1 span{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;margin-left:.4em}
+select,button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+button:hover:not(:disabled),select:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
+.board{background:radial-gradient(120% 90% at 50% 30%,var(--sky),var(--sky-edge));border-radius:18px;padding:10px;min-width:0}
+.board svg{display:block;width:100%;height:auto;max-height:80vh;margin:0 auto;touch-action:manipulation}
+.status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
+.status.turn{border-color:var(--accent)}
+.status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.card h2{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.home{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;width:100%}
+.home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
+.home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
+.home details{padding:10px 14px}
+.home details .card{margin-top:10px}
+.who{display:flex;align-items:center;gap:8px;font-weight:600;font-size:1rem}
+.who .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.who.active .dot{background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.tally{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-family:var(--f-mono);font-size:.8rem;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.tally b{color:var(--ink);font-weight:500}
+.bird{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
+.bird.c0{background:var(--o2);border:1.5px solid var(--o3)}
+.bird.c1{background:var(--b2);border:1.5px solid var(--b3)}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
+ol.log .n{color:var(--muted)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+details summary{cursor:pointer;font-weight:600}
+details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
+details li{margin:.25em 0}
+.cell{cursor:pointer}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{opacity:.45}}}
+
+[hidden]{display:none!important}
+.view{display:flex;flex-direction:column;gap:16px}
+a{color:inherit}
+.lobby{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.lobby{grid-template-columns:minmax(0,1fr)}}
+.form{display:flex;flex-direction:column;gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
+.clock{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.clock.run{color:var(--ink)}
+.clock.idle{color:var(--muted)}
+.clock.low{color:var(--danger)}
+.link{display:flex;gap:6px}
+.link input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.78rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.confirm{display:flex;gap:8px}
+.confirm button{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
+.empty{color:var(--muted);margin:0}
+.txt{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+#watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1>Volo<span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <div class="card primary-card">
+      <h2 data-i18n="create">Create a game</h2>
+      <form class="form" id="createForm">
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <label for="cFirst"><span data-i18n="orangeIs">Orange (plays first)</span><select id="cFirst"><option value="me" selected data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+    </div>
+    <div class="card primary-card">
+      <h2 data-i18n="join">Join a game with a code</h2>
+      <form class="form" id="joinForm">
+        <label for="jCode"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+        <p class="hint" id="joinErr"></p>
+      </form>
+      <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+    </div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="VOLO1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="board"><svg id="svg" viewBox="-340 -390 680 780" role="img" aria-label="Volo board"></svg></div>
+  <aside class="side">
+    <div class="card" id="pTop"></div>
+    <div class="card" id="pBot"></div>
+    <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
+    <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancelMove">Cancel the move</button></div></div>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="myCard" hidden>
+      <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+    </div>
+    <div class="card" id="codesCard" hidden><h2><span data-i18n="invite">Invite</span> <span id="watchInfo"></span></h2>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+    </div>
+    <div class="card" id="rcCard" hidden><h2 data-i18n="resumeCode">Resume code</h2><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    <div class="card" id="endCard" hidden><button type="button" class="primary" id="newGame" data-i18n="newGame">New game</button></div>
+    <div class="card"><div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div></div>
+    <div class="card"><h2 data-i18n="moves">Moves</h2><ol class="log" id="log"></ol></div>
+  </aside>
+</main>
+<details id="rules"></details>
+</section>
+</div>
+<script>
+function VoloEngine(){
+  // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
+  const RAD=6,cells=[];
+  for(let q=-RAD;q<=RAD;q++)for(let r=-RAD;r<=RAD;r++){const s=-q-r;if(Math.abs(s)>RAD)continue;
+    const m=Math.max(Math.abs(q),Math.abs(r),Math.abs(s)),mn=Math.min(Math.abs(q),Math.abs(r),Math.abs(s));
+    if(m===0)continue;                 // centre
+    if(m===RAD&&mn===0)continue;       // corners
+    cells.push([q,r]);}
+  const N=cells.length,Q=new Int8Array(N),R=new Int8Array(N),AT={};
+  cells.forEach(([q,r],i)=>{Q[i]=q;R[i]=r;AT[q+','+r]=i;});
+  const DQ=[1,1,0,-1,-1,0],DR=[0,-1,-1,0,1,1];
+  const NB=new Int8Array(N*6).fill(-1);
+  for(let i=0;i<N;i++)for(let d=0;d<6;d++){const k=AT[(Q[i]+DQ[d])+','+(R[i]+DR[d])];NB[i*6+d]=k===undefined?-1:k;}
+  const TURN=N,PASS=N+1,SZ=N+2,MAX=60;
+  // Nests: one step inward from each removed corner; Orange (1) and Blue (2) alternate.
+  const NEST=[];for(let d=0;d<6;d++)NEST.push(AT[(DQ[d]*(RAD-1))+','+(DR[d]*(RAD-1))]);
+  function init(){const s=new Int8Array(SZ);NEST.forEach((c,k)=>{s[c]=1+(k&1);});s[TURN]=0;s[PASS]=0;return s;}
+  const color=p=>p+1;
+  // Connected components over a predicate; labels (-1 = not in graph) and their number.
+  function comps(s,ok){const lab=new Int16Array(N).fill(-1);let n=0;
+    for(let i=0;i<N;i++){if(lab[i]>=0||!ok(i))continue;const st=[i];lab[i]=n;
+      while(st.length){const x=st.pop();for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&lab[y]<0&&ok(y)){lab[y]=n;st.push(y);}}}n++;}
+    return {lab,n};}
+  function count(s,p){let n=0;const c=color(p);for(let i=0;i<N;i++)if(s[i]===c)n++;return n;}
+  function flockCount(s,p){const c=color(p);return comps(s,i=>s[i]===c).n;}
+  function connected(s,p){return count(s,p)>0&&flockCount(s,p)===1;}
+  // Regions of player p: components of the cells not occupied by the opponent; returns the labels of those holding p's birds.
+  function regions(s,p){const c=color(p),o=3-c;const {lab,n}=comps(s,i=>s[i]!==o);const has=new Uint8Array(n);for(let i=0;i<N;i++)if(s[i]===c)has[lab[i]]=1;
+    const list=[];for(let k=0;k<n;k++)if(has[k])list.push(k);return {lab,list};}
+  // Empty areas bounded by birds: 1 = only p's birds around (own area), 2 = only the opponent's (controlled by the opponent), 3 = mixed.
+  function emptyClass(s,p){const c=color(p),o=3-c;const {lab,n}=comps(s,i=>s[i]===0);const cls=new Uint8Array(n);
+    for(let i=0;i<N;i++){if(s[i]!==0)continue;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y<0)continue;if(s[y]===c)cls[lab[i]]|=1;else if(s[y]===o)cls[lab[i]]|=2;}}
+    return {lab,cls};}
+  function placements(s){const p=s[TURN],c=color(p);if(count(s,p)>=MAX)return [];const out=[];const {lab,cls}=emptyClass(s,p);
+    for(let i=0;i<N;i++){if(s[i]!==0)continue;let adj=false;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y>=0&&s[y]===c){adj=true;break;}}if(adj)continue;
+      if(cls[lab[i]]===2)continue;out.push({t:'p',at:i,own:cls[lab[i]]===1,keep:-1});}
+    return out;}
+  // Flights: a straight segment of p's birds moves k steps in direction d. Opponent birds block; friendly birds may be flown over.
+  function flights(s){const p=s[TURN],c=color(p),out=[];
+    const F=comps(s,i=>s[i]===c);                       // flocks before the move
+    const size=new Int16Array(F.n);for(let i=0;i<N;i++)if(F.lab[i]>=0)size[F.lab[i]]++;
+    for(let a=0;a<3;a++){const back=a+3;
+      for(let i=0;i<N;i++){if(s[i]!==c)continue;const pr=NB[i*6+back];if(pr>=0&&s[pr]===c)continue;   // i starts a run along axis a
+        const run=[i];let x=i;while(true){x=NB[x*6+a];if(x<0||s[x]!==c)break;run.push(x);}
+        for(let u=0;u<run.length;u++)for(let v=u;v<run.length;v++){const seg=run.slice(u,v+1);if(a>0&&seg.length===1)continue; // single birds handled once (axis 0)
+          const inSeg=new Uint8Array(N);seg.forEach(z=>inSeg[z]=1);
+          for(let d=0;d<6;d++){let pos=seg.slice();
+            for(let k=1;;k++){let ok=true;const nxt=[];
+              for(const z of pos){const y=NB[z*6+d];if(y<0||(s[y]!==0&&!inSeg[y])){ok=false;break;}nxt.push(y);}
+              if(!ok)break;pos=nxt;
+              if(pos.some(z=>s[z]!==0&&!inSeg[z]))continue;        // landing points must be free (or vacated by the segment itself)
+              const t=s.slice();seg.forEach(z=>t[z]=0);pos.forEach(z=>t[z]=c);
+              // no flock split, and the moving birds' flock must grow
+              const G=comps(t,i2=>t[i2]===c);const gsize=new Int16Array(G.n);for(let i2=0;i2<N;i2++)if(G.lab[i2]>=0)gsize[G.lab[i2]]++;
+              const map=new Int16Array(N).fill(-1);seg.forEach((z,j)=>map[z]=pos[j]);
+              const first=new Int16Array(F.n).fill(-1);let split=false;
+              for(let i2=0;i2<N&&!split;i2++){const f=F.lab[i2];if(f<0)continue;const w=map[i2]>=0?map[i2]:i2;const g=G.lab[w];if(first[f]<0)first[f]=g;else if(first[f]!==g)split=true;}
+              if(split)continue;
+              if(gsize[G.lab[pos[0]]]<=size[F.lab[seg[0]]])continue;
+              out.push({t:'f',cells:seg,d,k,keep:-1});}}}}}
+    return out;}
+  function canPass(s){const pl=placements(s);if(pl.some(m=>!m.own))return false;return flights(s).length===0;}
+  // Complete a base move with the regions it creates: if the opponent's birds end up in several regions, one of them must be kept.
+  function expand(s,mv){if(mv.t==='x')return [mv];const t=base(s,mv),p=s[TURN];
+    if(connected(t,p))return [mv];
+    const rg=regions(t,1-p);if(rg.list.length<2)return [mv];
+    return rg.list.map(k=>{let keep=-1;for(let i=0;i<N;i++)if(rg.lab[i]===k&&t[i]===color(1-p)){keep=i;break;}return {...mv,keep};});}
+  function gen(s){const out=[];for(const mv of flights(s).concat(placements(s)))for(const m of expand(s,mv))out.push(m);if(canPass(s))out.push({t:'x',keep:-1});return out;}
+  function dest(mv,z){let y=z;for(let j=0;j<mv.k;j++)y=NB[y*6+mv.d];return y;}
+  function base(s,mv){const t=s.slice(),c=color(s[TURN]);
+    if(mv.t==='p')t[mv.at]=c;
+    else if(mv.t==='f'){mv.cells.forEach(z=>t[z]=0);for(const z of mv.cells)t[dest(mv,z)]=c;}
+    return t;}
+  // apply: returns {st,removed:[cells]}; the result of the move is read with outcome()
+  function apply(s,mv){const p=s[TURN],t=base(s,mv),removed=[];
+    t[PASS]=mv.t==='x'?s[PASS]+1:0;
+    if(mv.keep>=0){const rg=regions(t,1-p),kk=rg.lab[mv.keep],o=color(1-p);for(let i=0;i<N;i++)if(t[i]===o&&rg.lab[i]!==kk){t[i]=0;removed.push(i);}}
+    t[TURN]=1-p;return {st:t,removed};}
+  // outcome after a move by p: {w:p|1-p|-1 (draw), why} or null
+  function outcome(t,p,mv){if(mv.t==='x')return t[PASS]>=2?{w:-1,why:'w_pass'}:null;
+    if(connected(t,p))return {w:p,why:'w_flock'};
+    if(mv.keep>=0&&connected(t,1-p))return {w:1-p,why:'w_region'};
+    return null;}
+  return {N,Q,R,NB,AT,TURN,PASS,MAX,NEST,init,gen,flights,placements,canPass,expand,base,dest,apply,outcome,connected,regions,emptyClass,count,flockCount,comps};
+}
+// ===== Volo peer to peer =====
+const SIZE=120;
+const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
+const I18N={fr:{
+ sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",orangeIs:"Orange (commence)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
+ join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
+ inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
+ resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
+ yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",regions:"Régions",regionsTxt:"Votre coup sépare les oiseaux adverses en plusieurs régions. Cliquez un oiseau de la région qui reste ; les autres s'envolent.",cancelMove:"Annuler le coup",
+ start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
+ invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
+ fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
+ hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
+ rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
+ noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",orange:"orange",blue:"bleu",first:"commence",
+ sky:"ciel",reserve:"réserve",flocks:"nuées",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
+ noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
+ st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
+ st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
+ t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
+ draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
+ st_pausedHost:"Partie en pause : en attente du retour de {n}. Les pendules sont arrêtées.",st_pausedGuest:"Reconnexion… Les pendules sont arrêtées jusqu'à votre retour à tous deux.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
+ st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
+ st_pending:"Coup en attente : confirmez pour l'envoyer, ou annulez.",st_sending:"Envoi du coup…",st_oppGoneRun:"Adversaire déconnecté (sa pendule tourne). ",st_oppGone:"Adversaire déconnecté. ",
+ st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_tapAgain:"Touchez à nouveau le point d'arrivée pour voler.",
+ st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne ; cliquez la sélection pour annuler.",st_turn:"À vous : ajoutez un oiseau sur un point libre, ou cliquez un oiseau pour le faire voler.",st_mayPass:" Vous pouvez aussi passer.",
+ st_yours:"À vous de jouer.",st_their:"{n} doit jouer.",st_watching:" Vous observez.",ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
+ w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
+ <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
+ <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
+ <li><b>Voler</b> : un oiseau seul, ou une ligne droite de vos oiseaux, avance en ligne droite (en file ou de front) sur des points vides seulement ; tout oiseau bloque le passage. Il doit se poser contre un autre de vos oiseaux de sorte que sa nuée grandisse, sans scinder aucune nuée.</li>
+ <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
+ <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
+ <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
+ <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`
+},en:{
+ sub:"peer to peer",create:"Create a game",nick:"Your nickname",orangeIs:"Orange (plays first)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
+ join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
+ inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
+ resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
+ yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",regions:"Regions",regionsTxt:"Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.",cancelMove:"Cancel the move",
+ start:"Start",startBtn:"Start the game",pass:"Pass",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
+ invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
+ fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
+ hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
+ rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
+ noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",orange:"orange",blue:"blue",first:"first",
+ sky:"sky",reserve:"reserve",flocks:"flocks",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
+ noPeer:"The connection library could not load: check your Internet access, then reload the page.",
+ st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
+ st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
+ t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
+ draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
+ st_pausedHost:"Game paused: waiting for {n} to reconnect. The clocks are stopped.",st_pausedGuest:"Reconnecting… The clocks are stopped until you are both back.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
+ st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
+ st_pending:"Move pending: confirm to send it, or cancel.",st_sending:"Sending move…",st_oppGoneRun:"Opponent disconnected (their clock is running). ",st_oppGone:"Opponent disconnected. ",
+ st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_tapAgain:"Tap the landing point again to fly there.",
+ st_sel:"Click a landing point, or a bird in line to extend the line; click the selection to cancel.",st_turn:"Your turn: add a bird on an empty point, or click a bird to let it fly.",st_mayPass:" You may also pass.",
+ st_yours:"Your turn.",st_their:"{n} to move.",st_watching:" You are watching.",ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
+ w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
+ <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
+ <li><b>Add a bird</b>: on any empty point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
+ <li><b>Fly</b>: a single bird, or a straight line of your birds, moves any distance in a straight line (in file or side by side) over empty points only; any bird blocks the way. It must land next to one of your other birds so that its flock grows, and no flock may be split.</li>
+ <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
+ <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
+ <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
+ <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`
+}};
+let lang=(()=>{try{return JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
+function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
+const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
+function applyStatic(){document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
+  document.getElementById('rules').innerHTML=t('rules');
+  const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('volo-tc'));}catch(e){return null;}})()||'20+10';
+  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status(t('st_home'));});
+applyStatic();
+const E=VoloEngine(),{N,TURN}=E;
+const CN=p=>t(p?'blue':'orange');
+const $=id=>document.getElementById(id);
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+const MYID=pickTabId('volo',(()=>{try{return JSON.parse(localStorage.getItem('volo-p2p-cid'));}catch(e){return null;}})());
+const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
+
+function pickTabId(key,seed){const R=()=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(16)))s+=a[b%a.length];return s;};
+  try{const L=localStorage,S1=sessionStorage;let id=S1.getItem(key+'-tab');
+    if(!id){let ids=[];try{ids=JSON.parse(L.getItem(key+'-tabs')||'[]')||[];}catch(e){}if(!ids.length&&seed)ids=[seed];const now=Date.now();
+      id=ids.slice().reverse().find(x=>now-(+L.getItem(key+'-alive-'+x)||0)>5000);
+      if(!id){id=R();ids.push(id);}L.setItem(key+'-tabs',JSON.stringify(ids.filter((x,k)=>ids.indexOf(x)===k).slice(-10)));S1.setItem(key+'-tab',id);}
+    const beat=()=>{try{L.setItem(key+'-alive-'+id,String(Date.now()));}catch(e){}};beat();setInterval(beat,1500);return id;}catch(e){return R();}}
+function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t.charCodeAt(k);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
+// ---------- board ----------
+const SP=50,X=i=>SP*(E.Q[i]+E.R[i]/2),Y=i=>SP*0.866025*E.R[i];
+const ROWS=[],QMIN={};for(let i=0;i<N;i++){if(!ROWS.includes(E.R[i]))ROWS.push(E.R[i]);QMIN[E.R[i]]=Math.min(QMIN[E.R[i]]??99,E.Q[i]);}ROWS.sort((a,b)=>a-b);
+const name=i=>'abcdefghijklm'[ROWS.indexOf(E.R[i])]+(E.Q[i]-QMIN[E.R[i]]+1);
+(()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
+  $('svg').setAttribute('viewBox',`${x0-56} ${y0-30} ${x1-x0+100} ${y1-y0+60}`);})();
+const enc=m=>m.t==='x'?'x':(m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'+m.k)+(m.keep>=0?'k'+m.keep:'');
+const txtOf=m=>m.t==='x'?'pass':m.t==='p'?'+'+name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
+let memoKey='',memoVal=null;
+function replay(size,moves,result){const key=moves.join(',')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
+  let st=E.init();const log=[];let last=null,over=null;
+  for(const code of moves){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv){over={w:-1,why:'w_bad'};break;}
+    const r=E.apply(st,mv);st=r.st;let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;
+    log.push({p,txt:t});last={mv,removed:r.removed};
+    const o=E.outcome(st,p,mv);if(o){over=o;break;}}
+  if(!over&&result)over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
+  memoKey=key;memoVal={st,log,last,over};return memoVal;}
+
+// ---------- network (PeerJS) ----------
+// Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
+let role=null;          // 'host' | 'guest' | 'watch'
+let peer=null;
+let view=null;          // public state shown {size,names,first,moves,clock,running,elapsed,result,guestOn,watchers,recvAt}
+let mySeat=-1;
+let ui={sel:[],basemv:null,pending:null,hover:-1},sending=false;
+const H={};             // host-only state
+
+function status(t,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=t;}
+function peerOpts(){return {debug:1};}
+function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
+
+// --- host ---
+function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
+  running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
+  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0};}
+function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
+  if(!live&&!g.paused){const r=replay(g.size,g.moves,g.result);if(g.running&&!r.over){const t=r.st[TURN];g.clock[t]=Math.max(0,g.clock[t]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
+  else if(live&&g.paused){g.paused=false;H.turnStart=Date.now();}}
+const PID=c=>'volo-p2p-'+c;
+const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
+function hostSave(){const g=H.game;LS.set('volo-p2p-host',{code:H.code,guestCid:H.guestCid,game:g,elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});}
+function hostReady(s){const g=H.game;if(g.started||g.result||!g.names[0]||!g.names[1])return;g.ready[s]=true;
+  if(g.ready[0]&&g.ready[1]){g.started=true;g.running=true;H.turnStart=Date.now();}hostBroadcast();}
+function hostBroadcast(bump){if(bump)H.game.ver=(H.game.ver||0)+1;hostSyncPause();hostSave();const pub=hostPublic();
+  for(const c of H.conns)if(c.open)c.send({t:'state',game:pub});
+  showState(pub);}
+function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
+  if(saved){Object.assign(H,{code:saved.code,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
+  H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);
+  if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
+  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
+  setHash('host-'+H.code);status(t('st_open'));showGame();
+  const me=newPeer(H.peerId);peer=me;
+  me.on('open',()=>{if(peer!==me)return;fillCodes();hostBroadcast();});
+  me.on('connection',conn=>{if(peer!==me){try{conn.close();}catch(e){}return;}conn.on('data',d=>{if(peer===me)hostOnData(conn,d);});conn.on('close',()=>{if(peer===me)hostDrop(conn);});conn.on('error',()=>{if(peer===me)hostDrop(conn);});});
+  me.on('disconnected',()=>{if(peer!==me)return;status(t('st_lostMm'));setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500);});
+  me.on('error',e=>{if(peer!==me)return;
+    if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
+    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
+function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||LS.get('volo-name','')||t('p1');role=null;
+  if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.st[TURN]]=Math.max(0,pub.clock[r.st[TURN]]-pub.elapsed);}
+  clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
+function becomeHost(){if(!view)return;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
+  const rem=remaining(),v=view;
+  H.code=C.code;H.guestCid=null;H.game={size:v.size,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
+    ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0};
+  if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
+  H.turnStart=Date.now();hostStart(null);}
+function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
+function hostOnData(conn,d){if(!d||typeof d!=='object')return;const g=H.game;
+  if(d.t==='hello'){
+    const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
+    if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
+    if(d.role==='play'&&s>=0&&s!==mySeat){
+      if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
+      g.th[s]=th;H.guestCid=d.cid;H.guestConn=conn;conn.seat=s;H.conns.add(conn);if(d.name)g.names[s]=String(d.name).slice(0,24);
+      const o=d.s;if(o&&typeof o==='object'&&o.size===g.size&&Array.isArray(o.moves)&&o.moves.length>g.moves.length&&g.moves.every((x,k)=>o.moves[k]===x)){
+        g.moves=o.moves.slice();g.clock=o.clock.slice();g.result=o.result||null;g.started=!!o.started;g.running=!!o.started;g.paused=true;H.turnStart=Date.now();}
+      conn.send({t:'welcome',role:'guest',seat:s});hostBroadcast();return;}
+    if(d.role==='play'){conn.send({t:'reject',why:'t_refused'});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
+    H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
+  if(conn!==H.guestConn)return;
+  const s=conn.seat;
+  if(d.t==='move')hostMove(s,d.n,d.code,conn);
+  if(d.t==='start')hostReady(s);
+  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}}
+function hostMove(s,n,code,conn){const g=H.game;if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
+  const r=replay(g.size,g.moves,g.result);if(r.over||r.st[TURN]!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
+  const mv=E.gen(r.st).find(m=>enc(m)===code);if(!mv){conn&&conn.send({t:'nack'});return false;}
+  const now=Date.now();
+  if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
+  g.moves.push(code);g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
+let saveTick=0;
+setInterval(()=>{if(role!=='host'||!H.game)return;if(++saveTick%25===0)hostSave();if(H.game.result||!H.game.running||H.game.paused||!H.game.tc)return;const g=H.game,r=replay(g.size,g.moves,g.result);if(r.over)return;
+  const t=r.st[TURN];if(g.clock[t]-(Date.now()-H.turnStart)<=0){g.clock[t]=0;g.result={winner:1-t,reason:'time'};hostBroadcast();}},200);
+
+// --- guest / spectator ---
+let C={};   // {code,cid,name,conn,retry}
+function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4){$('joinErr').textContent=t('codeLen');return;}
+  clearTimeout(C.t);clearTimeout(C.ct);C={code,host:PID(code),play:!asWatch,name:nm,cid:MYID,retry:0,lostSince:0};
+  $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+code);
+  role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));
+  const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
+  me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view)status(t('st_noTable'));}
+    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
+  me.on('disconnected',()=>setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500));}
+function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.connect(C.host,{reliable:true});C.conn=conn;clearTimeout(C.ct);
+  C.ct=setTimeout(()=>{if(C.conn===conn&&!conn.open)clientLost();},7000);
+  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,s:mySeat>=0&&view?view:null});});
+  conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
+  conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
+function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;
+  if(view&&!view.paused&&view.started&&!view.result){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();renderGame();}
+  clientRetry();}
+function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.stop)return;
+  if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
+  if(peer&&peer.open)clientConnect();else{if(peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}clientLost();}},3500);}
+function clientOnData(d){if(!d||typeof d!=='object')return;
+  if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);}
+  else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
+  else if(d.t==='state'){sending=false;C.lostSince=0;showState(d.game);}
+  else if(d.t==='nack'){sending=false;status(t('st_nack'));renderGame();}}
+
+// ---------- game view ----------
+function showGame(){$('setup').hidden=true;$('game').hidden=false;}
+function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||t('st_home'));}
+function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'';
+  view={...g,recvAt:Date.now()};
+  if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result))resetUi();
+  renderGame();}
+function resetUi(){ui.sel=[];ui.basemv=null;ui.pending=null;ui.hover=-1;}
+function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[r.st[TURN]]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
+const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
+function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st[TURN]===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
+
+function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.result),turn=r.st[TURN];
+  const mine=isMyTurn(r),legal=r.over?[]:E.gen(r.st);
+  const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st[TURN]===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
+  const hm=mine&&!ui.pending&&!ui.basemv&&ui.sel.length&&ui.hover>=0?legal.find(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===ui.hover):null;
+  const gm=ui.basemv?null:(ui.pending||hm);
+  const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
+  drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
+  const nm=s=>s===mySeat?t('you'):(view.names[s]||t(s===0?'p1':'p2'));
+  const oppGone=mySeat>=0&&!r.over&&(role==='host'?!view.guestOn:false);
+  const canPass=legal.some(m=>m.t==='x'),onlyPass=legal.length===1&&canPass;
+  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
+  else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
+  else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
+  else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
+  else if(ui.pending)status(t('st_pending'),'turn');
+  else if(sending)status(t('st_sending'));
+  else if(mine){
+    status((oppGone?t('st_oppGoneRun'):'')+(ui.basemv?t('st_keep',{c:CN(1-mySeat)}):onlyPass?t('st_mustPass'):ui.sel.length?(ui.hover>=0?t('st_tapAgain'):t('st_sel')):t('st_turn')+(canPass?t('st_mayPass'):'')),'turn');}
+  else status((oppGone?t('st_oppGone'):'')+(turn===mySeat?t('st_yours'):t('st_their',{n:nm(turn)}))+(role==='watch'?t('st_watching'):''));
+  const bottom=mySeat>=0?mySeat:0;
+  [[1-bottom,'pTop'],[bottom,'pBot']].forEach(([p,box])=>{const el=$(box);el.textContent='';
+    const h=document.createElement('div');h.className='who'+(!r.over&&turn===p?' active':'');
+    const dot=document.createElement('span');dot.className='dot';const label=document.createElement('span');
+    label.innerHTML=`<span class="bird c${p}"></span>`;label.append(nm(p)+' · '+CN(p)+(p===0?', '+t('first'):''));h.append(dot,label);
+    const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;
+    if(!view.tc)ck.hidden=true;
+    const ty=document.createElement('div');ty.className='tally';const on=E.count(r.st,p),fl=E.flockCount(r.st,p);
+    ty.innerHTML=`<span>${t('sky')} <b>${on}</b></span><span>${t('reserve')} <b>${E.MAX-on}</b></span><span>${t('flocks')} <b>${fl}</b></span>`;
+    el.append(h,ck,ty);});
+  tick();
+  $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending)+(ui.pending.keep>=0?' ('+t('regions').toLowerCase()+')':'');
+  $('keepCard').hidden=!(ui.basemv&&!ui.pending);
+  $('myCard').hidden=!(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started);
+  $('passBox').hidden=!(mine&&canPass&&!ui.basemv&&!ui.pending);
+  const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
+  if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
+    $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
+  $('codesCard').hidden=role!=='host';$('rcCard').hidden=!(mySeat>=0&&view.started);
+  $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
+  $('endCard').hidden=!(role==='host'&&r.over);
+  const ol=$('log');ol.textContent='';
+  r.log.forEach((e,j)=>{const li=document.createElement('li');const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+    const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
+    const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);ol.appendChild(li);});
+  ol.scrollTop=ol.scrollHeight;}
+let audioCtx=null,lastMine=false;
+document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
+let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('volo-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
+function sndSave(){try{localStorage.setItem('volo-sound',JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}
+function sndBind(){const c=document.getElementById('sndOn'),r=document.getElementById('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
+  c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
+  r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
+function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
+let cdSec=null;
+function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
+  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
+  cdSec=s;}
+function tick(){if(!view||!view.tc)return;const r=replay(view.size,view.moves,view.result),rem=remaining();
+  countdown(mySeat>=0&&view.running&&!r.over&&r.st[TURN]===mySeat,rem[Math.max(0,mySeat)]);
+  for(const p of [0,1]){const el=$('clock'+p);if(!el)continue;el.textContent=fmt(rem[p]);
+    const run=view.running&&!r.over&&r.st[TURN]===p;el.className='clock '+(run?'run':'idle')+(rem[p]<60000?' low':'');}}
+setInterval(tick,250);
+
+// ---------- input ----------
+// Flights whose segment is exactly the current selection
+const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,k)=>c===sel[k]);
+function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
+  for(let d=0;d<6;d++){const path=[];let x=a;for(let k=0;k<14;k++){x=E.NB[x*6+d];if(x<0)break;if(x===b)return {d,path};path.push(x);}}return null;}
+const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
+function clickCell(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+  const legal=E.gen(r.st),me=mySeat+1,st=r.st;
+  if(ui.basemv){ // choose the region that stays
+    const t=E.base(st,ui.basemv);if(t[i]!==3-me)return;const rg=E.regions(t,1-mySeat);
+    const mv=E.expand(st,ui.basemv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv);}return;}
+  if(ui.sel.length){
+    const sel=ui.sel;
+    const land=legal.find(m=>sameSeg(m,sel)&&E.dest(m,sel[0])===i);
+    if(land&&st[i]!==me){if(ui.hover===i)pick(land);else{ui.hover=i;renderGame();}return;}
+    ui.hover=-1;
+    if(st[i]===me){
+      if(sel.includes(i)){ui.sel=[];renderGame();return;}
+      // extend the selection along its axis (or pick an axis for a single bird)
+      const ends=[sel[0],sel[sel.length-1]];
+      for(const e of ends){const L=lineThrough(e,i);if(!L)continue;if(L.path.some(x=>st[x]!==me||sel.includes(x)))continue;
+        if(sel.length>1){const ax=lineThrough(sel[0],sel[1]).d%3;if(L.d%3!==ax)continue;}
+        const add=L.path.concat([i]);ui.sel=normSel(e===sel[0]?add.reverse().concat(sel):sel.concat(add));renderGame();return;}
+      ui.sel=[i];renderGame();return;}
+    ui.sel=[];renderGame();return;}
+  if(st[i]===me){ui.sel=[i];renderGame();return;}
+  const pl=legal.find(m=>m.t==='p'&&m.at===i);if(pl)pick(pl);}
+// pick: base move chosen; if several variants exist (regions), ask which one stays
+function pick(mv){ui.sel=[];ui.hover=-1;const r=replay(view.size,view.moves,view.result);const vs=E.expand(r.st,mv);
+  if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
+function choose(mv){ui.sel=[];ui.hover=-1;ui.basemv=null;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
+function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
+  if(role==='host'){hostMove(mySeat,n,code,null);return;}
+  if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
+  sending=true;C.conn.send({t:'move',n,code});renderGame();}
+$('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
+$('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
+$('keepCancel').onclick=()=>{ui.basemv=null;renderGame();};
+$('passBtn').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);};
+$('needConfirm').checked=LS.get('volo-confirm',true);
+$('needConfirm').onchange=e=>LS.set('volo-confirm',e.target.checked);
+$('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
+$('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
+$('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
+  if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
+$('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
+$('newGame').onclick=()=>{LS.del('volo-p2p-host');location.hash='';location.reload();};
+$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
+let hoverT=0;
+function hoverCell(i){if(!view||ui.pending||ui.basemv||!ui.sel.length)return;if(i===ui.hover)return;
+  const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+  const ok=i>=0&&E.gen(r.st).some(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===i);const nv=ok?i:-1;if(nv===ui.hover)return;ui.hover=nv;renderGame();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest('[data-i]');hoverCell(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverCell(-1));}
+
+// ---------- invitation codes ----------
+function fillCodes(){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
+  $('codeC').value=H.code;$('linksBox').hidden=!web;$('fileNote').hidden=web;
+  if(web){$('codeP').value=base+'#join-'+H.code;$('codeW').value=base+'#watch-'+H.code;}}
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
+  const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
+  try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
+
+// ---------- start screen ----------
+$('hName').value=LS.get('volo-name','');$('jName').value=LS.get('volo-name','');
+$('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  const nm=$('hName').value.trim()||t('p1');LS.set('volo-name',nm);
+  const first=$('cFirst').value==='me'?'host':'guest';const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('volo-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
+  const names=first==='host'?[nm,'']:['',nm];
+  const th=[null,null];th[first==='host'?0:1]=hh(MYID);
+  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
+  H.turnStart=Date.now();hostStart(null);});
+function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  const nm=$('jName').value.trim().slice(0,24);if(nm)LS.set('volo-name',nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
+$('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
+$('jWatch').onclick=()=>joinClick(true);
+$('resumeBtn').onclick=()=>{const s=LS.get('volo-p2p-host',null);if(s)hostStart(s);};
+function exportCode(){const v=view,c=remaining();const p={size:v.size,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
+  return 'VOLO1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
+function importCode(t){t=String(t||'').replace(/\s+/g,'');if(t.indexOf('VOLO1.')!==0)throw 0;
+  const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(6)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;p.size=SIZE;return p;}
+$('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=false;inp.select();
+  try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('rcCopy'),1500);},()=>{});}catch(e){}};
+$('rForm').addEventListener('submit',e=>{e.preventDefault();let p;try{p=importCode($('rIn').value);}catch(x){$('joinErr').textContent=t('badResume');$('rSeats').innerHTML='';return;}
+  const box=$('rSeats');box.innerHTML=[0,1].map(k=>`<button type="button" class="primary" data-rseat="${k}">${t('iam',{n:String(p.names[k]||t(k?'p2':'p1')).replace(/[&<>"']/g,'')})}</button>`).join('');
+  box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(+b.dataset.rseat,p));});
+function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  const th=[null,null];th[seat]=hh(MYID);
+  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
+    started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
+function init(){const s0=E.init();drawBoard(s0,s0,[],false,null);
+  const saved=LS.get('volo-p2p-host',null);
+  if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
+  status(t('st_home'));
+  const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
+  if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
+  $('jCode').value=m[2];
+  if(m[1]==='join'&&!LS.get('volo-name','')){$('joinErr').textContent=t('invited');$('jName').focus();return;}
+  joinClick(m[1]==='watch');}
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function bird(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:18,fill:c?'var(--b2)':'var(--o2)',stroke:c?'var(--b3)':'var(--o3)','stroke-width':1.6},g);if(op)e.setAttribute('opacity',op);}
+// cur: real position; st: position shown (with the move being prepared); legal: moves in cur
+function drawBoard(cur,st,legal,interactive,last){const svg=$('svg');svg.textContent='';
+    // grid lines between neighbouring points
+  const grid=el('g',{stroke:'var(--grid)','stroke-width':1.3,opacity:.75},svg);
+  for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
+  for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
+  const lm=last&&last.mv,me=mySeat+1;
+  const flyers=new Set(),places=new Set(),lands=new Set(),keepable=new Set(),moved=new Set();
+  if(interactive&&!ui.basemv){for(const m of legal){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel)){const z=E.dest(m,ui.sel[0]);if(st[z]!==me)lands.add(z);}}else if(m.t==='p'&&!ui.sel.length)places.add(m.at);}}
+  let rg=null;if(ui.basemv&&!ui.pending){rg=E.regions(st,1-mySeat);}
+  if(lm&&lm.t==='f')for(const c of lm.cells)moved.add(E.dest(lm,c));
+  for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
+    const c=st[i];
+    el('circle',{cx:x,cy:y,r:c?19:3.2,fill:c?'transparent':'var(--dot)',stroke:'none'},g);
+    if(!c)el('circle',{cx:x,cy:y,r:16,fill:'transparent'},g);   // easier to click
+    if(places.has(i))el('circle',{cx:x,cy:y,r:6.5,fill:'none',stroke:'var(--accent)','stroke-width':1.6,opacity:.5},g);
+    if(lands.has(i))el('circle',{cx:x,cy:y,r:13,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
+    if(last&&last.removed&&last.removed.includes(i))el('circle',{cx:x,cy:y,r:14,fill:'none',stroke:'var(--danger)','stroke-width':2,'stroke-dasharray':'3 4',opacity:.9},g);
+    if(c){const preview=last&&last.preview&&!last.ghost&&(moved.has(i)||(lm.t==='p'&&lm.at===i));bird(g,x,y,c-1,preview?.8:0);
+      if(flyers.has(i))el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
+      if(ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
+      if(lm&&!last.preview&&((lm.t==='p'&&lm.at===i)||moved.has(i)))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3},g);
+      if(preview)el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
+      if(last&&last.ghost&&lm.t==='f'&&lm.cells.includes(i)&&!ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3},g);
+      if(rg&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse'},g);
+        const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
+  if(last&&last.ghost){const gl=el('g',{'pointer-events':'none'},svg);const c=mySeat;
+    const spots=lm.t==='p'?[lm.at]:lm.cells.map(z=>E.dest(lm,z)).filter(z=>!lm.cells.includes(z));
+    for(const z of spots){bird(gl,X(z),Y(z),c,.5);el('circle',{cx:X(z),cy:Y(z),r:21,fill:'none',stroke:'var(--accent)','stroke-width':2.5,'stroke-dasharray':'4 4'},gl);}}
+  if(lm&&lm.t==='f'&&!last.preview){const a=lm.cells[0],b=E.dest(lm,a);el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'2 7','stroke-linecap':'round',opacity:.9,'pointer-events':'none'},svg);}}
+init();sndBind();
+</script>
+</body></html>
