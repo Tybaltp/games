@@ -39,16 +39,17 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
 .boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
 .board{position:relative}
-.notice{position:absolute;left:10px;right:10px;top:10px;z-index:2;padding:8px 12px;border-radius:10px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);font-weight:500;font-size:.9rem;text-align:center;backdrop-filter:blur(4px)}
+.notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:10px;font-weight:500;font-size:.9rem;text-align:center;border:1px solid transparent}
+.notice.on{background:var(--panel);border-color:var(--line)}
 .notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 .players{display:flex;justify-content:space-between;gap:8px}
 .players.side-only{flex-direction:column}
-.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;opacity:.75}
+.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
 .player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .player.active .who{color:var(--ink)}
 .player .clock{font-size:1.4rem;line-height:1.1}
-.player .tally{display:flex;gap:7px;font-size:.7rem;overflow:hidden}
+.player .tally{display:flex;gap:6px;font-size:.66rem;overflow:hidden;letter-spacing:-.01em}
 .player .tally span::before{content:attr(title) ' ';color:var(--muted)}
 .player .tally span{color:var(--ink);font-weight:500}
 .side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
@@ -150,7 +151,8 @@ a{color:inherit}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="board"><div class="notice" id="notice" hidden></div><svg id="svg" viewBox="-340 -390 680 780" role="img" aria-label="Volo board"></svg></div>
+    <div class="board"><svg id="svg" viewBox="-340 -390 680 780" role="img" aria-label="Volo board"></svg></div>
+    <div class="notice" id="notice"></div>
   </div>
   <aside class="side">
     <div class="players side-only" id="playersSide"></div>
@@ -395,8 +397,8 @@ let ui={sel:[],basemv:null,pending:null,hover:-1},sending=false;
 const H={};             // host-only state
 
 function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;
-  const n=$('notice');if(n){n.className='notice'+(cls?' '+cls:'');n.textContent=txt;n.hidden=!txt;}}
-function quiet(){const n=$('notice');if(n)n.hidden=true;}
+  const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent=txt;}}
+function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
 function peerOpts(){return {debug:1};}
 function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
 
