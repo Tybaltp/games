@@ -52,6 +52,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .player .tally{display:flex;gap:6px;font-size:.66rem;overflow:hidden;letter-spacing:-.01em}
 .player .tally span::before{content:attr(title) ' ';color:var(--muted)}
 .player .tally span{color:var(--ink);font-weight:500}
+.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.side details.prominent summary{color:var(--ink);font-size:1rem}
+.side details.prominent .link input{font-size:.95rem;padding:9px 10px}
 .side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
 .side details > *:not(summary){margin-top:8px}
 .side details .link,.side details .hint{margin-top:6px}
@@ -156,6 +159,16 @@ a{color:inherit}
   </div>
   <aside class="side">
     <div class="players side-only" id="playersSide"></div>
+    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
+      <p class="hint" id="watchInfo"></p>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+    </details>
     <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
     <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancelMove">Cancel the move</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
@@ -167,16 +180,6 @@ a{color:inherit}
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
-    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
-      <p class="hint" id="watchInfo"></p>
-      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
-      <div id="linksBox" hidden>
-        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
-        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
-      </div>
-      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
-      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
-    </details>
     <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
       <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
@@ -293,7 +296,7 @@ const I18N={fr:{
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
  t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
  draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
- st_pausedHost:"Partie en pause : en attente du retour de {n}. Les pendules sont arrêtées.",st_pausedGuest:"Reconnexion… Les pendules sont arrêtées jusqu'à votre retour à tous deux.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
+ st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  st_pending:"Coup en attente : confirmez pour l'envoyer, ou annulez.",st_sending:"Envoi du coup…",st_oppGoneRun:"Adversaire déconnecté (sa pendule tourne). ",st_oppGone:"Adversaire déconnecté. ",
  st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_tapAgain:"Touchez à nouveau le point d'arrivée pour voler.",
@@ -327,7 +330,7 @@ const I18N={fr:{
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
  t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
  draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
- st_pausedHost:"Game paused: waiting for {n} to reconnect. The clocks are stopped.",st_pausedGuest:"Reconnecting… The clocks are stopped until you are both back.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
+ st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  st_pending:"Move pending: confirm to send it, or cancel.",st_sending:"Sending move…",st_oppGoneRun:"Opponent disconnected (their clock is running). ",st_oppGone:"Opponent disconnected. ",
  st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_tapAgain:"Tap the landing point again to fly there.",
@@ -406,9 +409,11 @@ function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
   running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
   started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0};}
+// The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
-  if(!live&&!g.paused){const r=replay(g.size,g.moves,g.result);if(g.running&&!r.over){const t=r.st[TURN];g.clock[t]=Math.max(0,g.clock[t]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
-  else if(live&&g.paused){g.paused=false;H.turnStart=Date.now();}}
+  const r=replay(g.size,g.moves,g.result),absentTurn=!r.over&&r.st[TURN]!==mySeat,want=!live&&absentTurn;
+  if(want&&!g.paused){if(g.running&&!r.over){const tt=r.st[TURN];g.clock[tt]=Math.max(0,g.clock[tt]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
+  else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
 const PID=c=>'volo-p2p-'+c;
 const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
@@ -434,7 +439,7 @@ function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.g
 function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||LS.get('volo-name','')||t('p1');role=null;
   if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.st[TURN]]=Math.max(0,pub.clock[r.st[TURN]]-pub.elapsed);}
   clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
-function becomeHost(){if(!view)return;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
+function becomeHost(){if(!view)return;LS.del('volo-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
   const rem=remaining(),v=view;
   H.code=C.code;H.guestCid=null;H.game={size:v.size,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
     ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0};
@@ -474,6 +479,8 @@ function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4)
   clearTimeout(C.t);clearTimeout(C.ct);C={code,host:PID(code),play:!asWatch,name:nm,cid:MYID,retry:0,lostSince:0};
   $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+code);
   role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));
+  const sv=LS.get('volo-p2p-guest',null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
+  if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
   const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
   me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view)status(t('st_noTable'));}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
@@ -484,7 +491,8 @@ function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.con
   conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
   conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
 function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;
-  if(view&&!view.paused&&view.started&&!view.result){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();renderGame();}
+  if(view&&!view.paused&&view.started&&!view.result){const r=replay(view.size,view.moves,view.result);
+    if(!r.over&&r.st[TURN]!==mySeat){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();}renderGame();}
   clientRetry();}
 function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.stop)return;
   if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
@@ -500,6 +508,7 @@ function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hi
 function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('status').hidden=false;$('joinErr').textContent=msg||'';status(msg||t('st_home'));}
 function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'';
   view={...g,recvAt:Date.now()};
+  if(role==='guest'&&mySeat>=0){if(g.result)LS.del('volo-p2p-guest');else LS.set('volo-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result))resetUi();
   renderGame();}
 function resetUi(){ui.sel=[];ui.basemv=null;ui.pending=null;ui.hover=-1;}
@@ -515,7 +524,6 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
   drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
   const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
-  const oppGone=mySeat>=0&&!r.over&&(role==='host'?!view.guestOn:false);
   const canPass=legal.some(m=>m.t==='x'),onlyPass=legal.length===1&&canPass;
   if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
@@ -524,8 +532,8 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else if(ui.pending)quiet();
   else if(sending)quiet();
   else if(mine){
-    if(oppGone)status(t('st_oppGoneRun'),'turn');else if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn');else if(onlyPass)status(t('st_mustPass'),'turn');else quiet();}
-  else if(oppGone)status(t('st_oppGone'));else quiet();
+    if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn');else if(onlyPass)status(t('st_mustPass'),'turn');else quiet();}
+  else quiet();
   const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
   const host=wide?$('playersSide'):$('playersTop');host.textContent='';
   for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&turn===p?' active':'');el.id='pl'+p;
@@ -542,7 +550,8 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  $('inviteBox').hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+    if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}}$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!(role==='host'&&r.over);
   const ol=$('log');ol.textContent='';
@@ -615,7 +624,7 @@ $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tru
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{LS.del('volo-p2p-host');location.hash='';location.reload();};
+$('newGame').onclick=()=>{LS.del('volo-p2p-host');LS.del('volo-p2p-guest');location.hash='';location.reload();};
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
 let hoverT=0;
 function hoverCell(i){if(!view||ui.pending||ui.basemv||!ui.sel.length)return;if(i===ui.hover)return;
@@ -646,7 +655,7 @@ function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));re
   const nm=$('jName').value.trim().slice(0,24);if(nm)LS.set('volo-name',nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
 $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
 $('jWatch').onclick=()=>joinClick(true);
-$('resumeBtn').onclick=()=>{const s=LS.get('volo-p2p-host',null);if(s)hostStart(s);};
+$('resumeBtn').onclick=()=>{const s=LS.get('volo-p2p-host',null);if(s){hostStart(s);return;}const sg=LS.get('volo-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||LS.get('volo-name','')||t('p2'),false);};
 function exportCode(){const v=view,c=remaining();const p={size:v.size,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
   return 'VOLO1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
 function importCode(t){t=String(t||'').replace(/\s+/g,'');if(t.indexOf('VOLO1.')!==0)throw 0;
@@ -661,8 +670,9 @@ function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));retu
   Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
     started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
 function init(){const s0=E.init();drawBoard(s0,s0,[],false,null);
-  const saved=LS.get('volo-p2p-host',null);
+  const saved=LS.get('volo-p2p-host',null),sg=LS.get('volo-p2p-guest',null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
+  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;}
   status(t('st_home'));
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
