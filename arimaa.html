@@ -132,6 +132,10 @@ h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
 h1 a.gname{color:inherit;text-decoration:none}
 @media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
 :root{--frost:rgba(226,243,255,.75)}
+#svg .lp{opacity:.5;transition:opacity .12s}
+#svg .lp.prep{opacity:1}
+#svg.lpfocus .lp{opacity:.12}
+#svg.lpfocus .lp.on{opacity:1}
 </style>
 </head><body>
 <div class="wrap">
@@ -851,19 +855,27 @@ function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'poin
   const ti=el('title',{},gr);ti.textContent=t(gold?'gold':'silver')+' — '+I18N[lang].pn[Math.abs(v)-1];}
 const ring=(g,i,a)=>el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:a.r||27,fill:'none',stroke:a.c||'var(--accent)','stroke-width':a.w||3,...(a.dash?{'stroke-dasharray':a.dash}:{}),...(a.cls?{class:a.cls}:{}),'pointer-events':'none'},g);
 // o: {real, shown, last, pv (turn preview), hl (highlights), setup}
-// Last turn: a line per piece from its start through each square to its end, with the end ringed.
-// Pieces moved by the player: solid line under the pieces. Pieces pushed or pulled: dashed line drawn over the pieces,
-// so that it stays visible across the piece that pushed or pulled them.
-function lastPath(g,P){const col=P.own?'var(--accent)':'var(--ink)',pts=P.pts.map(i=>(X(i)+S/2)+','+(Y(i)+S/2)).join(' ');
-  if(!P.own)el('polyline',{points:pts,fill:'none',stroke:'var(--bg)','stroke-width':7,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':'2 9',opacity:.6},g);
-  el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':P.own?5:4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':P.own?'':'2 9',opacity:P.own?.85:1},g);
-  el('circle',{cx:X(P.pts[0])+S/2,cy:Y(P.pts[0])+S/2,r:P.own?6:5,fill:col,opacity:.9},g);}
-function lastUnder(g,L){if(!L||!L.det)return;for(const P of L.det.paths)if(P.own)lastPath(g,P);}
-function lastOver(g,L,shown){if(!L||!L.det)return;
-  for(const P of L.det.paths){const end=P.pts[P.pts.length-1];
+// Last turn: the pieces that moved are ringed; each one's path (solid: moved by the player, dashed: pushed or pulled)
+// is drawn over the pieces, lightly, and stops at the edge of the piece where it ends. Hovering a moved piece shows
+// its own path plainly and dims the others. While preparing one's own turn, the paths are drawn plainly.
+let lastEnds=new Map();   // end square -> path index, for the hover
+function lastPath(g,P,k,end,prep){const col=P.own?'var(--accent)':'var(--ink)',c=P.pts.map(i=>[X(i)+S/2,Y(i)+S/2]);
+  if(end&&c.length>1){const a=c[c.length-2],b=c[c.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,cut=Math.min(24,L-2);
+    c[c.length-1]=[b[0]-dx/L*cut,b[1]-dy/L*cut];}
+  const pts=c.map(q=>q.join(',')).join(' '),gr=el('g',{class:'lp'+(prep?' prep':''),'data-k':k},g);
+  if(!P.own)el('polyline',{points:pts,fill:'none',stroke:'var(--bg)','stroke-width':7,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':'2 9',opacity:.6},gr);
+  el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':P.own?4.5:4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':P.own?'':'2 9'},gr);
+  el('circle',{cx:c[0][0],cy:c[0][1],r:P.own?6:5,fill:col},gr);}
+function lastUnder(){}
+function lastOver(g,L,shown){lastEnds=new Map();if(!L||!L.det)return;
+  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];
     if(shown[end]&&!L.prep)ring(g,end,{w:3,c:P.own?'var(--accent)':'var(--ink)',dash:P.own?'':'5 4'});
-    if(!P.own)lastPath(g,P);}
+    lastPath(g,P,k,!!shown[end],!!L.prep);if(shown[end])lastEnds.set(end,k);});
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}}
+function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const c=e.target.closest('[data-i]'),k=c?lastEnds.get(+c.dataset.i):undefined;lpFocus(k===undefined?-1:k);});
+  $('svg').addEventListener('pointerleave',()=>lpFocus(-1));}
 // A piece on a trap is held by its friendly neighbours: a short link to each of them.
 // A frozen piece (next to a stronger enemy, no friend around) gets a light frost hatching.
 function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;const gold=v>0;
