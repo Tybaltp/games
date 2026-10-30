@@ -297,7 +297,7 @@ function DBEngine(){
 const SIZE=184;
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18N={fr:{
- leaveQ:"Une partie est en cours. La quitter ?",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
@@ -336,7 +336,7 @@ const I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
- leaveQ:"A game is in progress. Leave it?",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, first player swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, first player swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who plays first",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
@@ -483,14 +483,14 @@ function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.g
 function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
   if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.toMove]=Math.max(0,pub.clock[r.toMove]-pub.elapsed);}
   clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
-function becomeHost(){if(!view)return;LS.del('dblk-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
+function becomeHost(){if(!view)return;if(C.pending){pendClear();delete view.runSeat;}LS.del('dblk-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
   const rem=remaining(),v=view;
   H.code=C.code;H.guestCid=null;H.game={size:v.size,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
     ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0};
   if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
   H.turnStart=Date.now();hostStart(null);}
 function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
-function hostOnData(conn,d){if(!d||typeof d!=='object')return;const g=H.game;
+function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping')return;const g=H.game;
   if(d.t==='hello'){
     const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
     if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
@@ -508,7 +508,7 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;const g=H.game;
   if(d.t==='start')hostReady(s);
   if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
   if(d.t==='rematch')rematchOp(s,d.op);}
-function hostMove(s,n,code,conn){const g=H.game;if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
+function hostMove(s,n,code,conn){const g=H.game;if(conn&&n===g.moves.length-1&&g.moves[n]===code){conn.send({t:'state',game:hostPublic()});return false;}if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
   const r=replay(g.size,g.moves,g.result);if(r.over||r.toMove!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
   const mv=dec(code);if(!mv||!E.validate(r.st,mv)){conn&&conn.send({t:'nack'});return false;}
   const now=Date.now();
@@ -518,6 +518,14 @@ let saveTick=0;
 setInterval(()=>{if(role!=='host'||!H.game)return;if(++saveTick%25===0)hostSave();if(H.game.result||!H.game.running||H.game.paused||!H.game.tc)return;const g=H.game,r=replay(g.size,g.moves,g.result);if(r.over)return;
   const tm=r.toMove;if(g.clock[tm]-(Date.now()-H.turnStart)<=0){g.clock[tm]=0;g.result={winner:1-tm,reason:'time'};hostBroadcast();}},200);
 
+// Heartbeat: host and guest exchange a small message every 2 s; after ~9 s without any message,
+// the guest (or spectator) treats the connection as lost, and the host treats the guest as away.
+setInterval(()=>{const now=Date.now();
+  if(role==='host'&&H.conns){for(const c of H.conns)if(c.open){try{c.send({t:'ping'});}catch(e){}}
+    const gc=H.guestConn;if(gc&&gc.lastSeen&&now-gc.lastSeen>9000){try{gc.close();}catch(e){}hostDrop(gc);}}
+  else if((role==='guest'||role==='watch')&&C.conn&&C.conn.open&&!C.stop){try{C.conn.send({t:'ping'});}catch(e){}
+    if(C.lastSeen&&now-C.lastSeen>9000){const c=C.conn;C.conn=null;try{c.close();}catch(e){}clientLost();}}},2000);
+
 // --- guest / spectator ---
 let C={};   // {code,cid,name,conn,retry}
 function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4){$('joinErr').textContent=t('codeLen');return;}
@@ -526,27 +534,28 @@ function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4)
   role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));
   const sv=LS.get('dblk-p2p-guest',null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
   if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
+  {const pd=LS.get('dblk-p2p-pending',null);if(!asWatch&&pd&&pd.code===code&&view&&view.moves.length===pd.n){C.pending={n:pd.n,code:pd.mv,at:Date.now(),sent:0};pendView();sending=true;renderGame();}}
   const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
   me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view)status(t('st_noTable'));}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
   me.on('disconnected',()=>setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500));}
 function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.connect(C.host,{reliable:true});C.conn=conn;clearTimeout(C.ct);
   C.ct=setTimeout(()=>{if(C.conn===conn&&!conn.open)clientLost();},7000);
-  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,s:mySeat>=0&&view?view:null});});
+  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,s:mySeat>=0&&view?(C.pending&&C.pending.base||view):null});C.lastSeen=Date.now();});
   conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
   conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
-function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;
+function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;if(C.pending)sending=true;
   if(view&&!view.paused&&view.started&&!view.result){const r=replay(view.size,view.moves,view.result);
     if(!r.over&&r.toMove!==mySeat){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();}renderGame();}
   clientRetry();}
 function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.stop)return;
   if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
   if(peer&&peer.open)clientConnect();else{if(peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}clientLost();}},3500);}
-function clientOnData(d){if(!d||typeof d!=='object')return;
+function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now();if(d.t==='ping')return;
   if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);}
   else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
-  else if(d.t==='state'){sending=false;C.lostSince=0;showState(d.game);}
-  else if(d.t==='nack'){sending=false;status(t('st_nack'));renderGame();}}
+  else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();showState(d.game);if(C.pending){pendView();sending=true;renderGame();}}
+  else if(d.t==='nack'){sending=false;if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
 
 // ---------- game view ----------
 function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;}
@@ -557,7 +566,7 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result))resetUi();
   renderGame();}
 function resetUi(){ui.pending=null;ui.hover=-1;}
-function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[r.toMove]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
+function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[view.runSeat??r.toMove]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
 function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.toMove===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
 
@@ -605,6 +614,8 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else if(lastSwap)status(mine?t('st_swapped',{n:plain(1-mySeat)}):t('st_swappedW',{n:plain(1-r.toMove)}));
   else if(stuckC!==undefined){const s=E.seatOf(r.st,stuckC);status(s===mySeat?t('st_meStuck',{n:plain(1-s)}):t('st_stuck',{n:plain(s)}));}
   else quiet();
+  if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
+  else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'));
   const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
   $('playersSide').textContent='';$('playersTop').textContent='';const host=wide?$('playersSide'):$('playersTop');
   const pad=n=>String(n).padStart(2,' ');
@@ -679,9 +690,9 @@ function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.
   if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
   cdSec=s;}
 function tick(){if(!view||!view.tc)return;const r=replay(view.size,view.moves,view.result),rem=remaining();
-  countdown(mySeat>=0&&view.running&&!r.over&&r.toMove===mySeat,rem[Math.max(0,mySeat)]);
+  countdown(mySeat>=0&&view.running&&!r.over&&(view.runSeat??r.toMove)===mySeat,rem[Math.max(0,mySeat)]);
   for(const p of [0,1]){const e=$('clock'+p);if(!e)continue;e.textContent=fmt(rem[p]);
-    const run=view.running&&!r.over&&r.toMove===p;e.className='clock '+(run?'run':'idle')+(rem[p]<60000?' low':'');}}
+    const run=view.running&&!r.over&&(view.runSeat??r.toMove)===p;e.className='clock '+(run?'run':'idle')+(rem[p]<60000?' low':'');}}
 setInterval(tick,250);
 window.addEventListener('resize',()=>{if(view)renderGame();});
 
@@ -699,7 +710,16 @@ function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.mo
   if(mv.t==='p')selectPiece(-1,true);
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
-  sending=true;C.conn.send({t:'move',n,code});renderGame();}
+  sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('dblk-p2p-pending',{code:C.code,n,mv:code});
+  C.conn.send({t:'move',n,code});renderGame();}
+// A move sent by the guest is shown at once on top of the host's position, until the host confirms it (or refuses it).
+function pendView(){if(!C.pending||!view||view.moves.length!==C.pending.n)return;const rem=remaining();C.pending.base=view;
+  view={...view,moves:view.moves.concat([C.pending.code]),clock:rem,elapsed:0,recvAt:Date.now(),runSeat:mySeat};}
+function pendClear(){C.pending=null;LS.del('dblk-p2p-pending');}
+// resend until confirmed; after 1.5 s, say that the move waits for the host
+setInterval(()=>{if(role!=='guest'||!C.pending||!view)return;const now=Date.now();
+  if(C.conn&&C.conn.open&&now-C.pending.sent>3000){C.pending.sent=now;try{C.conn.send({t:'move',n:C.pending.n,code:C.pending.code});}catch(e){}}
+  if(!C.pending.shown&&now-C.pending.at>1500){C.pending.shown=true;renderGame();}},1000);
 $('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
 $('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
 $('swapBtn').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||!E.canSwap(r.st))return;choose({t:'s'});};

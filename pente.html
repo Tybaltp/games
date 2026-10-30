@@ -563,7 +563,7 @@ fr:{
  t_takeover:"L'hôte est injoignable : vous hébergez maintenant la partie.",t_back:"{name} est de retour.",t_oppPause:"Adversaire déconnecté : les pendules sont arrêtées.",sounds:"Sons",volume:"Volume",
  resumeTitle:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",resumeNote:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",iAm:"Je suis {name}",e_badResume:"Ce code de reprise n'est pas valide.",
  resumeCodeT:"Code de reprise",resumeLast:"En dernier recours, si la connexion ne peut pas être rétablie : l'un ou l'autre joueur colle ce code dans « Reprendre une partie » sur la page d'accueil.",copyResume:"Copier le code de reprise",resumeCopied:"Code de reprise copié.",
- t_seatsTaken:"Les deux places sont prises : vous observez la partie.",t_noConn:"Pas de connexion avec l'hôte.",t_allPlaced:"Toutes les pierres sont posées : validez ou retirez-en une.",
+ t_seatsTaken:"Les deux places sont prises : vous observez la partie.",t_noConn:"Pas de connexion avec l'hôte.",st_waitHost:"Coup envoyé, en attente de l'hôte…",st_rejected:"Coup refusé par l'hôte : la position a changé. Rejouez.",t_allPlaced:"Toutes les pierres sont posées : validez ou retirez-en une.",
  e_over:"La partie est terminée.",e_notStarted:"La partie n'a pas commencé.",e_notTurn:"Ce n'est pas votre tour.",e_badOpen:"Ouverture invalide.",e_badChoice:"Choix invalide.",e_badMove:"Coup invalide.",
  e_code:"Saisissez le code reçu (6 caractères).",e_nogame:"Cette partie n'existe pas sur cet appareil.",e_invitedName:"Vous êtes invité à jouer : indiquez votre nom puis cliquez sur Jouer.",
  tag_swap:"Swap2",tag_pairs:"5 paires",tag_long:"6+ gagne",tag_noclock:"sans pendule",tag_ai:"niveau {lv}",
@@ -636,7 +636,7 @@ en:{
  t_takeover:"The host is unreachable: you now host the game.",t_back:"{name} is back.",t_oppPause:"Opponent disconnected: the clocks are stopped.",sounds:"Sounds",volume:"Volume",
  resumeTitle:"Resume a game",resumeCode:"Resume code",load:"Load",resumeNote:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",iAm:"I am {name}",e_badResume:"This resume code is not valid.",
  resumeCodeT:"Resume code",resumeLast:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",copyResume:"Copy the resume code",resumeCopied:"Resume code copied.",
- t_seatsTaken:"Both seats are taken: you are watching the game.",t_noConn:"No connection to the host.",t_allPlaced:"All stones are placed: confirm, or remove one.",
+ t_seatsTaken:"Both seats are taken: you are watching the game.",t_noConn:"No connection to the host.",st_waitHost:"Move sent, waiting for the host…",st_rejected:"Move rejected by the host: the position has changed. Play again.",t_allPlaced:"All stones are placed: confirm, or remove one.",
  e_over:"The game is over.",e_notStarted:"The game has not started.",e_notTurn:"It is not your turn.",e_badOpen:"Invalid opening.",e_badChoice:"Invalid choice.",e_badMove:"Invalid move.",
  e_code:"Enter the code you received (6 characters).",e_nogame:"This game does not exist on this device.",e_invitedName:"You are invited to play: enter your name, then click Play.",
  tag_swap:"Swap2",tag_pairs:"5 pairs",tag_long:"6+ wins",tag_noclock:"no clock",tag_ai:"level {lv}",
@@ -732,6 +732,9 @@ function replay(log,k){const B=new Array(NN).fill(0),caps=[0,0,0];let lastCap=[]
 let mode=null,mySeat=null,S=null,code=null,peer=null,conn=null,oppConn=null,pending=false,lostSince=0,connT=null,refused=false;
 const conns=new Set();
 let recvAt=0,recvEl=0,obsCount=0,tent=[],localMode='',resignArm=false,lastTurnMine=false,retryT=null,navAt=null,homeArm=false,homeArmT=null;
+// Guest move sent but not yet confirmed: shown at once, resent every 3 s, kept across reloads.
+// {a, id, host: host state before the move (JSON), el: time used on the turn, clk: my clock at sending, t0, at, sent, shown}
+let pendingAct=null,lastSeen=0,rejectedAt=0,hbTick=0,pendingBackup=null;   // pendingBackup: kept until a take-over succeeds
 let busy='',hint=-1,hintOpt='',hintMsg=null,aiInfo=null,hist=[],timers=[];
 
 function toast(m){const e=$('toast');e.textContent=m;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600);}
@@ -801,8 +804,8 @@ function changed(bump){if(mode!=='host'){render();return;}
  render();}
 function startHost(){if(!peerReady())return;setNet('warn','n_opening');
  const pr=new Peer(PID(code),peerOpts());peer=pr;
- pr.on('open',()=>{if(pr===peer)setNet('ok','n_online');});
- pr.on('connection',c=>{if(pr!==peer){try{c.close();}catch(_){}return;}c.on('data',d=>onHostData(c,d));
+ pr.on('open',()=>{if(pr===peer){setNet('ok','n_online');pendingBackup=null;}});
+ pr.on('connection',c=>{if(pr!==peer){try{c.close();}catch(_){}return;}c.seen=performance.now();c.on('data',d=>onHostData(c,d));
   c.on('close',()=>{conns.delete(c);if(pr!==peer)return;if(c===oppConn){oppConn=null;toast(t('t_oppLeft'));}if(mode==='host')changed();});c.on('error',()=>{});});
  pr.on('disconnected',()=>{if(pr!==peer)return;setNet('warn','n_reconnect');setTimeout(()=>{try{if(!pr.destroyed)pr.reconnect();}catch(e){}},1500);});
  pr.on('error',e=>{if(pr!==peer)return;
@@ -811,12 +814,20 @@ function startHost(){if(!peerReady())return;setNet('warn','n_opening');
   else if(['network','server-error','socket-error','socket-closed'].includes(e.type))setNet('bad','n_unreach');});}
 function hostTimers(){
  timers.push(setInterval(()=>{if(mode!=='host'||!S||!S.tc||S.paused)return;const ts=turnSeat(S);if(ts&&S.clocks[ts]-(Date.now()-S.turnStart)<=0){S.clocks[ts]=0;S.turnStart=Date.now();S.result={winner:other(ts),code:'time'};changed(true);}},250));
- timers.push(setInterval(()=>{if(mode==='host'&&S&&turnSeat(S))changed();},15000));}
+ timers.push(setInterval(()=>{if(mode==='host'&&S&&turnSeat(S))changed();},15000));
+ // heartbeat: a ping to everyone every 2 s; a guest silent for 9 s is treated as gone
+ timers.push(setInterval(()=>{if(mode!=='host')return;for(const c of conns)if(c.open){try{c.send({k:'ping'});}catch(_){}}
+  if(oppConn&&oppConn.seen&&performance.now()-oppConn.seen>9000){const c=oppConn;oppConn=null;conns.delete(c);try{c.close();}catch(_){}toast(t('t_oppLeft'));changed();}},2000));}
 function becomeClient(){freeze();timers.forEach(x=>{clearInterval(x);clearTimeout(x);});timers=[];
- mode='guest';oppConn=null;conns.clear();lostSince=Date.now();recvEl=0;recvAt=performance.now();setHash('join-'+code);setNet('warn','n_connecting');render();startGuest();}
+ mode='guest';oppConn=null;conns.clear();lostSince=Date.now();recvEl=0;recvAt=performance.now();
+ // the take-over failed (the host is still there): the move becomes pending again, to be sent to it
+ if(pendingBackup){const q=pendingBackup,now=performance.now();pendingBackup=null;S=JSON.parse(q.host);pendingAct={...q,clk:Math.max(0,q.clk-(now-q.t0)),t0:now,at:now-2000,sent:0};const st=withPending(S);if(st){S=st;pending=true;}else pendingAct=null;savePending();}setHash('join-'+code);setNet('warn','n_connecting');render();startGuest();}
+function applyPendingAsHost(){if(!pendingAct)return false;const q=pendingAct;pendingAct=null;pending=false;pendingBackup=q;
+ S=JSON.parse(q.host);S.paused=false;S.turnStart=Date.now()-(q.el||0);const err=act(S,mySeat,q.a,Date.now());
+ if(err){S=JSON.parse(q.host);return false;}if(q.id)S.lastAct={id:q.id,seat:mySeat};return true;}
 function becomeHost(){store.del('pente-guest');clearTimeout(retryT);retryT=null;clearTimeout(connT);const old=peer;conn=null;peer=null;try{old&&old.destroy();}catch(_){}
- freeze();mode='host';setHash('host-'+code);toast(t('t_takeover'));changed();startHost();hostTimers();}
-function onHostData(c,d){if(!d||typeof d!=='object'||mode!=='host')return;
+ if(!applyPendingAsHost())freeze();mode='host';setHash('host-'+code);toast(t('t_takeover'));changed();startHost();hostTimers();}
+function onHostData(c,d){if(!d||typeof d!=='object'||mode!=='host')return;c.seen=performance.now();if(d.k==='ping')return;
  if(d.k==='hello'){c.seat=null;
   if(d.role==='play'&&typeof d.token==='string'){const th=hh(d.token);
    let seat=['H','G'].find(k=>S.th[k]===th)||null;
@@ -831,7 +842,9 @@ function onHostData(c,d){if(!d||typeof d!=='object'||mode!=='host')return;
   conns.add(c);changed();return;}
  if(d.k==='rv'&&c.seat&&c===oppConn&&d.a){rvApply(c.seat,d.a);changed();return;}
  if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a&&OFFERS.includes(d.a.t)){offerAct(c.seat,d.a);changed(true);return;}
- if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a){const err=act(S,c.seat,d.a,Date.now());if(err){try{c.send({k:'err',m:err});}catch(_){}}changed(!err);}}
+ if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a){
+  if(d.id&&S.lastAct&&S.lastAct.id===d.id){changed();return;}   // resent move already applied: send the state again
+  const err=act(S,c.seat,d.a,Date.now());if(!err&&d.id)S.lastAct={id:d.id,seat:c.seat};if(err){try{c.send({k:'err',m:err});}catch(_){}}changed(!err);}}
 // New game offered by either player once the game is over: accepted, it starts at once under the same code,
 // colours swapped (the player who did not place the Swap2 opening places it), same clock, clocks reset.
 const OFFERS=['offer','withdraw','accept','decline'];
@@ -855,19 +868,38 @@ function scheduleRetry(){if(refused||retryT||mode==='host')return;retryT=setTime
 function connect(){if(conn){try{conn.close();}catch(_){}}
  const c=peer.connect(PID(code),{reliable:true});conn=c;clearTimeout(connT);
  connT=setTimeout(()=>{if(conn===c&&!c.open){lostSince=lostSince||Date.now();scheduleRetry();}},7000);
- c.on('open',()=>{clearTimeout(connT);setNet('ok','n_connected');c.send({k:'hello',role:mode==='guest'?'play':'watch',token,name:nickGet()||'',s:S&&mySeat?pub():null});});
+ c.on('open',()=>{clearTimeout(connT);lastSeen=performance.now();setNet('ok','n_connected');c.send({k:'hello',role:mode==='guest'?'play':'watch',token,name:nickGet()||'',s:S&&mySeat?(pendingAct?JSON.parse(pendingAct.host):pub()):null});
+  if(pendingAct)pendingAct.sent=0;});
  c.on('data',d=>{if(c===conn)onGuestData(d);});
- c.on('close',()=>{if(c!==conn||!mode||refused||mode==='host')return;setNet('bad','n_lost');pending=false;lostSince=lostSince||Date.now();if(S&&turnSeat(S)&&turnSeat(S)!==mySeat)freeze();scheduleRetry();render();});
+ c.on('close',()=>guestLost(c));
  c.on('error',()=>{});}
-function onGuestData(d){if(!d||typeof d!=='object')return;
- if(mode==='host')return;
- if(d.k==='state'){lostSince=0;const pg=S&&S.game,pp=S&&S.phase;S=d.s;recvEl=d.el||0;recvAt=performance.now();mySeat=d.you;obsCount=d.obs||0;pending=false;
+function guestLost(c){if(c!==conn||!mode||refused||mode==='host')return;setNet('bad','n_lost');pending=!!pendingAct;lostSince=lostSince||Date.now();
+ if(S&&!pendingAct&&turnSeat(S)&&turnSeat(S)!==mySeat)freeze();scheduleRetry();render();}
+// the guest's view: the host state with the pending move applied on top (null if it no longer applies)
+function withPending(base){const st=JSON.parse(JSON.stringify(base));st.paused=false;st.turnStart=Date.now()-(recvEl+(performance.now()-recvAt));
+ return act(st,mySeat,pendingAct.a,Date.now())?null:st;}
+function pendingRec(){return pendingAct?{a:pendingAct.a,id:pendingAct.id,host:pendingAct.host,el:pendingAct.el,clk:Math.max(0,pendingAct.clk-(performance.now()-pendingAct.t0))}:null;}
+function savePending(){const g=jget('pente-guest');if(g&&g.code===code){g.pending=pendingRec();store.set('pente-guest',JSON.stringify(g));}}
+// heartbeat (guest and spectator): ping every 2 s; 9 s without any message from the host = connection lost.
+// Pending move: resent every 3 s; the waiting message appears after 1.5 s.
+setInterval(()=>{if(mode!=='guest'&&mode!=='watch')return;const now=performance.now();
+ if(conn&&conn.open){if(++hbTick%2===0){try{conn.send({k:'ping'});}catch(_){}}
+  if(lastSeen&&now-lastSeen>9000){const c=conn;lastSeen=0;try{c.close();}catch(_){}guestLost(c);return;}}
+ if(pendingAct&&mode==='guest'){if(conn&&conn.open&&now-pendingAct.sent>3000){pendingAct.sent=now;try{conn.send({k:'act',a:pendingAct.a,id:pendingAct.id});}catch(_){}}
+  if(!pendingAct.shown&&now-pendingAct.at>1500){pendingAct.shown=true;render();}}
+ if(rejectedAt&&now-rejectedAt>6000){rejectedAt=0;render();}},1000);
+function onGuestData(d){if(!d||typeof d!=='object')return;lastSeen=performance.now();
+ if(mode==='host'||d.k==='ping')return;
+ if(d.k==='state'){lostSince=0;const pg=S&&S.game,pp=S&&S.phase;S=d.s;recvEl=d.el||0;recvAt=performance.now();mySeat=d.you;obsCount=d.obs||0;
+  if(pendingAct){if(S.lastAct&&S.lastAct.id===pendingAct.id)pendingAct=null;   // confirmed
+   else{pendingAct.host=JSON.stringify(S);const st=withPending(S);if(st)S=st;else{pendingAct=null;rejectedAt=performance.now();}}}
+  pending=!!pendingAct;
   if(pg!==S.game||pp!==S.phase){tent=[];localMode='';}
   if(pg!==S.game)navAt=null;   // a spectator who is browsing is not pulled back by new moves
-  if(mode==='guest'&&mySeat){if(S.result)store.del('pente-guest');else{const s2=JSON.parse(JSON.stringify(pub())),t2=turnSeat(s2);if(t2&&s2.tc&&!s2.paused)s2.clocks[t2]=Math.max(0,s2.clocks[t2]-recvEl);s2.paused=!!t2;
-   store.set('pente-guest',JSON.stringify({code,seat:mySeat,S:s2,savedAt:Date.now()}));}}
+  if(mode==='guest'&&mySeat){if(S.result&&!pendingAct)store.del('pente-guest');else{const s2=pendingAct?JSON.parse(pendingAct.host):JSON.parse(JSON.stringify(pub())),t2=turnSeat(s2);if(t2&&s2.tc&&!s2.paused)s2.clocks[t2]=Math.max(0,s2.clocks[t2]-recvEl);s2.paused=!!t2;
+   store.set('pente-guest',JSON.stringify({code,seat:mySeat,S:s2,savedAt:Date.now(),pending:pendingRec()}));}}
   render();}
- else if(d.k==='err'){pending=false;toast(t(d.m));render();}
+ else if(d.k==='err'){if(pendingAct){S=JSON.parse(pendingAct.host);pendingAct=null;rejectedAt=performance.now();savePending();}pending=false;toast(t(d.m));render();}
  else if(d.k==='note'){toast(t(d.m));}
  else if(d.k==='refused'){refused=true;const c=code;leaveCurrent();setHash('');$('game').hidden=true;$('home').hidden=false;$('jCode').value=c;$('lErr').textContent=t(d.m);render();}}
 
@@ -876,6 +908,12 @@ function sendAct(a){resignArm=false;
  if(OFFERS.includes(a.t)&&mode==='host'){offerAct(mySeat,a);changed(true);return;}
  if(mode==='ai'){hist.push(JSON.stringify(S));const err=act(S,'H',a,Date.now());if(err){hist.pop();toast(t(err));}clearHint();aiInfo=null;render();aiStep();}
  else if(mode==='host'){const err=act(S,mySeat,a,Date.now());if(err)toast(t(err));changed(!err);}
+ else if(mode==='guest'&&mySeat&&!OFFERS.includes(a.t)&&a.t!=='start'&&S&&!pendingAct){
+  // shown at once; the host confirms it (or refuses it) — resent until then, even after a reconnection
+  const now=performance.now(),host=JSON.stringify(S);
+  pendingAct={a,id:rid(8),host,el:recvEl+(now-recvAt),clk:remaining(mySeat),t0:now,at:now,sent:now};
+  const st=withPending(S);if(!st){pendingAct=null;toast(t('e_badMove'));return;}
+  S=st;pending=true;rejectedAt=0;savePending();if(conn&&conn.open){try{conn.send({k:'act',a,id:pendingAct.id});}catch(_){}}render();}
  else if(conn&&conn.open){pending=true;conn.send({k:'act',a});render();}
  else toast(t('t_noConn'));}
 function placing(){if(!S||!mySeat||pending||S.result||S.paused||navAt!==null)return null;if(turnSeat(S)!==mySeat)return null;
@@ -893,10 +931,12 @@ function onCell(i,touch){const p=placing();if(!p||busy==='hint')return;const k=t
 function commit(){const p=placing();if(!p||tent.length!==p.colors.length)return;const a=p.make(tent.slice());tent=[];localMode='';sendAct(a);}
 
 /* ================= horloges ================= */
-function remaining(seat){if(!S||!S.tc)return 0;const ts=turnSeat(S);const base=S.clocks[seat];if(seat!==ts||S.paused)return base;
+function remaining(seat){if(!S||!S.tc)return 0;
+ if(pendingAct&&mode==='guest')return seat===mySeat?Math.max(0,pendingAct.clk-(performance.now()-pendingAct.t0)):S.clocks[seat];
+ const ts=turnSeat(S);const base=S.clocks[seat];if(seat!==ts||S.paused)return base;
  const el=mode==='host'?Date.now()-S.turnStart:recvEl+(performance.now()-recvAt);return Math.max(0,base-el);}
 function fmt(ms){const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
-function tickClocks(){if(!S||!S.tc)return;const ts=turnSeat(S);
+function tickClocks(){if(!S||!S.tc)return;const ts=pendingAct&&mode==='guest'?mySeat:turnSeat(S);
  for(const seat of ['H','G']){const e=$('clk-'+seat);if(!e)continue;const r=remaining(seat);e.textContent=fmt(r);e.classList.toggle('run',seat===ts&&!S.paused);e.classList.toggle('low',r<30000&&!!ts);}
  countdown(!!ts&&ts===mySeat&&!S.result&&!S.paused,remaining(mySeat||'H'));}
 setInterval(tickClocks,200);
@@ -947,6 +987,8 @@ function render(){
  else if(S.phase==='wait'){if(!hasGuest())msg=mode==='host'?t('n_waitHost'):t('n_wait');
   else if(mySeat)msg=isReady(mySeat)?t('n_waitStart',{name:nameOf(other(mySeat))}):t('n_bothHere');else msg=t('n_waitBoth');}
  else if(S.paused)msg=mode==='host'?t('n_pausedHost',{name:nameOf(other(mySeat))}):(mySeat?t('n_pausedGuest'):t('n_pausedWatch'));
+ else if(rejectedAt&&mode==='guest'){msg=t('st_rejected');cls='turn';}
+ else if(pendingAct&&mode==='guest'&&performance.now()-pendingAct.at>1500){msg=t('st_waitHost');cls='think';}
  else if(busy==='hint'){msg=t('st_hintBusy');cls='think';}
  else if(mode==='ai'&&ts==='G'){msg=S.phase==='open'?t('st_openAI'):t('st_aiThinking');cls='think';}
  else if(mine&&S.phase==='open'){msg=t('n_open',{n:tent.length});cls='turn';}
@@ -1097,7 +1139,7 @@ function showGame(){$('home').hidden=true;$('game').hidden=false;render();}
 function leaveCurrent(){timers.forEach(x=>{clearInterval(x);clearTimeout(x);});timers=[];clearTimeout(retryT);retryT=null;clearTimeout(connT);lostSince=0;
  for(const c of conns){try{c.close();}catch(_){}}conns.clear();oppConn=null;
  if(conn){try{conn.close();}catch(_){}}conn=null;if(peer){try{peer.destroy();}catch(_){}}peer=null;
- resetWorker();mode=null;S=null;mySeat=null;pending=false;tent=[];localMode='';navAt=null;resignArm=false;clearHint();aiInfo=null;hist=[];}
+ resetWorker();mode=null;S=null;mySeat=null;pending=false;pendingAct=null;lastSeen=0;rejectedAt=0;tent=[];localMode='';navAt=null;resignArm=false;clearHint();aiInfo=null;hist=[];}
 function goHome(){if(mode==='host'&&code)store.del('pente-host-'+code);if(mode==='guest')store.del('pente-guest');leaveCurrent();setHash('');homeArm=false;document.title='Pente';$('game').hidden=true;$('home').hidden=false;$('lErr').textContent='';refreshResume();render();}
 // "Resume game" on the home page, for the host as for the guest
 function lastHosted(){let best=null;try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);if(!key||key.indexOf('pente-host-')!==0)continue;
@@ -1128,7 +1170,8 @@ function join(asWatch){const c=cleanCode($('jCode').value);if(c.length<4){$('lEr
  leaveCurrent();refused=false;code=c;mode=asWatch?'watch':'guest';setHash((asWatch?'watch-':'join-')+code);$('home').hidden=true;$('game').hidden=false;
  S=null;
  // last position seen as a guest: shown at once, and used to take over if the host does not come back
- const sv=jget('pente-guest');if(!asWatch&&sv&&sv.code===c&&sv.S&&!sv.S.result){S=sv.S;mySeat=sv.seat;lostSince=Date.now();recvEl=0;recvAt=performance.now();}
+ const sv=jget('pente-guest');if(!asWatch&&sv&&sv.code===c&&sv.S&&(!sv.S.result||sv.pending)){S=sv.S;mySeat=sv.seat;lostSince=Date.now();recvEl=0;recvAt=performance.now();
+  if(sv.pending){const now=performance.now();pendingAct={...sv.pending,t0:now,at:now-2000,sent:0};const st=withPending(S);if(st){S=st;pending=true;}else pendingAct=null;}}
  render();startGuest();}
 $('jPlay').onclick=()=>join(false);$('jWatch').onclick=()=>join(true);
 /* ================= code de reprise ================= */

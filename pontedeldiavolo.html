@@ -372,7 +372,7 @@ const I18N={fr:{
  pe_unavail:"Aucune partie ouverte avec ce code. Vérifiez le code, et que l'hôte a toujours la page ouverte.",pe_net:"Le service de mise en relation est injoignable. Vérifiez votre connexion ; certains réseaux bloquent ce type de jeu.",
  pe_browser:"Ce navigateur ne peut pas jouer en ligne. Essayez un Chrome, Firefox ou Safari récent.",pe_other:"La connexion a échoué. Réessayez.",
  e_hostGone:"Hôte injoignable : vous hébergez maintenant la partie, sous le même code.",e_lost:"Connexion à l'hôte perdue : reconnexion…",
- e_notConn:"Pas de connexion à l'hôte.",e_notSent:"Le coup n'a pas été envoyé. Réessayez.",e_noResp:"L'hôte ne répond pas. Le coup n'est peut-être pas arrivé.",
+ e_notConn:"Pas de connexion à l'hôte.",st_waitHost:"Coup envoyé, en attente de l'hôte…",e_rejected:"Coup refusé par l'hôte : la position avait changé. Rejouez.",e_notSent:"Le coup n'a pas été envoyé. Réessayez.",e_noResp:"L'hôte ne répond pas. Le coup n'est peut-être pas arrivé.",
  rules:`<summary>Règles en bref</summary><ul>
  <li>À votre tour, posez <b>deux tuiles</b> de votre couleur, ou <b>un pont</b>.</li>
  <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
@@ -423,7 +423,7 @@ const I18N={fr:{
  pe_unavail:"No open game with this code. Check the code, and that the host still has the page open.",pe_net:"The matchmaking service can't be reached. Check your internet connection; some networks block this kind of game.",
  pe_browser:"This browser can't play online. Try a recent Chrome, Firefox or Safari.",pe_other:"The connection failed. Try again.",
  e_hostGone:"The host is unreachable: you now host the game, under the same code.",e_lost:"Lost the connection to the host: reconnecting…",
- e_notConn:"Not connected to the host.",e_notSent:"The move wasn't sent. Try again.",e_noResp:"The host isn't responding. The move may not have arrived.",
+ e_notConn:"Not connected to the host.",st_waitHost:"Move sent, waiting for the host…",e_rejected:"Move refused by the host: the position had changed. Play again.",e_notSent:"The move wasn't sent. Try again.",e_noResp:"The host isn't responding. The move may not have arrived.",
  rules:`<summary>Rules in brief</summary><ul>
  <li>On your turn, place <b>two tiles</b> of your colour, or <b>one bridge</b>.</li>
  <li><b>Island</b>: exactly 4 orthogonally connected tiles. Fewer than 4: a <b>sandbank</b>. Never more than 4.</li>
@@ -532,6 +532,7 @@ function stFromDoc(d){
   return st;
 }
 function clockNow(d,seat){
+  const P=net.pending; if(P&&!net.host&&d===net.data){ if(P.clk&&P.clk.seat===seat) return P.clk.base-(Date.now()-P.clk.t0); return d.clock?.[seat]??tcOf(d)?.base??0; }
   let tm=d.clock?.[seat]??tcOf(d)?.base??0;
   if(tcOf(d)&&d.turnSeat===seat && ACTIVE.includes(d.phase) && !d.paused) tm-=Date.now()-net.obsAt;
   return tm;
@@ -548,7 +549,7 @@ function closeNet(){
   try{ net.peer?.destroy(); }catch(e){}
   clearTimeout(net.retryT); clearTimeout(net.connT); clearTimeout(net.sendTimer);
   Object.assign(net,{peer:null,host:false,conns:new Set(),conn:null,code:null,doc:null,gid:null,data:null,st:null,gone:false,sending:false,obsKey:null,lastMove:null,sitSent:false,
-    lostSince:0,lost:false,retryT:null,connT:null,err:''});
+    lostSince:0,lost:false,retryT:null,connT:null,err:'',pending:null,hostDoc:null,seenAt:0});
   inp=newInput(); navAt=null;
 }
 const saveKey=c=>'pdd-game-'+String(c).toUpperCase();
@@ -602,9 +603,14 @@ function broadcast(){
   for(const c of net.conns) if(c.open) try{ c.send({t:'state',d}); }catch(e){}
   applyDoc(d);
 }
-function hostApply(msg,fromId){
+function hostApply(msg,fromId,conn){
   if(!net.host||!net.doc) return;
-  if(msg.t==='patch'){ merge(net.doc,msg.p); broadcast(); }
+  if(msg.t==='patch'){ const pt=msg.p||{}, d=net.doc;
+    if(typeof pt.moveNo==='number'&&pt.moveNo!==(d.moveNo|0)+1){
+      const dup=pt.moveNo===(d.moveNo|0)&&JSON.stringify(pt.log)===JSON.stringify(d.log);
+      if(!dup&&conn) try{ conn.send({t:'nack'}); }catch(e){}
+      broadcast(); return; }
+    merge(net.doc,pt); broadcast(); }
   else if(msg.t==='sit'){
     const d=net.doc, seat=msg.seat, nick=String(msg.nick||'').slice(0,24), so=d.seats[seat], reserved=!!(so&&!so.id);
     if((d.phase!=='waiting'&&!reserved)||(so&&so.id)||mySeatFor(d,msg.id)||!nick) { broadcast(); return; }
@@ -654,7 +660,7 @@ function hostMsg(conn,m){
     }
     broadcast(); return;
   }
-  hostApply(m);
+  hostApply(m,null,conn);
 }
 const mySeatFor=(d,id)=>!!id&&(d.seats?.A?.id===id||d.seats?.B?.id===id);
 function freshDoc(code,seat,tc){
@@ -671,8 +677,8 @@ function hostGame(code,doc,fresh){
     net.host=true; net.sending=false; net.doc=doc; doc.code=code; setHash('host-'+code.toLowerCase()); broadcast(); });
   peer.on('connection',conn=>{
     if(net.peer!==peer){ try{ conn.close(); }catch(e){} return; }
-    conn.on('open',()=>{ net.conns.add(conn); if(net.doc) broadcast(); });
-    conn.on('data',m=>{ if(m&&typeof m==='object'&&net.peer===peer) hostMsg(conn,m); });
+    conn.on('open',()=>{ conn.seen=Date.now(); net.conns.add(conn); if(net.doc) broadcast(); });
+    conn.on('data',m=>{ conn.seen=Date.now(); if(m&&typeof m==='object'&&net.peer===peer) hostMsg(conn,m); });
     conn.on('close',()=>{ net.conns.delete(conn); if(net.doc&&net.peer===peer) broadcast(); });
     conn.on('error',()=>{ net.conns.delete(conn); });
   });
@@ -688,13 +694,15 @@ function hostGame(code,doc,fresh){
 function createGame(mySeatPick,tc){ hostGame(newCode(),freshDoc('',mySeatPick,tc),true); }
 function becomeHost(){
   const code=net.code, d=net.data; if(!code||!d) return;
+  if(net.pending){ store.del(pendKey(code)); net.pending=null; }   // the pending move is already in net.data: the new host applies it
   if(ACTIVE.includes(d.phase)&&!d.paused){ if(d.turnSeat&&tcOf(d)) d.clock[d.turnSeat]=Math.max(0,clockNow(d,d.turnSeat)); d.paused=true; }
   hostGame(code,d,false); net.err='e_hostGone';
 }
 function joinGame(code,keep){
   if(typeof Peer==='undefined') return showLanding('noPeer',true);
   const want=net.wantSeat; keep=keep||savedDoc(code); closeNet(); net.wantSeat=want; net.gid=code; net.code=code;
-  if(keep&&mySeat(keep)){ net.data=keep; net.st=stFromDoc(keep); net.lost=true; net.lostSince=Date.now(); net.obsAt=Date.now(); setHash('join-'+code.toLowerCase()); }
+  if(keep&&mySeat(keep)){ net.data=keep; net.st=stFromDoc(keep); net.lost=true; net.lostSince=Date.now(); net.obsAt=Date.now(); setHash('join-'+code.toLowerCase());
+    const sp=loadPending(code); if(sp&&sp.msg&&sp.base){ net.pending={msg:sp.msg,base:sp.base,at:Date.now(),last:0,clk:null}; net.hostDoc=sp.base; net.sending=true; } }
   renderAll();
   const peer=new Peer(); net.peer=peer;
   peer.on('open',()=>{ if(net.peer===peer) connectHost(); });
@@ -709,13 +717,16 @@ function connectHost(){
   try{ net.conn?.close(); }catch(e){}
   const conn=peer.connect(PREFIX+net.code,{reliable:true}); net.conn=conn; clearTimeout(net.connT);
   net.connT=setTimeout(()=>{ if(net.conn===conn&&!conn.open) lost(); },7000);
-  conn.on('open',()=>{ clearTimeout(net.connT); conn.send({t:'hello',id:net.myId,d:net.data&&mySeat(net.data)?net.data:null}); });
-  conn.on('data',m=>{ if(net.conn!==conn) return; if(m&&m.t==='state'){ net.lostSince=0; net.lost=false; if(net.err==='e_lost') net.err=''; applyDoc(m.d); } });
+  conn.on('open',()=>{ clearTimeout(net.connT); net.seenAt=Date.now(); const base=net.pending?net.pending.base:net.data;
+    conn.send({t:'hello',id:net.myId,d:base&&mySeat(base)?base:null}); });
+  conn.on('data',m=>{ if(net.conn!==conn) return; net.seenAt=Date.now(); if(!m) return;
+    if(m.t==='state'){ net.lostSince=0; net.lost=false; if(net.err==='e_lost') net.err=''; net.hostDoc=m.d; gotState(m.d); }
+    else if(m.t==='nack'&&net.pending){ clearPending(); if(net.hostDoc) applyDoc(net.hostDoc); net.err='e_rejected'; renderAll(); } });
   conn.on('close',()=>{ if(net.conn===conn&&!net.host) lost(); });
 }
 function lost(){
   if(net.host) return;
-  net.lostSince=net.lostSince||Date.now(); net.sending=false;
+  net.lostSince=net.lostSince||Date.now(); net.sending=!!net.pending;
   const d=net.data, seat=mySeat(d);
   // the clocks stop only on the absent player's turn: here the host is the absent one
   if(d&&ACTIVE.includes(d.phase)&&!d.paused&&d.turnSeat&&d.turnSeat!==seat){ if(tcOf(d)) d.clock[d.turnSeat]=Math.max(0,clockNow(d,d.turnSeat)); d.paused=true; net.obsAt=Date.now(); }
@@ -726,9 +737,40 @@ function lost(){
     const p=net.peer; if(p&&p.open) connectHost(); else { if(p&&!p.destroyed){ try{ p.reconnect(); }catch(e){} } lost(); }
   },3500);
 }
+// A move sent by the guest is shown at once and stays shown ("pending") until the host confirms it;
+// it is sent again every ~3 s, kept in localStorage, and only undone if the host refuses it.
+const pendKey=c=>'pdd-pending-'+String(c).toUpperCase();
+function loadPending(c){ try{ return JSON.parse(store.get(pendKey(c),'null')); }catch(e){ return null; } }
+function clearPending(){ if(net.code) store.del(pendKey(net.code)); net.pending=null; net.sending=false; }
+function showPending(){ const P=net.pending; if(!P) return; const d=merge(jclone(P.base),P.msg.p); net.data=d; net.st=stFromDoc(d); net.sending=true; persist(); renderAll(); }
+function startPending(msg){
+  const d=net.data, seat=mySeat(d), clk=seat?{seat,base:clockNow(d,seat),t0:Date.now()}:null;
+  net.pending={msg,base:jclone(net.hostDoc||d),at:Date.now(),last:Date.now(),clk}; net.err='';
+  store.set(pendKey(net.code),JSON.stringify({msg,base:net.pending.base}));
+  net.obsAt=Date.now(); showPending();
+  try{ net.conn.send(msg); }catch(e){}
+}
+function gotState(d){
+  const P=net.pending; if(!P) return applyDoc(d);
+  const pm=P.msg.p.moveNo|0;
+  if((d.moveNo|0)>=pm){ const mine=(d.moveNo|0)>pm||JSON.stringify(d.log)===JSON.stringify(P.msg.p.log); clearPending(); applyDoc(d); if(!mine){ net.err='e_rejected'; renderAll(); } return; }
+  P.base=jclone(d); store.set(pendKey(net.code),JSON.stringify({msg:P.msg,base:P.base})); showPending();
+}
+setInterval(()=>{ const P=net.pending; if(!P||net.host) return; const now=Date.now();
+  if(net.conn?.open&&now-P.last>3000){ P.last=now; try{ net.conn.send(P.msg); }catch(e){} }
+  if(!P.shown&&now-P.at>1500){ P.shown=true; renderAll(); } },500);
+// Heartbeat: host and guests exchange a small message every ~2 s; after ~9 s of silence the connection counts as lost.
+setInterval(()=>{ const now=Date.now();
+  if(net.host&&net.peer){ const d=net.doc;
+    for(const c of [...net.conns]){ if(!c.open) continue; try{ c.send({t:'ping'}); }catch(e){}
+      if(d&&c.pid&&mySeatFor(d,c.pid)&&now-(c.seen||now)>9000){ net.conns.delete(c); try{ c.close(); }catch(e){} broadcast(); } } }
+  else if(net.conn?.open){ try{ net.conn.send({t:'ping'}); }catch(e){}
+    if(now-(net.seenAt||now)>9000){ const c=net.conn; net.seenAt=now; net.conn=null; try{ c.close(); }catch(e){} lost(); } }
+},2000);
 function send(msg){
   if(net.host){ hostApply(msg); return; }
-  if(!net.conn?.open){ net.err='e_notConn'; return renderAll(); }
+  if(!net.conn?.open&&!(msg.t==='patch'&&net.data)){ net.err='e_notConn'; return renderAll(); }
+  if(msg.t==='patch'&&net.data){ startPending(msg); return; }
   net.sending=true; net.err=''; renderAll();
   try{ net.conn.send(msg); }catch(e){ net.sending=false; net.err='e_notSent'; renderAll(); return; }
   clearTimeout(net.sendTimer);
@@ -979,6 +1021,7 @@ function renderPanel(){
     }else{ const winner=r.loserSeat==='A'?'B':'A'; notice(t(r.kind==='time'?'r_time':'r_resign',{n:nickOf(d,winner),l:nickOf(d,r.loserSeat)}),'win'); }
   }
   else if(net.err) notice(t(net.err),'err');
+  else if(net.pending&&Date.now()-net.pending.at>1500) notice(t('st_waitHost'));
   else if(d.paused&&ACTIVE.includes(d.phase)) notice(net.host?t('st_pausedHost',{n:nickOf(d,d.turnSeat)}):seat?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(d.phase==='waiting'){
     const both=d.seats?.A&&d.seats?.B, canSit=!seat&&!both;
