@@ -491,6 +491,8 @@ if(typeof WorkerGlobalScope!=='undefined'){
 const N=15,NN=N*N,LET="ABCDEFGHJKLMNOP",DIRS=[[1,0],[0,1],[1,1],[1,-1]],WIN=10000000;
 const $=id=>document.getElementById(id);
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+// Nickname shared by all the games (games-name, JSON), with Pente's former key as fallback
+const nickGet=()=>{let v=null;try{v=JSON.parse(localStorage.getItem('games-name'));}catch(e){}return v||store.get('pente-name')||'';},nickSet=v=>{try{localStorage.setItem('games-name',JSON.stringify(v));}catch(e){}store.set('pente-name',v);};
 const coord=i=>LET[i%N]+(N-((i/N)|0));
 const other=s=>s==='H'?'G':'H';
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -850,7 +852,7 @@ function scheduleRetry(){if(refused||retryT||mode==='host')return;retryT=setTime
 function connect(){if(conn){try{conn.close();}catch(_){}}
  const c=peer.connect(PID(code),{reliable:true});conn=c;clearTimeout(connT);
  connT=setTimeout(()=>{if(conn===c&&!c.open){lostSince=lostSince||Date.now();scheduleRetry();}},7000);
- c.on('open',()=>{clearTimeout(connT);setNet('ok','n_connected');c.send({k:'hello',role:mode==='guest'?'play':'watch',token,name:store.get('pente-name')||'',s:S&&mySeat?pub():null});});
+ c.on('open',()=>{clearTimeout(connT);setNet('ok','n_connected');c.send({k:'hello',role:mode==='guest'?'play':'watch',token,name:nickGet()||'',s:S&&mySeat?pub():null});});
  c.on('data',d=>{if(c===conn)onGuestData(d);});
  c.on('close',()=>{if(c!==conn||!mode||refused||mode==='host')return;setNet('bad','n_lost');pending=false;lostSince=lostSince||Date.now();if(S&&turnSeat(S)&&turnSeat(S)!==mySeat)freeze();scheduleRetry();render();});
  c.on('error',()=>{});}
@@ -1106,14 +1108,14 @@ $('optConfirm').addEventListener('change',e=>{confirmOn=e.target.checked;store.s
 for(const sel of ['hLevel','gLevel'])$(sel).addEventListener('change',e=>{level=e.target.value;store.set('pente-level',level);$('hLevel').value=level;$('gLevel').value=level;render();});
 $('bUndo').onclick=undo;$('bHint').onclick=doHint;
 $('goAI').onclick=startAI;
-const savedName=store.get('pente-name')||'';$('cName').value=savedName;$('jName').value=savedName;
+const savedName=nickGet()||'';$('cName').value=savedName;$('jName').value=savedName;
 function cleanCode(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');}
-$('cGo').onclick=()=>{const nm=$('cName').value.trim().slice(0,24);if(nm)store.set('pente-name',nm);
+$('cGo').onclick=()=>{const nm=$('cName').value.trim().slice(0,24);if(nm)nickSet(nm);
  const f=$('cFirst').value;const fs=f==='me'?'H':f==='opp'?'G':(Math.random()<.5?'H':'G');
  const tc=TCS.find(x=>x.id===tcChoice);leaveCurrent();
  code=rid(6);mode='host';mySeat='H';S=newState(code,fs,{H:nm||t('hostDefault'),G:''},{H:hh(token),G:null},1,tc.base?tc:null);save();setHash('host-'+code);showGame();startHost();hostTimers();};
 function join(asWatch){const c=cleanCode($('jCode').value);if(c.length<4){$('lErr').textContent=t('e_code');return;}
- const nm=$('jName').value.trim().slice(0,24);if(nm)store.set('pente-name',nm);
+ const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);
  leaveCurrent();refused=false;code=c;mode=asWatch?'watch':'guest';setHash((asWatch?'watch-':'join-')+code);$('home').hidden=true;$('game').hidden=false;
  S=null;
  // last position seen as a guest: shown at once, and used to take over if the host does not come back
@@ -1143,7 +1145,7 @@ refreshResume();
 (function boot(){const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
  if(m[1]==='host'){bootHost(m[2]);return;}
  $('jCode').value=m[2];
- if(m[1]==='join'&&!store.get('pente-name')){$('lErr').textContent=t('e_invitedName');$('jName').focus();return;}
+ if(m[1]==='join'&&!nickGet()){$('lErr').textContent=t('e_invitedName');$('jName').focus();return;}
  join(m[1]==='watch');})();
 })();
 </script>

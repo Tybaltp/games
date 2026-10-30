@@ -194,7 +194,8 @@ a{color:inherit}
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
-      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <label class="toggle" for="cbOn"><input type="checkbox" id="cbOn"> <span data-i18n="cb">Colorblind</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -265,7 +266,7 @@ const I18N={fr:{
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  thisTurn:"Ce tour",cancel:"Annuler",endTurn:"Terminer le tour",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez pour l'envoyer, ou annulez.",
- start:"Départ",startBtn:"Démarrer la partie",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
+ start:"Départ",startBtn:"Démarrer la partie",cb:"Daltonien",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
@@ -300,7 +301,7 @@ const I18N={fr:{
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  thisTurn:"This turn",cancel:"Cancel",endTurn:"End turn",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm to send it, or cancel.",
- start:"Start",startBtn:"Start the game",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
+ start:"Start",startBtn:"Start the game",cb:"Colorblind",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
  fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
@@ -345,6 +346,8 @@ applyStatic();
 const E=TintasEngine(),{N}=E;
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+// Nickname shared by all the games (games-name), with this game's former key as fallback
+const nickGet=()=>LS.get('games-name','')||LS.get('tintas-name',''),nickSet=v=>{LS.set('games-name',v);LS.set('tintas-name',v);};
 const MYID=pickTabId('tintas',(()=>{try{return JSON.parse(localStorage.getItem('tintas-p2p-cid'));}catch(e){return null;}})());
 const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
 
@@ -363,7 +366,9 @@ const HR=30,X=i=>E.C[i]*HR*1.5,Y=i=>E.R[i]*HR*0.8660254;
 const PLUS='M-1.5-4.8h3v3.3h3.3v3h-3.3v3.3h-3v-3.3h-3.3v-3h3.3z';
 const SYM=['<path d="M0-4.9L4.4 3H-4.4Z"/>','<rect x="-3.5" y="-3.5" width="7" height="7"/>','<circle r="3.7"/>',`<path d="${PLUS}"/>`,
   '<path d="M0-5.2L4.4 0L0 5.2L-4.4 0Z"/>',`<path transform="rotate(45)" d="${PLUS}"/>`,'<rect x="-4.4" y="-3.6" width="8.8" height="2.5"/><rect x="-4.4" y="1.1" width="8.8" height="2.5"/>'];
-const glyph=c=>`<svg viewBox="-10 -10 20 20" aria-hidden="true"><circle r="9" fill="var(--k${c})" stroke="var(--k${c}s)" stroke-width="1.4"/><g fill="var(--k${c}i)">${SYM[c]}</g></svg>`;
+// Colorblind mode: a symbol on each colour (pieces and counters); off by default, remembered per browser
+let cbOn=(()=>{try{return JSON.parse(localStorage.getItem('tintas-cb'))===true;}catch(e){return false;}})();
+const glyph=c=>`<svg viewBox="-10 -10 20 20" aria-hidden="true"><circle r="9" fill="var(--k${c})" stroke="var(--k${c}s)" stroke-width="1.4"/>${cbOn?`<g fill="var(--k${c}i)">${SYM[c]}</g>`:''}</svg>`;
 const encT=seq=>seq.join('.');
 const decT=code=>/^\d{1,2}(\.\d{1,2}){0,48}$/.test(String(code))?String(code).split('.').map(Number):null;
 let memoKey='',memoVal=null;
@@ -434,7 +439,7 @@ function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.g
   me.on('error',e=>{if(peer!==me)return;
     if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
-function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||LS.get('tintas-name','')||t('p1');role=null;
+function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
   if(pub.running&&!pub.result){const r=replay(pub.setup,pub.moves,pub.result);if(!r.over)pub.clock[r.st.turn]=Math.max(0,pub.clock[r.st.turn]-pub.elapsed);}
   clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
 function becomeHost(){if(!view)return;LS.del('tintas-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
@@ -558,7 +563,8 @@ function renderGame(){if(!view)return;const r=replay(view.setup,view.moves,view.
   if(showTurn){$('takes').innerHTML=ui.seq.map(i=>glyph(r.st.b[i])).join('');
     $('turnTxt').textContent=ui.pending?t('t_pending'):t('t_cont',{c:t('colsF')[ct.x.first]});
     $('endMv').textContent=ui.pending?t('confirmTurn'):t('endTurn');}
-  $('myCard').hidden=!(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started);
+  {const playing=mySeat>=0&&!r.over&&!!view.names[1-mySeat]&&view.started;$('myCard').hidden=false;$('needConfirmWrap').hidden=!(mySeat>=0&&!r.over);
+    if(!playing){$('resignBox').hidden=true;$('resignAsk').hidden=true;}else if($('resignAsk').hidden)$('resignBox').hidden=false;}
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
@@ -614,6 +620,7 @@ function send(seq){if(sending)return;const code=encT(seq),n=view.moves.length;re
 $('cancelMv').onclick=()=>{resetUi();renderGame();};
 $('endMv').onclick=()=>{if(!view)return;const r=replay(view.setup,view.moves,view.result);if(!isMyTurn(r)||!ui.seq.length)return;
   if(ui.pending)send(ui.seq.slice());else endTurn(false);};
+$('cbOn').checked=cbOn;$('cbOn').onchange=e=>{cbOn=e.target.checked;try{localStorage.setItem('tintas-cb',JSON.stringify(cbOn));}catch(x){}if(view)renderGame();};
 $('needConfirm').checked=LS.get('tintas-confirm',true);
 $('needConfirm').onchange=e=>LS.set('tintas-confirm',e.target.checked);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
@@ -651,9 +658,9 @@ document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b
   try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
 
 // ---------- start screen ----------
-$('hName').value=LS.get('tintas-name','');$('jName').value=LS.get('tintas-name','');
+$('hName').value=nickGet();$('jName').value=nickGet();
 $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('hName').value.trim()||t('p1');LS.set('tintas-name',nm);
+  const nm=$('hName').value.trim()||t('p1');nickSet(nm);
   const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(crypto.getRandomValues(new Uint8Array(1))[0]&1?'host':'guest');
   const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('tintas-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
   const names=first==='host'?[nm,'']:['',nm];
@@ -661,10 +668,10 @@ $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer=
   Object.assign(H,{code:rnd(6),guestCid:null,game:{setup:E.genSetup(),tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
   H.turnStart=Date.now();hostStart(null);});
 function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('jName').value.trim().slice(0,24);if(nm)LS.set('tintas-name',nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
+  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
 $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
 $('jWatch').onclick=()=>joinClick(true);
-$('resumeBtn').onclick=()=>{const s=LS.get('tintas-p2p-host',null);if(s&&s.game&&!s.game.result){hostStart(s);return;}const sg=LS.get('tintas-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||LS.get('tintas-name','')||t('p2'),false);};
+$('resumeBtn').onclick=()=>{const s=LS.get('tintas-p2p-host',null);if(s&&s.game&&!s.game.result){hostStart(s);return;}const sg=LS.get('tintas-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
 function exportCode(){const v=view,c=remaining();const p={setup:v.setup,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
   return 'TINTAS1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
 function importCode(s){s=String(s||'').replace(/\s+/g,'');if(s.indexOf('TINTAS1.')!==0)throw 0;
@@ -687,7 +694,7 @@ function init(){
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];
-  if(m[1]==='join'&&!LS.get('tintas-name','')){$('joinErr').textContent=t('invited');$('jName').focus();return;}
+  if(m[1]==='join'&&!nickGet()){$('joinErr').textContent=t('invited');$('jName').focus();return;}
   joinClick(m[1]==='watch');}
 
 // ---------- drawing ----------
@@ -696,7 +703,7 @@ function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.set
 const HEXPTS=(()=>{const r=HR-1.6,a=[];for(let k=0;k<6;k++){const an=Math.PI/3*k;a.push((r*Math.cos(an)).toFixed(2)+','+(r*Math.sin(an)).toFixed(2));}return a.join(' ');})();
 function piece(g,x,y,c,op){const p=el('g',{transform:`translate(${x} ${y})`},g);if(op)p.setAttribute('opacity',op);
   el('circle',{r:19,fill:`var(--k${c})`,stroke:`var(--k${c}s)`,'stroke-width':1.8},p);
-  const s=el('g',{transform:'scale(1.95)',fill:`var(--k${c}i)`},p);s.innerHTML=SYM[c];}
+  if(cbOn){const s=el('g',{transform:'scale(1.95)',fill:`var(--k${c}i)`},p);s.innerHTML=SYM[c];}}
 function pawn(g,x,y,op){const p=el('g',{transform:`translate(${x} ${y})`,'pointer-events':'none'},g);if(op)p.setAttribute('opacity',op);
   el('circle',{r:14,fill:'var(--pawn)',stroke:'var(--pawn-ink)','stroke-width':4},p);el('circle',{r:5,fill:'var(--pawn-ink)'},p);}
 // st: real position; o.last: last turn {seq,from}; o.pend: captures being prepared (shown in transparency); o.targets: cells that can be taken

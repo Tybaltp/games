@@ -429,6 +429,8 @@ applyStatic();
 const CN=k=>t('c'+k);
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+// Nickname shared by all the games (games-name), with this game's former key as fallback
+const nickGet=()=>LS.get('games-name','')||LS.get('zertz-name',''),nickSet=v=>{LS.set('games-name',v);LS.set('zertz-name',v);};
 const MYID=pickTabId('zertz',(()=>{try{return JSON.parse(localStorage.getItem('zertz-p2p-cid'));}catch(e){return null;}})());
 const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
 
@@ -524,7 +526,7 @@ function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.g
   me.on('error',e=>{if(peer!==me)return;
     if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
-function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||LS.get('zertz-name','')||t('p1');role=null;
+function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
   if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.st[TURN]]=Math.max(0,pub.clock[r.st[TURN]]-pub.elapsed);}
   clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
 function becomeHost(){if(!view)return;LS.del('zertz-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
@@ -789,9 +791,9 @@ document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b
   try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
 
 // ---------- start screen ----------
-$('hName').value=LS.get('zertz-name','');$('jName').value=LS.get('zertz-name','');
+$('hName').value=nickGet();$('jName').value=nickGet();
 $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('hName').value.trim()||t('p1');LS.set('zertz-name',nm);
+  const nm=$('hName').value.trim()||t('p1');nickSet(nm);
   const first=$('cFirst').value==='me'?'host':'guest',size=+$('cSize').value;
   const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('zertz-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
   const names=first==='host'?[nm,'']:['',nm];
@@ -799,10 +801,10 @@ $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer=
   Object.assign(H,{code:rnd(6),guestCid:null,game:{size,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
   H.turnStart=Date.now();hostStart(null);});
 function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('jName').value.trim().slice(0,24);if(nm)LS.set('zertz-name',nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
+  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
 $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
 $('jWatch').onclick=()=>joinClick(true);
-$('resumeBtn').onclick=()=>{const s=LS.get('zertz-p2p-host',null);if(s){hostStart(s);return;}const sg=LS.get('zertz-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||LS.get('zertz-name','')||t('p2'),false);};
+$('resumeBtn').onclick=()=>{const s=LS.get('zertz-p2p-host',null);if(s){hostStart(s);return;}const sg=LS.get('zertz-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
 function exportCode(){const v=view,c=remaining();const p={size:v.size,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
   return 'ZERTZ1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
 function importCode(t){t=String(t||'').replace(/\s+/g,'');if(t.indexOf('ZERTZ1.')!==0)throw 0;
@@ -825,7 +827,7 @@ function init(){setBoard(48);drawBoard(ENG[48].init(),[],false,null);
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];
-  if(m[1]==='join'&&!LS.get('zertz-name','')){$('joinErr').textContent=t('invited');$('jName').focus();return;}
+  if(m[1]==='join'&&!nickGet()){$('joinErr').textContent=t('invited');$('jName').focus();return;}
   joinClick(m[1]==='watch');}
 
 // ---------- drawing ----------

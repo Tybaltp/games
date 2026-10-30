@@ -327,6 +327,8 @@ const svg=document.getElementById('board');
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+// Nickname shared by all the games (games-name, JSON), with Ponte's former key as fallback
+const nickGet=()=>{let v=null;try{v=JSON.parse(localStorage.getItem('games-name'));}catch(e){}return v||store.get('pdd-nick','')||'';},nickSet=v=>{try{localStorage.setItem('games-name',JSON.stringify(v));}catch(e){}store.set('pdd-nick',v);};
 const findEdge=(a,b)=>BR[a].find(e=>e.b===b);
 const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",me:"Moi",opp:"Mon adversaire",rnd:"Au hasard",
@@ -786,7 +788,7 @@ function netResign(){
   netWrite({phase:'over',result:{kind:'resign',loserSeat:seat},turnSeat:null,clock,moveNo:d.moveNo+1,
     log:d.log.concat([{p:0,k:'lg_resign',v:{n:nickOf(d,seat)}}])});
 }
-function currentNick(){ return (store.get('pdd-nick','')||'').trim().slice(0,24); }
+function currentNick(){ return (nickGet()||'').trim().slice(0,24); }
 let nameThen=null;
 function askName(then){
   nameThen=then; $('nick').value=currentNick(); $('nameerr').hidden=true; $('namedlg').hidden=false;
@@ -795,7 +797,7 @@ function askName(then){
 function nameOk(){
   const v=($('nick').value||'').trim().slice(0,24);
   if(!v){ $('nameerr').hidden=false; $('nick').focus(); return; }
-  store.set('pdd-nick',v); $('namedlg').hidden=true;
+  nickSet(v); $('namedlg').hidden=true;
   const f=nameThen; nameThen=null; renderAll(); if(f) f();
 }
 function nameCancel(){ $('namedlg').hidden=true; nameThen=null; }
@@ -1082,7 +1084,7 @@ function homeErr(k,el){ homeMsg={k,err:true}; status(t(k),true); if(el) el.focus
 function createClick(){
   const nm=$('cName').value.trim().slice(0,24);
   if(!nm) return homeErr('e_name',$('cName'));
-  store.set('pdd-nick',nm);
+  nickSet(nm);
   const f=$('cFirst').value, seat=f==='me'?'A':f==='opp'?'B':(Math.random()<.5?'A':'B');
   const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0]; store.set('pdd-tc',tcx.id); const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
   showGame(); createGame(seat,tc);
@@ -1092,7 +1094,7 @@ function joinClick(asWatch){
   if(c.length!==6) return homeErr('e_code',$('jCode'));
   const nm=$('jName').value.trim().slice(0,24);
   if(!asWatch&&!nm) return homeErr('e_nameJoin',$('jName'));
-  if(nm) store.set('pdd-nick',nm);
+  if(nm) nickSet(nm);
   setHash((asWatch?'watch-':'join-')+c.toLowerCase());
   net.wantSeat=!asWatch; showGame(); joinGame(c);
 }
@@ -1109,7 +1111,7 @@ $('rGo').onclick=()=>{ let d; try{ d=importCode($('rIn').value); }catch(e){ home
   box.innerHTML=['A','B'].map(k=>`<button class="primary" data-rseat="${k}">${esc(t('iam',{n:nickOf(d,k)}))}</button>`).join('');
   box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(b.dataset.rseat,d)); };
 function resumeAs(seat,d){
-  const o=seat==='A'?'B':'A', nick=currentNick()||nickOf(d,seat); if(!currentNick()) store.set('pdd-nick',nick);
+  const o=seat==='A'?'B':'A', nick=currentNick()||nickOf(d,seat); if(!currentNick()) nickSet(nick);
   d.seats[seat]={id:net.myId,nick:nickOf(d,seat),ready:true}; d.seats[o]={id:null,nick:nickOf(d,o),ready:true};
   d.paused=ACTIVE.includes(d.phase); d.epoch=(d.epoch||0)+1; showGame(); hostGame(newCode(),d,false);
 }
