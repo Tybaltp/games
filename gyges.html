@@ -78,11 +78,13 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .home{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;width:100%}
 @media (min-width:760px){.home{max-width:880px;display:grid;grid-template-columns:1fr 1fr;align-items:start}
-  .home > #resumeCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
+  .home > #resumeCard,.home > #aiCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
 .home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
 .home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
 .home details{padding:10px 14px}
 .home details .card{margin-top:10px}
+.lvl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
+.lvl select{flex:1;min-width:0}
 .who{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 .dot{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
@@ -160,6 +162,15 @@ h1 a.gname{color:inherit;text-decoration:none}
       </form>
       <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
     </div>
+    <div class="card" id="aiCard">
+      <h2 data-i18n="vsAI">Against the computer</h2>
+      <form class="form" id="aiForm">
+        <label for="aFirst"><span data-i18n="firstIs">Who starts (places the first piece)</span><select id="aFirst"><option value="me" selected data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label class="toggle" for="aAdv"><input type="checkbox" id="aAdv"> <span data-i18n="advOpt">Advanced rule (replacement)</span></label>
+        <button type="submit" data-i18n="play">Play</button>
+      </form>
+    </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="GYGES1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
@@ -199,6 +210,11 @@ h1 a.gname{color:inherit;text-decoration:none}
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <div class="confirm"><button type="button" id="undoBtn" data-i18n="undo">Undo move</button><button type="button" id="hintBtn" data-i18n="hint">Hint</button></div>
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
       <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
@@ -310,11 +326,84 @@ function GygesEngine(){
     if(+m[1]>35||path.some(x=>x>36))return null;return {t:'m',s:+m[1],path,rep:m[3]===undefined?-1:+m[3]};}
   return {G,NSET,home,far,rowOf,ORDER,NB,edge,init,clone,setup,reserve,placements,nearestRow,dropCells,walk,canFinish,hasMove,playable,playableRow,nextSteps,completions,dropsFor,canPass,legal,apply,outcome,enc,dec};
 }
+// Computer opponent: alpha-beta search over distinct moves (paths leading to the same position are merged).
+function GygesAI(E){
+  const G=E.G,NB=E.NB,rowOf=E.rowOf,far=E.far,ORDER=E.ORDER,NSET=E.NSET,WIN=1e6;
+  // Distinct moves of the player to move: {s,path,rep,b (resulting board),goal}. A move reaching the goal is returned alone.
+  // maxSeg limits the movements per move (1 = no bounce); nodeCap bounds the path search of each piece.
+  function gen(s,adv,maxSeg,nodeCap){const p=s.turn,out=[],seen=new Set(),fr=far(p);let goal=null;
+    for(const s0 of E.playable(s,adv)){const b=s.b.slice(),k=b[s0];b[s0]=0;const used=new Uint8Array(60),path=[],memo=new Set();let nodes=0;
+      const rec=(cur,rem,seg,lo,hi)=>{if(goal||++nodes>nodeCap)return;
+        const key=cur*64+rem*8+seg+'|'+lo+'|'+hi;if(memo.has(key))return;memo.add(key);
+        if(rem===1&&rowOf(cur)===fr){goal={s:s0,path:path.concat([G]),rep:-1,goal:true};return;}
+        for(const [nx,e] of NB[cur]){if(used[e])continue;
+          const l2=e<30?lo|(1<<e):lo,h2=e<30?hi:hi|(1<<(e-30));
+          if(rem>1){if(b[nx])continue;used[e]=1;path.push(nx);rec(nx,rem-1,seg,l2,h2);path.pop();used[e]=0;if(goal)return;continue;}
+          if(!b[nx]){if(nx===s0)continue;const id=s0*64+nx;if(!seen.has(id)){seen.add(id);const nb=b.slice();nb[nx]=k;out.push({s:s0,path:path.concat([nx]),rep:-1,b:nb});}continue;}
+          used[e]=1;path.push(nx);
+          if(adv){const b2=b.slice();b2[nx]=k;for(const d of E.dropCells(b2,p)){const id=s0*64+nx+'r'+d;if(seen.has(id))continue;seen.add(id);const nb=b2.slice();nb[d]=b[nx];out.push({s:s0,path:path.slice(),rep:d,b:nb});}}
+          if(seg<maxSeg)rec(nx,b[nx],seg+1,l2,h2);
+          path.pop();used[e]=0;if(goal)return;}};
+      rec(s0,k,1,0,0);if(goal)return [goal];}
+    return out;}
+  const child=(s,mv)=>({b:mv.b,turn:1-s.turn,n:s.n,passes:0,goal:null});
+  const keyOf=s=>String.fromCharCode(...s.b)+s.turn+s.passes;
+  // Static value for the player to move (who cannot reach the goal now): mobility, squares reached on the row before
+  // each goal, and the opponent's threats to reach its goal.
+  function evaluate(s,mine,opt){const o=1-s.turn,os={b:s.b,turn:o,n:s.n,passes:0},theirs=gen(os,opt.adv,opt.maxSeg,opt.cap);
+    if(theirs.length===1&&theirs[0].goal)return -3000;
+    const farCells=(list,p)=>{const f=far(p),set=new Set();for(const m of list){const e=m.path[m.path.length-1];if(e!==G&&rowOf(e)===f)set.add(e);}return set.size;};
+    return 3*(mine.length-theirs.length)+60*(farCells(mine,s.turn)-farCells(theirs,o));}
+  function search(s0,opt){opt={adv:false,depth:3,time:2000,noise:0,maxSeg:99,cap:60000,...opt};
+    const t0=Date.now(),TT=new Map();let nodes=0,stop=false;
+    if(E.setup(s0))return place(s0,opt);
+    const rootMoves=gen(s0,opt.adv,opt.maxSeg,opt.cap);
+    if(!rootMoves.length)return {move:{t:'x'},score:0,depth:0};
+    if(rootMoves.length===1)return {move:clean(rootMoves[0]),score:rootMoves[0].goal?WIN:0,depth:0,forced:!rootMoves[0].goal};
+    function neg(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
+      const moves=gen(s,opt.adv,opt.maxSeg,opt.cap);
+      if(moves.length===1&&moves[0].goal)return WIN-ply;
+      if(!moves.length){if(s.passes>=1)return 0;return -neg({b:s.b,turn:1-s.turn,n:s.n,passes:s.passes+1},depth-1,-beta,-alpha,ply+1);}
+      if(depth<=0)return evaluate(s,moves,opt);
+      const k=keyOf(s),te=TT.get(k);let best=-Infinity,bestKey=null;const a0=alpha;
+      if(te&&te.d>=depth){if(te.f===0)return te.v;if(te.f===1&&te.v>=beta)return te.v;if(te.f===-1&&te.v<=alpha)return te.v;}
+      if(te&&te.m){const i=moves.findIndex(m=>mk(m)===te.m);if(i>0){const [m]=moves.splice(i,1);moves.unshift(m);}}
+      for(const m of moves){const v=-neg(child(s,m),depth-1,-beta,-alpha,ply+1);if(stop)return 0;
+        if(v>best){best=v;bestKey=mk(m);}if(v>alpha)alpha=v;if(alpha>=beta)break;}
+      TT.set(k,{d:depth,v:best,f:best<=a0?-1:best>=beta?1:0,m:bestKey});return best;}
+    let result=null;
+    for(let d=1;d<=opt.depth;d++){const scored=[];let alpha=-Infinity;
+      // ordering: best of the previous depth first
+      if(result){const i=rootMoves.findIndex(m=>m===result.m);if(i>0){const [m]=rootMoves.splice(i,1);rootMoves.unshift(m);}}
+      for(const m of rootMoves){const v=opt.noise?-neg(child(s0,m),d-1,-Infinity,Infinity,1):-neg(child(s0,m),d-1,-Infinity,-alpha,1);if(stop)break;
+        scored.push({m,v});if(v>alpha)alpha=v;}
+      if(stop&&result)break;
+      let pick=null,pv=-Infinity;for(const x of scored){const v=x.v+(opt.noise?(Math.random()*2-1)*opt.noise:0);if(v>pv){pv=v;pick=x;}}
+      if(pick)result={m:pick.m,v:pick.v,d};
+      if(stop||Math.abs(alpha)>WIN/2)break;}
+    return {move:clean(result.m),score:result.v,depth:result.d,nodes};}
+  const mk=m=>m.s+'.'+m.path[m.path.length-1]+'.'+m.rep;
+  const clean=m=>({t:'m',s:m.s,path:m.path.slice(),rep:m.rep});
+  // Placement: each candidate is tried against random completions of the setup, judged by a shallow search.
+  function place(s,opt){const p=s.turn,cands=[],seen=new Set();
+    for(const m of E.placements(s)){cands.push(m);}
+    if(opt.depth<=1||!opt.placeTries)return {move:cands[(Math.random()*cands.length)|0],score:0,depth:0};
+    let best=null,bv=-Infinity;
+    for(const m of cands){let sum=0;
+      for(let k=0;k<opt.placeTries;k++){let t=E.apply(s,m);
+        while(E.setup(t)){const pl=E.placements(t);t=E.apply(t,pl[(Math.random()*pl.length)|0]);}
+        const mv=gen(t,opt.adv,opt.maxSeg,opt.cap);let v;
+        if(mv.length===1&&mv[0].goal)v=WIN/1000;else if(!mv.length)v=0;else v=Math.max(-3000,Math.min(3000,evaluate(t,mv,opt)));
+        sum+=t.turn===p?v:-v;}
+      const v=sum/opt.placeTries+(opt.noise?(Math.random()*2-1)*opt.noise*.2:0);if(v>bv){bv=v;best=m;}}
+    return {move:best,score:0,depth:0};}
+  return {gen,search,evaluate};
+}
 // ===== Gyges peer to peer =====
 const SIZE=36;
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18N={fr:{
- title:"Gygès",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ title:"Gygès",vsAI:"Contre l'ordinateur",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence (pose la première pièce)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  advOpt:"Règle avancée (remplacement)",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
@@ -355,7 +444,7 @@ const I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Gygès est un jeu de Claude Leroy (1985).</p>`
 },en:{
- title:"Gyges",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ title:"Gyges",vsAI:"Against the computer",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts (places the first piece)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  advOpt:"Advanced rule (replacement)",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
@@ -406,11 +495,16 @@ function applyStatic(){document.documentElement.lang=lang;document.title=t('titl
   $('rules').innerHTML=t('rules');advLine();
   const sel=$('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('gyges-tc'));}catch(e){return null;}})()||'20+10';
   sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');
+  for(const id of ['aLevel','gLevel']){const s=$(id);s.innerHTML=Object.keys(LEVELS).map(k=>`<option value="${k}">${t('lv_'+k)}</option>`).join('');s.value=level;}
   const sg=$('resumeBtn').dataset.guest;$('resumeTxt').textContent=t(sg?'inProgressGuest':'inProgressTxt');}
 function advLine(){document.querySelectorAll('.advState').forEach(e=>e.textContent=t(view&&view.adv?'advOn':'advOff'));}
 const $=id=>document.getElementById(id);
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status(t('st_home'));});
 const E=GygesEngine(),G=E.G;
+// Computer levels: depth of reading (half-moves), bounces seen per move, random noise on the choice, time budget (ms)
+const LEVELS={debutant:{depth:1,maxSeg:3,noise:300},moyen:{depth:2,maxSeg:3,noise:100,time:1500,placeTries:4},fort:{depth:12,time:3000,placeTries:6}};
+const HINT=LEVELS.fort;
+let level=(()=>{try{return JSON.parse(localStorage.getItem('gyges-level'));}catch(e){return null;}})();if(!LEVELS[level])level='moyen';
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 // Nickname shared by all the games (games-name), with this game's former key as fallback
 const nickGet=()=>LS.get('games-name','')||LS.get('gyges-name',''),nickSet=v=>{LS.set('games-name',v);LS.set('gyges-name',v);};
@@ -456,7 +550,7 @@ function replay(adv,moves,result){const key=(adv?1:0)+'|'+moves.join(',')+'|'+JS
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
-let role=null;          // 'host' | 'guest' | 'watch'
+let role=null;          // 'host' | 'guest' | 'watch' | 'ai' (against the computer, no network)
 let peer=null;
 let mySeat=-1;
 let ui={},sending=false;
@@ -614,7 +708,7 @@ function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0
 // What the player to move may click now (cached per position and partial path)
 let calcKey='',calcVal=null;
 function calc(st){if(E.setup(st)&&!ui.place){const rs=E.reserve(st,st.turn),ks=[1,2,3].filter(k=>rs[k]>0);if(ks.length===1)ui.place=ks[0];}
-  const adv=!!view.adv,key=view.moves.length+'|'+adv+'|'+ui.sel+'|'+ui.path.join('.')+'|'+ui.marks.join('.')+'|'+ui.drop+'|'+ui.place+'|'+mySeat;if(key===calcKey)return calcVal;
+  const adv=!!view.adv,key=view.moves.join(',')+'|'+adv+'|'+ui.sel+'|'+ui.path.join('.')+'|'+ui.marks.join('.')+'|'+ui.drop+'|'+ui.place+'|'+mySeat;if(key===calcKey)return calcVal;
   const o={playable:new Set(),drops:new Set(),ends:new Map(),landed:false,canBounce:false,setup:E.setup(st),homes:new Set(),pass:false};
   if(o.setup){const r=E.reserve(st,st.turn);if(ui.place&&r[ui.place]>0)for(const m of E.placements(st))if(m.k===ui.place)o.homes.add(m.at);}
   else{const pl=E.playable(st,adv);pl.forEach(i=>o.playable.add(i));o.pass=!pl.length;
@@ -641,12 +735,13 @@ function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.re
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
   const o=mine?calc(r.st):null;
   if(navAt!==null)drawBoard(d.st,{last:d.last});
-  else drawBoard(r.st,{o,interactive:mine&&!ui.pending,pv:mine?previewOf(r.st,o):null,last:r.last});
+  else drawBoard(r.st,{o,interactive:mine&&!ui.pending&&busy!=='hint',hint:mine?hintMv:null,pv:mine?previewOf(r.st,o):null,last:r.last});
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  const nm=s=>role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const cantMove=!r.over&&!E.setup(r.st)&&E.canPass(r.st,!!view.adv);
   if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
+  else if(role==='ai'&&busy)status(t(busy==='hint'?'hintBusy':'st_aiThinking'));
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
@@ -675,18 +770,21 @@ function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.re
     el.append(h,ck,ty);host.appendChild(el);}
   tick();advLine();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending,r.st);
-  $('myCard').hidden=!(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started);
+  $('myCard').hidden=!(role==='ai'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('aiBox').hidden=role!=='ai';$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  if(role==='ai'){$('undoBtn').disabled=!r.log.some(e=>e.p===mySeat);$('hintBtn').disabled=!mine||!!busy||!!ui.pending;
+    $('aiInfo').textContent=hintMv?t('hint_move',{m:txtOf(hintMv,r.st)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
   $('passBox').hidden=!(mine&&o&&o.pass&&!ui.pending);
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'),rm=view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'),rm=role==='ai'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
@@ -755,6 +853,7 @@ function cancelSel(){ui.tap=null;ui.sel=-1;ui.path=[];ui.hist=[[[]]];ui.marks=[]
 function choose(mv){ui.done=null;ui.hover=null;ui.tap=null;ui.pending=mv;renderGame();}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
+  if(role==='ai'){aiPlay(code);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
   sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('gyges-p2p-pending',{code:C.code,n,mv:code});
   C.conn.send({t:'move',n,code});renderGame();}
@@ -773,9 +872,10 @@ $('passBtn').onclick=doPass;
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
+  if(role==='ai'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>rmSend('ask');
+$('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,view.adv);return;}rmSend('ask');};
 $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
@@ -786,7 +886,7 @@ document.addEventListener('keydown',e=>{if(!view||/^(INPUT|TEXTAREA|SELECT)$/.te
   if($('nav').hidden)return;
   const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
 // Home: leave the game and come back to Gyges's own start page
-$('homeBtn').onclick=()=>{C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
+$('homeBtn').onclick=()=>{try{stopAI();}catch(e){}C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
 // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
 const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden;
 $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
@@ -799,6 +899,39 @@ function hoverSpot(x){if(!view||ui.pending||ui.done)return;if(x===ui.hover)retur
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;hoverSpot(spotOf(e));});
   $('svg').addEventListener('pointerleave',()=>hoverSpot(null));}
+
+// ---------- computer opponent ----------
+// The search runs in a worker built from the engine source, so the page stays responsive.
+const AI=GygesAI(E);
+let worker=null,reqId=0,cbs={},busy='',aiInfo=null,hintMv=null;
+function makeWorker(){const src=GygesEngine.toString()+GygesAI.toString()+`
+const E=GygesEngine(),A=GygesAI(E);
+self.onmessage=e=>{const m=e.data,s={...m.st,b:Int8Array.from(m.st.b)},r=A.search(s,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced}});};`;
+  worker=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));worker.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data.r);};}
+function stopAI(){if(worker)worker.terminate();worker=null;cbs={};busy='';}
+function ask(st,opt,cb){opt={...opt,adv:!!view.adv};const msg={st:{...st,b:Array.from(st.b)},opt};
+  try{if(!worker)makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
+  catch(e){worker=null;setTimeout(()=>cb(AI.search(st,opt)),30);}}   // no worker (some file:// setups): search on the page
+function startAI(seat,adv){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('');
+  view={size:SIZE,adv:!!adv,tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
+  resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
+function aiPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
+function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.adv,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
+  const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
+  ask(r.st,LEVELS[level],res=>{const wait=Math.max(0,400-(Date.now()-t0));setTimeout(()=>{if(role!=='ai'||view.moves.length!==n||busy!=='ai')return;busy='';
+    if(!res||!res.move){renderGame();return;}aiInfo=E.setup(r.st)?null:evalInfo(res);view.moves=view.moves.concat([enc(res.move)]);renderGame();aiStep();},wait);});}
+function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>5e5)return {k:'ai_win'};if(s<-5e5)return {k:'ai_lost'};
+  return {k:Math.abs(s)<60?'ai_eq':s>0?(s>1500?'ai_much':'ai_better'):(s<-1500?'ai_muchWorse':'ai_worse'),d:r.depth};}
+$('undoBtn').onclick=()=>{if(role!=='ai')return;stopAI();const m=view.moves.slice();
+  // back to the last position where it was my turn, before my last move
+  const turnAt=k=>replay(view.adv,m.slice(0,k),null).st.turn;let k=m.length;
+  while(k>0){k--;if(turnAt(k)===mySeat)break;}
+  if(turnAt(k)!==mySeat)k=0;
+  view.moves=m.slice(0,k);view.result=null;resetUi();aiInfo=null;hintMv=null;renderGame();aiStep();};
+$('hintBtn').onclick=()=>{if(role!=='ai'||busy)return;const r=replay(view.adv,view.moves,view.result);if(!isMyTurn(r))return;const n=view.moves.length;busy='hint';renderGame();
+  ask(r.st,HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move)hintMv=res.move;renderGame();});};
+for(const id of ['aLevel','gLevel'])$(id).addEventListener('change',e=>{level=e.target.value;LS.set('gyges-level',level);$('aLevel').value=level;$('gLevel').value=level;});
+$('aiForm').addEventListener('submit',e=>{e.preventDefault();startAI($('aFirst').value==='me'?0:1,$('aAdv').checked);});
 
 // ---------- invitation codes ----------
 function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
@@ -893,6 +1026,9 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
     else if(lastMv.t==='m'){pathLine(ov,last.p,lastMv.s,lastMv.path,{opacity:.55});const fin=lastMv.path[lastMv.path.length-1],[fx,fy]=PT(fin,last.p);ring(ov,fx,fy,(fin===G?GR:PR)+3,{'stroke-width':2.5});
       if(lastMv.rep>=0)ring(ov,X(lastMv.rep),Y(lastMv.rep),PR+3,{'stroke-width':1.6,'stroke-dasharray':'3 3'});
       el('circle',{cx:X(lastMv.s),cy:Y(lastMv.s),r:5,fill:'var(--accent)',opacity:.7},ov);}}
+  // the computer's suggestion, faint
+  const hm=opt.hint;if(hm&&!pv)if(hm.t==='p')ring(ov,X(hm.at),Y(hm.at),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5,opacity:.7});
+    else if(hm.t==='m'){pathLine(ov,mySeat,hm.s,hm.path,{opacity:.45});const [hx,hy]=PT(hm.path[hm.path.length-1],mySeat);ring(ov,hx,hy,PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5,opacity:.7});}
   if(o&&opt.interactive){
     if(o.setup)for(const i of o.homes)el('circle',{cx:X(i),cy:Y(i),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2},ov);
     if(ui.sel<0&&!ui.pending&&!ui.done)for(const i of o.playable)ring(ov,X(i),Y(i),PR+3.5,{'stroke-width':1.8,opacity:.8});
