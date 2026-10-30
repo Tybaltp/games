@@ -824,7 +824,8 @@ function init(){drawBoard({real:new Int8Array(64),shown:new Int8Array(64)});
 
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg',S=60;
-const X=i=>(i&7)*S,Y=i=>(7-(i>>3))*S;
+// Silver sees the board turned half a turn, its own pieces at the bottom.
+const FL=()=>mySeat===1,X=i=>(FL()?7-(i&7):i&7)*S,Y=i=>(FL()?i>>3:7-(i>>3))*S;
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'pointer-events':'none'},g);if(op!==undefined)gr.setAttribute('opacity',op);
   el('circle',{cx,cy,r:23,fill:gold?'var(--g1)':'var(--s1)',stroke:gold?'var(--g3)':'var(--s3)','stroke-width':2},gr);
@@ -857,7 +858,7 @@ if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
 // A frozen piece (next to a stronger enemy, no friend around) gets a light frost hatching.
 function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;const gold=v>0;
   for(let d=0;d<4;d++){const j=E.NB[t*4+d];if(j<0||!b[j]||Math.sign(b[j])!==Math.sign(v))continue;
-    const dx=Math.sign((j&7)-(t&7)),dy=-Math.sign((j>>3)-(t>>3)),cx=X(t)+S/2,cy=Y(t)+S/2,a={x1:cx+dx*21,y1:cy+dy*21,x2:cx+dx*39,y2:cy+dy*39};
+    const dx=Math.sign(X(j)-X(t)),dy=Math.sign(Y(j)-Y(t)),cx=X(t)+S/2,cy=Y(t)+S/2,a={x1:cx+dx*21,y1:cy+dy*21,x2:cx+dx*39,y2:cy+dy*39};
     el('line',{...a,stroke:gold?'var(--g3)':'var(--s3)','stroke-width':7,'stroke-linecap':'round'},g);
     el('line',{...a,stroke:gold?'var(--g1)':'var(--s1)','stroke-width':3.5,'stroke-linecap':'round'},g);}}}
 function frost(g,b){for(let i=0;i<64;i++)if(b[i]&&E.frozen(b,i)){const e=el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:22,fill:'url(#frost)'},g);
@@ -868,8 +869,8 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
     el('rect',{x,y,width:S,height:S,fill:trap?'var(--trap)':'var(--sq)',stroke:'var(--gridl)','stroke-width':1.2},g);
   }
-  for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent='abcdefgh'[c];}
-  for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(r+1);}
+  for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=(FL()?'hgfedcba':'abcdefgh')[c];}
+  for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(FL()?8-r:r+1);}
   const under=el('g',{'pointer-events':'none'},svg);lastUnder(under,o.last);
   const lay=el('g',{'pointer-events':'none'},svg);trapLinks(lay,shown);
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
