@@ -856,7 +856,7 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   el('rect',{width:2.4,height:7,fill:'var(--frost)'},pat);
   for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
     el('rect',{x,y,width:S,height:S,fill:trap?'var(--trap)':'var(--sq)',stroke:'var(--gridl)','stroke-width':1.2},g);
-    if(trap){el('rect',{x:x+9,y:y+9,width:S-18,height:S-18,rx:4,fill:'none',stroke:'var(--trapk)','stroke-width':1.6,'stroke-dasharray':'5 4',opacity:.8},g);}}
+  }
   for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent='abcdefgh'[c];}
   for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(r+1);}
   const under=el('g',{'pointer-events':'none'},svg);lastUnder(under,o.last);
