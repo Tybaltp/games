@@ -904,8 +904,10 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
       // the steps already played in full, the hovered next movement fainter
       if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
         if(pv.rep>=0){ring(gh,ex,ey,PR+3,{stroke:'var(--danger)','stroke-dasharray':'3 4','stroke-width':2.5});piece(gh,X(pv.rep),Y(pv.rep),st.b[end],PR,.55);ring(gh,X(pv.rep),Y(pv.rep),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
-        piece(gh,ex+(st.b[end]&&pv.rep<0&&end!==G?7:0),ey-(st.b[end]&&pv.rep<0&&end!==G?7:0),k,PR,.6);
-        ring(gh,ex,ey,(end===G?GR:PR)+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}}}
+        // ending on a piece to bounce on: that piece is shown selected in transparency (once played, its solid ring says it);
+        // ending on a stop: the moving piece is shown there in transparency
+        if(end!==G&&st.b[end]&&pv.rep<0){if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}
+        else{piece(gh,ex,ey,k,PR,.6);ring(gh,ex,ey,(end===G?GR:PR)+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}}}}
 // dotted path from the start square through the steps (G = the mover's target goal)
 function pathLine(par,p,s,cells,a){const pts=[[X(s),Y(s)]].concat(cells.map(x=>PT(x,p)));
   el('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'1 8','stroke-linecap':'round','stroke-linejoin':'round',...a},par);}
