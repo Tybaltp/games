@@ -124,10 +124,17 @@ a{color:inherit}
 #watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
 .lvl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
 .lvl select{flex:1;min-width:0}
+
+/* header breadcrumb: games / game name */
+h1 a.crumb{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;text-decoration:none}
+h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
+h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
+h1 a.gname{color:inherit;text-decoration:none}
+@media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1>Zèrtz<span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="zertz.html">Zèrtz</a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -360,7 +367,7 @@ const I18N={fr:{
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance).",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour annuler.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ leaveQ:"Une partie est en cours. La quitter ?",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  vsAI:"Contre l'ordinateur",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",
  st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",hint_move:"Suggestion : {m}.",
  ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",
@@ -398,7 +405,7 @@ const I18N={fr:{
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted).",st_remove:"Remove a free ring (marked in red), or click the marble again to cancel.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ leaveQ:"A game is in progress. Leave it?",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  vsAI:"Against the computer",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",
  st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",hint_move:"Hint: {m}.",
  ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",
@@ -744,6 +751,10 @@ document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXT
   const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
 // Home: leave the game and come back to Zèrtz's own start page
 $('homeBtn').onclick=()=>{try{stopAI();}catch(e){}C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
+// Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
+const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden;
+$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
+$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
 // With a mouse, hovering shows the move, so one click plays it; on a touch screen the first tap shows it.
 function hoverRing(i){if(!view||ui.pending||i===ui.hover)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;

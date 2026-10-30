@@ -5,30 +5,45 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jeux</title>
 <style>
-:root{--bg:#fbfaf7;--ink:#1d1c1a;--muted:#6b6862;--line:#e3dfd6;--accent:#9C2E3A}
-@media (prefers-color-scheme:dark){:root{--bg:#151515;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--accent:#E1737D}}
+:root{--bg:#fbfaf7;--ink:#1d1c1a;--muted:#6b6862;--line:#e3dfd6;--panel:#ffffff;--accent:#9C2E3A;--warn:#fff4e5;--warn-line:#e8c48a}
+@media (prefers-color-scheme:dark){:root{--bg:#151515;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--panel:#1d1c1b;--accent:#E1737D;--warn:#2a2116;--warn-line:#6b5530}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
-main{max-width:34rem;margin:0 auto;padding:12vh 16px 48px}
+main{max-width:64rem;margin:0 auto;padding:8vh 16px 48px}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 h1{font-size:1.8rem;margin:0 0 4px}
-.lede{color:var(--muted);margin:0 0 28px}
+.lede{color:var(--muted);margin:0 0 20px;max-width:42rem}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;margin-top:6px}
 .seg button{font:inherit;font-size:.8rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-li{border-bottom:1px solid var(--line)}
-a{display:block;padding:16px 4px;color:inherit;text-decoration:none}
-a:hover .t,a:focus-visible .t{color:var(--accent)}
-.t{font-size:1.15rem;font-weight:650}
-.d{display:block;color:var(--muted);font-size:.92rem}
+/* games: as many columns as the width allows */
+.games{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(14.5rem,1fr));gap:12px}
+.games a{display:block;height:100%;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:inherit;text-decoration:none}
+.games a:hover,.games a:focus-visible{border-color:var(--accent)}
+.games a:hover .t,.games a:focus-visible .t{color:var(--accent)}
+.t{display:block;font-size:1.15rem;font-weight:650}
+.d{display:block;color:var(--muted);font-size:.92rem;margin-top:2px}
+details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 16px;max-width:42rem}
+details.how summary{cursor:pointer;font-weight:600}
+details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
+details.how li{margin:.35em 0}
+details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
 </style>
 </head>
 <body>
 <main>
 <header><div><h1 data-i18n="title">Jeux</h1><p class="lede" data-i18n="lede"></p></div>
 <div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
-<ul>
+<details class="how"><summary data-i18n="howT"></summary>
+  <ul>
+    <li data-i18n-html="how1"></li>
+    <li data-i18n-html="how2"></li>
+    <li data-i18n-html="how3"></li>
+    <li data-i18n-html="how4"></li>
+  </ul>
+  <p class="warn" data-i18n-html="warn"></p>
+</details>
+<ul class="games">
 <li><a href="pente.html"><span class="t">Pente</span><span class="d" data-i18n="pente"></span></a></li>
 <li><a href="pontedeldiavolo.html"><span class="t">Ponte del Diavolo</span><span class="d" data-i18n="ponte"></span></a></li>
 <li><a href="zertz.html"><span class="t">Zèrtz</span><span class="d" data-i18n="zertz"></span></a></li>
@@ -42,18 +57,31 @@ a:hover .t,a:focus-visible .t{color:var(--accent)}
 <script>
 const I18N={
  fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
+     howT:"Comment ça marche ?",
+     how1:"<b>Pas d'hébergement.</b> Il n'y a pas de serveur de jeu : la partie tourne dans le navigateur de celui qui la crée. Un service public (PeerJS) sert seulement à mettre les deux navigateurs en relation grâce au code.",
+     how2:"<b>De navigateur à navigateur.</b> Les coups passent d'un joueur à l'autre directement, ou par un relais quand le réseau l'impose. Rien n'est enregistré ailleurs que dans vos deux navigateurs. Les spectateurs se connectent de la même façon.",
+     how3:"<b>Robuste aux déconnexions.</b> Chaque joueur garde la position. Si l'hôte disparaît, l'invité reprend l'hébergement sous le même code après une dizaine de secondes. Les pendules s'arrêtent quand c'est au tour du joueur absent, et reprennent à son retour.",
+     how4:"<b>En dernier recours</b>, un code de reprise, copié pendant la partie, permet de la relancer depuis la page d'accueil du jeu.",
+     warn:"<b>Important :</b> ne fermez pas l'onglet et ne quittez pas le navigateur pendant une partie. C'est votre navigateur qui la fait vivre. Sur téléphone, évitez de rester longtemps dans une autre application.",
      pente:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",ponte:"Bâtissez des îles de quatre tuiles et reliez-les par des ponts.",
      zertz:"Des billes communes sur un plateau d'anneaux qui rétrécit.",volo:"Réunissez tous vos oiseaux en une seule nuée.",
-     arimaa:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",gyges:"Des anneaux neutres qui rebondissent jusqu\u2019au but adverse.",
+     arimaa:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",gyges:"Des anneaux neutres qui rebondissent jusqu’au but adverse.",
      tintas:"Un pion commun, sept couleurs : collectionnez-en une.",dblocks:"Posez vos polyominos coin contre coin, couvrez le plus de cases."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
+     howT:"How does it work?",
+     how1:"<b>No hosting.</b> There is no game server: the game runs in the browser of whoever creates it. A public service (PeerJS) is only used to put the two browsers in touch through the code.",
+     how2:"<b>Browser to browser.</b> Moves go from one player to the other directly, or through a relay when the network requires it. Nothing is stored anywhere but in your two browsers. Spectators connect the same way.",
+     how3:"<b>Robust to disconnections.</b> Each player keeps the position. If the host drops out, the guest takes over hosting under the same code after about ten seconds. The clocks stop when it is the absent player's turn, and resume when they are back.",
+     how4:"<b>As a last resort</b>, a resume code, copied during the game, lets you restart it from the game's home page.",
+     warn:"<b>Important:</b> do not close the tab or quit the browser during a game. Your browser is what keeps it alive. On a phone, avoid staying in another app for long.",
      pente:"Five in a row, or capture five pairs. Swap2 opening.",ponte:"Build islands of four tiles and link them with bridges.",
      zertz:"Shared marbles on a shrinking board of rings.",volo:"Gather all your birds into a single flock.",
-     arimaa:"Get a rabbit to the far side: push, pull, traps.",gyges:"Neutral rings bounce their way to the opponent\u2019s goal.",
+     arimaa:"Get a rabbit to the far side: push, pull, traps.",gyges:"Neutral rings bounce their way to the opponent’s goal.",
      tintas:"One shared pawn, seven colours: collect a full set.",dblocks:"Place your polyominoes corner to corner, cover the most squares."}};
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
 function apply(){document.documentElement.lang=lang;document.title=I18N[lang].title;
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=I18N[lang][e.dataset.i18n]);
+  document.querySelectorAll('[data-i18n-html]').forEach(e=>e.innerHTML=I18N[lang][e.dataset.i18nHtml]);
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));}
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));localStorage.setItem('pente-lang',lang);}catch(e){}apply();});
 apply();

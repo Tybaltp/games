@@ -141,6 +141,9 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .grow{flex:1}
 .topbar{padding-block:8px 0}
 .brand{font-family:var(--f-display);font-size:30px;line-height:1;margin:0;font-weight:400}
+.brand a{color:inherit;text-decoration:none}.brand a:hover{color:var(--accent)}
+.brand .crumb{font-family:system-ui,sans-serif;font-size:15px;font-weight:600;color:var(--muted)}
+.brand .sep{font-family:system-ui,sans-serif;font-size:15px;color:var(--muted);margin:0 .3em}
 .app{padding-block:8px 12px;align-items:start;grid-template-columns:minmax(0,1fr) 320px}
 .board-col{--bw:min(100%,calc(100vh - 110px));--bw:min(100%,calc(100svh - 110px));display:flex;flex-direction:column;gap:8px;min-width:0}
 .board-col>*{width:100%;max-width:var(--bw);margin:0 auto}
@@ -201,7 +204,7 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 </head>
 <body>
 <div class="topbar gutter">
- <span class="brand" id="brand" hidden>Pente</span>
+ <span class="brand" id="brand"><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html">Pente</a></span>
  <span class="net" id="net" hidden><i></i><span id="netTxt"></span></span>
  <span class="grow"></span>
  <button class="small" id="homeBtn" hidden></button>
@@ -513,7 +516,7 @@ fr:{
  r3:"Cinq paires capturées gagnent.",
  r4:"Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.",
  r5:"Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.",
- home:"Accueil",leaveQ:"Quitter la partie ?",you:"vous",youCap:"Vous",hostDefault:"Hôte",guestDefault:"Invité",
+ home:"Accueil",leaveQ:"Une partie est en cours. La quitter ?",you:"vous",youCap:"Vous",hostDefault:"Hôte",guestDefault:"Invité",
  black:"Noir",white:"Blanc",firstP:"premier joueur",secondP:"second joueur",waiting:"En attente…",
  captured:"{n} paires capturées sur 5",confirmOpt:"Confirmer chaque coup avant de le jouer",
  confirm1:"Valider le coup",confirmN:"Valider les pierres",removeStones:"Retirer les pierres posées",backChoice:"Revenir au choix de couleur",
@@ -586,7 +589,7 @@ en:{
  r3:"Capturing five pairs wins.",
  r4:"Swap2: the first player places 2 black stones and 1 white. The second player takes Black, takes White, or adds 1 black and 1 white and lets the first player choose. White moves next.",
  r5:"Fischer clock: base time for each player, increment added after every action. Running out of time loses the game.",
- home:"Home",leaveQ:"Leave the game?",you:"you",youCap:"You",hostDefault:"Host",guestDefault:"Guest",
+ home:"Home",leaveQ:"A game is in progress. Leave it?",you:"you",youCap:"You",hostDefault:"Host",guestDefault:"Guest",
  black:"Black",white:"White",firstP:"first player",secondP:"second player",waiting:"Waiting…",
  captured:"{n} of 5 pairs captured",confirmOpt:"Confirm each move before playing it",
  confirm1:"Confirm move",confirmN:"Confirm stones",removeStones:"Remove placed stones",backChoice:"Back to color choice",
@@ -928,7 +931,7 @@ $('cTc').onchange=()=>{tcChoice=$('cTc').value;store.set('pente-tc',tcChoice);};
 
 function noticeSet(txt,cls){const n=$('notice');n.className='notice'+(txt?' on':'')+(cls?' '+cls:'');n.textContent=txt||'';}
 function render(){
- $('homeBtn').hidden=!mode;$('homeBtn').textContent=homeArm?t('leaveQ'):t('home');$('homeBtn').classList.toggle('armed',homeArm);$('brand').hidden=!mode;
+ $('homeBtn').hidden=true;$('homeBtn').textContent=homeArm?t('leaveQ'):t('home');$('homeBtn').classList.toggle('armed',homeArm);
  if(!mode){draw();return;}
  const wide=window.matchMedia('(min-width:861px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
  if(!S){noticeSet(t('st_connecting'));$('playersTop').innerHTML='';$('playersSide').innerHTML='';$('cmd').hidden=true;$('inviteBox').hidden=true;$('review').hidden=true;$('resumeBlk').hidden=true;$('log').innerHTML='';draw();return;}
@@ -1102,6 +1105,10 @@ function lastHosted(){let best=null;try{for(let k=0;k<localStorage.length;k++){c
 function refreshResume(){const h=lastHosted(),g=jget('pente-guest'),gOk=g&&g.code&&g.S&&!g.S.result;
  $('resumeCard').hidden=!(h||gOk);if(h){$('resumeTxt').textContent=t('inProgressHost');$('resumeBtn').dataset.k='host-'+h.code;}else if(gOk){$('resumeTxt').textContent=t('inProgressGuest');$('resumeBtn').dataset.k='join-'+g.code;}}
 $('resumeBtn').onclick=()=>{const k=$('resumeBtn').dataset.k||'';if(k.indexOf('host-')===0){bootHost(k.slice(5));return;}if(k.indexOf('join-')===0){$('jCode').value=k.slice(5);join(false);}};
+// Header breadcrumb: games -> the index; game name -> Pente's start page; confirm before leaving a game in progress
+const liveGame=()=>!!(S&&!S.result&&S.phase!=='wait'&&mySeat&&!$('game').hidden);
+$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
+$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;goHome();};
 $('homeBtn').onclick=()=>{const live=S&&!S.result&&S.phase!=='wait'&&mySeat;
  if(live&&!homeArm){homeArm=true;render();clearTimeout(homeArmT);homeArmT=setTimeout(()=>{homeArm=false;render();},4000);return;}
  goHome();};

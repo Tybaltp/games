@@ -42,6 +42,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body)
 header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
 h1{font-family:var(--font-display);font-weight:700;font-size:32px;line-height:1;margin:0;letter-spacing:-.01em}
 h1 em{font-style:italic;font-weight:500;color:var(--accent)}
+h1 a.crumb{font-family:var(--font-body);color:var(--muted);font-weight:600;font-size:15px;letter-spacing:0;text-decoration:none}
+h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
+h1 .sep{font-family:var(--font-body);margin:0 .3em;font-weight:400;color:var(--muted);font-size:15px}
+h1 a.gname{color:inherit;text-decoration:none}
 h1 .sub{font-family:var(--font-body);color:var(--muted);font-weight:500;font-size:15px;margin-left:.5em;letter-spacing:0}
 @media (max-width:520px){header{flex-wrap:nowrap;align-items:center}h1{font-size:25px;white-space:nowrap}h1 .sub{display:none}}
 select,button{font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;cursor:pointer}
@@ -148,7 +152,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
   </div>
 </div>
 <div class="wrap">
-<header><h1>Ponte <em>del</em> Diavolo<span class="sub" data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html">Ponte <em>del</em> Diavolo</a><span class="sub" data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
 <div class="status" id="status" aria-live="polite"></div>
 
 <section class="view" id="landing">
@@ -346,7 +350,7 @@ const I18N={fr:{
  pieTtl:"Votre choix",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",
  rematch:"Rejouer",offerSent:"Proposition envoyée.",offerFrom:"{n} propose une nouvelle partie, couleurs inversées.",offerRefused:"{n} a refusé.",accept:"Accepter",decline:"Refuser",withdraw:"Annuler",
  lg_rematch:"Nouvelle partie : {n} ouvre.",
- nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
+ leaveQ:"Une partie est en cours. La quitter ?",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
  yourMove:"Votre coup",confirmMv:"Confirmer le coup",clear:"Effacer",endTurn:"Finir le tour",newGame:"Nouvelle partie",
  pass:"Passer",passEnd:"Passer et finir",hints:"Montrer les cases jouables",needConfirm:"Confirmer chaque coup avant l'envoi",sounds:"Sons",
  resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
@@ -397,7 +401,7 @@ const I18N={fr:{
  pieTtl:"Your choice",takeLight:"Take Light",playDark:"Play Dark",
  rematch:"Rematch",offerSent:"Offer sent.",offerFrom:"{n} offers a new game, colours swapped.",offerRefused:"{n} declined.",accept:"Accept",decline:"Decline",withdraw:"Withdraw",
  lg_rematch:"New game: {n} opens.",
- nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
+ leaveQ:"A game is in progress. Leave it?",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
  yourMove:"Your move",confirmMv:"Confirm move",clear:"Clear",endTurn:"End turn",newGame:"New game",
  pass:"Pass",passEnd:"Pass and end",hints:"Show playable squares",needConfirm:"Confirm each move before sending",sounds:"Sounds",
  resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
@@ -1074,6 +1078,10 @@ $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tr
 let homeMsg={k:'st_home',err:false};
 function status(txt,err){ const s=$('status'); s.className='status'+(err?' err':''); s.textContent=txt; }
 function showGame(){ $('landing').hidden=true; $('status').hidden=true; $('game').hidden=false; renderAll(); }
+// Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
+function liveGame(){const d=net.data;return !!net.gid&&!!d&&!!mySeat(d)&&d.phase!=='waiting'&&d.phase!=='over';}
+$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
+$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;closeNet();showLanding();};
 function showLanding(k,err){
   $('game').hidden=true; $('landing').hidden=false; $('status').hidden=false; homeMsg={k:k||'st_home',err:!!err}; status(t(homeMsg.k),err); refreshHome();
   try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
