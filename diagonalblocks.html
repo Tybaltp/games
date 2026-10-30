@@ -166,6 +166,8 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="testT">Test game</h2><p class="hint" data-i18n="testTxt">The tester plays the moves of both sides on this device, to try the game out.</p>
+        <form class="form" id="testForm"><button type="submit" data-i18n="testBtn">Start a test game</button></form></div>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="DBD1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
@@ -211,6 +213,7 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="myCard" hidden>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <div class="confirm" id="undoBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo move</button></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -299,6 +302,7 @@ const I18N={fr:{
  leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
+ testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",undo:"Annuler le coup",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
@@ -338,6 +342,7 @@ const I18N={fr:{
  leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, first player swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who plays first",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
+ testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",undo:"Undo move",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
@@ -421,7 +426,7 @@ function replay(size,moves,result){const key=moves.join(',')+'|'+JSON.stringify(
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
-let role=null;          // 'host' | 'guest' | 'watch'
+let role=null;          // 'host' | 'guest' | 'watch' | 'test'
 let peer=null;
 let view=null;          // public state shown
 let mySeat=-1;
@@ -600,11 +605,11 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   drawBoard(d.st,d.last,pv,marks,marks?myC:-1);
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  const nm=s=>(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  const nm=s=>role==='test'?view.names[s]:(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const plain=s=>view.names[s]||t(s===0?'p1':'p2');
   const swapNow=!r.over&&E.canSwap(r.st),lastSwap=!r.over&&r.last&&r.last.mv.t==='s'&&r.st.n===2;
   const stuckC=!r.over?[0,1].find(c=>r.st.stuck[c]):undefined;
-  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why,r.over)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why,r.over)}):t('wins',{n:plain(r.over.w),why:t(r.over.why,r.over)}),'win');
+  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why,r.over)}):r.over.w===mySeat&&role!=='test'?t('youWin',{why:t(r.over.why,r.over)}):t('wins',{n:plain(r.over.w),why:t(r.over.why,r.over)}),'win');
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:plain(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:plain(1-mySeat)}):t('st_bothHere')));
@@ -626,18 +631,19 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
     el.append(h,ck,ty);host.appendChild(el);}
   tick();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=ui.pending.t==='s'?t('swapMv'):txtOf(ui.pending);
-  $('myCard').hidden=!(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started);
+  $('myCard').hidden=!(role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('undoBox').hidden=role!=='test';if(role==='test'){$('undoBtn').disabled=!view.moves.length;if(r.over)$('resignAsk').hidden=true;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;}
   $('swapBox').hidden=!(mine&&swapNow&&!ui.pending);
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:plain(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='test'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=!(mySeat>=0&&view.started);
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='test'||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'),rm=view.rematch,opp=plain(1-Math.max(0,mySeat));
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='test'),rm=role==='test'?null:view.rematch,opp=plain(1-Math.max(0,mySeat));
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
@@ -709,6 +715,7 @@ function choose(mv){ui.hover=-1;ui.pending=mv;renderGame();}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(mv.t==='p')selectPiece(-1,true);
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
+  if(role==='test'){testPlay(code);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
   sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('dblk-p2p-pending',{code:C.code,n,mv:code});
   C.conn.send({t:'move',n,code});renderGame();}
@@ -726,9 +733,20 @@ $('swapBtn').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,vi
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
+  if(role==='test'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};resetUi();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>rmSend('ask');
+$('newGame').onclick=()=>{if(role==='test'){startTest();return;}rmSend('ask');};
+// Test game: the tester plays both sides on this device; the commands follow the side to move.
+function startTest(){C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);navAt=null;sending=false;role='test';mySeat=0;setHash('test');selectPiece(-1,true);
+  view={size:SIZE,tc:null,names:[t('p1'),t('p2')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,
+    started:true,ready:[true,true],th:[null,null],paused:false,ver:0,rematch:null,recvAt:Date.now()};
+  resetUi();showGame();renderGame();}
+function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.toMove;selectPiece(-1,true);resetUi();renderGame();}
+function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
+function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
+$('undoBtn').onclick=()=>{if(role==='test')testUndo();};
+$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest();});
 $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
@@ -795,6 +813,7 @@ function init(){drawBoard(E.init(),null,null,null,-1);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
   status(t('st_home'));
+  if(location.hash==='#test'){startTest();return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];

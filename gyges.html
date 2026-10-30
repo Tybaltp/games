@@ -169,6 +169,9 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="testT">Test game</h2><p class="hint" data-i18n="testTxt">You play the moves of both sides on this device, to try the game out.</p>
+        <form class="form" id="testForm"><label class="toggle" for="tAdv"><input type="checkbox" id="tAdv"> <span data-i18n="advOpt">Advanced rule (replacement)</span></label>
+        <button type="submit" data-i18n="testBtn">Start a test game</button></form></div>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="GYGES1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
@@ -403,6 +406,7 @@ const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence (pose la première pièce)",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  advOpt:"Règle avancée (remplacement)",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
+ testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
@@ -444,6 +448,7 @@ const I18N={fr:{
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts (places the first piece)",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  advOpt:"Advanced rule (replacement)",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
+ testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
@@ -738,9 +743,9 @@ function renderGame(){if(!view)return;ui.repHover=false;const r=replay(view.adv,
   else drawBoard(r.st,{o,interactive:mine&&!ui.pending&&busy!=='hint',hint:mine?hintMv:null,pv:mine?previewOf(r.st,o):null,last:r.last});
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  const nm=s=>role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  const nm=s=>role==='test'?view.names[s]:role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const cantMove=!r.over&&!E.setup(r.st)&&E.canPass(r.st,!!view.adv);
-  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
+  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&role!=='test'?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
   else if(role==='ai'&&busy)status(t(busy==='hint'?'hintBusy':'st_aiThinking'));
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
@@ -767,21 +772,22 @@ function renderGame(){if(!view)return;ui.repHover=false;const r=replay(view.adv,
     el.append(h,ck);host.appendChild(el);}
   tick();advLine();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending,r.st);
-  $('myCard').hidden=!(role==='ai'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('aiBox').hidden=role!=='ai';$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  $('myCard').hidden=!(role==='ai'||role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('aiBox').hidden=role!=='ai'&&role!=='test';for(const id of ['hintBtn','aiInfo'])$(id).hidden=role==='test';$('gLevel').parentNode.hidden=role==='test';
+  if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
   if(role==='ai'){$('undoBtn').disabled=!r.log.some(e=>e.p===mySeat);$('hintBtn').disabled=!mine||!!busy||!!ui.pending;
     $('aiInfo').textContent=hintMv?t('hint_move',{m:txtOf(hintMv,r.st)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
   $('passBox').hidden=!(mine&&o&&o.pass&&!ui.pending);
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||role==='test'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||!(mySeat>=0&&view.started);
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||role==='test'||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'),rm=role==='ai'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||role==='test'),rm=role==='ai'||role==='test'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
@@ -851,6 +857,7 @@ function choose(mv){ui.done=null;ui.hover=null;ui.tap=null;ui.pending=mv;renderG
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(role==='ai'){aiPlay(code);return;}
+  if(role==='test'){testPlay(code);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
   sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('gyges-p2p-pending',{code:C.code,n,mv:code});
   C.conn.send({t:'move',n,code});renderGame();}
@@ -869,10 +876,10 @@ $('passBtn').onclick=doPass;
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
-  if(role==='ai'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
+  if(role==='ai'||role==='test'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,view.adv);return;}rmSend('ask');};
+$('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,view.adv);return;}if(role==='test'){startTest(view.adv);return;}rmSend('ask');};
 $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
@@ -912,6 +919,14 @@ function ask(st,opt,cb){opt={...opt,adv:!!view.adv};const msg={st:{...st,b:Array
 function startAI(seat,adv){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('');
   view={size:SIZE,adv:!!adv,tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
   resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
+// Test game: the tester plays both sides on this device; the board turns to the side to move.
+function startTest(adv){stopAI();navAt=null;role='test';mySeat=0;C.stop=true;setHash('test');
+  view={size:SIZE,adv:!!adv,tc:null,names:[t('p1'),t('p2')],first:'me',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
+  resetUi();hintMv=null;showGame();renderGame();}
+function testTurn(){const r=replay(view.adv,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
+function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
+function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
+$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest($('tAdv').checked);});
 function aiPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
 function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.adv,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
@@ -919,7 +934,7 @@ function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.adv,view.moves
     if(!res||!res.move){renderGame();return;}aiInfo=E.setup(r.st)?null:evalInfo(res);view.moves=view.moves.concat([enc(res.move)]);renderGame();aiStep();},wait);});}
 function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>5e5)return {k:'ai_win'};if(s<-5e5)return {k:'ai_lost'};
   return {k:Math.abs(s)<60?'ai_eq':s>0?(s>1500?'ai_much':'ai_better'):(s<-1500?'ai_muchWorse':'ai_worse'),d:r.depth};}
-$('undoBtn').onclick=()=>{if(role!=='ai')return;stopAI();const m=view.moves.slice();
+$('undoBtn').onclick=()=>{if(role==='test'){testUndo();return;}if(role!=='ai')return;stopAI();const m=view.moves.slice();
   // back to the last position where it was my turn, before my last move
   const turnAt=k=>replay(view.adv,m.slice(0,k),null).st.turn;let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
@@ -970,6 +985,7 @@ function init(){drawBoard(E.init(),{});
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
   status(t('st_home'));
+  if(location.hash==='#test'){startTest(false);return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];

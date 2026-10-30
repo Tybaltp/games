@@ -245,6 +245,11 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
   <details class="card">
    <summary data-i18n="more"></summary>
    <div class="inner">
+    <h3 data-i18n="testT"></h3>
+    <p class="note" data-i18n="testTxt"></p>
+    <button class="btn" id="tGo" data-i18n="testBtn" style="justify-content:center"></button>
+   </div>
+   <div class="inner">
     <h3 data-i18n="resumeTitle"></h3>
     <label class="field" for="rIn"><span data-i18n="resumeCode"></span><textarea id="rIn" rows="3" spellcheck="false" autocomplete="off" placeholder="PENTE1.…"></textarea></label>
     <div class="row" id="rSeats"></div>
@@ -568,6 +573,7 @@ fr:{
  e_code:"Saisissez le code reçu (6 caractères).",e_nogame:"Cette partie n'existe pas sur cet appareil.",e_invitedName:"Vous êtes invité à jouer : indiquez votre nom puis cliquez sur Jouer.",
  tag_swap:"Swap2",tag_pairs:"5 paires",tag_long:"6+ gagne",tag_noclock:"sans pendule",tag_ai:"niveau {lv}",
  createT:"Créer une partie",joinT:"Rejoindre une partie avec un code",nick:"Votre pseudo",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",more:"Autres options",
+ testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",p1:"Joueur 1",p2:"Joueur 2",
  inProgress:"Partie en cours",inProgressHost:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",rulesBrief:"Règles en bref",
  n_waitHost:"En attente de votre adversaire : envoyez-lui le code de la partie.",n_wait:"En attente du second joueur.",n_bothHere:"Les deux joueurs sont là : cliquez sur « Commencer la partie ».",
  n_waitStart:"En attente que {name} clique sur « Commencer la partie ».",n_waitBoth:"En attente du départ des deux joueurs.",
@@ -641,6 +647,7 @@ en:{
  e_code:"Enter the code you received (6 characters).",e_nogame:"This game does not exist on this device.",e_invitedName:"You are invited to play: enter your name, then click Play.",
  tag_swap:"Swap2",tag_pairs:"5 pairs",tag_long:"6+ wins",tag_noclock:"no clock",tag_ai:"level {lv}",
  createT:"Create a game",joinT:"Join a game with a code",nick:"Your nickname",linkHint:"With an invitation link, the page connects on its own.",more:"Other options",
+ testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",p1:"Player 1",p2:"Player 2",
  inProgress:"Game in progress",inProgressHost:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",rulesBrief:"Rules in brief",
  n_waitHost:"Waiting for your opponent: send them the game code.",n_wait:"Waiting for the second player.",n_bothHere:"Both players are here: click “Start the game”.",
  n_waitStart:"Waiting for {name} to click “Start the game”.",n_waitBoth:"Waiting for both players to start.",
@@ -778,7 +785,13 @@ function doHint(){if(!canHint())return;const key=stateKey();busy='hint';render()
   else if(s>=0){hintOpt='aW';hint=r.move;hintMsg={k:'hint_white',c:coord(r.move)};}
   else{hintOpt='aB';hint=-1;hintMsg={k:'hint_black'};}
   render();});}
-function undo(){if(mode!=='ai'||!hist.length)return;resetWorker();S=JSON.parse(hist.pop());tent=[];localMode='';clearHint();aiInfo=null;navAt=null;resignArm=false;toast(t('undone'));render();aiStep();}
+function undo(){if(mode==='test'){testUndo();return;}if(mode!=='ai'||!hist.length)return;resetWorker();S=JSON.parse(hist.pop());tent=[];localMode='';clearHint();aiInfo=null;navAt=null;resignArm=false;toast(t('undone'));render();aiStep();}
+// Test game: the tester plays both sides on this device; the commands follow the side to move.
+function startTest(){leaveCurrent();mode='test';code=null;
+ S=newState(null,'H',{H:'',G:''},null,1,null);S.phase='open';S.turnStart=Date.now();mySeat='H';
+ hist=[];navAt=null;tent=[];localMode='';setHash('test');showGame();}
+function testTurn(){if(!S.result)mySeat=turnSeat(S)||mySeat;tent=[];localMode='';navAt=null;resignArm=false;render();}
+function testUndo(){if(!hist.length)return;S=JSON.parse(hist.pop());testTurn();toast(t('undone'));}
 function newAIGame(){const f=other(S.first);resetWorker();S=newState(null,f,{H:'',G:''},null,(S.game||1)+1,null);S.phase='open';S.turnStart=Date.now();hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';resignArm=false;render();aiStep();}
 
 /* ================= réseau : hôte ================= */
@@ -906,6 +919,7 @@ function onGuestData(d){if(!d||typeof d!=='object')return;lastSeen=performance.n
 /* ================= actions du joueur ================= */
 function sendAct(a){resignArm=false;
  if(OFFERS.includes(a.t)&&mode==='host'){offerAct(mySeat,a);changed(true);return;}
+ if(mode==='test'){if(OFFERS.includes(a.t))return;hist.push(JSON.stringify(S));const err=act(S,mySeat,a,Date.now());if(err){hist.pop();toast(t(err));}testTurn();return;}
  if(mode==='ai'){hist.push(JSON.stringify(S));const err=act(S,'H',a,Date.now());if(err){hist.pop();toast(t(err));}clearHint();aiInfo=null;render();aiStep();}
  else if(mode==='host'){const err=act(S,mySeat,a,Date.now());if(err)toast(t(err));changed(!err);}
  else if(mode==='guest'&&mySeat&&!OFFERS.includes(a.t)&&a.t!=='start'&&S&&!pendingAct){
@@ -956,7 +970,7 @@ function countdown(myRunning,ms){if(!myRunning||!S||!S.tc){cdSec=null;return;}co
 function beep(){tone(660,.18,.05);}
 document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 const CN=c=>c===1?t('black'):c===2?t('white'):'';
-function nameOf(seat){if(mode==='ai')return seat==='G'?t('computer'):t('youCap');return (S&&S.names[seat])||t(seat==='H'?'hostDefault':'guestDefault');}
+function nameOf(seat){if(mode==='test')return t(seat==='H'?'p1':'p2');if(mode==='ai')return seat==='G'?t('computer'):t('youCap');return (S&&S.names[seat])||t(seat==='H'?'hostDefault':'guestDefault');}
 const isMe=seat=>seat===mySeat;
 
 function applyStatic(){document.documentElement.lang=lang;
@@ -976,14 +990,14 @@ function render(){
  const wide=window.matchMedia('(min-width:861px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
  if(!S){noticeSet(t('st_connecting'));$('playersTop').innerHTML='';$('playersSide').innerHTML='';$('cmd').hidden=true;$('inviteBox').hidden=true;$('review').hidden=true;$('resumeBlk').hidden=true;$('log').innerHTML='';draw();return;}
  const ts=turnSeat(S),mine=!!ts&&ts===mySeat&&!S.paused,p=placing();
- if(mode!=='ai'){if(mine&&!lastTurnMine&&S.log.length)beep();document.title=(mine?(lang==='fr'?'● À vous · ':'● Your move · '):'')+'Pente';}
+ if(mode!=='ai'&&mode!=='test'){if(mine&&!lastTurnMine&&S.log.length)beep();document.title=(mine?(lang==='fr'?'● À vous · ':'● Your move · '):'')+'Pente';}
  lastTurnMine=mine;
  const first=S.first,second=other(first);
 
  // message: only the exceptional ones, on the line reserved under the board
  let msg='',cls='';
  if(S.result){const r=S.result,w=r.winner;
-  msg=(w?(isMe(w)?t('youWin'):(mySeat?t('youLose'):t('xWins',{name:nameOf(w)}))):t('draw'))+' — '+(w?t('winBy',{color:CN(S.color[w])||nameOf(w),reason:t('res_'+r.code,{n:r.n})}):t('boardFull'));cls='win';}
+  msg=(w?(isMe(w)&&mode!=='test'?t('youWin'):(mySeat&&mode!=='test'?t('youLose'):t('xWins',{name:nameOf(w)}))):t('draw'))+' — '+(w?t('winBy',{color:CN(S.color[w])||nameOf(w),reason:t('res_'+r.code,{n:r.n})}):t('boardFull'));cls='win';}
  else if(S.phase==='wait'){if(!hasGuest())msg=mode==='host'?t('n_waitHost'):t('n_wait');
   else if(mySeat)msg=isReady(mySeat)?t('n_waitStart',{name:nameOf(other(mySeat))}):t('n_bothHere');else msg=t('n_waitBoth');}
  else if(S.paused)msg=mode==='host'?t('n_pausedHost',{name:nameOf(other(mySeat))}):(mySeat?t('n_pausedGuest'):t('n_pausedWatch'));
@@ -1000,7 +1014,7 @@ function render(){
  const view=viewState();
  const box=wide?$('playersSide'):$('playersTop');(wide?$('playersTop'):$('playersSide')).innerHTML='';
  box.innerHTML=[first,second].map(seat=>{const col=S.color[seat];const n=col?view.caps[col]:0;const oc=col===1?'w':'b';
-  const nm=(S.phase==='wait'&&!(S.th&&S.th[seat]))?t('waiting'):nameOf(seat)+(isMe(seat)&&mode!=='ai'?' ('+t('you')+')':'')+(S.phase==='wait'&&hasGuest()&&isReady(seat)?' ✓':'');
+  const nm=(S.phase==='wait'&&!(S.th&&S.th[seat]))?t('waiting'):nameOf(seat)+(isMe(seat)&&mode!=='ai'&&mode!=='test'?' ('+t('you')+')':'')+(S.phase==='wait'&&hasGuest()&&isReady(seat)?' ✓':'');
   return `<div class="player${ts===seat&&!S.paused?' turn':''}"><span class="pstone ${col===1?'b':col===2?'w':'u'}"></span><div class="pname">${esc(nm)}</div>${S.tc?`<div class="clock" id="clk-${seat}">${fmt(remaining(seat))}</div>`:''}<div class="cnt" title="${esc(t('captured',{n}))}"><span class="mini ${col?oc:'u'}"></span>${n}/5</div></div>`;}).join('');
  tickClocks();
 
@@ -1017,6 +1031,7 @@ function render(){
   if(S.phase==='choose')sw+=`<button class="btn" id="aX" title="${esc(t('add2')+' — '+t('add2Sub',{name:nameOf(first)}))}"><span>${lang==='fr'?'+2 pierres':'+2 stones'}</span></button>`;}
  if(S.result){
   if(mode==='ai')h+=`<button class="btn primary" id="aNew">${t('rematch')}</button>`;
+  else if(mode==='test')h+=`<button class="btn primary" id="aTest">${t('newGame')}</button>`;
   else if(mySeat){const o=S.offer,opp=nameOf(other(mySeat)),reach=mode==='host'?!!(oppConn&&oppConn.open):!!(conn&&conn.open);
    if(o&&o.st==='open'&&o.by===mySeat)h+=`<p class="note">${t('of_sent')}</p><button class="btn" id="aOfW">${t('of_withdraw')}</button>`;
    else if(o&&o.st==='open')h+=`<p class="note">${esc(t('of_incoming',{n:opp}))}</p><button class="btn primary" id="aOfA" ${reach?'':'disabled'}>${t('of_accept')}</button><button class="btn" id="aOfD">${t('of_decline')}</button>`;
@@ -1031,13 +1046,14 @@ function render(){
  on('aOk',commit);on('aClr',()=>{tent=[];clearHint();render();});on('aBack',()=>{tent=[];localMode='';clearHint();render();});
  on('aB',()=>sendAct({t:'pick',color:1}));on('aW',()=>sendAct({t:'pick',color:2}));on('aX',()=>{localMode='add2';tent=[];clearHint();render();});
  on('aRes',()=>{resignArm=true;render();});on('aRes0',()=>{resignArm=false;render();});on('aRes2',()=>sendAct({t:'resign'}));
- on('aStart',()=>sendAct({t:'start'}));on('aHome',goHome);on('aNew',newAIGame);
+ on('aStart',()=>sendAct({t:'start'}));on('aHome',goHome);on('aNew',newAIGame);on('aTest',startTest);
  on('aOf',()=>sendAct({t:'offer'}));on('aOfW',()=>sendAct({t:'withdraw'}));on('aOfA',()=>sendAct({t:'accept'}));on('aOfD',()=>sendAct({t:'decline'}));
  if(hintOpt){const e=$(hintOpt);if(e){e.classList.add('suggested');e.dataset.sugg=t('suggested');}}
- $('aiControls').hidden=mode!=='ai';
+ $('aiControls').hidden=mode!=='ai'&&mode!=='test';$('bHint').hidden=$('aiInfo').hidden=$('gLevel').parentNode.hidden=mode==='test';
+ if(mode==='test')$('bUndo').disabled=!hist.length;
  if(mode==='ai'){$('bUndo').disabled=!hist.length;$('bHint').disabled=!canHint();
   $('aiInfo').textContent=hintMsg?t(hintMsg.k,{c:hintMsg.c,col:t('colw_'+hintMsg.col)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
- $('optWrap').hidden=!mySeat;$('optConfirm').checked=confirmOn;$('resumeBlk').hidden=!(mySeat&&mode!=='ai'&&S.phase!=='wait');
+ $('optWrap').hidden=!mySeat;$('optConfirm').checked=confirmOn;$('resumeBlk').hidden=!(mySeat&&mode!=='ai'&&mode!=='test'&&S.phase!=='wait');
 
  // navigation: for everyone once the game is over, for spectators at any time; never for a player during the game
  const N=S.log.length,nOK=navAllowed();if(!nOK)navAt=null;else if(navAt!==null)navAt=Math.max(0,Math.min(N,navAt));
@@ -1158,7 +1174,7 @@ document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.datase
 $('optConfirm').addEventListener('change',e=>{confirmOn=e.target.checked;store.set('pente-confirm',confirmOn?'1':'0');if(!confirmOn&&tent.length){const p=placing();if(p&&tent.length===p.colors.length){commit();return;}}render();});
 for(const sel of ['hLevel','gLevel'])$(sel).addEventListener('change',e=>{level=e.target.value;store.set('pente-level',level);$('hLevel').value=level;$('gLevel').value=level;render();});
 $('bUndo').onclick=undo;$('bHint').onclick=doHint;
-$('goAI').onclick=startAI;
+$('goAI').onclick=startAI;$('tGo').onclick=startTest;
 const savedName=nickGet()||'';$('cName').value=savedName;$('jName').value=savedName;
 function cleanCode(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');}
 $('cGo').onclick=()=>{const nm=$('cName').value.trim().slice(0,24);if(nm)nickSet(nm);
@@ -1194,7 +1210,7 @@ function bootHost(c){const raw=store.get('pente-host-'+c);if(!raw){$('lErr').tex
  if(!S.th){S.th={H:hh(token),G:S.gtoken?hh(S.gtoken):null};delete S.gtoken;}if(!S.ready)S.ready={H:true,G:true};
  mySeat=seatOf()||'H';freeze(S.savedAt||S.turnStart);showGame();startHost();hostTimers();changed();return true;}
 refreshResume();
-(function boot(){const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
+(function boot(){if(location.hash==='#test'){startTest();return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
  if(m[1]==='host'){bootHost(m[2]);return;}
  $('jCode').value=m[2];
  if(m[1]==='join'&&!nickGet()){$('lErr').textContent=t('e_invitedName');$('jName').focus();return;}

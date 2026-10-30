@@ -177,6 +177,8 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="inProgressTxt"></p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="testT">Test game</h2><p class="hint" data-i18n="testTxt">The tester plays the moves of both sides on this device, to try the game out.</p>
+        <form class="form" id="testForm"><button type="submit" data-i18n="testBtn">Start a test game</button></form></div>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><div class="form"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PONTE1.…" style="resize:vertical;font-size:12.5px"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="button" id="rGo" data-i18n="load">Load</button></div>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
@@ -213,6 +215,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
       <label class="toggle" for="hints"><input type="checkbox" id="hints" checked> <span data-i18n="hints">Show playable squares</span></label>
       <label class="toggle" for="confirm"><input type="checkbox" id="confirm"> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <div class="confirm" id="undoBox" hidden><button type="button" id="b-undo" data-i18n="undo">Undo move</button></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -338,6 +341,7 @@ const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",me:"Moi",opp:"Mon adversaire",rnd:"Au hasard",
  tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
+ testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",undo:"Annuler le coup",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",
  more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
@@ -389,6 +393,7 @@ const I18N={fr:{
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"First player (places the two opening light tiles)",me:"Me",opp:"My opponent",rnd:"Random",
  tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
+ testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",undo:"Undo move",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",
  more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
@@ -520,7 +525,7 @@ const net={ready:true,peer:null,host:false,conns:new Set(),conn:null,code:null,d
   gid:null,data:null,gone:false,st:null,obsKey:null,obsAt:0,sending:false,err:'',flagKey:null,autoKey:null,sendTimer:null,
   myId:pickTabId('pdd',null)};
 const ACTIVE=['opening','pie','play'];
-const mySeat=d=>d?.seats?.A?.id===net.myId?'A':d?.seats?.B?.id===net.myId?'B':null;
+const mySeat=d=>net.test?(d?net.testSeat:null):d?.seats?.A?.id===net.myId?'A':d?.seats?.B?.id===net.myId?'B':null;
 const colorOfSeat=(d,seat)=>{const ca=d.colorA||1; return seat==='A'?ca:3-ca;};
 const seatOfColor=(d,color)=>{const ca=d.colorA||1; return ca===color?'A':'B';};
 const nickOf=(d,seat)=>d?.seats?.[seat]?.nick||t(seat==='A'?'pA':'pB');
@@ -549,7 +554,7 @@ function closeNet(){
   try{ net.peer?.destroy(); }catch(e){}
   clearTimeout(net.retryT); clearTimeout(net.connT); clearTimeout(net.sendTimer);
   Object.assign(net,{peer:null,host:false,conns:new Set(),conn:null,code:null,doc:null,gid:null,data:null,st:null,gone:false,sending:false,obsKey:null,lastMove:null,sitSent:false,
-    lostSince:0,lost:false,retryT:null,connT:null,err:'',pending:null,hostDoc:null,seenAt:0});
+    lostSince:0,lost:false,retryT:null,connT:null,err:'',pending:null,hostDoc:null,seenAt:0,test:false,testSeat:null,testHist:[]});
   inp=newInput(); navAt=null;
 }
 const saveKey=c=>'pdd-game-'+String(c).toUpperCase();
@@ -768,6 +773,7 @@ setInterval(()=>{ const now=Date.now();
     if(now-(net.seenAt||now)>9000){ const c=net.conn; net.seenAt=now; net.conn=null; try{ c.close(); }catch(e){} lost(); } }
 },2000);
 function send(msg){
+  if(net.test){ testPlay(msg); return; }
   if(net.host){ hostApply(msg); return; }
   if(!net.conn?.open&&!(msg.t==='patch'&&net.data)){ net.err='e_notConn'; return renderAll(); }
   if(msg.t==='patch'&&net.data){ startPending(msg); return; }
@@ -857,7 +863,7 @@ function leaveSeat(){
   const d=net.data, seat=mySeat(d); if(!d||!seat||d.phase!=='waiting') return;
   send({t:'leave',id:net.myId});
 }
-window.addEventListener('beforeunload',e=>{ if(net.host&&net.data&&ACTIVE.includes(net.data.phase)){ e.preventDefault(); e.returnValue=''; } });
+window.addEventListener('beforeunload',e=>{ if(!net.test&&net.host&&net.data&&ACTIVE.includes(net.data.phase)){ e.preventDefault(); e.returnValue=''; } });
 
 /* ---------- sounds ---------- */
 let audioCtx=null,lastMine=false;
@@ -998,7 +1004,7 @@ function renderPlayers(d,real){
   (wide?$('playersSide'):$('playersTop')).innerHTML=['A','B'].map(k=>{
     const so=d.seats?.[k], col=d.colorA?colorOfSeat(d,k):(k==='A'?1:null), sc=(col&&score(real,col))||{pts:0,islands:0,bridges:0};
     const turn=ACTIVE.includes(d.phase)&&d.turnSeat===k, tm=clockNow(d,k);
-    return `<div class="player${turn?' active':''}"><div class="who"><span class="sw ${col?(col===1?'l':'d'):'q'}"></span><span class="${so?'':'free'}">${so?esc(so.nick)+(so.id===net.myId?' ('+esc(t('you'))+')':''):esc(t('freeSeat'))}</span></div>
+    return `<div class="player${turn?' active':''}"><div class="who"><span class="sw ${col?(col===1?'l':'d'):'q'}"></span><span class="${so?'':'free'}">${so?esc(so.nick)+(so.id===net.myId&&!net.test?' ('+esc(t('you'))+')':''):esc(t('freeSeat'))}</span></div>
       <div class="clock${tm<60000&&ACTIVE.includes(d.phase)?' low':''}" id="clk-${k}" ${tc?'':'hidden'}>${fmt(tm)}</div>
       <div class="tally"><span title="${esc(t('pts'))}">${sc.pts}</span><span title="${esc(t('isl'))}">${sc.islands}</span><span title="${esc(t('brg'))}">${sc.bridges}</span></div>
       ${so&&d.phase==='waiting'&&d.seats.A&&d.seats.B?`<div class="${so.ready?'ready':'hint'}">${esc(t(so.ready?'readyB':'notReady'))}</div>`:''}
@@ -1059,11 +1065,12 @@ function renderPanel(){
     on('b-ok',()=>{ const m=inp.awaiting; inp.awaiting=null; commitInput(m); }); on('b-cancel',cancelInput); on('b-one',()=>finishInput({type:'t',cells:inp.draft.slice()})); }
   $('endCard').hidden=!(inGame&&d&&d.phase==='over'); if(!$('endCard').hidden) renderEnd(d,seat);
   const live=!!(d&&seat&&ACTIVE.includes(d.phase));
-  $('myCard').hidden=!live;
+  $('myCard').hidden=!(live||(net.test&&d)); $('undoBox').hidden=!net.test;
+  if(net.test){ $('b-undo').disabled=!net.testHist.length; if(!live){ $('passBox').hidden=$('resignBox').hidden=$('resignAsk').hidden=true; } }
   if(live){ const canP=d.phase==='play'&&myTurn&&!inp.awaiting&&!inp.draft.length&&!inp.bridge&&canPass(net.st,colorOfSeat(d,seat));
     $('passBox').hidden=!canP; $('b-pass').textContent=t(colorOfSeat(d,seat)===2||d.finalTurn?'passEnd':'pass');
     if($('resignAsk').hidden) $('resignBox').hidden=false; }
-  $('rcBoxD').hidden=!(d&&inGame&&seat&&d.phase!=='waiting');
+  $('rcBoxD').hidden=!(d&&inGame&&seat&&!net.test&&d.phase!=='waiting');
   renderLog(d&&inGame?(d.log||[]):[],d);
   renderNav(d);
 }
@@ -1078,12 +1085,12 @@ function renderEnd(d,seat){
   if(seat){
     if(off&&off.by===seat){ txt=t('offerSent'); btns=b('offerCancel','withdraw'); }
     else if(off){ txt=t('offerFrom',{n:nickOf(d,o)}); btns=b('offerYes','accept','primary')+b('offerNo','decline'); }
-    else { if(d.refusal&&d.refusal.by===o) txt=t('offerRefused',{n:nickOf(d,o)}); btns=b('newGame','rematch','primary',net.sending||!oppReachable(d,seat)); }
+    else { if(d.refusal&&d.refusal.by===o) txt=t('offerRefused',{n:nickOf(d,o)}); btns=b('newGame','rematch','primary',!net.test&&(net.sending||!oppReachable(d,seat))); }
   }
   btns+=b('homeBtn','home');
   $('endTxt').textContent=txt; $('endTxt').hidden=!txt; $('endBtns').innerHTML=btns;
   const on=(id,f)=>{const el=$(id); if(el) el.onclick=f;};
-  on('newGame',()=>send({t:'offer',id:net.myId})); on('offerCancel',()=>send({t:'offerCancel',id:net.myId}));
+  on('newGame',()=>net.test?startTest():send({t:'offer',id:net.myId})); on('offerCancel',()=>send({t:'offerCancel',id:net.myId}));
   on('offerYes',()=>send({t:'offerReply',id:net.myId,accept:true})); on('offerNo',()=>send({t:'offerReply',id:net.myId,accept:false}));
   on('homeBtn',()=>{ closeNet(); showLanding(); });
 }
@@ -1116,6 +1123,28 @@ $('b-pass').onclick=()=>netPass(false);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;netResign();};
+
+/* ---------- test game ---------- */
+// The tester plays both sides on this device: no network, nothing saved; the local document plays the host's part.
+// Both seats carry this tab's id, and mySeat() returns the side to move.
+function startTest(){
+  closeNet(); net.wantSeat=false; net.test=true; net.gid='TEST'; net.testSeat='A'; net.testHist=[]; setHash('test');
+  const me=net.myId;
+  net.doc={code:'',name:'',seats:{A:{id:me,nick:t('pA'),ready:true},B:{id:me,nick:t('pB'),ready:true}},colorA:null,phase:'opening',
+    cells:Array(NN).fill(0),bridges:[],toMove:1,finalTurn:false,log:[{p:0,k:'lg_start',v:{n:t('pA')}}],last:null,tc:null,clock:{A:0,B:0},
+    turnSeat:'A',moveNo:1,epoch:0,paused:false,result:null,watchers:1};
+  $('resignBox').hidden=false; $('resignAsk').hidden=true; showGame(); testTurn();
+}
+function testTurn(){ const d=net.doc; if(d.turnSeat) net.testSeat=d.turnSeat; inp=newInput(); broadcast(); }
+function testPlay(msg){ if(!net.test||!net.doc||msg.t!=='patch') return;
+  const lg=msg.p.log, forced=!!(lg&&lg.length>net.doc.log.length&&lg.slice(net.doc.log.length).some(e=>e.k==='lg_forced'));
+  net.testHist.push({doc:jclone(net.doc),forced}); merge(net.doc,msg.p); testTurn(); }
+// Undo the last move; a forced pass is undone together with the move before it.
+function testUndo(){ if(!net.test||!net.testHist.length) return; let h;
+  do{ h=net.testHist.pop(); }while(h.forced&&net.testHist.length);
+  net.doc=h.doc; net.autoKey=null; net.flagKey=null; navAt=null; $('resignBox').hidden=false; $('resignAsk').hidden=true; testTurn(); }
+$('b-undo').onclick=testUndo;
+$('testForm').addEventListener('submit',e=>{ e.preventDefault(); startTest(); });
 
 /* ---------- landing ---------- */
 let homeMsg={k:'st_home',err:false};
@@ -1176,6 +1205,7 @@ $('jWatch').onclick=()=>joinClick(true);
 applyStatic(); sndBind();
 (function boot(){
   const nm=currentNick(); $('cName').value=nm; $('jName').value=nm;
+  if(location.hash==='#test') return startTest();
   const m=/^#(join|watch|host)-([a-z0-9]{6})$/i.exec(location.hash);
   if(!m) return showLanding();
   $('status').hidden=false; status(t('st_home'));

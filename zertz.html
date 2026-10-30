@@ -170,6 +170,9 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="inProgressTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="testT">Test game</h2><p class="hint" data-i18n="testTxt">The tester plays the moves of both sides on this device, to try the game out.</p>
+        <form class="form" id="testForm"><label for="tSize"><span data-i18n="board">Board</span><select id="tSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <button type="submit" data-i18n="testBtn">Start a test game</button></form></div>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="ZERTZ1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
@@ -346,6 +349,7 @@ let level=(()=>{try{return JSON.parse(localStorage.getItem('zertz-level'));}catc
 const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
+ testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  pool:"Réserve commune",poolN:"{n} billes",poolEmpty:"vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",h_capt:"La prise est obligatoire à ce tour.",h_choose:"Choisissez la couleur à poser.",
@@ -384,6 +388,7 @@ const I18N={fr:{
 },en:{
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
+ testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  pool:"Shared pool",poolN:"{n} marbles",poolEmpty:"empty",h_empty:"Pool empty: players place their own captured marbles.",h_capt:"Capture is mandatory this turn.",h_choose:"Choose the colour to place.",
@@ -638,9 +643,9 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint',d.last,navAt===null?preview(r.st,legal,mine):null);
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  const nm=s=>role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  const nm=s=>role==='test'?view.names[s]:role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const caps=legal.length&&legal[0].t===1;
-  if(r.over){const why=t(r.over.why);status(r.over.w<0?t('interrupted',{why}):r.over.w===mySeat?t('youWin',{why}):t('wins',{n:nm(r.over.w),why}),'win');}
+  if(r.over){const why=t(r.over.why);status(r.over.w<0?t('interrupted',{why}):r.over.w===mySeat&&role!=='test'?t('youWin',{why}):t('wins',{n:nm(r.over.w),why}),'win');}
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
@@ -668,20 +673,21 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
     b.disabled=!(mine&&!ui.pending&&!caps&&cols.includes(k));b.onclick=()=>{ui.color=k;ui.at=null;ui.hover=-1;renderGame();};cb.appendChild(b);}
   $('colorhint').textContent=mySeat<0?'':fromCap?t('h_empty'):caps&&mine?t('h_capt'):t('h_choose');
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending);
-  $('myCard').hidden=!(role==='ai'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('aiBox').hidden=role!=='ai';$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  $('myCard').hidden=!(role==='ai'||role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('aiBox').hidden=role!=='ai'&&role!=='test';for(const id of ['hintBtn','aiInfo'])$(id).hidden=role==='test';$('gLevel').parentNode.hidden=role==='test';
+  if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
   if(role==='ai'){$('undoBtn').disabled=!r.log.some(e=>e.p===mySeat);$('hintBtn').disabled=!mine||!!busy||!!ui.pending;
     $('aiInfo').textContent=hintMv?t('hint_move',{m:txtOf(hintMv)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||role==='test'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||!(mySeat>=0&&view.started);
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||role==='test'||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'),rm=role==='ai'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||role==='test'),rm=role==='ai'||role==='test'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
@@ -740,6 +746,7 @@ function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;if($('needConfirm').chec
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(role==='ai'){aiPlay(code);return;}
+  if(role==='test'){testPlay(code);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
   sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('zertz-p2p-pending',{code:C.code,n,mv:code});
   C.conn.send({t:'move',n,code});renderGame();}
@@ -758,10 +765,10 @@ $('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
-  if(role==='ai'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
+  if(role==='ai'||role==='test'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{if(role==='ai'){startAI(view.size,1-mySeat);return;}rmSend('ask');};
+$('newGame').onclick=()=>{if(role==='ai'){startAI(view.size,1-mySeat);return;}if(role==='test'){startTest(view.size);return;}rmSend('ask');};
 $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
@@ -797,6 +804,14 @@ function ask(st,opt,cb){const msg={size:view.size,st:Array.from(st),opt};
 function startAI(size,seat){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('');
   view={size,tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
   ui={color:0,at:null,path:null,pending:null,hover:-1};aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
+// Test game: the tester plays both sides on this device; the commands follow the side to move.
+function startTest(size){stopAI();navAt=null;role='test';mySeat=0;C.stop=true;setHash('test');
+  view={size,tc:null,names:[t('p1'),t('p2')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
+  ui={color:0,at:null,path:null,pending:null,hover:-1};aiInfo=null;hintMv=null;showGame();renderGame();}
+function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];ui={color:ui.color,at:null,path:null,pending:null,hover:-1};renderGame();}
+function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
+function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
+$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest(+$('tSize').value);});
 function aiPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);ui.at=null;ui.path=null;ui.pending=null;ui.hover=-1;hintMv=null;aiInfo=null;renderGame();aiStep();}
 function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.size,view.moves,view.result);if(r.over||r.st[TURN]===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
@@ -804,7 +819,7 @@ function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.size,view.move
     if(!res||!res.move){renderGame();return;}aiInfo=evalInfo(res);view.moves=view.moves.concat([enc(res.move)]);renderGame();},wait);});}
 function evalInfo(r){const s=r.score;if(!r.depth&&!r.fb)return {k:'ai_forced'};if(s>50000)return {k:'ai_win'};if(s<-50000)return {k:'ai_lost'};
   return {k:Math.abs(s)<150?'ai_eq':s>0?(s>800?'ai_much':'ai_better'):(s<-800?'ai_muchWorse':'ai_worse'),d:r.depth};}
-$('undoBtn').onclick=()=>{if(role!=='ai')return;stopAI();const m=view.moves.slice();
+$('undoBtn').onclick=()=>{if(role==='test'){testUndo();return;}if(role!=='ai')return;stopAI();const m=view.moves.slice();
   // back to the last position where it was my turn, before my last move
   const turnAt=k=>replay(view.size,m.slice(0,k),null).st[TURN];let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
@@ -857,6 +872,7 @@ function init(){setBoard(48);drawBoard(ENG[48].init(),[],false,null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('inProgressTxt').dataset.i18n='inProgressGuest';$('inProgressTxt').textContent=t('inProgressGuest');}
   status(t('st_home'));
+  if(location.hash==='#test'){startTest(48);return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];
