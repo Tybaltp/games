@@ -42,10 +42,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:10px;font-weight:500;font-size:.9rem;text-align:center;border:1px solid transparent}
 .notice.on{background:var(--panel);border-color:var(--line)}
 .notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.legend{margin:0;text-align:center;font-size:.78rem;color:var(--muted)}
-.legend span{white-space:nowrap}
-.legend b{font-family:var(--f-display);color:var(--ink)}
-.legend svg{width:18px;height:18px;vertical-align:-4px;margin-right:3px}
 .players{display:flex;justify-content:space-between;gap:8px}
 .players.side-only{flex-direction:column}
 .player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
@@ -53,9 +49,8 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .player.active .who{color:var(--ink)}
 .player .clock{font-size:1.4rem;line-height:1.1}
-.player .tally{display:flex;gap:8px;font-size:.72rem;overflow:hidden;letter-spacing:-.01em}
-.player .tally span::before{content:attr(title) ' ';color:var(--muted)}
-.player .tally span{color:var(--ink);font-weight:500;white-space:pre}
+.player .caps{min-height:24px;margin-top:3px;display:flex;align-items:center}
+.player .caps svg{display:block;max-width:100%;height:auto}
 .side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .side details.prominent summary{color:var(--ink);font-size:1rem}
 .side details.prominent .link input{font-size:.95rem;padding:9px 10px}
@@ -179,7 +174,6 @@ h1 a.gname{color:inherit;text-decoration:none}
     <div class="board"><svg id="svg" viewBox="-22 -4 506 508" role="img" aria-label="Arimaa board"></svg></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <div class="notice" id="notice"></div>
-    <p class="legend" id="legend"></p>
   </div>
   <aside class="side">
     <div class="players side-only" id="playersSide"></div>
@@ -309,7 +303,7 @@ const I18N={fr:{
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
  rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
  noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",gold:"Or",silver:"Argent",
- t_pieces:"pièces",t_rabbits:"lapins",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
+ t_caps:"Pièces prises : {l}",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
@@ -322,7 +316,6 @@ const I18N={fr:{
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
- legend:"<span><b>E</b> éléphant</span> · <span><b>M</b> chameau</span> · <span><b>H</b> cheval</span> · <span><b>D</b> chien</span> · <span><b>C</b> chat</span> · <span><b>R</b> lapin</span>",
  pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",st_pushPull:"Choisissez l'arrivée : point blanc, la pièce poussée y va ; point de couleur, votre pièce y va en tirant.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
@@ -351,7 +344,7 @@ const I18N={fr:{
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
  rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
  noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",gold:"Gold",silver:"Silver",
- t_pieces:"pieces",t_rabbits:"rabbits",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
+ t_caps:"Captured pieces: {l}",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
  st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
@@ -364,7 +357,6 @@ const I18N={fr:{
  st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
  w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
- legend:"<span><b>E</b> elephant</span> · <span><b>M</b> camel</span> · <span><b>H</b> horse</span> · <span><b>D</b> dog</span> · <span><b>C</b> cat</span> · <span><b>R</b> rabbit</span>",
  pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",st_pushPull:"Choose the arrival: white dot, the pushed piece goes there; coloured dot, your piece goes there pulling.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
@@ -399,10 +391,7 @@ function applyStatic(){document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
-  document.getElementById('rules').innerHTML=t('rules');document.getElementById('legend').innerHTML=t('legend');
-  document.querySelectorAll('#legend b').forEach(b=>{const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('viewBox','0 0 50 50');sv.setAttribute('aria-hidden','true');
-    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',25);c.setAttribute('cy',25);c.setAttribute('r',24);c.setAttribute('fill','var(--g1)');c.setAttribute('stroke','var(--g3)');c.setAttribute('stroke-width',2);sv.appendChild(c);
-    drawIcon(sv,b.textContent,25,25,34,'var(--gk)');b.parentNode.insertBefore(sv,b);});
+  document.getElementById('rules').innerHTML=t('rules');
   const rc=document.getElementById('resumeTxt');if(rc&&rc.dataset.guest)rc.textContent=t('inProgressGuest');
   const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('arimaa-tc'));}catch(e){return null;}})()||'20+10';
   sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
@@ -649,8 +638,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="pc c${p}" title="${t(p?'silver':'gold')}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
-    const ty=document.createElement('div');ty.className='tally';const placed=d.st.n>p;
-    ty.innerHTML=`<span title="${t('t_pieces')}">${pad(placed?E.pieces(d.st.b,p):16)}</span><span title="${t('t_rabbits')}">${pad(placed?E.rabbits(d.st.b,p):8)}</span>`;
+    const ty=document.createElement('div');ty.className='caps';if(d.st.n>1-p)capsRow(ty,d.st.b,1-p);
     el.append(h,ck,ty);host.appendChild(el);}
   tick();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=ui.pendingTxt||'';
@@ -832,6 +820,16 @@ function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'poin
   drawIcon(gr,E.LET[Math.abs(v)-1],cx,cy,33,gold?'var(--gk)':'var(--sk)');
   const ti=el('title',{},gr);ti.textContent=t(gold?'gold':'silver')+' — '+I18N[lang].pn[Math.abs(v)-1];}
 const ring=(g,i,a)=>el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:a.r||27,fill:'none',stroke:a.c||'var(--accent)','stroke-width':a.w||3,...(a.dash?{'stroke-dasharray':a.dash}:{}),...(a.cls?{class:a.cls}:{}),'pointer-events':'none'},g);
+// Under each player, the opposing pieces gone from the board, strongest first, as on chess servers.
+function capsRow(box,b,q){const cnt=[0,8,2,2,2,1,1],g=E.sgn(q),gold=q===0,names=[];
+  for(let i=0;i<64;i++)if(b[i]&&Math.sign(b[i])===g)cnt[Math.abs(b[i])]--;
+  const sv=el('svg',{height:24,'aria-hidden':'true'});let x=0;
+  for(let k=6;k>=1;k--){if(cnt[k]<=0)continue;names.push(I18N[lang].pn[k-1]+(cnt[k]>1?' ×'+cnt[k]:''));
+    for(let j=0;j<cnt[k];j++){const cx=x+12+j*12,gr=el('g',{},sv);
+      el('circle',{cx,cy:12,r:11,fill:gold?'var(--g1)':'var(--s1)',stroke:gold?'var(--g3)':'var(--s3)','stroke-width':1.3},gr);
+      drawIcon(gr,E.LET[k-1],cx,12,16,gold?'var(--gk)':'var(--sk)');}
+    x+=24+(cnt[k]-1)*12+5;}
+  if(!x)return;sv.setAttribute('width',x-5);sv.setAttribute('viewBox',`0 0 ${x-5} 24`);box.title=t('t_caps',{l:names.join(', ')});box.appendChild(sv);}
 // o: {real, shown, last, pv (turn preview), hl (highlights), setup}
 // Last turn: the pieces that moved are ringed; each one's path (solid: moved by the player, dashed: pushed or pulled)
 // is drawn over the pieces, lightly, and stops at the edge of the piece where it ends. Hovering a moved piece shows
