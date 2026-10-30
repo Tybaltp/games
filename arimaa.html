@@ -877,7 +877,8 @@ function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;cons
 function frost(g,b){for(let i=0;i<64;i++)if(b[i]&&E.frozen(b,i)){const e=el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:22,fill:'url(#frost)'},g);
   const ti=el('title',{},e);ti.textContent=t('frozenT');}}
 function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,shown=o.shown,H=o.hov;
-  const op=i=>H&&shown[i]&&H.b[i]!==shown[i]?.3:undefined;   // a piece the hovered move takes away: faint
+  // a piece the hovered move takes away: faint for a walk, not drawn for a push or pull (the two pieces swap around)
+  const op=i=>H&&shown[i]&&H.b[i]!==shown[i]?(H.walk?.3:0):undefined;
   const defs=el('defs',{},svg),pat=el('pattern',{id:'frost',width:7,height:7,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
   el('rect',{width:2.4,height:7,fill:'var(--frost)'},pat);
   for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
@@ -890,16 +891,16 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
     for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
       if(rv&&v!==rv)piece(lay,i,rv,.25);
-      if(v)piece(lay,i,v,op(i));}
+      if(v&&op(i)!==0)piece(lay,i,v,op(i));}
     for(const [c,w] of o.pv.caps)if(!shown[c]){if(real[c]!==w)piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'4 4'});}}
-  else for(let i=0;i<64;i++)if(shown[i])piece(lay,i,shown[i],op(i));
-  frost(lay,shown);lastOver(lay,o.last,shown);
+  else for(let i=0;i<64;i++)if(shown[i]&&op(i)!==0)piece(lay,i,shown[i],op(i));
+  frost(lay,H&&!H.walk?shown.map((v,i)=>op(i)===0?0:v):shown);lastOver(lay,o.last,shown);
   if(o.setup){for(const i of E.SETUP_SQ[mySeat])ring(lay,i,{w:1.5,r:26,c:'var(--accent)'});if(ui.swap>=0)ring(lay,E.SETUP_SQ[mySeat][ui.swap],{w:4,r:28});}
   const hl=o.hl;
   if(hl){for(const i of hl.own)if(i!==hl.sel)ring(lay,i,{w:1.6,r:26});
     for(const i of hl.enemy)ring(lay,i,{w:2,r:26,dash:'2 3'});
-    if(hl.sel>=0)ring(lay,hl.sel,{w:4,r:28});
-    if(hl.target>=0)ring(lay,hl.target,{w:4,r:28,c:'var(--ink)',dash:'5 4'});
+    const swap=H&&!H.walk;if(hl.sel>=0&&!swap)ring(lay,hl.sel,{w:4,r:28});
+    if(hl.target>=0&&!swap)ring(lay,hl.target,{w:4,r:28,c:'var(--ink)',dash:'5 4'});
     for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}
   // hovered move: its walk, the pieces where they would arrive (transparent, dashed ring), the pieces lost, the steps it costs
   if(H){if(H.walk)el('polyline',{points:H.walk.map(i=>(X(i)+S/2)+','+(Y(i)+S/2)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'1 8','stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},lay);

@@ -55,9 +55,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .player.active .who{color:var(--ink)}
 .player .clock{font-size:1.4rem;line-height:1.1}
-.player .tally{display:flex;gap:6px;font-size:.66rem;overflow:hidden;letter-spacing:-.01em}
-.player .tally span::before{content:attr(title) ' ';color:var(--muted)}
-.player .tally span{color:var(--ink);font-weight:500;min-width:9ch}
 .side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .side details.prominent summary{color:var(--ink);font-size:1rem}
 .side details.prominent .link input{font-size:.95rem;padding:9px 10px}
@@ -86,7 +83,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .lvl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
 .lvl select{flex:1;min-width:0}
 .who{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
-.tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 .dot{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
 .dot.c0{background:var(--s0);border:1.5px solid var(--s0e)}
 .dot.c1{background:var(--s1);border:1.5px solid var(--s1e)}
@@ -416,7 +412,7 @@ const I18N={fr:{
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
  rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
  noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",
- res:"rés.",row:"rangée",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
+ iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
@@ -457,7 +453,7 @@ const I18N={fr:{
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
  rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
  noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",
- res:"res.",row:"row",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
+ iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
  st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
@@ -768,10 +764,7 @@ function renderGame(){if(!view)return;ui.repHover=false;const r=replay(view.adv,
   for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="dot c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
-    const ty=document.createElement('div');ty.className='tally';
-    if(E.setup(d.st)){const rs=E.reserve(d.st,p);ty.innerHTML=`<span title="${t('res')}">${rs[1]+rs[2]+rs[3]}</span>`;}
-    else{const pr=E.playableRow(d.st,p,!!view.adv);ty.innerHTML=`<span title="${t('row')}">${pr<0?'–':E.ORDER[p].indexOf(pr)+1}</span>`;}
-    el.append(h,ck,ty);host.appendChild(el);}
+    el.append(h,ck);host.appendChild(el);}
   tick();advLine();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending,r.st);
   $('myCard').hidden=!(role==='ai'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
