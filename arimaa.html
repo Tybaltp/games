@@ -671,11 +671,22 @@ window.addEventListener('resize',()=>{if(view)renderGame();});
 
 // ---------- input ----------
 // Squares to highlight on the preview position for the current selection state
+// Squares the selected piece can reach by its own simple steps only (no push or pull), within the steps left.
+// Breadth-first, so each square keeps its shortest path; every step goes through the engine (freezing, rabbits, traps).
+// die: the piece is captured on arrival (trap without a friendly neighbour).
+function reach(b,s,from,left){const out=new Map();let q=[{b,loc:from,path:[]}];
+  while(q.length){const nq=[];
+    for(const st of q){if(st.path.length>=left)continue;
+      for(const a of E.actions(st.b,s,left-st.path.length)){if(a.k!=='m'||a.f!==st.loc||out.has(a.t)||a.t===from)continue;
+        const x=E.apply(st.b,a),die=!x.b[a.t],path=st.path.concat([a]);out.set(a.t,{path,die});if(!die)nq.push({b:x.b,loc:a.t,path});}}
+    q=nq;}
+  return out;}
 function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),sel:-1};
   if(ui.cand.length){ui.cand.forEach(o=>hl.cand.add(o.sq));hl.sel=ui.enemy;return hl;}
   if(ui.enemy>=0){hl.sel=ui.enemy;for(const a of acts){if(a.k==='P'&&a.e===ui.enemy)hl.dest.add(a.to);if(a.k==='L'&&a.e===ui.enemy)hl.dest.add(a.a);}return hl;}
   for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k!=='m'&&(ui.sel<0||a.a===ui.sel))hl.enemy.add(a.e);
     if(ui.sel>=0&&a.k==='m'&&a.f===ui.sel)hl.dest.add(a.t);}
+  if(ui.sel>=0)hl.reach=reach(b,s,ui.sel,4-pv.used);
   hl.sel=ui.sel;return hl;}
 function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
@@ -691,6 +702,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.mo
       ui.cand=opts;ui.candKind=ps.length?'push':'pull';renderGame();return;}
     const was=ui.enemy;clearSel();if(i===was){renderGame();return;}}
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
+    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
     const via=ui.sel;clearSel();if(i===via){renderGame();return;}
     if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===via)){ui.enemy=i;ui.via=via;renderGame();return;}}
   if(mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i)){ui.sel=i;renderGame();return;}
@@ -808,7 +820,11 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   if(hl){for(const i of hl.own)if(i!==hl.sel)ring(lay,i,{w:1.6,r:26});
     for(const i of hl.enemy)ring(lay,i,{w:2,r:26,dash:'2 3'});
     if(hl.sel>=0)ring(lay,hl.sel,{w:4,r:28});
-    for(const i of hl.dest){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}
+    for(const i of hl.dest){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:hl.reach&&hl.reach.get(i)&&hl.reach.get(i).die?'var(--danger)':'var(--accent)',opacity:.75,class:'pulse'},lay);}
+    // farther squares: a dot with the number of steps
+    if(hl.reach)for(const [i,o] of hl.reach){if(hl.dest.has(i))continue;const cx=X(i)+S/2,cy=Y(i)+S/2;
+      el('circle',{cx,cy,r:10,fill:o.die?'var(--danger)':'var(--accent)',opacity:.45},lay);
+      const tx=el('text',{x:cx,y:cy+4.5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,'font-weight':600,fill:'var(--ink)','pointer-events':'none'},lay);tx.textContent=o.path.length;}
     for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}}
 init();sndBind();
 </script>
