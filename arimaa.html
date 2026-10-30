@@ -45,6 +45,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .legend{margin:0;text-align:center;font-size:.78rem;color:var(--muted)}
 .legend span{white-space:nowrap}
 .legend b{font-family:var(--f-display);color:var(--ink)}
+.legend svg{width:18px;height:18px;vertical-align:-4px;margin-right:3px}
 .players{display:flex;justify-content:space-between;gap:8px}
 .players.side-only{flex-direction:column}
 .player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
@@ -367,11 +368,45 @@ const I18N={fr:{
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
 function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
 const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
+// Stylised side-view silhouettes of the Arimaa pieces, drawn in a 100×100 box facing right.
+// Each shape: [tag, attrs]; 'ink' = silhouette colour, 'cut' = coin colour (eyes, ear lines, tusks).
+const ICONS={
+ R:[['ellipse',{cx:46,cy:66,rx:26,ry:17}],['circle',{cx:33,cy:68,r:16}],['ellipse',{cx:72,cy:49,rx:13,ry:11}],
+    ['ellipse',{cx:64,cy:25,rx:5.5,ry:17,transform:'rotate(-14 64 25)'}],['ellipse',{cx:76,cy:26,rx:5.5,ry:16,transform:'rotate(10 76 26)'}],
+    ['circle',{cx:17,cy:60,r:7}],['ellipse',{cx:64,cy:82,rx:9,ry:4}],['ellipse',{cx:34,cy:83,rx:14,ry:4.5}],['circle',{cx:77,cy:46,r:2.4,cut:1}]],
+ C:[['ellipse',{cx:44,cy:64,rx:21,ry:23}],['ellipse',{cx:58,cy:64,rx:11,ry:20}],['circle',{cx:62,cy:36,r:14}],
+    ['polygon',{points:'50,30 52,11 62,24'}],['polygon',{points:'63,23 74,10 75,30'}],
+    ['path',{d:'M28,82 C8,80 8,56 22,50',stroke:1,w:7}],['ellipse',{cx:58,cy:86,rx:9,ry:3.5}],['ellipse',{cx:38,cy:86,rx:12,ry:3.5}],
+    ['circle',{cx:68,cy:34,r:2.4,cut:1}]],
+ D:[['rect',{x:20,y:42,width:50,height:21,rx:10}],['rect',{x:23,y:56,width:9,height:30,rx:3}],['rect',{x:56,y:56,width:9,height:30,rx:3}],
+    ['circle',{cx:74,cy:36,r:13}],['rect',{x:78,y:35,width:17,height:11,rx:5}],['polygon',{points:'64,30 68,13 77,26'}],
+    ['path',{d:'M23,47 Q10,36 15,24',stroke:1,w:7}],['circle',{cx:79,cy:31,r:2.4,cut:1}]],
+ H:[['path',{d:'M28,90 L28,66 C28,46 36,30 52,21 L56,8 L64,19 C75,22 83,31 89,45 L93,57 C94,64 88,68 81,64 L71,57 C65,59 61,64 60,72 L63,90 Z'}],
+    ['path',{d:'M52,21 C42,30 36,44 34,60',stroke:1,w:2.2,cut:1}],['circle',{cx:70,cy:33,r:2.6,cut:1}]],
+ M:[['path',{d:'M16,58 C16,46 24,40 32,40 C36,24 50,24 54,40 C59,40 63,44 65,49 L70,47 C72,36 74,25 80,21 L90,21 C94,21 95,27 91,28 L84,30 C82,41 80,53 72,61 L66,63 C58,66 28,67 16,58 Z'}],
+    ['rect',{x:22,y:58,width:6,height:30,rx:2}],['rect',{x:32,y:60,width:6,height:28,rx:2}],['rect',{x:56,y:60,width:6,height:28,rx:2}],['rect',{x:65,y:58,width:6,height:30,rx:2}],
+    ['circle',{cx:86,cy:25,r:2.2,cut:1}]],
+ E:[['ellipse',{cx:42,cy:50,rx:29,ry:21}],['rect',{x:16,y:54,width:12,height:32,rx:3}],['rect',{x:44,y:58,width:12,height:28,rx:3}],['rect',{x:59,y:54,width:11,height:32,rx:3}],
+    ['circle',{cx:70,cy:38,r:17}],['path',{d:'M82,44 C90,53 92,66 87,80',stroke:1,w:10}],
+    ['ellipse',{cx:61,cy:41,rx:10,ry:14,stroke:1,w:2,cut:1,fill:'none'}],['path',{d:'M78,52 Q86,60 94,55',stroke:1,w:3.2,cut:1}],['circle',{cx:75,cy:33,r:2.4,cut:1}]]
+};
+// Draw icon letter L into group g (SVG), centred at cx,cy with size sz, colours ink/cut.
+function drawIcon(g,L,cx,cy,sz,ink,cut){const NS='http://www.w3.org/2000/svg',k=sz/100,gr=document.createElementNS(NS,'g');
+  gr.setAttribute('transform',`translate(${cx-sz/2} ${cy-sz/2}) scale(${k})`);
+  for(const [tag,a] of ICONS[L]){const e=document.createElementNS(NS,tag),col=a.cut?cut:ink;
+    for(const x in a)if(!['cut','stroke','w'].includes(x))e.setAttribute(x,a[x]);
+    if(a.stroke){e.setAttribute('fill',a.fill||'none');e.setAttribute('stroke',col);e.setAttribute('stroke-width',a.w);e.setAttribute('stroke-linecap','round');}
+    else e.setAttribute('fill',col);
+    gr.appendChild(e);}
+  g.appendChild(gr);return gr;}
 function applyStatic(){document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
   document.getElementById('rules').innerHTML=t('rules');document.getElementById('legend').innerHTML=t('legend');
+  document.querySelectorAll('#legend b').forEach(b=>{const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.setAttribute('viewBox','0 0 50 50');sv.setAttribute('aria-hidden','true');
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',25);c.setAttribute('cy',25);c.setAttribute('r',24);c.setAttribute('fill','var(--g1)');c.setAttribute('stroke','var(--g3)');c.setAttribute('stroke-width',2);sv.appendChild(c);
+    drawIcon(sv,b.textContent,25,25,40,'var(--gk)','var(--g1)');b.parentNode.insertBefore(sv,b);});
   const rc=document.getElementById('resumeTxt');if(rc&&rc.dataset.guest)rc.textContent=t('inProgressGuest');
   const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('arimaa-tc'));}catch(e){return null;}})()||'20+10';
   sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
@@ -746,7 +781,7 @@ const X=i=>(i&7)*S,Y=i=>(7-(i>>3))*S;
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'pointer-events':'none'},g);if(op!==undefined)gr.setAttribute('opacity',op);
   el('circle',{cx,cy,r:23,fill:gold?'var(--g1)':'var(--s1)',stroke:gold?'var(--g3)':'var(--s3)','stroke-width':2},gr);
-  const tx=el('text',{x:cx,y:cy+9,'text-anchor':'middle',class:'pl',fill:gold?'var(--gk)':'var(--sk)'},gr);tx.textContent=E.LET[Math.abs(v)-1];
+  drawIcon(gr,E.LET[Math.abs(v)-1],cx,cy,39,gold?'var(--gk)':'var(--sk)',gold?'var(--g1)':'var(--s1)');
   const ti=el('title',{},gr);ti.textContent=t(gold?'gold':'silver')+' — '+I18N[lang].pn[Math.abs(v)-1];}
 const ring=(g,i,a)=>el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:a.r||27,fill:'none',stroke:a.c||'var(--accent)','stroke-width':a.w||3,...(a.dash?{'stroke-dasharray':a.dash}:{}),...(a.cls?{class:a.cls}:{}),'pointer-events':'none'},g);
 // o: {real, shown, last, pv (turn preview), hl (highlights), setup}
