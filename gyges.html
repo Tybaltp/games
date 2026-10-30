@@ -200,7 +200,6 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="myCard" hidden>
       <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
-      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -322,7 +321,7 @@ const I18N={fr:{
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
- start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
+ start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
@@ -337,7 +336,7 @@ const I18N={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  st_place:"Placement : choisissez une pièce de votre réserve, puis une case libre de votre rangée.",
- st_land:"Arrivée sur une pièce : rebondir ou la remplacer\u00a0?",st_bad:"La pièce ne peut pas s'arrêter là.",st_stuck:"Aucune suite depuis ce rebond : cliquez la pièce pour revenir en arrière.",bounce:"Rebondir",replace:"Remplacer",
+ st_land:"Arrivée sur une pièce : rebondir ou la remplacer\u00a0?",st_bad:"La pièce ne peut pas s'arrêter là.",st_bounce:"Rebond : jouez la suite, ou cliquez la pièce pour revenir en arrière.",st_stuck:"Aucune suite depuis ce rebond : cliquez la pièce pour revenir en arrière.",bounce:"Rebondir",replace:"Remplacer",
  st_drop:"Posez la pièce délogée sur une case libre surlignée.",
  st_mustPass:"Aucun coup possible : vous devez passer.",st_theyPass:"{n} n'a aucun coup possible et doit passer.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
@@ -363,7 +362,7 @@ const I18N={fr:{
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
- start:"Start",startBtn:"Start the game",pass:"Pass",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
+ start:"Start",startBtn:"Start the game",pass:"Pass",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
  fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
@@ -378,7 +377,7 @@ const I18N={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  st_place:"Setup: pick a piece from your reserve, then an empty square of your row.",
- st_land:"Landing on a piece: bounce, or replace it?",st_bad:"The piece cannot stop there.",st_stuck:"No way on from this bounce: click the piece to go back.",bounce:"Bounce",replace:"Replace",
+ st_land:"Landing on a piece: bounce, or replace it?",st_bad:"The piece cannot stop there.",st_bounce:"Bounce: play on, or click the piece to go back.",st_stuck:"No way on from this bounce: click the piece to go back.",bounce:"Bounce",replace:"Replace",
  st_drop:"Put the displaced piece on a highlighted empty square.",
  st_mustPass:"No move available: you must pass.",st_theyPass:"{n} has no move available and must pass.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
@@ -632,7 +631,7 @@ function previewOf(st,o){const mv=ui.pending||ui.done;
   if(ui.sel<0)return null;
   let ext=[],rep=-1;const h=ui.hover!==null?ui.hover:ui.tap;
   if(h!==null&&ui.drop&&o.drops.has(h))rep=h;
-  if(h!==null&&!ui.drop&&o.ends.has(h)){const l=o.ends.get(h),e=l.find(e=>e.done)||l[0];return {s:ui.sel,cells:e.path,ext:[],rep:-1};}
+  if(h!==null&&!ui.drop&&o.ends.has(h)){const l=o.ends.get(h),e=l.find(e=>e.done)||l[0];return {s:ui.sel,cells:e.path.slice(0,ui.path.length),ext:e.path.slice(ui.path.length),rep:-1};}
   return {s:ui.sel,cells:ui.path,ext,rep};}
 function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
@@ -658,6 +657,7 @@ function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.re
     else if(ui.drop)status(t('st_drop'),'turn',[{label:t('cancel'),on:()=>{ui.drop=false;ui.landOk=false;ui.done=null;renderGame();}}]);
     else if(ui.bad)status(t('st_bad'),'turn');
     else if(o.onPiece&&!o.canBounce&&!o.canReplace)status(t('st_stuck'),'turn');
+    else if(ui.marks.length&&!o.landed&&!ui.drop)status(t('st_bounce'),'turn');
     else if(o.landed&&!ui.landOk&&!ui.done)status(t('st_land'),'turn',[{label:t('bounce'),dis:!o.canBounce,on:()=>{ui.landOk=true;renderGame();}},{label:t('replace'),primary:true,dis:!o.canReplace,on:()=>{ui.drop=true;ui.landOk=true;renderGame();}}]);
     else quiet();}
   else if(cantMove&&navAt===null)status(t('st_theyPass',{n:nm(r.st.turn)}));
@@ -719,7 +719,8 @@ window.addEventListener('resize',()=>{if(view)renderGame();});
 // Mouse: a click plays (hovering only previews where a displaced piece goes). Touch: a first tap previews a finished move, a second tap on the same spot plays it.
 let ptrType='mouse';
 const touchy=()=>ptrType!=='mouse';
-function finish(mv,key){if(touchy()&&!$('needConfirm').checked&&!(ui.done&&ui.doneKey===key&&enc(ui.done)===enc(mv))){ui.done=mv;ui.doneKey=key;renderGame();return;}choose(mv);}
+// Moves take several steps: every move waits for the final confirmation before it is sent
+function finish(mv){choose(mv);}
 function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (reserve piece)
   if(!view||ui.pending)return;const r=replay(view.adv,view.moves,view.result);if(!isMyTurn(r))return;
   const st=r.st,o=calc(st),adv=!!view.adv,key=String(x),tapped=ui.tap;ui.bad=false;ui.tap=null;
@@ -751,7 +752,7 @@ function segEnds(st,s,path,adv){const out=[],n=path.length;
     if(w.done)return;for(const x of E.NB[w.cur].map(a=>a[0]).concat([G]))dfs(p.concat([x]));})(path.slice());
   return out;}
 function cancelSel(){ui.tap=null;ui.sel=-1;ui.path=[];ui.hist=[[[]]];ui.marks=[];ui.drop=false;ui.landOk=false;ui.done=null;renderGame();}
-function choose(mv){ui.done=null;ui.hover=null;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
+function choose(mv){ui.done=null;ui.hover=null;ui.tap=null;ui.pending=mv;renderGame();}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
@@ -769,8 +770,6 @@ function doPass(){if(!view)return;const r=replay(view.adv,view.moves,view.result
 $('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
 $('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
 $('passBtn').onclick=doPass;
-$('needConfirm').checked=LS.get('gyges-confirm',true);
-$('needConfirm').onchange=e=>LS.set('gyges-confirm',e.target.checked);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
@@ -897,12 +896,13 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
   if(o&&opt.interactive){
     if(o.setup)for(const i of o.homes)el('circle',{cx:X(i),cy:Y(i),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2},ov);
     if(ui.sel<0&&!ui.pending&&!ui.done)for(const i of o.playable)ring(ov,X(i),Y(i),PR+3.5,{'stroke-width':1.8,opacity:.8});
-    if(ui.sel>=0){ring(ov,X(ui.sel),Y(ui.sel),PR+4,{'stroke-width':3.5});
+    if(ui.sel>=0){ring(ov,X(ui.sel),Y(ui.sel),PR+4,{'stroke-width':3.5});for(const m of ui.marks)ring(ov,X(m),Y(m),PR+4,{'stroke-width':3});
       for(const x of o.drops)el('circle',{cx:X(x),cy:Y(x),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2,class:'pulse'},ov);}}
   if(pv){const gh=el('g',{'pointer-events':'none'},svg);
     if(pv.place){const i=pv.place.at;piece(gh,X(i),Y(i),pv.place.k,PR,.55);ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
     else{const cells=pv.cells.concat(pv.ext||[]),k=st.b[pv.s];
-      if(cells.length){pathLine(gh,mySeat,pv.s,cells,{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
+      // the steps already played in full, the hovered next movement fainter
+      if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
         if(pv.rep>=0){ring(gh,ex,ey,PR+3,{stroke:'var(--danger)','stroke-dasharray':'3 4','stroke-width':2.5});piece(gh,X(pv.rep),Y(pv.rep),st.b[end],PR,.55);ring(gh,X(pv.rep),Y(pv.rep),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
         piece(gh,ex+(st.b[end]&&pv.rep<0&&end!==G?7:0),ey-(st.b[end]&&pv.rep<0&&end!==G?7:0),k,PR,.6);
         ring(gh,ex,ey,(end===G?GR:PR)+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}}}
