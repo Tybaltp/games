@@ -316,13 +316,13 @@ const I18N={fr:{
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
- pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",st_pushPull:"Choisissez l'arrivée : point blanc, la pièce poussée y va ; point de couleur, votre pièce y va en tirant.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
+ pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
  <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
  <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
- <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez la pièce adverse, puis sa destination.</li>
+ <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez la pièce adverse, puis la case d'arrivée : l'aperçu montre le résultat.</li>
  <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
  <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
@@ -357,13 +357,13 @@ const I18N={fr:{
  st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
  w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
- pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",st_pushPull:"Choose the arrival: white dot, the pushed piece goes there; coloured dot, your piece goes there pulling.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
+ pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",st_pushPull:"Choose the arrival square: the pushed piece goes there, or your piece goes there pulling. Hover a free neighbouring square to see the result.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
  <li><b>Setup</b>: Gold arranges its 16 pieces freely on ranks 1 and 2, then Silver on ranks 7 and 8. Each setup counts as a move; the opponent only sees it once confirmed.</li>
  <li><b>Turn</b>: Gold starts. 1 to 4 steps, shared among your pieces as you like. A step: one square forward, backward or sideways onto an empty square. Rabbits never step back. You cannot pass, and the turn must change the position.</li>
- <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. Click the opposing piece, then its destination.</li>
+ <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. Click the opposing piece, then the arrival square: the preview shows the result.</li>
  <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
  <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
@@ -589,8 +589,8 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result)||prevSeat!==mySeat)resetUi();
   renderGame();}
 // ui: steps of the turn being prepared (local preview, sent only when the turn is finished), current selection, setup arrangement
-function resetUi(){ui={acts:[],sel:-1,enemy:-1,via:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1,seat:mySeat};}
-function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.cand=[];ui.candKind='';}
+function resetUi(){ui={acts:[],sel:-1,enemy:-1,via:-1,hover:-1,tap:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1,seat:mySeat};}
+function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.tap=-1;ui.cand=[];ui.candKind='';}
 function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[view.runSeat??r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
 function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st.turn===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
@@ -616,7 +616,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else if(mine&&setupPhase)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
   else if(mine){pv=preview(r);es=endState(r,pv);
     const cur=ui.acts.length?{det:turnDetail(r.st.b,mySeat,ui.acts.map(E.code).join(',')),caps:[],prep:true}:r.last;
-    drawBoard({real:r.st.b,shown:pv.b,pv,hl:ui.pending?null:highlights(pv),last:cur});}
+    drawBoard({real:r.st.b,shown:pv.b,pv,hl:ui.pending?null:highlights(pv),last:cur,hov:ui.pending?null:hoverPreview(pv)});}
   else drawBoard({real:r.st.b,shown:r.st.b,last:r.last});
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
@@ -706,16 +706,28 @@ function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv
     if(ui.sel>=0&&a.k==='m'&&a.f===ui.sel)hl.dest.add(a.t);}
   if(ui.sel>=0)hl.reach=reach(b,s,ui.sel,4-pv.used);
   hl.sel=ui.sel;return hl;}
+// The steps that would bring the selection to square i (a simple move, a longer walk, or a push or pull), or null
+function hoverActs(b,used,i){if(i<0)return null;const acts=E.actions(b,mySeat,4-used);
+  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);return a?[a]:null;}
+  if(ui.sel<0)return null;const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m)return [m];
+  const far=reach(b,mySeat,ui.sel,4-used).get(i);return far?far.path:null;}
+// The hovered (or, on touch, tapped once) square: the position it would give, the pieces lost, the steps it costs
+function hoverPreview(pv){const i=ui.hover>=0?ui.hover:ui.tap,acts=hoverActs(pv.b,pv.used,i);if(!acts)return null;
+  let b=pv.b,n=0;const caps=[];for(const a of acts){const x=E.apply(b,a);b=x.b;n+=x.n;caps.push(...x.caps);}
+  return {b,caps,n,to:i,walk:acts[0].k==='m'?[acts[0].f].concat(acts.map(a=>a.t)):null};}
+let lastPtr='mouse';
 function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
     if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;tone(520,.06,.03);}
     renderGame();return;}
   const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
   const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
-  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
+  // touch: a first tap on an arrival square shows the result, a second one plays it
+  const twice=x=>{if(lastPtr!=='touch'||ui.tap===x)return false;ui.tap=x;renderGame();return true;};
+  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){if(twice(i))return;doAct(a);return;}
     const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
-  else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
-    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
+  else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){if(twice(i))return;doAct(m);return;}
+    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){if(twice(i))return;ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
     if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===ui.sel)){ui.enemy=i;ui.via=ui.sel;renderGame();return;}
     const via=ui.sel;clearSel();if(i===via){renderGame();return;}}
   if(mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i)){ui.sel=i;renderGame();return;}
@@ -762,6 +774,7 @@ $('homeBtn').onclick=()=>{C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy()
 const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden;
 $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
 $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
+$('svg').addEventListener('pointerdown',e=>{lastPtr=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickSq(+g.dataset.i);});
 
 // ---------- invitation codes ----------
@@ -850,8 +863,10 @@ function lastOver(g,L,shown){lastEnds=new Map();if(!L||!L.det)return;
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}}
 function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
-  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const c=e.target.closest('[data-i]'),k=c?lastEnds.get(+c.dataset.i):undefined;lpFocus(k===undefined?-1:k);});
-  $('svg').addEventListener('pointerleave',()=>lpFocus(-1));}
+  const hoverTo=i=>{if(i===ui.hover)return;ui.hover=i;if(ui.sel>=0||ui.enemy>=0)renderGame();};
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const c=e.target.closest('[data-i]'),i=c?+c.dataset.i:-1;hoverTo(i);
+    const k=i>=0?lastEnds.get(i):undefined;lpFocus(k===undefined?-1:k);});
+  $('svg').addEventListener('pointerleave',()=>{hoverTo(-1);lpFocus(-1);});}
 // A piece on a trap is held by its friendly neighbours: a short link to each of them.
 // A frozen piece (next to a stronger enemy, no friend around) gets a light frost hatching.
 function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;const gold=v>0;
@@ -861,7 +876,8 @@ function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;cons
     el('line',{...a,stroke:gold?'var(--g1)':'var(--s1)','stroke-width':3.5,'stroke-linecap':'round'},g);}}}
 function frost(g,b){for(let i=0;i<64;i++)if(b[i]&&E.frozen(b,i)){const e=el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:22,fill:'url(#frost)'},g);
   const ti=el('title',{},e);ti.textContent=t('frozenT');}}
-function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,shown=o.shown;
+function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,shown=o.shown,H=o.hov;
+  const op=i=>H&&shown[i]&&H.b[i]!==shown[i]?.3:undefined;   // a piece the hovered move takes away: faint
   const defs=el('defs',{},svg),pat=el('pattern',{id:'frost',width:7,height:7,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
   el('rect',{width:2.4,height:7,fill:'var(--frost)'},pat);
   for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
@@ -874,25 +890,23 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
     for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
       if(rv&&v!==rv)piece(lay,i,rv,.25);
-      if(v&&v===rv)piece(lay,i,v);
-      else if(v)piece(lay,i,v);}
+      if(v)piece(lay,i,v,op(i));}
     for(const [c,w] of o.pv.caps)if(!shown[c]){if(real[c]!==w)piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'4 4'});}}
-  else for(let i=0;i<64;i++)if(shown[i])piece(lay,i,shown[i]);
+  else for(let i=0;i<64;i++)if(shown[i])piece(lay,i,shown[i],op(i));
   frost(lay,shown);lastOver(lay,o.last,shown);
   if(o.setup){for(const i of E.SETUP_SQ[mySeat])ring(lay,i,{w:1.5,r:26,c:'var(--accent)'});if(ui.swap>=0)ring(lay,E.SETUP_SQ[mySeat][ui.swap],{w:4,r:28});}
   const hl=o.hl;
   if(hl){for(const i of hl.own)if(i!==hl.sel)ring(lay,i,{w:1.6,r:26});
     for(const i of hl.enemy)ring(lay,i,{w:2,r:26,dash:'2 3'});
     if(hl.sel>=0)ring(lay,hl.sel,{w:4,r:28});
-    for(const i of hl.dest){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:hl.reach&&hl.reach.get(i)&&hl.reach.get(i).die?'var(--danger)':'var(--accent)',opacity:.75,class:'pulse'},lay);}
-    // farther squares: a dot with the number of steps
-    if(hl.reach)for(const [i,o] of hl.reach){if(hl.dest.has(i))continue;const cx=X(i)+S/2,cy=Y(i)+S/2;
-      el('circle',{cx,cy,r:10,fill:o.die?'var(--danger)':'var(--accent)',opacity:.45},lay);
-      const tx=el('text',{x:cx,y:cy+4.5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,'font-weight':600,fill:'var(--ink)','pointer-events':'none'},lay);tx.textContent=o.path.length;}
     if(hl.target>=0)ring(lay,hl.target,{w:4,r:28,c:'var(--ink)',dash:'5 4'});
-    for(const i of hl.pushTo)el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--ink)',opacity:.8,class:'pulse'},lay);
-    for(const i of hl.pullTo)el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.85,class:'pulse'},lay);
-    for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}}
+    for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}
+  // hovered move: its walk, the pieces where they would arrive (transparent, dashed ring), the pieces lost, the steps it costs
+  if(H){if(H.walk)el('polyline',{points:H.walk.map(i=>(X(i)+S/2)+','+(Y(i)+S/2)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'1 8','stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},lay);
+    for(let i=0;i<64;i++)if(H.b[i]&&H.b[i]!==shown[i]){piece(lay,i,H.b[i],.6);ring(lay,i,{w:2.5,dash:'4 4'});}
+    for(const [c,w] of H.caps){piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}
+    const bx=X(H.to)+S-11,by=Y(H.to)+11;el('circle',{cx:bx,cy:by,r:9,fill:'var(--accent)','pointer-events':'none'},lay);
+    const tx=el('text',{x:bx,y:by+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'var(--bg)','pointer-events':'none'},lay);tx.textContent=H.n;}}
 init();sndBind();
 </script>
 </body></html>
