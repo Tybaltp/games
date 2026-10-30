@@ -210,7 +210,6 @@ h1 a.gname{color:inherit;text-decoration:none}
       <p class="hint" data-i18n="trayHint">Pick a piece; R rotates, F flips.</p>
     </div>
     <div class="card" id="myCard" hidden>
-      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -303,7 +302,7 @@ const I18N={fr:{
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
- start:"Départ",swapH:"Échange",startBtn:"Démarrer la partie",swap:"Échanger",needConfirm:"Confirmer chaque coup avant l'envoi",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
+ start:"Départ",swapH:"Échange",startBtn:"Démarrer la partie",swap:"Échanger",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
@@ -342,7 +341,7 @@ const I18N={fr:{
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
- start:"Start",swapH:"Swap",startBtn:"Start the game",swap:"Swap",needConfirm:"Confirm each move before sending",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
+ start:"Start",swapH:"Swap",startBtn:"Start the game",swap:"Swap",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
  fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
@@ -705,7 +704,8 @@ function boardTap(i){if(!view||ui.pending||i<0)return;const r=replay(view.size,v
     if(!(cur&&cur.ok&&cur.cells.includes(i))){ui.hover=i;renderGame();return;}
     choose({t:'p',k:ui.piece,cells:cur.cells.slice().sort((a,b)=>a-b)});return;}
   const pv=previewAt(r.st,c,i);if(pv&&pv.ok)choose({t:'p',k:ui.piece,cells:pv.cells.slice().sort((a,b)=>a-b)});}
-function choose(mv){ui.hover=-1;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
+// Placing a piece is error-prone (pick, rotate, flip, aim): it always waits for the final confirmation before it is sent
+function choose(mv){ui.hover=-1;ui.pending=mv;renderGame();}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(mv.t==='p')selectPiece(-1,true);
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
@@ -723,8 +723,6 @@ setInterval(()=>{if(role!=='guest'||!C.pending||!view)return;const now=Date.now(
 $('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
 $('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
 $('swapBtn').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||!E.canSwap(r.st))return;choose({t:'s'});};
-$('needConfirm').checked=LS.get('dblk-confirm',true);
-$('needConfirm').onchange=e=>LS.set('dblk-confirm',e.target.checked);
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
