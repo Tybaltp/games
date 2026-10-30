@@ -91,6 +91,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.8rem;max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:2px}
 ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
 ol.log .n{color:var(--muted)}
+ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);font-size:.74rem;line-height:1.3}
 ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 .navbar{display:flex;align-items:center;justify-content:center;gap:6px}
@@ -130,6 +131,7 @@ h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
 h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
 h1 a.gname{color:inherit;text-decoration:none}
 @media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
+:root{--frost:rgba(226,243,255,.75)}
 </style>
 </head><body>
 <div class="wrap">
@@ -318,7 +320,7 @@ const I18N={fr:{
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
  legend:"<span><b>E</b> éléphant</span> · <span><b>M</b> chameau</span> · <span><b>H</b> cheval</span> · <span><b>D</b> chien</span> · <span><b>C</b> chat</span> · <span><b>R</b> lapin</span>",
- pn:["lapin","chat","chien","cheval","chameau","éléphant"],
+ pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
@@ -359,7 +361,7 @@ const I18N={fr:{
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
  w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
  legend:"<span><b>E</b> elephant</span> · <span><b>M</b> camel</span> · <span><b>H</b> horse</span> · <span><b>D</b> dog</span> · <span><b>C</b> cat</span> · <span><b>R</b> rabbit</span>",
- pn:["rabbit","cat","dog","horse","camel","elephant"],
+ pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
@@ -438,14 +440,28 @@ function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t
 // ---------- game replay ----------
 // moves[0] = Gold's setup, moves[1] = Silver's setup, then one full turn per entry, Gold and Silver alternately (seat = index % 2).
 let memoKey='',memoVal=null;
+// Detail of a turn, replayed action by action from the board before it: one path per piece that moved
+// (own: moved by the player; otherwise pushed or pulled), with the number of each step, and the pushes and pulls.
+function turnDetail(b,s,code){const at=new Map(),paths=new Map(),acts=[];let cur=b,used=0,n=0;
+  for(let i=0;i<64;i++)if(b[i])at.set(i,i);
+  for(const part of code.split(',')){const a=E.actions(cur,s,4-used).find(x=>E.code(x)===part);if(!a)return null;const r=E.apply(cur,a);
+    for(const [f,t] of r.mv){n++;const id=at.get(f);at.delete(f);at.set(t,id);let P=paths.get(id);
+      if(!P){P={own:Math.sign(cur[f])===E.sgn(s),pts:[f],nums:[]};paths.set(id,P);}P.pts.push(t);P.nums.push(n);}
+    for(const [c] of r.caps)at.delete(c);
+    if(a.k!=='m')acts.push({k:a.k,a:a.a,e:a.e,to:a.k==='P'?a.to:a.a,va:cur[a.a],ve:cur[a.e]});
+    cur=r.b;used+=r.n;}
+  return {paths:[...paths.values()],acts};}
+function turnPhrase(det){if(!det||!det.acts.length)return '';const pn=I18N[lang].pn,cap=w=>w.charAt(0).toUpperCase()+w.slice(1);
+  return det.acts.map(a=>t(a.k==='P'?'push_t':'pull_t',{A:cap(pn[Math.abs(a.va)-1]),fa:E.sq(a.a),b:pn[Math.abs(a.ve)-1],fb:E.sq(a.e),to:E.sq(a.to)})).join(' · ');}
 function replay(size,moves,result){const key=moves.join('|')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
   let b=new Int8Array(64);const reps=new Map(),log=[];let last=null,over=null;
   for(let k=0;k<moves.length;k++){const p=k%2,code=moves[k];
     if(k<2){const r=E.setup(b,p,code);if(!r){over={w:-1,why:'w_bad'};break;}b=r.b;log.push({p,txt:r.toks.join(' ')});last={mv:[],caps:[],setup:true};
       if(k===1)reps.set(E.bkey(b)+'0',1);continue;}
     const r=E.turn(b,p,code,reps);if(!r){over={w:-1,why:'w_bad'};break;}
+    const det=turnDetail(b,p,code);
     b=r.b;const kk=E.bkey(b)+(1-p);reps.set(kk,(reps.get(kk)||0)+1);
-    log.push({p,txt:r.toks.join(' ')});last={mv:r.mv,caps:r.caps};
+    log.push({p,txt:r.toks.join(' '),det});last={mv:r.mv,caps:r.caps,det};
     const o=E.outcome(b,p,reps);if(o){over=o;break;}}
   if(!over&&result)over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
   memoKey=key;memoVal={st:{b,turn:moves.length%2,n:moves.length,reps},log,last,over};return memoVal;}
@@ -613,7 +629,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   let pv=null,es='none';
   if(navAt!==null)drawBoard({real:d.st.b,shown:d.st.b,last:d.last});
   else if(mine&&setupPhase)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
-  else if(mine){pv=preview(r);es=endState(r,pv);drawBoard({real:r.st.b,shown:pv.b,pv,hl:ui.pending?null:highlights(pv)});}
+  else if(mine){pv=preview(r);es=endState(r,pv);drawBoard({real:r.st.b,shown:pv.b,pv,hl:ui.pending?null:highlights(pv),last:ui.acts.length?null:r.last});}
   else drawBoard({real:r.st.b,shown:r.st.b,last:r.last});
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
@@ -659,7 +675,8 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
   r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
-    const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);ol.appendChild(li);});
+    const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);
+    const ph=turnPhrase(e.det);if(ph){const x=document.createElement('span');x.className='desc';x.textContent=ph;li.appendChild(x);}ol.appendChild(li);});
   const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
 let audioCtx=null,lastMine=false;
 document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
@@ -812,24 +829,45 @@ function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'poin
   const ti=el('title',{},gr);ti.textContent=t(gold?'gold':'silver')+' — '+I18N[lang].pn[Math.abs(v)-1];}
 const ring=(g,i,a)=>el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:a.r||27,fill:'none',stroke:a.c||'var(--accent)','stroke-width':a.w||3,...(a.dash?{'stroke-dasharray':a.dash}:{}),...(a.cls?{class:a.cls}:{}),'pointer-events':'none'},g);
 // o: {real, shown, last, pv (turn preview), hl (highlights), setup}
+// Last turn: a line per piece from its start through each square to its end (solid: moved by the player,
+// dashed: pushed or pulled), drawn under the pieces; step numbers and end rings above them.
+function lastUnder(g,L){if(!L||!L.det)return;
+  for(const P of L.det.paths){const col=P.own?'var(--accent)':'var(--ink)',pts=P.pts.map(i=>(X(i)+S/2)+','+(Y(i)+S/2)).join(' ');
+    el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':5,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':P.own?'':'2 9',opacity:.85},g);
+    el('circle',{cx:X(P.pts[0])+S/2,cy:Y(P.pts[0])+S/2,r:6,fill:col,opacity:.85},g);}}
+function lastOver(g,L,shown){if(!L||!L.det)return;
+  for(const P of L.det.paths){const col=P.own?'var(--accent)':'var(--ink)',end=P.pts[P.pts.length-1];
+    if(shown[end])ring(g,end,{w:3,c:col,dash:P.own?'':'5 4'});
+    P.pts.slice(1).forEach((q,k)=>{const x=X(q)+S-10,y=Y(q)+10;el('circle',{cx:x,cy:y,r:8.5,fill:col,stroke:'var(--bg)','stroke-width':1.5},g);
+      const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,'font-weight':700,fill:'var(--bg)'},g);tx.textContent=P.nums[k];});}
+  for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}}
+// A piece on a trap is held by its friendly neighbours: a short link to each of them.
+// A frozen piece (next to a stronger enemy, no friend around) gets a light frost hatching.
+function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;const gold=v>0;
+  for(let d=0;d<4;d++){const j=E.NB[t*4+d];if(j<0||!b[j]||Math.sign(b[j])!==Math.sign(v))continue;
+    const dx=Math.sign((j&7)-(t&7)),dy=-Math.sign((j>>3)-(t>>3)),cx=X(t)+S/2,cy=Y(t)+S/2,a={x1:cx+dx*21,y1:cy+dy*21,x2:cx+dx*39,y2:cy+dy*39};
+    el('line',{...a,stroke:gold?'var(--g3)':'var(--s3)','stroke-width':7,'stroke-linecap':'round'},g);
+    el('line',{...a,stroke:gold?'var(--g1)':'var(--s1)','stroke-width':3.5,'stroke-linecap':'round'},g);}}}
+function frost(g,b){for(let i=0;i<64;i++)if(b[i]&&E.frozen(b,i)){const e=el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:22,fill:'url(#frost)'},g);
+  const ti=el('title',{},e);ti.textContent=t('frozenT');}}
 function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,shown=o.shown;
+  const defs=el('defs',{},svg),pat=el('pattern',{id:'frost',width:7,height:7,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
+  el('rect',{width:2.4,height:7,fill:'var(--frost)'},pat);
   for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
     el('rect',{x,y,width:S,height:S,fill:trap?'var(--trap)':'var(--sq)',stroke:'var(--gridl)','stroke-width':1.2},g);
     if(trap){el('rect',{x:x+9,y:y+9,width:S-18,height:S-18,rx:4,fill:'none',stroke:'var(--trapk)','stroke-width':1.6,'stroke-dasharray':'5 4',opacity:.8},g);}}
   for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent='abcdefgh'[c];}
   for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(r+1);}
-  const lay=el('g',{'pointer-events':'none'},svg);
+  const under=el('g',{'pointer-events':'none'},svg);lastUnder(under,o.last);
+  const lay=el('g',{'pointer-events':'none'},svg);trapLinks(lay,shown);
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
     for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
       if(rv&&v!==rv)piece(lay,i,rv,.25);
       if(v&&v===rv)piece(lay,i,v);
       else if(v){piece(lay,i,v,.72);ring(lay,i,{w:2.5,dash:'4 4'});}}
     for(const [c,w] of o.pv.caps)if(!shown[c]){if(real[c]!==w)piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'4 4'});}}
-  else{for(let i=0;i<64;i++)if(shown[i])piece(lay,i,shown[i]);
-    const L=o.last;if(L&&L.mv){const ends=new Set(L.mv.map(m=>m[1])),starts=new Set(L.mv.map(m=>m[0]));
-      for(const s of starts)if(!shown[s])el('circle',{cx:X(s)+S/2,cy:Y(s)+S/2,r:5,fill:'var(--accent)',opacity:.7},lay);
-      for(const e of ends)if(shown[e])ring(lay,e,{w:3});
-      for(const [c,w] of L.caps){if(!shown[c])piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}}}
+  else for(let i=0;i<64;i++)if(shown[i])piece(lay,i,shown[i]);
+  frost(lay,shown);lastOver(lay,o.last,shown);
   if(o.setup){for(const i of E.SETUP_SQ[mySeat])ring(lay,i,{w:1.5,r:26,c:'var(--accent)'});if(ui.swap>=0)ring(lay,E.SETUP_SQ[mySeat][ui.swap],{w:4,r:28});}
   const hl=o.hl;
   if(hl){for(const i of hl.own)if(i!==hl.sel)ring(lay,i,{w:1.6,r:26});
