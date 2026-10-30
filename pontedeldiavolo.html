@@ -991,7 +991,9 @@ function renderPanel(){
   // invite: open, first and framed until the game starts
   { const ib=$('inviteBox'), waiting=!d||d.phase==='waiting'; ib.hidden=!(inGame&&net.code&&(net.host||d));
     if(!ib.hidden) fillCodes(net.code,!net.host,d);
-    if(waiting!==ib.classList.contains('prominent')){ ib.classList.toggle('prominent',waiting); ib.open=waiting; } }
+    if(waiting!==ib.classList.contains('prominent')){ ib.classList.toggle('prominent',waiting); ib.open=waiting; }
+    // waiting: open at the top of the column; once folded, below the commands
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib); }
   // start
   const showStart=!!(d&&seat&&d.phase==='waiting'); $('startCard').hidden=!showStart;
   if(showStart){ const both=d.seats.A&&d.seats.B, o=seat==='A'?'B':'A', rd=!!d.seats[seat].ready;

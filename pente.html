@@ -1011,7 +1011,9 @@ function render(){
   if(inv.dataset.k!==x){inv.innerHTML=x;inv.dataset.k=x;
    inv.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyInput($(b.dataset.copy)));
    inv.querySelectorAll('[data-copytext]').forEach(b=>b.onclick=()=>copyText(b.dataset.copytext));}
-  const waiting=!hasGuest()||S.phase==='wait';if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}}
+  const waiting=!hasGuest()||S.phase==='wait';if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
+    // waiting: open at the top of the column; once folded, below the commands
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('resumeBlk'))$('resumeBlk').before(ib);}
 
  // moves
  const cur=navAt===null?S.log.length:navAt;
