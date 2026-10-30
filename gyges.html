@@ -337,7 +337,7 @@ const I18N={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  st_place:"Placement : choisissez une pièce de votre réserve, puis une case libre de votre rangée.",
- st_land:"Arrivée sur une pièce : rebondir ou la remplacer\u00a0?",st_bad:"La pièce ne peut pas s'arrêter là.",st_stuck:"Aucune suite depuis ce rebond. Recliquez une étape du trajet pour revenir.",bounce:"Rebondir",replace:"Remplacer",
+ st_land:"Arrivée sur une pièce : rebondir ou la remplacer\u00a0?",st_bad:"La pièce ne peut pas s'arrêter là.",st_stuck:"Aucune suite depuis ce rebond : cliquez la pièce pour revenir en arrière.",bounce:"Rebondir",replace:"Remplacer",
  st_drop:"Posez la pièce délogée sur une case libre surlignée.",
  st_mustPass:"Aucun coup possible : vous devez passer.",st_theyPass:"{n} n'a aucun coup possible et doit passer.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
@@ -352,7 +352,7 @@ const I18N={fr:{
  <li><b>Entrer au but</b> : depuis la rangée du fond adverse, seulement comme dernier pas d'un mouvement. On ne traverse pas un but et on n'entre jamais dans le sien.</li>
  <li><b>Règle avancée</b> (<span class="advState"></span>) : en arrivant sur une pièce, on peut, au lieu de rebondir, prendre sa place ; la pièce délogée est posée sur une case vide, mais pas sur une rangée plus proche de l'adversaire que sa rangée occupée la plus proche.</li>
  <li><b>Passe</b> : sans aucun coup possible, on passe ; si les deux passent de suite, la partie est nulle.</li>
- <li><b>Jouer</b> : cliquez une pièce jouable (cerclée), puis la case où elle s'arrête, ou la pièce sur laquelle elle rebondit, et ainsi de suite, un clic par rebond. Les arrivées possibles ne sont pas indiquées. Recliquer une étape du trajet y ramène.</li>
+ <li><b>Jouer</b> : cliquez une pièce jouable (cerclée), puis la case où elle s'arrête, ou la pièce sur laquelle elle rebondit, et ainsi de suite, un clic par rebond. Au survol d'une case atteinte directement, le mouvement s'affiche en transparence (sur écran tactile : un premier toucher l'affiche, un second le joue ; toucher la position actuelle l'efface). Cliquer la position actuelle revient en arrière d'une étape ; cliquer une étape plus ancienne y ramène.</li>
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Gygès est un jeu de Claude Leroy (1985).</p>`
 },en:{
@@ -378,7 +378,7 @@ const I18N={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  st_place:"Setup: pick a piece from your reserve, then an empty square of your row.",
- st_land:"Landing on a piece: bounce, or replace it?",st_bad:"The piece cannot stop there.",st_stuck:"No way on from this bounce. Click a step of the path again to go back.",bounce:"Bounce",replace:"Replace",
+ st_land:"Landing on a piece: bounce, or replace it?",st_bad:"The piece cannot stop there.",st_stuck:"No way on from this bounce: click the piece to go back.",bounce:"Bounce",replace:"Replace",
  st_drop:"Put the displaced piece on a highlighted empty square.",
  st_mustPass:"No move available: you must pass.",st_theyPass:"{n} has no move available and must pass.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
@@ -393,7 +393,7 @@ const I18N={fr:{
  <li><b>Entering the goal</b>: from the opponent's back row, only as the last step of a movement. A goal cannot be crossed, and you never enter your own.</li>
  <li><b>Advanced rule</b> (<span class="advState"></span>): when landing on a piece, you may take its place instead of bouncing; the displaced piece goes on any empty square, but not on a row closer to the opponent than their nearest occupied row.</li>
  <li><b>Pass</b>: with no move available you pass; if both players pass in a row, the game is a draw.</li>
- <li><b>Playing</b>: click a playable piece (ringed), then the square where it stops, or the piece it bounces on, and so on, one click per bounce. Possible arrivals are not shown. Clicking a step of the path again goes back to it.</li>
+ <li><b>Playing</b>: click a playable piece (ringed), then the square where it stops, or the piece it bounces on, and so on, one click per bounce. Hovering a square reached directly shows the movement in transparency (on a touch screen: a first tap shows it, a second plays it; tapping the current position clears it). Clicking the current position goes back one step; clicking an earlier step goes back to it.</li>
  <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
  <p class="hint" style="margin-top:.6em">Gyges was designed by Claude Leroy (1985).</p>`
 }};
@@ -599,7 +599,7 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
   if(role==='guest'&&mySeat>=0){if(g.result)LS.del('gyges-p2p-guest');else LS.set('gyges-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result)||prevSeat!==mySeat)resetUi();
   renderGame();}
-function resetUi(){ui={sel:-1,path:[],hist:[[[]]],marks:[],bad:false,drop:false,landOk:false,done:null,doneKey:'',hover:null,pending:null,place:0};}
+function resetUi(){ui={tap:null,sel:-1,path:[],hist:[[[]]],marks:[],bad:false,drop:false,landOk:false,done:null,doneKey:'',hover:null,pending:null,place:0};}
 resetUi();
 function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.adv,view.moves,view.result);if(!r.over)c[view.runSeat??r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
@@ -616,20 +616,23 @@ function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0
 let calcKey='',calcVal=null;
 function calc(st){if(E.setup(st)&&!ui.place){const rs=E.reserve(st,st.turn),ks=[1,2,3].filter(k=>rs[k]>0);if(ks.length===1)ui.place=ks[0];}
   const adv=!!view.adv,key=view.moves.length+'|'+adv+'|'+ui.sel+'|'+ui.path.join('.')+'|'+ui.marks.join('.')+'|'+ui.drop+'|'+ui.place+'|'+mySeat;if(key===calcKey)return calcVal;
-  const o={playable:new Set(),drops:new Set(),landed:false,canBounce:false,setup:E.setup(st),homes:new Set(),pass:false};
+  const o={playable:new Set(),drops:new Set(),ends:new Map(),landed:false,canBounce:false,setup:E.setup(st),homes:new Set(),pass:false};
   if(o.setup){const r=E.reserve(st,st.turn);if(ui.place&&r[ui.place]>0)for(const m of E.placements(st))if(m.k===ui.place)o.homes.add(m.at);}
   else{const pl=E.playable(st,adv);pl.forEach(i=>o.playable.add(i));o.pass=!pl.length;
     if(ui.sel>=0){const w=E.walk(st,ui.sel,ui.path,adv);o.onPiece=!!(w&&w.landed);o.landed=o.onPiece&&adv;o.canReplace=o.landed&&E.dropsFor(st,ui.sel,ui.path,adv).length>0;
       if(ui.drop)E.dropsFor(st,ui.sel,ui.path,adv).forEach(i=>o.drops.add(i));
-      else if(o.onPiece)o.canBounce=ui.hist[ui.hist.length-1].some(p=>E.nextSteps(st,ui.sel,p,adv).length>0);}}
+      else{if(o.onPiece)o.canBounce=ui.hist[ui.hist.length-1].some(p=>E.nextSteps(st,ui.sel,p,adv).length>0);
+        // where the current movement may end: stop squares and pieces to bounce on, with every path leading there
+        for(const p of ui.hist[ui.hist.length-1])for(const e of segEnds(st,ui.sel,p,adv)){const l=o.ends.get(e.x);if(l)l.push(e);else o.ends.set(e.x,[e]);}}}}
   calcKey=key;calcVal=o;return o;}
-// The move shown as a preview: the move awaiting confirmation, a move awaiting a second tap, or the path clicked so far (+ hovered drop square)
+// The move shown as a preview: the move awaiting confirmation, a move awaiting a second tap, the hovered (or tapped) next movement, or the path clicked so far
 function previewOf(st,o){const mv=ui.pending||ui.done;
   if(mv)return mv.t==='p'?{place:mv}:{s:mv.s,cells:mv.path,ext:[],rep:mv.rep,full:true};
   if(o.setup){if(ui.place&&ui.hover!==null&&o.homes.has(ui.hover))return {place:{at:ui.hover,k:ui.place}};return null;}
   if(ui.sel<0)return null;
-  let ext=[],rep=-1;const h=ui.hover;
+  let ext=[],rep=-1;const h=ui.hover!==null?ui.hover:ui.tap;
   if(h!==null&&ui.drop&&o.drops.has(h))rep=h;
+  if(h!==null&&!ui.drop&&o.ends.has(h)){const l=o.ends.get(h),e=l.find(e=>e.done)||l[0];return {s:ui.sel,cells:e.path,ext:[],rep:-1};}
   return {s:ui.sel,cells:ui.path,ext,rep};}
 function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
@@ -719,7 +722,7 @@ const touchy=()=>ptrType!=='mouse';
 function finish(mv,key){if(touchy()&&!$('needConfirm').checked&&!(ui.done&&ui.doneKey===key&&enc(ui.done)===enc(mv))){ui.done=mv;ui.doneKey=key;renderGame();return;}choose(mv);}
 function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (reserve piece)
   if(!view||ui.pending)return;const r=replay(view.adv,view.moves,view.result);if(!isMyTurn(r))return;
-  const st=r.st,o=calc(st),adv=!!view.adv,key=String(x);ui.bad=false;
+  const st=r.st,o=calc(st),adv=!!view.adv,key=String(x),tapped=ui.tap;ui.bad=false;ui.tap=null;
   if(ui.done&&ui.doneKey===key){choose(ui.done);return;}
   ui.done=null;
   if(o.setup){
@@ -730,12 +733,15 @@ function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (rese
   if(ui.sel<0){if(o.playable.has(x)){ui.sel=x;ui.path=[];ui.hist=[[[]]];ui.marks=[];ui.drop=false;ui.landOk=false;}renderGame();return;}
   if(ui.drop){if(o.drops.has(x)){finish({t:'m',s:ui.sel,path:ui.path.slice(),rep:x},key);return;}
     if(x===ui.sel){cancelSel();return;}renderGame();return;}
-  const hits=[];for(const p of ui.hist[ui.hist.length-1])for(const e of segEnds(st,ui.sel,p,adv))if(e.x===x)hits.push(e);
-  if(hits.length){const fin=hits.find(e=>e.done);if(fin){finish({t:'m',s:ui.sel,path:fin.path,rep:-1},key);return;}
+  const hits=o.ends.get(x)||[];
+  if(hits.length){if(touchy()&&tapped!==x){ui.tap=x;renderGame();return;}   // touch: a first tap shows the movement
+    const fin=hits.find(e=>e.done);if(fin){choose({t:'m',s:ui.sel,path:fin.path,rep:-1});return;}
     ui.hist.push(hits.map(e=>e.path));ui.marks.push(x);ui.path=hits[0].path;ui.landOk=false;renderGame();return;}
+  // touch: with a movement shown, tapping the current position only clears it
+  if(tapped!==null&&x===(ui.marks.length?ui.marks[ui.marks.length-1]:ui.sel)){renderGame();return;}
   if(x===ui.sel&&!ui.marks.length){cancelSel();return;}
-  // clicking the start or a bounce of the path goes back to it
-  const j=x===ui.sel?-1:ui.marks.lastIndexOf(x);if(x===ui.sel||j>=0){ui.marks=ui.marks.slice(0,j+1);ui.hist=ui.hist.slice(0,j+2);ui.path=ui.hist[ui.hist.length-1][0];ui.drop=false;ui.landOk=false;renderGame();return;}
+  // clicking the current position goes back one step; the start or an earlier bounce, back to it
+  let j=x===ui.sel?-1:ui.marks.lastIndexOf(x);const back=x===ui.sel||j>=0;if(j>=0&&j===ui.marks.length-1)j--;if(back){ui.marks=ui.marks.slice(0,j+1);ui.hist=ui.hist.slice(0,j+2);ui.path=ui.hist[ui.hist.length-1][0];ui.drop=false;ui.landOk=false;renderGame();return;}
   if(!ui.marks.length&&o.playable.has(x)){ui.sel=x;ui.path=[];ui.hist=[[[]]];ui.landOk=false;renderGame();return;}
   ui.bad=true;renderGame();}
 // Ends of the current segment from a partial path: the empty square or goal where the piece stops (done), or the piece it lands on
@@ -744,7 +750,7 @@ function segEnds(st,s,path,adv){const out=[],n=path.length;
     if(p.length>n&&(w.done||w.landed)){out.push({x:p[p.length-1],path:p,done:!!w.done});return;}
     if(w.done)return;for(const x of E.NB[w.cur].map(a=>a[0]).concat([G]))dfs(p.concat([x]));})(path.slice());
   return out;}
-function cancelSel(){ui.sel=-1;ui.path=[];ui.hist=[[[]]];ui.marks=[];ui.drop=false;ui.landOk=false;ui.done=null;renderGame();}
+function cancelSel(){ui.tap=null;ui.sel=-1;ui.path=[];ui.hist=[[[]]];ui.marks=[];ui.drop=false;ui.landOk=false;ui.done=null;renderGame();}
 function choose(mv){ui.done=null;ui.hover=null;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
