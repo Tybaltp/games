@@ -324,7 +324,7 @@ const I18N={fr:{
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
  legend:"<span><b>E</b> éléphant</span> · <span><b>M</b> chameau</span> · <span><b>H</b> cheval</span> · <span><b>D</b> chien</span> · <span><b>C</b> chat</span> · <span><b>R</b> lapin</span>",
- pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
+ pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",st_pushPull:"Choisissez l'arrivée : point blanc, la pièce poussée y va ; point de couleur, votre pièce y va en tirant.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
@@ -365,7 +365,7 @@ const I18N={fr:{
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
  w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
  legend:"<span><b>E</b> elephant</span> · <span><b>M</b> camel</span> · <span><b>H</b> horse</span> · <span><b>D</b> dog</span> · <span><b>C</b> cat</span> · <span><b>R</b> rabbit</span>",
- pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
+ pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",st_pushPull:"Choose the arrival: white dot, the pushed piece goes there; coloured dot, your piece goes there pulling.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
@@ -654,7 +654,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
   else if(ui.pending||sending)quiet();
   else if(mine&&setupPhase)status(t('st_setup'),'turn');
-  else if(mine){if(ui.cand.length)status(t(ui.candKind==='push'?'st_pusher':'st_pullTo'),'turn');else if(ui.enemy>=0)status(t('st_enemyTo'),'turn');
+  else if(mine){if(ui.enemy>=0)status(t('st_pushPull'),'turn');
     else if(es==='same')status(t('st_same'));else if(es==='rep')status(t('st_rep3'));else quiet();}
   else if(setupPhase&&navAt===null)status(t('st_oppSetup',{n:nm(r.st.turn)}));
   else quiet();
@@ -726,10 +726,12 @@ function reach(b,s,from,left){const out=new Map();let q=[{b,loc:from,path:[]}];
         const x=E.apply(st.b,a),die=!x.b[a.t],path=st.path.concat([a]);out.set(a.t,{path,die});if(!die)nq.push({b:x.b,loc:a.t,path});}}
     q=nq;}
   return out;}
-function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),sel:-1};
-  if(ui.cand.length){ui.cand.forEach(o=>hl.cand.add(o.sq));hl.sel=ui.enemy;return hl;}
-  if(ui.enemy>=0){hl.sel=ui.enemy;for(const a of acts){if(a.k==='P'&&a.e===ui.enemy)hl.dest.add(a.to);if(a.k==='L'&&a.e===ui.enemy)hl.dest.add(a.a);}return hl;}
-  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k!=='m'&&(ui.sel<0||a.a===ui.sel))hl.enemy.add(a.e);
+// Push or pull in three clicks: my piece, the enemy piece, then an arrival square. Push: the square where the enemy goes
+// (my piece takes its place); pull: the square where my piece goes (the enemy takes its place). The two sets never overlap.
+function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),pushTo:new Set(),pullTo:new Set(),target:-1,sel:-1};
+  if(ui.enemy>=0&&ui.via>=0){hl.sel=ui.via;hl.target=ui.enemy;
+    for(const a of acts){if(a.k==='m'||a.a!==ui.via||a.e!==ui.enemy)continue;(a.k==='P'?hl.pushTo:hl.pullTo).add(a.to);}return hl;}
+  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k!=='m'&&ui.sel>=0&&a.a===ui.sel)hl.enemy.add(a.e);
     if(ui.sel>=0&&a.k==='m'&&a.f===ui.sel)hl.dest.add(a.t);}
   if(ui.sel>=0)hl.reach=reach(b,s,ui.sel,4-pv.used);
   hl.sel=ui.sel;return hl;}
@@ -739,19 +741,13 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.mo
     renderGame();return;}
   const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
   const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
-  if(ui.cand.length){const c=ui.cand.find(o=>o.sq===i);if(c){doAct(c.act);return;}clearSel();}
-  else if(ui.enemy>=0){
-    const ps=acts.filter(a=>a.k==='P'&&a.e===ui.enemy&&a.to===i),ls=acts.filter(a=>a.k==='L'&&a.e===ui.enemy&&a.a===i);
-    const opts=ps.length?ps.map(a=>({sq:a.a,act:a})):ls.map(a=>({sq:a.to,act:a}));
-    if(opts.length){const v=ps.length?opts.find(o=>o.sq===ui.via):null;if(opts.length===1||v){doAct((v||opts[0]).act);return;}
-      ui.cand=opts;ui.candKind=ps.length?'push':'pull';renderGame();return;}
-    const was=ui.enemy;clearSel();if(i===was){renderGame();return;}}
+  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
+    const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
     const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
-    const via=ui.sel;clearSel();if(i===via){renderGame();return;}
-    if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===via)){ui.enemy=i;ui.via=via;renderGame();return;}}
+    if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===ui.sel)){ui.enemy=i;ui.via=ui.sel;renderGame();return;}
+    const via=ui.sel;clearSel();if(i===via){renderGame();return;}}
   if(mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i)){ui.sel=i;renderGame();return;}
-  if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i)){ui.enemy=i;ui.via=-1;renderGame();return;}
   renderGame();}
 function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();}
 function endTurn(){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
@@ -913,6 +909,9 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
     if(hl.reach)for(const [i,o] of hl.reach){if(hl.dest.has(i))continue;const cx=X(i)+S/2,cy=Y(i)+S/2;
       el('circle',{cx,cy,r:10,fill:o.die?'var(--danger)':'var(--accent)',opacity:.45},lay);
       const tx=el('text',{x:cx,y:cy+4.5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,'font-weight':600,fill:'var(--ink)','pointer-events':'none'},lay);tx.textContent=o.path.length;}
+    if(hl.target>=0)ring(lay,hl.target,{w:4,r:28,c:'var(--ink)',dash:'5 4'});
+    for(const i of hl.pushTo)el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--ink)',opacity:.8,class:'pulse'},lay);
+    for(const i of hl.pullTo)el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.85,class:'pulse'},lay);
     for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}}
 init();sndBind();
 </script>
