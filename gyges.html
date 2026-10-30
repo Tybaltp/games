@@ -558,7 +558,8 @@ const H={};             // host-only state
 
 function status(txt,cls,btns){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;
   const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent='';const sp=document.createElement('span');sp.textContent=txt;n.appendChild(sp);
-    for(const b of btns||[]){const e=document.createElement('button');e.type='button';e.textContent=b.label;if(b.primary)e.className='primary';if(b.dis)e.disabled=true;if(b.id)e.id=b.id;e.onclick=b.on;n.appendChild(e);}}}
+    for(const b of btns||[]){const e=document.createElement('button');e.type='button';e.textContent=b.label;if(b.primary)e.className='primary';if(b.dis)e.disabled=true;if(b.id)e.id=b.id;e.onclick=b.on;
+      if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}n.appendChild(e);}}}
 function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
 function peerOpts(){return {debug:1};}
 function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
@@ -692,7 +693,7 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
   if(role==='guest'&&mySeat>=0){if(g.result)LS.del('gyges-p2p-guest');else LS.set('gyges-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result)||prevSeat!==mySeat)resetUi();
   renderGame();}
-function resetUi(){ui={tap:null,sel:-1,path:[],hist:[[[]]],marks:[],bad:false,drop:false,landOk:false,done:null,doneKey:'',hover:null,pending:null,place:0};}
+function resetUi(){ui={tap:null,sel:-1,path:[],hist:[[[]]],marks:[],bad:false,drop:false,landOk:false,repHover:false,done:null,doneKey:'',hover:null,pending:null,place:0};}
 resetUi();
 function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.adv,view.moves,view.result);if(!r.over)c[view.runSeat??r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
@@ -726,8 +727,11 @@ function previewOf(st,o){const mv=ui.pending||ui.done;
   let ext=[],rep=-1;const h=ui.hover!==null?ui.hover:ui.tap;
   if(h!==null&&ui.drop&&o.drops.has(h))rep=h;
   if(h!==null&&!ui.drop&&o.ends.has(h)){const l=o.ends.get(h),e=l.find(e=>e.done)||l[0];return {s:ui.sel,cells:e.path.slice(0,ui.path.length),ext:e.path.slice(ui.path.length),rep:-1};}
-  return {s:ui.sel,cells:ui.path,ext,rep};}
-function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.result);
+  return {s:ui.sel,cells:ui.path,ext,rep,replace:ui.drop||ui.repHover&&o.landed&&!ui.landOk};}
+// Board only, for a hover outside the board (the Replace button)
+function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view.adv,view.moves,view.result);if(!isMyTurn(r))return;const o=calc(r.st);
+  drawBoard(r.st,{o,interactive:!ui.pending&&busy!=='hint',hint:hintMv,pv:previewOf(r.st,o),last:r.last});}
+function renderGame(){if(!view)return;ui.repHover=false;const r=replay(view.adv,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
   flip=mySeat===1;
@@ -753,7 +757,7 @@ function renderGame(){if(!view)return;const r=replay(view.adv,view.moves,view.re
     else if(ui.bad)status(t('st_bad'),'turn');
     else if(o.onPiece&&!o.canBounce&&!o.canReplace)status(t('st_stuck'),'turn');
     else if(ui.marks.length&&!o.landed&&!ui.drop)status(t('st_bounce'),'turn');
-    else if(o.landed&&!ui.landOk&&!ui.done)status(t('st_land'),'turn',[{label:t('bounce'),dis:!o.canBounce,on:()=>{ui.landOk=true;renderGame();}},{label:t('replace'),primary:true,dis:!o.canReplace,on:()=>{ui.drop=true;ui.landOk=true;renderGame();}}]);
+    else if(o.landed&&!ui.landOk&&!ui.done)status(t('st_land'),'turn',[{label:t('bounce'),dis:!o.canBounce,on:()=>{ui.landOk=true;renderGame();}},{label:t('replace'),primary:true,dis:!o.canReplace,on:()=>{ui.drop=true;ui.landOk=true;renderGame();},hover:on=>{ui.repHover=on;redrawBoard();}}]);
     else quiet();}
   else if(cantMove&&navAt===null)status(t('st_theyPass',{n:nm(r.st.turn)}));
   else quiet();
@@ -1015,11 +1019,18 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
       el('circle',{cx:180,cy:y,r:GR+8,fill:'transparent'},g);
       el('circle',{cx:180,cy:y,r:GR,fill:'var(--hole)',stroke:'var(--hole-e)','stroke-width':1.6},g);
       if(st.goal&&q===1-st.goal.p)piece(g,180,y,st.goal.k,PR);}}
+  // a preview that reaches a position (a stop, the goal, or a replacement) shows that position: the moved pieces
+  // in transparency where they arrive, faint where they left
+  let res=null,resCh=new Set();
+  if(pv&&!pv.place){const cells=pv.cells.concat(pv.ext||[]),end=cells[cells.length-1];
+    if(cells.length){const onP=end!==G&&!!st.b[end];
+      if(!onP||pv.replace||pv.rep>=0){res=st.b.slice();const k=res[pv.s],d=onP?res[end]:0;res[pv.s]=0;resCh.add(pv.s);
+        if(end!==G){res[end]=k;resCh.add(end);}if(pv.rep>=0){res[pv.rep]=d;resCh.add(pv.rep);}}}}
   // squares
   for(let i=0;i<36;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
     el('rect',{x:x-CS/2,y:y-CS/2,width:CS,height:CS,fill:'transparent'},g);
     el('circle',{cx:x,cy:y,r:HR,fill:'var(--hole)',stroke:'var(--hole-e)','stroke-width':1.5},g);
-    if(st.b[i])piece(g,x,y,st.b[i],PR);}
+    const v=st.b[i];if(!resCh.has(i)){if(v)piece(g,x,y,v,PR);}else if(res[i])piece(g,x,y,res[i],PR,.6);else if(v)piece(g,x,y,v,PR,.25);}
   const ov=el('g',{'pointer-events':'none'},svg);
   const lastMv=last&&last.mv;
   if(lastMv&&!pv){if(lastMv.t==='p')ring(ov,X(lastMv.at),Y(lastMv.at),PR+3,{'stroke-width':2.5});
@@ -1039,11 +1050,10 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
     else{const cells=pv.cells.concat(pv.ext||[]),k=st.b[pv.s];
       // the steps already played in full, the hovered next movement fainter
       if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
-        if(pv.rep>=0){ring(gh,ex,ey,PR+3,{stroke:'var(--danger)','stroke-dasharray':'3 4','stroke-width':2.5});piece(gh,X(pv.rep),Y(pv.rep),st.b[end],PR,.55);ring(gh,X(pv.rep),Y(pv.rep),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
-        // ending on a piece to bounce on: that piece is shown selected in transparency (once played, its solid ring says it);
-        // ending on a stop: the moving piece is shown there in transparency
-        if(end!==G&&st.b[end]&&pv.rep<0){if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}
-        else{piece(gh,ex,ey,k,PR,.6);ring(gh,ex,ey,(end===G?GR:PR)+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}}}}
+        if(res){for(const i of resCh)if(res[i])ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});
+          if(end===G){piece(gh,ex,ey,k,PR,.6);ring(gh,ex,ey,GR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}
+        // ending on a piece to bounce on: that piece is shown selected in transparency (once played, its solid ring says it)
+        else if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}}}}
 // dotted path from the start square through the steps (G = the mover's target goal)
 function pathLine(par,p,s,cells,a){const pts=[[X(s),Y(s)]].concat(cells.map(x=>PT(x,p)));
   el('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'1 8','stroke-linecap':'round','stroke-linejoin':'round',...a},par);}
