@@ -580,7 +580,7 @@ const nickGet=()=>LS.get('games-name','')||LS.get('gyges-name',''),nickSet=v=>{L
 // Setup modes: 'piece' one piece at a time in turn (default) · 'simul' both rows chosen at the same time, hidden until both
 // are validated · 'seq' J1's whole row, then J2's. Missing (old saves, resume codes) = 'piece'.
 const SMS=['piece','simul','seq'],smOf=g=>g&&SMS.includes(g.setup)?g.setup:'piece';
-let setupPref=LS.get('gyges-setup','piece');if(!SMS.includes(setupPref))setupPref='piece';
+let setupPref=LS.get('gyges-setup','seq');if(!SMS.includes(setupPref))setupPref='seq';
 const SUSEL=['cSetup','aSetup','tSetup'];
 function setupSel(v){setupPref=v;LS.set('gyges-setup',v);for(const id of SUSEL){$(id).value=v;$(id+'H').textContent=t('sud_'+v);}}
 let view=null;
