@@ -41,12 +41,49 @@ button:hover:not(:disabled),select:hover{border-color:var(--muted)}
 button:disabled{opacity:.45;cursor:default}
 button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
-.boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
-.board{position:relative}
+/* Game view (html.ingame, set by showGame): a fixed-height app, exactly the viewport, no page scroll. The game's section
+   and <main> dissolve (display:contents) so the header, the board column and the side panel sit in one grid.
+   Wide screens and landscape phones (html.wide, the WIDE query): header + board column on the left, side panel on the
+   right over the full height, scrolling inside. Phones in portrait: header, players' row, board, action bar stacked;
+   the side panel becomes a bottom sheet opened with « ⋯ ». */
+:root{--barH:52px;--sab:env(safe-area-inset-bottom,0px);--bp:9px}
+html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none}
+html.ingame body{height:100vh;height:100dvh;padding-top:max(10px,env(safe-area-inset-top,0px));padding-bottom:max(10px,var(--sab))}
+html.ingame .wrap{max-width:none;height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px 16px}
+html.ingame #game,html.ingame main{display:contents}
+html.ingame header{grid-column:1;grid-row:1;flex-wrap:nowrap;align-items:center}
+header .seg{margin-left:auto}
+.optbtn{display:none;position:relative;font-size:1.2rem;line-height:1;padding:5px 12px;font-weight:700}
+.optbtn.attn::after{content:"";position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+html.ingame:not(.wide) .optbtn{display:inline-block}
+.boardwrap{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+/* The board fits its area in both dimensions, keeping its proportions (viewBox 408×573), centred */
+.boardarea{flex:1 1 0;min-height:0;min-width:0;container-type:size;display:flex;align-items:center;justify-content:center}
+.board{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px;min-width:0;width:100%;height:100%}
+.board svg{display:block;width:100%;height:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+@supports (width:1cqh){.board{height:auto;width:min(100cqw,calc((100cqh - 2*var(--bp))*408/573 + 2*var(--bp)))}.board svg{height:auto;aspect-ratio:408/573}}
+html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) 300px}
+.side > *{flex:none}
+html.ingame.wide .side{grid-column:2;grid-row:1/-1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:3px}
+/* Phones: thin side gutters, no frame around the board, compact players' row */
+html.ingame:not(.wide) body{padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-top:max(6px,env(safe-area-inset-top,0px));padding-bottom:max(6px,var(--sab))}
+html.ingame:not(.wide) .wrap,html.ingame:not(.wide) .boardwrap{gap:6px}
+html.ingame:not(.wide) h1{font-size:1.45rem}
+html.ingame:not(.wide) .board{--bp:0px;padding:0;border:0;border-radius:0;background:none}
+html.ingame:not(.wide) .player{padding:4px 8px;border-radius:10px}
+html.ingame:not(.wide) .player .who{font-size:.9rem}
+html.ingame:not(.wide) .player .clock{font-size:1.15rem}
+/* The bottom sheet: at most 80% of the height, scrolls inside, grabber on top, dimmed backdrop */
+.sheetbg{position:fixed;inset:0;z-index:29;background:rgba(0,0,0,.42)}
+html.ingame:not(.wide) .side{position:fixed;z-index:30;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;max-height:80vh;max-height:80dvh;overflow:auto;overscroll-behavior:contain;
+  background:var(--bg);border-radius:16px 16px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.3);outline:none;
+  padding:8px max(12px,env(safe-area-inset-right,0px)) max(16px,var(--sab)) max(12px,env(safe-area-inset-left,0px));
+  transform:translateY(105%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+html.ingame.sheet:not(.wide) .side{transform:none;visibility:visible;transition:transform .22s ease}
+html.ingame:not(.wide) .side::before{content:"";flex:none;align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line);margin-bottom:2px}
+@media (prefers-reduced-motion:reduce){html.ingame .side{transition:none!important}}
 /* Action bar under the board: the only place for the move commands. Fixed height (the board does not jump when its
    buttons change), message clamped to 2 lines; on narrow screens the message goes above the buttons. */
-:root{--barH:52px;--chromeY:108px;--navH:0px;--sab:env(safe-area-inset-bottom,0px)}
 .notice{height:var(--barH);flex:none;display:flex;align-items:center;justify-content:center;gap:4px 10px;padding:4px 10px;border-radius:10px;font-weight:500;font-size:.9rem;line-height:1.3;text-align:center;border:1px solid transparent;overflow:hidden;min-width:0}
 .notice .msg{min-width:0;max-width:100%;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 .notice .btns{display:flex;gap:6px;flex:none;max-width:100%;min-width:0}
@@ -54,7 +91,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 .notice button{padding:5px 10px;font-size:.85rem;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:560px){:root{--barH:86px}.notice.has-btns{flex-direction:column;gap:5px}}
-.players{display:flex;justify-content:space-between;gap:8px}
+.players{display:flex;justify-content:space-between;gap:8px;flex:none}
 .players.side-only{flex-direction:column}
 .player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
 .player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
@@ -67,33 +104,19 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
 .side details > *:not(summary){margin-top:8px}
 .side details .link,.side details .hint{margin-top:6px}
-@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}:root{--chromeY:184px}}
-.board{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px;min-width:0}
-/* The board is as large as the width allows, but never taller than the viewport minus the header (and, on stacked
-   layouts, the players' cards), the navigation bar when shown and the action bar: the bar is never below the fold. */
-.board svg{display:block;width:100%;height:auto;margin:0 auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;
-  max-height:calc(100vh - var(--chromeY) - var(--navH) - var(--barH) - var(--sab));max-height:calc(100dvh - var(--chromeY) - var(--navH) - var(--barH) - var(--sab));min-height:150px}
-main:has(#nav:not([hidden])){--navH:42px}
-/* Phones: the bar sticks to the bottom of the screen (after the side panel in the page, so it stays there while the
-   panel below the board is scrolled), with room for the home indicator */
-@media (max-width:759px){
-  main{display:flex;flex-direction:column;align-items:stretch;gap:8px}
-  .boardwrap{display:contents}
-  .notice{position:sticky;bottom:0;z-index:5;order:10;height:calc(var(--barH) + var(--sab));padding-bottom:calc(4px + var(--sab));background:var(--bg);box-shadow:0 -8px 14px -10px rgba(0,0,0,.35)}
-  .notice.on{background:var(--panel)}.notice.win{background:var(--accent)}
-  :root{--chromeY:176px}}
-/* Landscape phones: board and side panel side by side, compact header; the board column (board + bar) stays in view */
+.navbar{flex:none}
+/* Landscape phones: compact header, narrower side panel, thinner frame round the board */
 @media (orientation:landscape) and (max-height:500px){
-  :root{--chromeY:62px;--barH:48px}
+  :root{--barH:48px}
   body{padding-block:6px 12px}
+  html.ingame body{padding-top:max(6px,env(safe-area-inset-top,0px));padding-bottom:max(6px,var(--sab))}
   .wrap,.view{gap:6px}
+  html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) 260px;gap:6px 10px}
+  .boardwrap{gap:6px}
   h1{font-size:1.3rem}h1 a.crumb,h1 .sep{font-size:.85rem}
   .seg button{padding:3px 8px}
-  main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:10px}
-  .boardwrap{display:flex;position:sticky;top:0;gap:6px}
-  .board{padding:4px;border-radius:12px}
-  .notice{order:0;flex-direction:row!important}
-  main:has(#nav:not([hidden])){--navH:40px}}
+  .board{--bp:5px;padding:4px;border-radius:12px}
+  .notice{flex-direction:row!important}}
 .status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
 .status.turn{border-color:var(--accent)}
 .status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
@@ -174,7 +197,7 @@ h1 a.gname{color:inherit;text-decoration:none}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gyges</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gyges</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -242,11 +265,11 @@ h1 a.gname{color:inherit;text-decoration:none}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="board"><svg id="svg" viewBox="-42 -100 444 586" role="img" aria-label="Gyges board"></svg></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-34 -96 408 573" role="img" aria-label="Gyges board"></svg></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <div class="notice" id="notice"></div>
   </div>
-  <aside class="side">
+  <aside class="side" id="side" tabindex="-1">
     <div class="players side-only" id="playersSide"></div>
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
@@ -282,6 +305,7 @@ h1 a.gname{color:inherit;text-decoration:none}
     <details id="rules"></details>
   </aside>
 </main>
+<div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
 <script>
@@ -481,7 +505,7 @@ function GygesAI(E){
 const SIZE=36;
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18N={fr:{
- title:"Gygès",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",pend_block:"Disposition : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ title:"Gygès",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",pend_block:"Disposition : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence (pose la première pièce)",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  advOpt:"Règle avancée (remplacement)",
  setupOpt:"Mise en place",su_piece:"Pièce par pièce",su_simul:"En bloc, simultané",su_seq:"En bloc, séquentiel",suIn:"« {m} » dans cette partie",
@@ -534,7 +558,7 @@ const I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt. Le temps ajouté par coup est crédité à chaque coup confirmé ; à zéro, la partie est perdue au temps. Pendant une mise en place simultanée, aucune pendule ne tourne.</li></ul>
  <p class="hint" style="margin-top:.6em">Gygès est un jeu de Claude Leroy (1985).</p>`
 },en:{
- title:"Gyges",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_block:"Arrangement: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ title:"Gyges",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_block:"Arrangement: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts (places the first piece)",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  advOpt:"Advanced rule (replacement)",
  setupOpt:"Setup",su_piece:"Piece by piece",su_simul:"Whole row, simultaneous",su_seq:"Whole row, in turn",suIn:"“{m}” in this game",
@@ -830,8 +854,8 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
   else if(d.t==='nack'){sending=false;if(C.hold){C.hold=null;if(view)view.myHold=null;resetUi();}if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
 
 // ---------- game view ----------
-function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;}
-function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
+function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
+function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
 function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'',prevSeat=view?view.mySeatSeen:-2;
   view={...g,recvAt:Date.now(),mySeatSeen:mySeat};
   if(role==='guest'&&mySeat>=0){if(g.result)LS.del('gyges-p2p-guest');else LS.set('gyges-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
@@ -966,9 +990,9 @@ function renderGame(){if(!view)return;ui.repHover=false;if(role==='ai')LS.set(AK
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
     el.append(h,ck);host.appendChild(el);}
   tick();advLine();
-  // side panel: settings only (level of the computer, which also sets the strength of the hints in free play; its opinion)
+  // side panel: settings only (level of the computer and its opinion, against the computer only: hints always use HINT)
   $('myCard').hidden=!(role==='ai'||solo()||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('aiBox').hidden=role!=='ai'&&role!=='test';$('aiInfo').hidden=role!=='ai';
+  $('aiBox').hidden=role!=='ai';
   $('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
   if(role==='ai')$('aiInfo').textContent=aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
@@ -989,9 +1013,32 @@ function renderGame(){if(!view)return;ui.repHover=false;if(role==='ai')LS.set(AK
   r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
     const c=document.createElement('span');c.textContent=hiddenSeats(r)[e.p]?t('hiddenBlock'):e.txt;li.append(a,b,c);ol.appendChild(li);});
-  const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
+  const ce=ol.querySelector('.cur');if(ce&&navAt!==null){const a=ce.getBoundingClientRect(),b=ol.getBoundingClientRect();if(a.top<b.top)ol.scrollTop+=a.top-b.top;else if(a.bottom>b.bottom)ol.scrollTop+=a.bottom-b.bottom;}else ol.scrollTop=ol.scrollHeight;sheetAttn();}
 // Players' cards in the side panel: wide screens, and landscape phones (board and panel side by side)
 const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';
+// Game view layout: html.ingame = a fixed-height app (no page scroll); html.wide = two columns (the WIDE query). Otherwise
+// (phones, portrait) the side panel is a bottom sheet, opened with « ⋯ » (html.sheet), closed by the backdrop, Escape,
+// « ⋯ » again or a swipe down.
+const mqWide=window.matchMedia(WIDE),isWide=()=>mqWide.matches;
+function sheet(on){const R=document.documentElement,was=R.classList.contains('sheet');on=!!on&&!isWide()&&!$('game').hidden;
+  R.classList.toggle('sheet',on);$('sheetBg').hidden=!on;$('optBtn').setAttribute('aria-expanded',on?'true':'false');
+  if(on&&!was){$('side').scrollTop=0;$('side').focus({preventScroll:true});}
+  if(!on&&was&&$('side').contains(document.activeElement))$('optBtn').focus({preventScroll:true});}
+function layoutMode(){document.documentElement.classList.toggle('wide',isWide());if(isWide())sheet(false);}
+if(mqWide.addEventListener)mqWide.addEventListener('change',layoutMode);else mqWide.addListener(layoutMode);layoutMode();
+$('optBtn').onclick=()=>sheet(!document.documentElement.classList.contains('sheet'));
+$('sheetBg').onclick=()=>sheet(false);
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('sheet')){e.preventDefault();e.stopImmediatePropagation();sheet(false);}},true);
+{const s=$('side');let y0=null;
+  s.addEventListener('touchstart',e=>{y0=document.documentElement.classList.contains('sheet')&&s.scrollTop<=0&&e.touches.length===1?e.touches[0].clientY:null;},{passive:true});
+  s.addEventListener('touchend',e=>{if(y0!==null&&s.scrollTop<=0&&e.changedTouches[0].clientY-y0>70)sheet(false);y0=null;},{passive:true});}
+// Cards that must not be missed (invitation while waiting, Start, end of game): on phones, the sheet opens by itself when
+// one appears (once; at the end of a game after a moment, so the last move is seen) and « ⋯ » carries a dot while one is shown.
+function sheetAttn(){const ids=['inviteBox','startCard','endCard'].filter(id=>!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
+  $('optBtn').classList.toggle('attn',ids.length>0);
+  const prev=sheetAttn.prev||[],fresh=ids.filter(id=>!prev.includes(id));sheetAttn.prev=ids;
+  if(!fresh.length||isWide())return;
+  if(fresh.length===1&&fresh[0]==='endCard')setTimeout(()=>{if(!$('endCard').hidden&&!$('game').hidden)sheet(true);},1200);else sheet(true);}
 let audioCtx=null,lastMine=false;
 document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('gyges-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
@@ -1227,7 +1274,7 @@ function doUndo(){if(!view||!canUndo()||preparing())return;if(role==='test'){tes
 // board like a move awaiting confirmation; Play this move plays it at once, Dismiss (or a click on the board) drops it.
 const hintOn=()=>!!hintMv&&!busy;
 function doHint(){if(!view||!canHint()||busy)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||preparing())return;const n=view.moves.length;busy='hint';hintMv=null;renderGame();
-  ask(aiSafe(r.st),role==='test'?LEVELS[level]:HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move&&res.move.t!=='x'){hintMv=res.move;resetUi();}renderGame();});}
+  ask(aiSafe(r.st),HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move&&res.move.t!=='x'){hintMv=res.move;resetUi();}renderGame();});}
 function hintOff(){if(busy==='hint')stopAI();hintMv=null;if(ui)ui.hover=null;renderGame();}
 function hintPlay(){const mv=hintMv;if(!mv||busy)return;hintMv=null;resetUi();send(mv);}
 for(const id of ['aLevel','gLevel'])$(id).addEventListener('change',e=>{level=e.target.value;LS.set('gyges-level',level);$('aLevel').value=level;$('gLevel').value=level;});
