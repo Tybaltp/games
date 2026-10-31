@@ -454,7 +454,7 @@ function drawBoard(real,last,a){
     `<rect x="${X(CL(i))+li}" y="${Y(RW(i))+li}" width="${CS-2*li}" height="${CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>`);};
   const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
   if(active){for(const i of ui.draft)ghostTile(i,1);
-    if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b,1);
+    if(ui.bridge){ghostBridge(ui.bridge.a,ui.bridge.b,1);frame(ui.bridge.a,1);frame(ui.bridge.b,1);}   // a bridge awaiting confirmation keeps its dashed ends
     if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,.55);frame(ui.hover,1);}else ghostTile(ui.hover);}
     // hovering one of my squares a bridge can start from: the selection frame only
     if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0)frame(ui.hoverOwn,1);}
