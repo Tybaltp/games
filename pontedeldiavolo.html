@@ -446,22 +446,30 @@ function drawBoard(real,last,a){
       out.push(`<rect x="${X(c0)+li}" y="${Y(r0)+li}" width="${w*CS-2*li}" height="${h*CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4"/>`);}
     else for(const i of cs)out.push(lastF(i));}
   else if(lastB){const k=out.findIndex(x=>x.startsWith('<g opacity'));out.splice(k<0?out.length:k,0,lastF(lastB.a),lastF(lastB.b));}
-  // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
-  // (the yellow frames go in under the previewed bridges)
-  const col=a?a.p:1,fi=out.length,frame=(i,dash)=>out.splice(fi,0,dash?`<rect x="${X(CL(i))+li}" y="${Y(RW(i))+li}" width="${CS-2*li}" height="${CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>`:`<rect x="${X(CL(i))+li}" y="${Y(RW(i))+li}" width="${CS-2*li}" height="${CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4"/>`);   // all frames inside the tile, like the last-move frame; dashed: hovered
-  // op: .5 for the tile under the pointer, 1 for a tile already clicked (its dashed frame says it isn't played yet)
-  const ghostTile=(i,op)=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity="${op||.5}"/>`,
-    `<rect x="${X(CL(i))+li}" y="${Y(RW(i))+li}" width="${CS-2*li}" height="${CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>`);};
-  const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
-  if(active){for(const i of ui.draft)ghostTile(i,1);
-    if(ui.bridge){ghostBridge(ui.bridge.a,ui.bridge.b,1);frame(ui.bridge.a,1);frame(ui.bridge.b,1);}   // a bridge awaiting confirmation keeps its dashed ends
-    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,.55);frame(ui.hover,1);}else ghostTile(ui.hover);}
-    // hovering one of my squares a bridge can start from: the selection frame only
-    if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0)frame(ui.hoverOwn,1);}
+  // preview, with one rule for everything: under the pointer = translucent, otherwise opaque; provisional (clicked,
+  // not played yet) = dashed frame; played = solid frame (the last move, above). Frames go in under the previewed bridges.
+  const col=a?a.p:1,fill=col===1?'var(--stone)':'var(--trach)',tls=[],frs=[],brs=[];   // drawn in this order: tiles, frames, bridges
+  const adj=(i,j)=>Math.abs(RW(i)-RW(j))+Math.abs(CL(i)-CL(j))===1;
+  // a frame round one square, or round two neighbouring squares at once; kind: 'dash' (provisional) or 'hover'
+  const frame=(i,kind,j)=>{let c0=CL(i),r0=RW(i),w=1,h=1;if(j!==undefined){c0=Math.min(CL(i),CL(j));r0=Math.min(RW(i),RW(j));w=CL(i)===CL(j)?1:2;h=3-w;}
+    frs.push(`<rect x="${X(c0)+li}" y="${Y(r0)+li}" width="${w*CS-2*li}" height="${h*CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"${kind==='hover'?' opacity=".5"':''}/>`);};
+  const tile=(i,op)=>tls.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${fill}" opacity="${op}"/>`);
+  const ghostBridge=(a,b,op)=>{const n=out.length;bridge(a,b,col,op);brs.push(...out.splice(n));};
+  if(active){
+    // the tiles clicked this turn: opaque; two neighbours read as one piece (joined, one frame), not joined to the islands already there
+    const d=ui.draft;for(const i of d)tile(i,1);
+    if(d.length===2&&adj(d[0],d[1])){const c0=Math.min(CL(d[0]),CL(d[1])),r0=Math.min(RW(d[0]),RW(d[1])),hz=RW(d[0])===RW(d[1]),o=6;
+      tls.push(hz?`<rect x="${X(c0)+CS-g-o}" y="${Y(r0)+g}" width="${2*g+2*o}" height="${CS-2*g}" fill="${fill}"/>`:`<rect x="${X(c0)+g}" y="${Y(r0)+CS-g-o}" width="${CS-2*g}" height="${2*g+2*o}" fill="${fill}"/>`);
+      frame(d[0],'dash',d[1]);}
+    else for(const i of d)frame(i,'dash');
+    if(ui.bridge){ghostBridge(ui.bridge.a,ui.bridge.b,1);frame(ui.bridge.a,'dash');frame(ui.bridge.b,'dash');}
+    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null)ghostBridge(ui.sel,ui.hover,.5);else tile(ui.hover,.5);frame(ui.hover,'hover');}
+    if(!ui.pending&&ui.sel===null&&!d.length&&ui.hoverOwn>=0)frame(ui.hoverOwn,'hover');}
   const tgts=new Set();
   if(active&&ui.sel!==null){
-    const i=ui.sel;frame(i);
+    const i=ui.sel;frame(i,'dash');
     for(const e of BR[i])if(canBridge(st,a.p,i,e))tgts.add(e.b);}
+  out.push(...tls,...frs,...brs);
   const canInput=active&&!ui.pending&&ui.sel===null&&ui.draft.length<2;
   const legal=canInput?new Set(legalCells(st,a.p)):new Set();
   for(let i=0;i<NN;i++){let cls='hit';
