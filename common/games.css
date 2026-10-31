@@ -1,0 +1,185 @@
+/* Shared styles of the two-player games (common/games.css). Each page sets its palette in light and dark (--bg --panel --ink
+   --muted --line --accent --accent-ink --danger, seat colours --s0 --s0e --s1 --s1e, its board colours, color-scheme:dark)
+   and --board-ar, the aspect ratio of its board (e.g. 408/573), then adds its board-specific rules. */
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}
+/* Layout: board on the left, game column on the right; stacked on phones */
+:root{
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.02em;margin:0;line-height:1}
+h1 span{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;margin-left:.4em}
+select,button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+button:hover:not(:disabled),select:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Game view (html.ingame, set by showGame): a fixed-height app, exactly the viewport, no page scroll. The game's section
+   and <main> dissolve (display:contents) so the header, the board column and the side panel sit in one grid.
+   Wide screens and landscape phones (html.wide, the WIDE query): header + board column on the left, side panel on the
+   right over the full height, scrolling inside. Phones in portrait: header, players' row, board, action bar stacked;
+   the side panel becomes a bottom sheet opened with « ⋯ ». */
+:root{--barH:52px;--barW:118px;--sab:env(safe-area-inset-bottom,0px);--bp:9px}
+html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none}
+html.ingame body{height:100vh;height:100dvh;padding-top:max(10px,env(safe-area-inset-top,0px));padding-bottom:max(10px,var(--sab))}
+html.ingame .wrap{max-width:none;height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px 16px}
+html.ingame #game,html.ingame main{display:contents}
+html.ingame header{grid-column:1;grid-row:1;flex-wrap:nowrap;align-items:center}
+header .seg{margin-left:auto}
+.optbtn{display:none;position:relative;font-size:1.2rem;line-height:1;padding:5px 12px;font-weight:700}
+.optbtn.attn::after{content:"";position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+html.ingame:not(.wide) .optbtn{display:inline-block}
+.boardwrap{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+/* The board fits its area in both dimensions, keeping its proportions (--board-ar, set by the page), centred */
+.boardarea{flex:1 1 0;min-height:0;min-width:0;container-type:size;display:flex;align-items:center;justify-content:center}
+.board{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px;min-width:0;width:100%;height:100%}
+.board svg{display:block;width:100%;height:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+@supports (width:1cqh){.board{height:auto;width:min(100cqw,calc((100cqh - 2*var(--bp))*var(--board-ar) + 2*var(--bp)))}.board svg{height:auto;aspect-ratio:var(--board-ar)}}
+html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) 300px}
+.side > *{flex:none}
+/* Wide: the header spans both columns; below it the board and the side panel start at the same height. The panel's top
+   part (players' cards, then the action bar moved there by layoutMode) stays put; only .sidescroll below it scrolls. */
+html.ingame.wide header{grid-column:1/-1}
+html.ingame.wide .side{grid-column:2;grid-row:2;min-height:0;overflow:visible;padding:0}
+html.ingame.wide .boardarea{align-items:flex-start}
+.sidescroll{display:contents}
+html.ingame.wide .side > .sidescroll{display:flex;flex-direction:column;gap:12px;flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:3px;margin:0 -3px -3px}
+/* the action bar in the panel: message on its own lines, buttons wrapped full width, a fixed reserved height */
+html.ingame.wide .side .notice{height:var(--barW);flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px}
+html.ingame.wide .side .notice .btns{flex-wrap:wrap;justify-content:center}
+html.ingame.wide .side .notice .btns button{flex:1 1 auto}
+/* Phones: thin side gutters, no frame around the board, compact players' row */
+html.ingame:not(.wide) body{padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-top:max(6px,env(safe-area-inset-top,0px));padding-bottom:max(6px,var(--sab))}
+html.ingame:not(.wide) .wrap,html.ingame:not(.wide) .boardwrap{gap:6px}
+html.ingame:not(.wide) h1{font-size:1.45rem}
+html.ingame:not(.wide) .board{--bp:0px;padding:0;border:0;border-radius:0;background:none}
+html.ingame:not(.wide) .player{padding:4px 8px;border-radius:10px}
+html.ingame:not(.wide) .player .who{font-size:.9rem}
+html.ingame:not(.wide) .player .clock{font-size:1.15rem}
+/* The bottom sheet: at most 80% of the height, scrolls inside, grabber on top, dimmed backdrop */
+.sheetbg{position:fixed;inset:0;z-index:29;background:rgba(0,0,0,.42)}
+html.ingame:not(.wide) .side{position:fixed;z-index:30;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;max-height:80vh;max-height:80dvh;overflow:auto;overscroll-behavior:contain;
+  background:var(--bg);border-radius:16px 16px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.3);outline:none;
+  padding:8px max(12px,env(safe-area-inset-right,0px)) max(16px,var(--sab)) max(12px,env(safe-area-inset-left,0px));
+  transform:translateY(105%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+html.ingame.sheet:not(.wide) .side{transform:none;visibility:visible;transition:transform .22s ease}
+html.ingame:not(.wide) .side::before{content:"";flex:none;align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line);margin-bottom:2px}
+@media (prefers-reduced-motion:reduce){html.ingame .side{transition:none!important}}
+/* Action bar under the board: the only place for the move commands. Fixed height (the board does not jump when its
+   buttons change), message clamped to 2 lines; on narrow screens the message goes above the buttons. */
+.notice{height:var(--barH);flex:none;display:flex;align-items:center;justify-content:center;gap:4px 10px;padding:4px 10px;border-radius:10px;font-weight:500;font-size:.9rem;line-height:1.3;text-align:center;border:1px solid transparent;overflow:hidden;min-width:0}
+.notice .msg{min-width:0;max-width:100%;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.notice .btns{display:flex;gap:6px;flex:none;max-width:100%;min-width:0}
+.notice.on{background:var(--panel);border-color:var(--line)}
+.notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.notice button{padding:5px 10px;font-size:.85rem;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:560px){:root{--barH:86px}.notice.has-btns{flex-direction:column;gap:5px}}
+.players{display:flex;justify-content:space-between;gap:8px;flex:none}
+.players.side-only{flex-direction:column}
+.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
+.player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.player.active .who{color:var(--ink)}
+.player .clock{font-size:1.4rem;line-height:1.1}
+.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.side details.prominent summary{color:var(--ink);font-size:1rem}
+.side details.prominent .link input{font-size:.95rem;padding:9px 10px}
+.side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
+.side details > *:not(summary){margin-top:8px}
+.side details .link,.side details .hint{margin-top:6px}
+.navbar{flex:none}
+/* Landscape phones: compact header, narrower side panel, thinner frame round the board */
+@media (orientation:landscape) and (max-height:500px){
+  :root{--barH:48px}
+  body{padding-block:6px 12px}
+  html.ingame body{padding-top:max(6px,env(safe-area-inset-top,0px));padding-bottom:max(6px,var(--sab))}
+  .wrap,.view{gap:6px}
+  html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) 260px;gap:6px 10px}
+  .boardwrap{gap:6px}
+  h1{font-size:1.3rem}h1 a.crumb,h1 .sep{font-size:.85rem}
+  .seg button{padding:3px 8px}
+  .board{--bp:5px;padding:4px;border-radius:12px}
+  :root{--barW:100px}
+  .boardwrap .notice{flex-direction:row!important}}
+.status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
+.status.turn{border-color:var(--accent)}
+.status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.card h2{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
+.home button.big{padding:14px;font-size:1.05rem}
+.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.85rem;cursor:pointer}
+.linkish{color:var(--ink)}
+.picks{display:flex;flex-direction:column;gap:8px}
+.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
+.pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
+.joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
+.home .err:empty{display:none}
+.inv-only{display:none}
+#setup.invited .home > :not(#joinCard){display:none}
+#setup.invited .home > #joinErr:not(:empty){display:block}
+#setup.invited .inv-only{display:block}#setup.invited .noinv{display:none}
+.home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
+.home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
+.home details{padding:10px 14px}
+.home details .card{margin-top:10px}
+.lvl{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
+.lvl select{flex:1;min-width:0}
+.who{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
+.dot{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
+.dot.c0{background:var(--s0);border:1.5px solid var(--s0e)}
+.dot.c1{background:var(--s1);border:1.5px solid var(--s1e)}
+.hint{font-size:.8rem;color:var(--muted);margin:0}
+ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
+ol.log li span:last-child{overflow-wrap:anywhere}
+ol.log .n{color:var(--muted)}
+ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.navbar{display:flex;align-items:center;justify-content:center;gap:6px}
+.navbar button{min-width:44px;padding:6px 10px}
+.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+details summary{cursor:pointer;font-weight:600}
+details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
+details li{margin:.25em 0}
+.cell{cursor:pointer}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{opacity:.45}}}
+
+[hidden]{display:none!important}
+.view{display:flex;flex-direction:column;gap:16px}
+a{color:inherit}
+.form{display:flex;flex-direction:column;gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
+.form label.toggle{flex-direction:row;font-size:.9rem;color:var(--ink)}
+.clock{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.clock.run{color:var(--ink)}
+.clock.idle{color:var(--muted)}
+.clock.low{color:var(--danger)}
+.link{display:flex;gap:6px}
+.link input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.78rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.confirm{display:flex;gap:8px}
+.confirm button{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
+.empty{color:var(--muted);margin:0}
+.txt{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+#watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
+
+/* header breadcrumb: games / game name */
+h1 a.crumb{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;text-decoration:none}
+h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
+h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
+h1 a.gname{color:inherit;text-decoration:none}
+@media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
