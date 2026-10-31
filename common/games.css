@@ -58,7 +58,9 @@ html.ingame:not(.wide) body{padding-left:max(8px,env(safe-area-inset-left,0px));
 html.ingame:not(.wide) .wrap,html.ingame:not(.wide) .boardwrap{gap:6px}
 html.ingame:not(.wide) h1{font-size:1.45rem}
 /* a long game name stays on one line, shortened, so the language switch and ⋯ stay on screen */
-html.ingame header h1{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}html.ingame header .seg,html.ingame header .optbtn{flex-shrink:0}
+html.ingame header h1{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* small phones: « games / » becomes a single back arrow, so the game's name stays whole */
+@media (max-width:420px){html.ingame:not(.wide) h1{font-size:1.3rem}html.ingame h1 a.crumb{font-size:0}html.ingame h1 a.crumb::before{content:'‹';font-size:1.3rem;margin-right:.25em}html.ingame h1 .sep{display:none}}html.ingame header .seg,html.ingame header .optbtn{flex-shrink:0}
 html.ingame:not(.wide) .board{--bp:0px;padding:0;border:0;border-radius:0;background:none}
 html.ingame:not(.wide) .player{padding:4px 8px;border-radius:10px}
 html.ingame:not(.wide) .player .who{font-size:.9rem}

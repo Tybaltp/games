@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=3">
+<link rel="stylesheet" href="common/games.css?v=5">
 <style>
 /* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -36,6 +36,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 .player .tally span::before{content:attr(data-l) ' ';color:var(--muted)}
 /* full words when the card is wide enough, the abbreviations only on narrow cards */
 @container (max-width:190px){.player .tally span::before{content:attr(data-s) ' '}}
+@container (max-width:165px){.player .tally{flex-wrap:wrap;row-gap:0}}
 .player .tally span{color:var(--ink);font-weight:500}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 </style>
@@ -138,7 +139,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=3"></script>
+<script src="common/core.js?v=5"></script>
 <script>
 function VoloEngine(){
   // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
