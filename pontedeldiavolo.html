@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=1">
+<link rel="stylesheet" href="common/games.css?v=3">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
@@ -48,7 +48,11 @@ h1 em{font-style:italic;font-weight:500;color:var(--accent)}
 .dot.pq{background:none;border:1.5px dashed var(--muted)}
 .player .clock{font-family:var(--f-display);font-weight:700}
 .player .tally{display:flex;gap:8px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
-.player .tally span::before{content:attr(title) ' ';color:var(--muted);font-weight:400}
+.player{container-type:inline-size}
+.player .tally span::before{content:attr(data-l) ' ';color:var(--muted);font-weight:400}
+/* full words when the card is wide enough, the abbreviations only on narrow cards */
+@container (max-width:195px){.player .tally span::before{content:attr(data-s) ' '}}
+@container (min-width:165px){html[lang="fr"] .player .tally span::before{content:attr(data-l) ' '}}   /* full line measured: FR 154px, EN 185px */
 .player .tally span{font-weight:700;color:var(--ink)}
 ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);font-size:.74rem;line-height:1.3}
 .scale{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;font-variant-numeric:tabular-nums}
@@ -68,14 +72,20 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
         <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
@@ -139,6 +149,10 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
@@ -156,7 +170,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=1"></script>
+<script src="common/core.js?v=3"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
 /*ENGINE*/
@@ -256,9 +270,8 @@ function canPass(st,p){for(let c=0;c<NN;c++) if(canPlace(st,p,c)) return false; 
 // Ponte strings, merged over the shared ones (core.js)
 const PD_I18N={fr:{
  title:"Ponte del Diavolo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
- m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
- needConfirm:"Confirmer chaque coup avant l'envoi",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",
- pts:"pts",isl:"îles",brg:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
+ needConfirm:"Confirmer chaque coup avant l'envoi",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Finir",passEndS:"Passer",
+ pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
  lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
  st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
  pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",
@@ -277,9 +290,8 @@ const PD_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête quand c'est au tour d'un joueur déconnecté.</li></ul>`
 },en:{
  title:"Ponte del Diavolo",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
- m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
- needConfirm:"Confirm each move before sending",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",
- pts:"pts",isl:"isl.",brg:"br.",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
+ needConfirm:"Confirm each move before sending",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",
+ pts:"pts",isl:"isl.",brg:"br.",ptsL:"points",islL:"islands",brgL:"bridges",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
  lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",
  st_opening:"Place the two opening light tiles.",st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
  pend_pass:"Pass: Dark will play one last turn.",pend_passEnd:"Pass and end the game.",
@@ -359,7 +371,8 @@ function work(st){const w=cloneSt(st),p=mover(st);for(const x of ui.draft)w.cell
   if(ui.bridge){const e=findEdge(ui.bridge.a,ui.bridge.b);if(e&&canBridge(w,p,ui.bridge.a,e))applyBridge(w,ui.bridge.a,e,p);}return w;}
 const liveSt=()=>{if(!view||navAt!==null)return null;const r=replay(view,view.moves,view.result);
   return isMyTurn(r)&&(r.st.phase==='opening'||r.st.phase==='play')?r:null;};
-function onCell(i){const r=liveSt();if(!r)return;const st=r.st,op=st.phase==='opening',p=mover(st);
+function onCell(i){const r=liveSt();if(!r)return;
+  if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;renderGame();}const st=r.st,op=st.phase==='opening',p=mover(st);
   // a tile of the move being prepared (even at the confirm step): remove it and the tile placed after it
   // a tile placed this turn: only that one is taken back (the order of the two tiles doesn't matter);
   // the other stays if it is still placeable on its own
@@ -383,7 +396,7 @@ function onCell(i){const r=liveSt();if(!r)return;const st=r.st,op=st.phase==='op
 // A complete move: it waits for Confirm, or goes at once when « Confirmer chaque coup » is off
 function complete(){if($('needConfirm').checked)renderGame();else send(ui.pending);}
 // With a mouse, hovering shows the tile or the bridge a click would add
-function hoverCell(i){const r=liveSt();
+function hoverCell(i){const r=hintOn()?null:liveSt();
   if(!r||ui.pending){if(ui.hover>=0||ui.hoverOwn>=0){ui.hover=ui.hoverOwn=-1;if(view)renderGame();}return;}
   const w=work(r.st),p=mover(r.st);let ok=false;
   if(i>=0){if(ui.sel!==null){const e=findEdge(ui.sel,i);ok=!!(e&&canBridge(w,p,ui.sel,e));}
@@ -480,22 +493,306 @@ function drawBoard(real,last,a){
 
 // ---------- the board, the action bar and the panel (hooks) ----------
 function pdBoard({r,d,mine}){const live=navAt===null&&mine&&(r.st.phase==='opening'||r.st.phase==='play');
+  if(live&&hintOn()&&(hintMv.t==='t'||hintMv.t==='b')){const keep=ui;
+    ui={...newUi(),draft:hintMv.t==='t'?hintMv.cells.slice():[],bridge:hintMv.t==='b'?{a:hintMv.a,b:hintMv.b}:null,pending:hintMv};
+    try{drawBoard(d.st,d.last,{w:work(r.st),p:mover(r.st),opening:r.st.phase==='opening'});}finally{ui=keep;}return {};}
   drawBoard(d.st,d.last,live?{w:work(r.st),p:mover(r.st),opening:r.st.phase==='opening'}:null);return {};}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
-function pdTurnStatus({r,undoB,RST}){const st=r.st,p=mover(st);
-  if(st.phase==='pie'){status(t('st_pie'),'turn',[undoB,{label:t('takeLight'),primary:true,on:()=>send({t:'L'})},{label:t('playDark'),on:()=>send({t:'D'})}]);return;}
-  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?t('st_oneLeft'):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),primary:true,on:endOne}:null]);return;}
+function pdTurnStatus({r,idle,RST}){const st=r.st,p=mover(st);
+  if(st.phase==='pie'){status(t('st_pie'),'turn',[...idle,{label:t('takeLight'),short:t('takeLightS'),primary:true,on:()=>send({t:'L'})},{label:t('playDark'),short:t('playDarkS'),on:()=>send({t:'D'})}]);return;}
+  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?t('st_oneLeft'):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endOne}:null]);return;}
   const msg=st.phase==='opening'?t('st_opening'):st.finalTurn?t(solo()?'lg_lastTurn':'st_lastTurn'):solo()?t('st_turn',{n:seatName(st.turn)}):t('st_yourTurn');
   const canP=st.phase==='play'&&canPass(st,p);
-  status(msg,'turn',[undoB,canP?{label:t(p===2||st.finalTurn?'passEnd':'pass'),on:doPass}:null]);}
+  status(msg,'turn',[...idle,canP?{label:t(p===2||st.finalTurn?'passEnd':'pass'),short:p===2||st.finalTurn?t('passEndS'):undefined,on:doPass}:null]);}
 // A pass awaiting confirmation says what it does
 const pdPendText=(mv,st)=>mv.t==='x'?[t(st.toMove===2||st.finalTurn?'pend_passEnd':'pend_pass'),t('confirmMv')]:[t('pend_mv',{m:describe(mv)}),t('confirmMv')];
 // Players' cards: the colour played (unknown for seat 1 until the choice), points, islands and bridges
 function pdCard(el,p,d){const st=d.st,col=colorOf(st,p),dot=el.querySelector('.dot');if(dot)dot.className='dot '+(col===1?'pl':col===2?'pd':'pq');
   const sc=col?score(st,col):{pts:0,islands:0,bridges:0},ty=document.createElement('div');ty.className='tally';
-  ty.innerHTML=`<span title="${t('pts')}">${sc.pts}</span><span title="${t('isl')}">${sc.islands}</span><span title="${t('brg')}">${sc.bridges}</span>`;el.appendChild(ty);}
+  const lb=k=>`title="${t(k+'L')}" data-l="${t(k+'L')}" data-s="${t(k)}"`;
+  ty.innerHTML=`<span ${lb('pts')}>${sc.pts}</span><span ${lb('isl')}>${sc.islands}</span><span ${lb('brg')}>${sc.bridges}</span>`;el.appendChild(ty);}
 const pdLogText=e=>(e.col?NAME(e.col)+' — ':'')+describe(e.m);
 const pdLogDesc=e=>e.notes.map(x=>x.k==='lg_forced'?t('lg_forced',{c:NAME(x.c)}):t(x.k)).join(' ');
+
+// ---------- computer opponent ----------
+/*AI*/
+// ===== Game-tree search, independent of the game (it could move to a shared file) =====
+// G, the game's side: moves(S,w) the candidate moves, best first, [{m,s}] (s: evaluation for the side to move in S, after m;
+// w: how wide to look) · play(S,m) a new state · turn(S) side to move · done(S) · result(S,p) a finished game for side p
+// (> 0 won, < 0 lost, 0 drawn; ±1000 plus the margin) · eval(S,p) · playout(S,opt) plays the state S to its end (or
+// opt.cut turns) in place · scratch(S) a reusable copy of S for a playout.
+// Searches (S, C = G.moves(S,…), opt) → {m,s,depth}: greedy (1 ply, softmax), beam (iterative-deepening alpha-beta on the
+// best candidates of each ply), mcts (UCT with progressive widening, playouts to the end or cut then evaluated).
+function AISearch(G){
+'use strict';
+const now=()=>typeof performance!=='undefined'&&performance.now?performance.now():Date.now();
+let deadline=Infinity,nodes=0;class Stop{}
+const start=ms=>{deadline=now()+(ms||1e9);nodes=0;};
+// the value of S for the side to move, reading d more plies; widths[ply] moves kept at each ply
+function nega(S,d,al,be,o,ply){const me=G.turn(S);if(G.done(S))return G.result(S,me);
+  if(now()>deadline)throw new Stop();nodes++;
+  const C=G.moves(S,o.cellsIn||o.cells);if(!C.length)return G.eval(S,me);
+  if(d<=1)return C[0].s;
+  const w=o.widths[Math.min(ply,o.widths.length-1)];let best=-1e9;
+  for(let i=0;i<Math.min(w,C.length);i++){const v=child(G.play(S,C[i].m),me,d-1,al,be,o,ply+1);
+    if(v>best)best=v;if(v>al)al=v;if(al>=be)break;}
+  return best;}
+// a child's value for `me` (the same side may move twice in a row)
+function child(T,me,d,al,be,o,ply){return G.done(T)?G.result(T,me):G.turn(T)===me?nega(T,d,al,be,o,ply):-nega(T,d,-be,-al,o,ply);}
+function beam(S,C,o){const me=G.turn(S),res={m:C[0].m,s:C[0].s,depth:1};let R=C.slice(0,o.widths[0]).map(x=>({m:x.m,s:x.s}));
+  for(let d=2;d<=o.depth;d++){const vals=[];let al=-1e9;
+    try{for(const x of R){const v=child(G.play(S,x.m),me,d-1,al,1e9,o,1);vals.push({m:x.m,s:v});if(v>al)al=v;}}
+    catch(e){if(e instanceof Stop)break;throw e;}
+    vals.sort((a,b)=>b.s-a.s);R=vals;res.m=R[0].m;res.s=R[0].s;res.depth=d;}
+  // noise: one of the moves within `noise` of the best, at random
+  if(o.noise){const ok=R.filter(x=>x.s>=res.s-o.noise);const x=ok[(Math.random()*ok.length)|0];if(x)res.m=x.m;}
+  return res;}
+function greedy(S,C,o){const top=C.slice(0,o.pick||C.length),b=top[0].s,T=o.temp||1e-9;let tot=0;const w=top.map(x=>{const v=Math.exp((x.s-b)/T);tot+=v;return v;});
+  let r=Math.random()*tot;for(let i=0;i<top.length;i++){r-=w[i];if(r<=0)return {m:top[i].m,s:top[i].s,depth:1};}return {m:top[0].m,s:top[0].s,depth:1};}
+function mcts(S,C0,o){const me=G.turn(S),root={S,C:C0,ch:[],n:0,w:0},cap=deadline;
+  const pw=k=>Math.max(1,Math.ceil((o.pwC||2)*Math.pow(k+1,o.pwA||.5)));
+  const cx=o.c===undefined?.7:o.c,scale=o.scale||3;let sims=0;
+  for(;sims<(o.sims||2000);sims++){if((sims&15)===0&&now()>cap)break;
+    let node=root;const path=[root];
+    while(!G.done(node.S)){
+      if(!node.C)node.C=G.moves(node.S,o.cellsIn||8);
+      if(node.ch.length<Math.min(node.C.length,pw(node.n))){const x=node.C[node.ch.length],ch={S:G.play(node.S,x.m),C:null,ch:[],n:0,w:0,m:x.m};
+        node.ch.push(ch);path.push(ch);node=ch;break;}
+      if(!node.ch.length)break;
+      const mine=G.turn(node.S)===me,ln=Math.log(node.n+1);let best=null,bv=-1e9;
+      for(const ch of node.ch){const q=ch.n?(mine?ch.w/ch.n:1-ch.w/ch.n):.5,v=q+cx*Math.sqrt(ln/(ch.n+1));if(v>bv){bv=v;best=ch;}}
+      node=best;path.push(node);}
+    // playout, scored for me in [0,1] (a win counts 0.9 to 1 with the margin)
+    const P=G.scratch(node.S);if(!G.done(P))G.playout(P,o);let v;
+    if(G.done(P)){const f=G.result(P,me);v=f>0?.9+Math.min(.1,(f-1000)/50):f<0?.1-Math.min(.1,(-1000-f)/50):.5;}
+    else v=1/(1+Math.exp(-G.eval(P,me)/scale));
+    for(const x of path){x.n++;x.w+=v;}}
+  nodes=sims;
+  // the move: the most visited, or drawn by visits^(1/temp)
+  const ch=root.ch.slice().sort((a,b)=>b.n-a.n);let pick=ch[0];
+  if(o.temp){const ws=ch.map(x=>Math.pow(x.n,1/o.temp));let r=Math.random()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<ch.length;i++){r-=ws[i];if(r<=0){pick=ch[i];break;}}}
+  const q=pick.n?pick.w/pick.n:.5;
+  return {m:pick.m,s:Math.log(Math.max(1e-3,q)/Math.max(1e-3,1-q))*scale,depth:Math.round(Math.log2(sims+1))};}
+return {start,greedy,beam,mcts,nodes:()=>nodes};
+}
+function PonteAI(){
+'use strict';
+// ----- a fast copy of the rules on flat typed arrays (same results as the page's engine) -----
+const N=10,NN=100,RW=i=>(i/N)|0,CL=i=>i%N,inb=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+const NB4=[],NB8=[];
+for(let i=0;i<NN;i++){const r=RW(i),c=CL(i),a=[],b=[];
+  for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]])if(inb(r+dr,c+dc))a.push((r+dr)*N+c+dc);
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if((dr||dc)&&inb(r+dr,c+dc))b.push((r+dr)*N+c+dc);
+  NB4.push(Int8Array.from(a));NB8.push(Int8Array.from(b));}
+// bridge edges (a<b), the water squares they span (EC0, EC1 or -1), the edges each one crosses, the edges at each square
+const EA=[],EB=[],EC0=[],EC1=[],EAT=[],EID=new Int16Array(NN*NN).fill(-1);for(let i=0;i<NN;i++)EAT.push([]);
+for(let i=0;i<NN;i++){const r=RW(i),c=CL(i);
+  for(const [dr,dc] of [[0,2],[2,0],[2,2],[2,-2],[1,2],[2,1],[1,-2],[2,-1]]){if(!inb(r+dr,c+dc))continue;
+    const ar=Math.abs(dr),ac=Math.abs(dc),sr=Math.sign(dr),sc=Math.sign(dc);let cov;
+    if(ar===1&&ac===2)cov=[[r,c+sc],[r+dr,c+sc]];else if(ar===2&&ac===1)cov=[[r+sr,c],[r+sr,c+dc]];else cov=[[r+sr,c+sc]];
+    const e=EA.length,b=(r+dr)*N+c+dc;EA.push(i);EB.push(b);EC0.push(cov[0][0]*N+cov[0][1]);EC1.push(cov[1]?cov[1][0]*N+cov[1][1]:-1);
+    EAT[i].push(e);EAT[b].push(e);EID[i*NN+b]=EID[b*NN+i]=e;}}
+const NE=EA.length;
+const orient=(ax,ay,bx,by,cx,cy)=>{const v=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax);return v>0?1:v<0?-1:0;};
+function crosses(a,b,c,d){const ax=RW(a),ay=CL(a),bx=RW(b),by=CL(b),cx=RW(c),cy=CL(c),dx=RW(d),dy=CL(d);
+  return orient(ax,ay,bx,by,cx,cy)*orient(ax,ay,bx,by,dx,dy)<0&&orient(cx,cy,dx,dy,ax,ay)*orient(cx,cy,dx,dy,bx,by)<0;}
+const XS=[];for(let e=0;e<NE;e++){const l=[];for(let f=0;f<NE;f++)if(f!==e&&Math.abs(RW(EA[e])-RW(EA[f]))<3&&Math.abs(CL(EA[e])-CL(EA[f]))<5&&crosses(EA[e],EB[e],EA[f],EB[f]))l.push(f);XS.push(Int16Array.from(l));}
+EAT.forEach((l,i)=>EAT[i]=Int16Array.from(l));
+// every placement of a tetromino (TC: its 4 squares), the squares around it (TR), the placements through each square (TBY)
+const TC=[],TR=[],TBY=[];for(let i=0;i<NN;i++)TBY.push([]);
+{const seen=new Set();const ext=s=>{if(s.length===4){const t=s.slice().sort((x,y)=>x-y),k=t.join(',');if(!seen.has(k)){seen.add(k);TC.push(Int8Array.from(t));}return;}
+    for(const x of s)for(const n of NB4[x])if(!s.includes(n)){s.push(n);ext(s);s.pop();}};
+  for(let i=0;i<NN;i++)ext([i]);
+  TC.forEach((t,k)=>{const r=new Set();for(const x of t)for(const n of NB8[x])if(!t.includes(n))r.add(n);TR.push(Int8Array.from([...r]));for(const x of t)TBY[x].push(k);});
+  TBY.forEach((l,i)=>TBY[i]=Int16Array.from(l));}
+
+// state: c squares (0 water, 1 light, 2 dark), cv under a bridge, bd carries a bridge, xb crossings blocking each edge,
+// be/bo/nb the bridges (edge, owner), ph 0 opening · 1 colour choice · 2 play · 3 over, tm colour to move, ft Dark's last turn
+function blank(){return {c:new Int8Array(NN),cv:new Uint8Array(NN),bd:new Uint8Array(NN),xb:new Uint8Array(NE),be:new Int16Array(64),bo:new Int8Array(64),nb:0,ph:2,tm:2,ft:0,ca:0};}
+function copy(S){return {c:S.c.slice(),cv:S.cv.slice(),bd:S.bd.slice(),xb:S.xb.slice(),be:S.be.slice(),bo:S.bo.slice(),nb:S.nb,ph:S.ph,tm:S.tm,ft:S.ft,ca:S.ca};}
+function copyInto(D,S){D.c.set(S.c);D.cv.set(S.cv);D.bd.set(S.bd);D.xb.set(S.xb);D.be.set(S.be);D.bo.set(S.bo);D.nb=S.nb;D.ph=S.ph;D.tm=S.tm;D.ft=S.ft;D.ca=S.ca;return D;}
+const MK=new Int32Array(NN),Q=new Int8Array(NN+4),CAND=new Int8Array(8);let stp=0;
+function grp(cl,c,p){stp++;let n=1;Q[0]=c;MK[c]=stp;
+  for(let k=0;k<n;k++){const nb=NB4[Q[k]];for(let j=0;j<nb.length;j++){const x=nb[j];if(MK[x]!==stp&&cl[x]===p){MK[x]=stp;Q[n++]=x;if(n>4)return n;}}}return n;}
+function canP(S,p,c){const cl=S.c;if(cl[c]||S.cv[c])return false;cl[c]=p;let ok=true;const n=grp(cl,c,p);
+  if(n>4)ok=false;
+  else if(n===4){const s=stp;out:for(let k=0;k<4;k++){const nb=NB8[Q[k]];for(let j=0;j<nb.length;j++){const x=nb[j];if(cl[x]===p&&MK[x]!==s){ok=false;break out;}}}}
+  else{const s=stp,nb=NB8[c];let m=0;for(let j=0;j<nb.length;j++){const x=nb[j];if(cl[x]===p&&MK[x]!==s)CAND[m++]=x;}
+    for(let k=0;k<m;k++)if(grp(cl,CAND[k],p)===4){ok=false;break;}}
+  cl[c]=0;return ok;}
+function anyCell(S,p){for(let c=0;c<NN;c++)if(canP(S,p,c))return true;return false;}
+function cellsOf(S,p){const L=[];for(let c=0;c<NN;c++)if(canP(S,p,c))L.push(c);return L;}
+function canB(S,p,e){const a=EA[e],b=EB[e],cl=S.c;if(cl[a]!==p||cl[b]!==p||S.bd[a]||S.bd[b]||S.xb[e])return false;
+  const x=EC0[e];if(cl[x]||S.cv[x])return false;const y=EC1[e];if(y>=0&&(cl[y]||S.cv[y]))return false;return true;}
+function bridgesOf(S,p){const L=[],cl=S.c;for(let a=0;a<NN;a++){if(cl[a]!==p||S.bd[a])continue;const es=EAT[a];for(let j=0;j<es.length;j++){const e=es[j];if(EA[e]===a&&canB(S,p,e))L.push(e);}}return L;}
+function anyBridge(S,p){const cl=S.c;for(let a=0;a<NN;a++){if(cl[a]!==p||S.bd[a])continue;const es=EAT[a];for(let j=0;j<es.length;j++){const e=es[j];if(EA[e]===a&&canB(S,p,e))return true;}}return false;}
+function addB(S,e,p){S.bd[EA[e]]=1;S.bd[EB[e]]=1;S.cv[EC0[e]]=1;if(EC1[e]>=0)S.cv[EC1[e]]=1;const x=XS[e];for(let j=0;j<x.length;j++)S.xb[x[j]]++;S.be[S.nb]=e;S.bo[S.nb]=p;S.nb++;}
+function passOn(S){if(S.tm===2||S.ft){S.ph=3;return;}S.ft=1;S.tm=2;}
+// moves: {k:0,a,b} tiles (b -1: a single tile) · {k:1,e} bridge · {k:2} pass · {k:3,L} colour choice (L: take Light)
+function play(S,m){
+  if(S.ph===0){S.c[m.a]=1;S.c[m.b]=1;S.ph=1;return S;}
+  if(S.ph===1){S.ca=m.L?2:1;S.ph=2;S.tm=2;return S;}
+  const p=S.tm;
+  if(m.k===0){S.c[m.a]=p;if(m.b>=0)S.c[m.b]=p;}else if(m.k===1)addB(S,m.e,p);else passOn(S);
+  if(m.k!==2){if(S.ft)S.ph=3;else S.tm=3-p;}
+  while(S.ph===2&&!anyCell(S,S.tm)&&!anyBridge(S,S.tm))passOn(S);
+  return S;}
+// final score of colour p: points, islands, bridges
+const GID=new Int16Array(NN),PAR=new Int16Array(NN),GLEN=new Int8Array(NN),GST=new Int8Array(NN),GFL=new Int8Array(NN);
+const fnd=x=>{while(PAR[x]!==x){PAR[x]=PAR[PAR[x]];x=PAR[x];}return x;};
+function label(cl,p){let ng=0,f=0;GID.fill(-1);
+  for(let c=0;c<NN;c++)if(cl[c]===p&&GID[c]<0){GST[ng]=f;GFL[f++]=c;GID[c]=ng;let k=GST[ng];
+    for(;k<f;k++){const nb=NB4[GFL[k]];for(let j=0;j<nb.length;j++){const x=nb[j];if(cl[x]===p&&GID[x]<0){GID[x]=ng;GFL[f++]=x;}}}
+    GLEN[ng]=f-GST[ng];PAR[ng]=ng;ng++;}
+  return ng;}
+const CNT=new Int16Array(NN);
+function score(S,p){const ng=label(S.c,p);let nb=0;
+  for(let k=0;k<S.nb;k++)if(S.bo[k]===p){nb++;const a=fnd(GID[EA[S.be[k]]]),b=fnd(GID[EB[S.be[k]]]);if(a!==b)PAR[a]=b;}
+  CNT.fill(0,0,ng);let isl=0;for(let g=0;g<ng;g++)if(GLEN[g]===4){isl++;CNT[fnd(g)]++;}
+  let pts=0;for(let g=0;g<ng;g++)pts+=CNT[g]*(CNT[g]+1)/2;return {pts,isl,nb};}
+// the result of a finished game for colour p: win > 0, loss < 0 (1000 + the margin), draw 0
+function final(S,p){const a=score(S,p),b=score(S,3-p),d=a.pts!==b.pts?a.pts-b.pts:a.isl!==b.isl?(a.isl-b.isl)/10:(a.nb-b.nb)/100;
+  return d>0?1000+d:d<0?-1000+d:0;}
+
+// ----- evaluation: what colour p can expect at the end, minus the same for the opponent -----
+// A sandbank (1–3 tiles) counts as an island with a chance P of being completed: 0 if no tetromino through it can still be
+// laid (its squares free, nothing of its colour around), lower when the opponent moves next and can kill every way with
+// one or two tiles. Islands linked by bridges score as a network; a bridge still possible between two networks adds a part
+// of what joining them is worth.
+const W8=new Float64Array(NN),OPT=new Int16Array(200),CN2=new Int16Array(NN),TOUCH=new Int8Array(NN),PSEEN=new Int32Array(64*64);let pst=0;
+let EV={m1:.95,m2:.9,m3:.6,k1:.3,k2:.5,k3:.4,f1:.85,f2:.75,f3:.5,q:.5};
+function side(S,p,mover){const cl=S.c,cv=S.cv,ng=label(cl,p),last=S.ft&&S.ph===2;
+  let isl=0;
+  for(let g=0;g<ng;g++){const s=GLEN[g];if(s===4){W8[g]=1;isl++;continue;}
+    // the ways to finish it, and whether the opponent can kill them all with one or two tiles
+    if((last&&p!==2)||(last&&s===1)){W8[g]=0;continue;}
+    const c0=GFL[GST[g]],ts=TBY[c0];let n=0,nt=0;
+    for(let j=0;j<ts.length;j++){const k=ts[j],T=TC[k];let ok=true,in_=0;
+      for(let i=0;i<4;i++){const y=T[i];if(GID[y]===g)in_++;else if(cl[y]||cv[y]){ok=false;break;}}
+      if(!ok||in_!==s)continue;const R=TR[k];for(let i=0;i<R.length;i++)if(cl[R[i]]===p){ok=false;break;}
+      if(!ok)continue;OPT[n++]=k;for(let i=0;i<4;i++){const y=T[i];if(GID[y]!==g){if(!CNT[y]&&!CN2[y]){TOUCH[nt++]=y;}CNT[y]++;}}}
+    let P=0;
+    if(n){const m=4-s;
+      if(mover===p)P=m===1?EV.m1:m===2?EV.m2:last?0:EV.m3;
+      else{let best=-1,bc=0;for(let i=0;i<nt;i++){const y=TOUCH[i];if(CNT[y]>bc){bc=CNT[y];best=y;}}
+        if(bc===n)P=m===1?EV.k1:EV.k2*.8;   // one tile kills it
+        else{let r=0;for(let i=0;i<n;i++){const T=TC[OPT[i]];if(T[0]!==best&&T[1]!==best&&T[2]!==best&&T[3]!==best){r++;for(let q=0;q<4;q++)CN2[T[q]]++;}}
+          let h2=false;for(let i=0;i<nt;i++)if(CN2[TOUCH[i]]===r){h2=true;break;}
+          P=h2?(m===3?EV.k3:EV.k2):(m===1?EV.f1:m===2?EV.f2:EV.f3);
+          for(let i=0;i<n;i++){const T=TC[OPT[i]];for(let q=0;q<4;q++)CN2[T[q]]=0;}}}}
+    for(let i=0;i<nt;i++){CNT[TOUCH[i]]=0;CN2[TOUCH[i]]=0;}
+    W8[g]=P;}
+  // networks
+  let nb=0;for(let k=0;k<S.nb;k++)if(S.bo[k]===p){nb++;const a=fnd(GID[EA[S.be[k]]]),b=fnd(GID[EB[S.be[k]]]);if(a!==b)PAR[a]=b;}
+  const WC=CNW;WC.fill(0,0,ng);for(let g=0;g<ng;g++)WC[fnd(g)]+=W8[g];
+  let v=0;for(let g=0;g<ng;g++)if(PAR[g]===g)v+=WC[g]*(WC[g]+1)/2;
+  // bridges still possible between two networks (one per pair); none once the game is in its last turn for the other side
+  if(!(last&&p!==2)&&S.ph===2){pst++;let bonus=0;
+    for(let a=0;a<NN;a++){if(cl[a]!==p||S.bd[a])continue;const es=EAT[a];
+      for(let j=0;j<es.length;j++){const e=es[j];if(EA[e]!==a)continue;const b=EB[e];if(cl[b]!==p||S.bd[b])continue;
+        const ra=fnd(GID[a]),rb=fnd(GID[b]);if(ra===rb||!canB(S,p,e))continue;const key=ra<rb?ra*64+rb:rb*64+ra;if(PSEEN[key]===pst)continue;PSEEN[key]=pst;
+        bonus+=WC[ra]*WC[rb];}}
+    v+=bonus*(mover===p?EV.q*1.4:EV.q);}
+  return v+isl*.05+nb*.01;}
+const CNW=new Float64Array(NN);
+function evalS(S,p){if(S.ph===3)return final(S,p);const mv=S.tm;return side(S,p,mv)-side(S,3-p,mv);}
+
+// ----- candidate moves -----
+// Single squares are scored first (the position after that tile, the opponent to move); only the best `width` are paired.
+// All legal bridges are added, and the pass when it is allowed. Each move gets the evaluation of the position after it.
+const TMP=blank();
+function gen(S,width){const p=S.tm,out=[];
+  if(S.ph===1){for(const L of [true,false]){const T=play(copy(S),{k:3,L});out.push({m:{k:3,L},s:evalS(T,L?1:2)});}return out;}
+  const cells=cellsOf(S,S.ph===0?1:p),sc=[];
+  if(S.ph===0){// opening: placed by seat 0, judged later
+    for(const c of cells)sc.push(c);return {cells:sc};}
+  const q=3-p;
+  for(const c of cells){S.c[c]=p;S.tm=q;sc.push({c,s:evalS(S,p)});S.c[c]=0;S.tm=p;}
+  sc.sort((x,y)=>y.s-x.s);const top=sc.slice(0,width);
+  const T=TMP;
+  // pairs (each once; a then b, or b then a when only that order is legal); a single tile when nothing can follow it
+  for(let i=0;i<top.length;i++){const a=top[i].c;S.c[a]=p;let lone=true;
+    for(let c=0;c<NN;c++)if(canP(S,p,c)){lone=false;break;}
+    if(lone){copyInto(T,S);S.c[a]=0;const m={k:0,a,b:-1};play(T,m);out.push({m,s:evalS(T,p)});continue;}
+    for(let j=i+1;j<top.length;j++){const b=top[j].c;let m=null;
+      if(canP(S,p,b))m={k:0,a,b};else{S.c[a]=0;S.c[b]=p;if(canP(S,p,a))m={k:0,a:b,b:a};S.c[b]=0;S.c[a]=p;}
+      if(!m)continue;copyInto(T,S);T.c[a]=0;play(T,m);out.push({m,s:evalS(T,p)});}
+    S.c[a]=0;}
+  for(const e of bridgesOf(S,p)){copyInto(T,S);const m={k:1,e};play(T,m);out.push({m,s:evalS(T,p)});}
+  if(!cells.length){copyInto(T,S);const m={k:2};play(T,m);out.push({m,s:evalS(T,p)});}
+  out.sort((x,y)=>y.s-x.s);return out;}
+// ----- opening and colour choice -----
+// BIAS: how much the evaluation favours Light after the opening, Dark to move, when the game is even (from self-play)
+let BIAS=1;
+function pieValue(S){const T=copy(S);T.ca=1;T.ph=2;T.tm=2;return evalS(T,1);}   // for Light, Dark to move
+function opening(S,opt){const cells=cellsOf(S,1),cand=[];
+  for(let k=0;k<(opt.openTries||60);k++){const a=cells[(Math.random()*cells.length)|0];S.c[a]=1;const L=cellsOf(S,1);S.c[a]=0;if(!L.length)continue;const b=L[(Math.random()*L.length)|0];
+    const T=copy(S);T.c[a]=1;T.c[b]=1;T.ca=1;T.ph=2;T.tm=2;cand.push({a,b,v:evalS(T,1)});}
+  cand.sort((x,y)=>Math.abs(x.v-BIAS)-Math.abs(y.v-BIAS));const x=cand[(Math.random()*Math.min(5,cand.length))|0];
+  return {m:{k:0,a:x.a,b:x.b},s:0,depth:0};}
+function pie(S,opt){const v=pieValue(S)-BIAS;return {m:{k:3,L:v>0},s:Math.abs(v),depth:1};}
+
+// ----- the page's position (aiPos) and moves -----
+function fromPos(P){const S=blank();for(let i=0;i<NN;i++)S.c[i]=P.cells[i];for(const [a,b,o] of P.bridges)addB(S,EID[a*NN+b],o);
+  S.ph={opening:0,pie:1,play:2,over:3}[P.phase];S.tm=P.toMove;S.ft=P.finalTurn?1:0;S.ca=P.colorA||0;return S;}
+function toMove(m){return m.k===0?{t:'t',cells:m.b>=0?[m.a,m.b]:[m.a]}:m.k===1?{t:'b',a:EA[m.e],b:EB[m.e]}:m.k===2?{t:'x'}:{t:m.L?'L':'D'};}
+// the searches, on Ponte's interface
+const PS=blank();
+const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>S.tm,done:S=>S.ph===3,result:final,eval:evalS,
+  playout:(S,o)=>playout(S,o,o.cut||0),scratch:S=>copyInto(PS,S)});
+function search(P,opt){const S=fromPos(P);let r;
+  if(S.ph===3)return null;
+  if(S.ph===0)r=opening(S,opt);else if(S.ph===1)r=pie(S,opt);
+  else{K.start(opt.time);const C=gen(S,opt.cells||20);if(!C.length)return {move:{t:'x'},score:0,depth:0,forced:true};
+    if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
+    else r=K[opt.algo](S,C,opt);}
+  return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:K.nodes()};}
+// ----- MCTS: UCT over the candidate moves (progressive widening in their order), fast guided playouts -----
+// A playout turn: a bridge between two different groups when one touches an island (share opt.brP of the turns that have
+// one), otherwise two tiles; each tile is random with probability opt.rand, else the best of a few random legal squares
+// (completes an island > grows a sandbank > blocks an opposing sandbank of 3 > next to own tiles).
+function pickCell(S,p,rand){const cl=S.c,cv=S.cv;let best=-1,bs=-1,seen=0;
+  for(let t=0;t<40&&seen<(Math.random()<rand?1:6);t++){const c=(Math.random()*NN)|0;if(cl[c]||cv[c]||!canP(S,p,c))continue;seen++;
+    let s=Math.random()*.5;if(seen>1||rand<1){cl[c]=p;const n=grp(cl,c,p);cl[c]=0;if(n===4)s+=4;else if(n>1)s+=1.5;
+      const nb=NB4[c];for(let j=0;j<nb.length;j++){const x=nb[j];if(cl[x]===3-p&&grp(cl,x,3-p)===3)s+=1.2;}
+      const n8=NB8[c];for(let j=0;j<n8.length;j++)if(cl[n8[j]]===p){s+=.3;break;}}
+    if(s>bs){bs=s;best=c;}}
+  if(best>=0)return best;
+  for(let c=0;c<NN;c++)if(canP(S,p,c))return c;return -1;}
+function usefulBridge(S,p){const L=bridgesOf(S,p);if(!L.length)return -1;const cl=S.c;let k=(Math.random()*L.length)|0;
+  for(let t=0;t<L.length;t++){const e=L[(k+t)%L.length],na=grp(cl,EA[e],p);if(MK[EB[e]]===stp)continue;const nb=grp(cl,EB[e],p);if(na===4||nb===4)return e;}
+  return L[k];}
+function playout(S,opt,maxT){let t=0;
+  while(S.ph===2&&(!maxT||t<maxT)){t++;const p=S.tm;
+    if(Math.random()<opt.brP){const e=usefulBridge(S,p);if(e>=0){const a=grp(S.c,EA[e],p);if(MK[EB[e]]!==stp){addB(S,e,p);endTurn(S,p);continue;}}}
+    const a=pickCell(S,p,opt.rand);
+    if(a<0){const e=usefulBridge(S,p);if(e>=0)addB(S,e,p);else{passOn(S);fpass(S);continue;}endTurn(S,p);continue;}
+    S.c[a]=p;const b=pickCell(S,p,opt.rand);if(b>=0)S.c[b]=p;endTurn(S,p);}
+  return t;}
+function endTurn(S,p){if(S.ft)S.ph=3;else S.tm=3-p;fpass(S);}
+function fpass(S){while(S.ph===2&&!anyCell(S,S.tm)&&!anyBridge(S,S.tm))passOn(S);}
+return {search,fromPos,gen,play,copy,evalS,final,score,canP,canB,cellsOf,bridgesOf,toMove,EA,EB,EID,NE,blank,setEV:o=>{EV={...EV,...o};},setBias:b=>{BIAS=b;},EV:()=>EV,K};
+}
+/*AIEND*/
+// Levels: plain parameters for PonteAI().search (tune or add levels here). algo: 'greedy' one ply, a softmax over the best
+// moves · 'beam' iterative-deepening alpha-beta on the best candidates · 'mcts' (see AISearch). Common: cells, the single
+// squares paired into two-tile candidates; time, the budget (ms). greedy: pick, moves drawn from · temp, softmax
+// temperature (points of evaluation). beam: depth, plies read at most · widths, candidates kept at each ply ·
+// cellsIn, squares paired below the root · noise, a move within this many points of the best, at random. mcts: sims,
+// playouts (time is only a cap) · rand, share of random tiles in playouts (others: the best of a few) · brP, share of
+// playout turns that build a bridge when one is useful · temp, final choice by visits^(1/temp) (0: most visited) ·
+// pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · c, UCT exploration · cut, playout turns before
+// evaluating (0: to the end) · scale, evaluation points per logit.
+const LEVELS={
+  debutant:{algo:'greedy',cells:12,pick:8,temp:.6},
+  moyen:{algo:'beam',depth:2,cells:16,widths:[10,10],time:1000},
+  fort:{algo:'beam',depth:4,cells:20,widths:[12,8,6,5],time:2500}};
+const HINT=LEVELS.fort;
+const aiPos=st=>({cells:Array.from(st.cells),bridges:st.bridges.map(B=>[Math.min(B.a,B.b),Math.max(B.a,B.b),B.o]),phase:st.phase,toMove:st.toMove,finalTurn:st.finalTurn,colorA:st.colorA});
+let pageAI=null;   // the search on the page itself, when no worker can be made
+// The computer's opinion: none for the opening and the colour choice; the score is in points of evaluation
+function pdEvalInfo(r,st){if(st.phase!=='play')return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
+  return {k:Math.abs(s)<1?'ai_eq':s>0?(s>4?'ai_much':'ai_better'):(s<-4?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
 $('needConfirm').checked=LS.get('pdd-confirmEach',true)!==false;
@@ -507,7 +804,10 @@ const GAME={id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
   enc:m=>{resetUi();return enc(m);},   // called by the shared send(): the move leaves, the preparation is dropped
   describe,newUi,preparing,cancel:cancelPrep,
   board:pdBoard,turnStatus:pdTurnStatus,pendText:pdPendText,
-  hintable:()=>false,   // no computer opponent, so no hint
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc:()=>AISearch.toString()+'\n'+PonteAI.toString()+'\nconst PA=PonteAI();function aiSearch(pos,opt){return PA.search(pos,opt);}',
+  aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PonteAI()).search(aiPos(st),opt),
+  evalInfo:pdEvalInfo,
   playerCard:pdCard,logText:pdLogText,logDesc:pdLogDesc,
   applyStatic:()=>{$('ttl').innerHTML='Ponte <em>del</em> Diavolo';},
   home:()=>drawBoard(initSt(),null,null)};
