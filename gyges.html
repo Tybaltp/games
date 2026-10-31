@@ -980,7 +980,8 @@ function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (rese
     if(x===activeSpot())rewindTo(x);else renderGame();return;}
   const hits=o.ends.get(x)||[];
   if(hits.length){
-    const fin=hits.find(e=>e.done);if(fin){choose({t:'m',s:ui.sel,path:fin.path,rep:-1});return;}
+    // reaching the goal wins at once: no confirmation
+    const fin=hits.find(e=>e.done);if(fin){const mv={t:'m',s:ui.sel,path:fin.path,rep:-1};if(x===G){send(mv);return;}choose(mv);return;}
     ui.hist.push(hits.map(e=>e.path));ui.marks.push(x);ui.path=hits[0].path;ui.landOk=false;renderGame();return;}
   // the active piece (the last one bounced on, else the start) is the only one that takes the move back, one step
   if(x===activeSpot()){if(!ui.marks.length)cancelSel();else rewindTo(x);return;}
@@ -990,8 +991,8 @@ function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (rese
 const activeSpot=()=>ui.marks.length?ui.marks[ui.marks.length-1]:ui.sel;
 // Clicking the active piece takes the move back one step: the piece reached last is left (back to the step before);
 // once a choice was made on it (bounce on, or replace it), back to the arrival on it.
-// Rings of the move being prepared: the active piece in full, the start (when the move has gone on) faint and dashed
-function seqRings(ov){const a=activeSpot();if(a!==ui.sel)ring(ov,X(ui.sel),Y(ui.sel),PR+4,{'stroke-width':1.6,'stroke-dasharray':'3 4',opacity:.65});ring(ov,X(a),Y(a),PR+4,{'stroke-width':3.5});}
+// Ring of the move being prepared: the active piece (the start and the pieces bounced on carry a dot on the path)
+function seqRings(ov){const a=activeSpot();ring(ov,X(a),Y(a),PR+4,{'stroke-width':3.5});}
 function rewindTo(x){if(ui.sel<0||typeof x!=='number')return false;
   let j=x===ui.sel?-1:ui.marks.lastIndexOf(x);if(x!==ui.sel&&j<0)return false;
   if(j>=0&&j===ui.marks.length-1&&!ui.landOk&&!ui.drop)j--;
@@ -1177,7 +1178,7 @@ const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // A neutral piece seen from above: 1, 2 or 3 concentric rings of equal thickness, light with a dark edge,
 // the board showing through the centre and between the rings.
-function piece(par,x,y,k,R,op){const g=el('g',op?{opacity:op,'pointer-events':'none'}:{'pointer-events':'none'},par),th=R*.27,gap=R*.12;
+function piece(par,x,y,k,R,op){const g=el('g',op?{opacity:op,'pointer-events':'none'}:{'pointer-events':'none'},par),th=R*.26,gap=R*.055;
   for(let j=0;j<k;j++){const rm=R-j*(th+gap)-th/2;
     el('circle',{cx:x,cy:y,r:rm,fill:'none',stroke:'var(--pe)','stroke-width':th},g);
     el('circle',{cx:x,cy:y,r:rm,fill:'none',stroke:'var(--pc)','stroke-width':th-2},g);}
@@ -1247,14 +1248,25 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
     if(pv.place){const i=pv.place.at;piece(gh,X(i),Y(i),pv.place.k,PR,.55);ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
     else{const cells=pv.cells.concat(pv.ext||[]),k=st.b[pv.s];
       // the steps already played in full, the hovered next movement fainter
+      const ns=nodeSpots(st,pv);nodeEdges(gh,ns);
       if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
         if(res){for(const i of resCh)if(res[i])ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});
           if(end===G){piece(gh,ex,ey,k,PR,.6);ring(gh,ex,ey,GR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}
         // ending on a piece to bounce on: that piece is shown selected in transparency (once played, its solid ring says it)
-        else if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}}}}
-// dotted path from the start square through the steps (G = the mover's target goal)
+        else if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}
+      nodeDots(gh,ns);}}}
+// thin path from the start square through the steps (G = the mover's target goal)
 function pathLine(par,p,s,cells,a){const pts=[[X(s),Y(s)]].concat(cells.map(x=>PT(x,p)));
-  el('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'1 8','stroke-linecap':'round','stroke-linejoin':'round',...a},par);}
+  el('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':1.9,'stroke-linecap':'round','stroke-linejoin':'round',...a},par);}
+// Nodes of the move being prepared: a dot on each piece bounced on, a slightly larger one on the start. On a three-ring
+// piece the dot gets a soft edge where it meets the white inner ring (not in the open centre, not under the path).
+const NODE_B=3.75,NODE_S=4.9;
+function nodeSpots(st,pv){if(ui.sel<0||pv.s!==ui.sel)return [];return [{i:pv.s,r:NODE_S,k:st.b[pv.s]}].concat(ui.marks.map(i=>({i,r:NODE_B,k:st.b[i]})));}
+function nodeEdges(par,spots){const th=PR*.26,gap=PR*.055,hole=PR-3*th-2*gap;
+  for(const n of spots){if(n.k!==3)continue;const id='nm'+n.i,m=el('mask',{id,maskUnits:'userSpaceOnUse',x:0,y:0,width:2000,height:2000},el('defs',{},par));
+    el('rect',{x:-500,y:-500,width:3000,height:3000,fill:'white'},m);el('circle',{cx:X(n.i),cy:Y(n.i),r:hole,fill:'black'},m);
+    el('circle',{cx:X(n.i),cy:Y(n.i),r:n.r,fill:'none',stroke:'#c98a2a','stroke-width':1.5,mask:'url(#'+id+')'},par);}}
+function nodeDots(par,spots){for(const n of spots)el('circle',{cx:X(n.i),cy:Y(n.i),r:n.r,fill:'var(--accent)'},par);}
 init();sndBind();
 </script>
 </body></html>
