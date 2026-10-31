@@ -883,7 +883,7 @@ function init(){drawBoard({real:new Int8Array(64),shown:new Int8Array(64)});
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg',S=60;
 // Silver sees the board turned half a turn, its own pieces at the bottom.
-const FL=()=>mySeat===1,X=i=>(FL()?7-(i&7):i&7)*S,Y=i=>(FL()?i>>3:7-(i>>3))*S;
+const FL=()=>mySeat===1&&role!=='test',X=i=>(FL()?7-(i&7):i&7)*S,Y=i=>(FL()?i>>3:7-(i>>3))*S;
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'pointer-events':'none'},g);if(op!==undefined)gr.setAttribute('opacity',op);
   el('circle',{cx,cy,r:23,fill:gold?'var(--g1)':'var(--s1)',stroke:gold?'var(--g3)':'var(--s3)','stroke-width':2},gr);

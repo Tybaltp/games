@@ -756,7 +756,7 @@ function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view.adv,vie
 function renderGame(){if(!view)return;ui.repHover=false;const r=replay(view.adv,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
-  flip=mySeat===1;
+  flip=mySeat===1&&role!=='test';   // on one device the board stays put: the players adapt
   const mine=navAt===null&&isMyTurn(r);
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
   const o=mine?calc(r.st):null;
