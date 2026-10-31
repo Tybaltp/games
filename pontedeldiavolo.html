@@ -55,9 +55,6 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 .scale span{border:1px solid var(--line);border-radius:3px;padding:1px 6px;font-size:12px}
 .hit{fill:transparent;cursor:default}
 .hit.legal,.hit.own{cursor:pointer}
-.tgt{fill:none;stroke:var(--accent);stroke-width:4}
-@media (prefers-reduced-motion:no-preference){.tgt{animation:pddpulse 1.1s ease-in-out infinite}}
-@keyframes pddpulse{50%{stroke-opacity:.35}}
 </style>
 </head><body>
 <div class="wrap">
@@ -435,16 +432,15 @@ function drawBoard(real,last,a){
   const col=a?a.p:1;
   const ghostTile=i=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity=".5"/>`,
     `<rect x="${X(CL(i))+g+2}" y="${Y(RW(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`);};
-  const ghostBridge=(a,b)=>{const [x1,y1]=ctr(a),[x2,y2]=ctr(b);bridge(a,b,col,.5);
-    out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 6"/>`);};
+  const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
   if(active){for(const i of ui.draft)ghostTile(i);
     if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b);
     if(!ui.pending&&ui.hover>=0){if(ui.sel!==null)ghostBridge(ui.sel,ui.hover);else ghostTile(ui.hover);}}
   const tgts=new Set();
   if(active&&ui.sel!==null){
     const i=ui.sel;out.push(`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
-    for(const e of BR[i])if(canBridge(st,a.p,i,e)){tgts.add(e.b);
-      out.push(`<rect class="tgt" x="${X(CL(e.b))+3}" y="${Y(RW(e.b))+3}" width="${CS-6}" height="${CS-6}" rx="7"/>`);}}
+    // every bridge possible from the selected square, in transparency (the hovered one stronger)
+    for(const e of BR[i])if(canBridge(st,a.p,i,e)){tgts.add(e.b);if(e.b!==ui.hover)ghostBridge(i,e.b,.3);}}
   const canInput=active&&!ui.pending&&ui.sel===null&&ui.draft.length<2;
   const legal=canInput?new Set(legalCells(st,a.p)):new Set();
   for(let i=0;i<NN;i++){let cls='hit';
