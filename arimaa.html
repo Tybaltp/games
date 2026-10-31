@@ -772,9 +772,11 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.mo
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){if(twice(i))return;doAct(m);return;}
     const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){if(twice(i))return;ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
     if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===ui.sel)){ui.enemy=i;ui.via=ui.sel;renderGame();return;}
-    const via=ui.sel;clearSel();if(i===via){renderGame();return;}}
-  {const e=seqPieces(r.st.b).get(i);if(e){rewindTo(e);return;}}   // a piece already moved in this turn: rewind
-  if(mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i)){ui.sel=i;renderGame();return;}
+    // a second click on the selection deselects it; on a piece already moved in this turn, it rewinds to that piece's first selection
+    const via=ui.sel;clearSel();if(i===via){const e=seqPieces(r.st.b).get(i);if(e){rewindTo(e);return;}renderGame();return;}}
+  const canAct=mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i);
+  {const e=seqPieces(r.st.b).get(i);if(e&&!canAct){rewindTo(e);return;}}   // a moved piece that can't go on (or a pushed/pulled one): rewind
+  if(canAct){ui.sel=i;renderGame();return;}
   renderGame();}
 function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();}
 function endTurn(){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
