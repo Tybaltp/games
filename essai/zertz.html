@@ -494,7 +494,7 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
   if(lm&&lm.t===1)path(lm.path,'2 8');if(pv&&pv.mv.t===1)path(pv.mv.path,'4 6');else if(ui.path)path(ui.path);}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
+const GAME={id:'essai-zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
   rules:g=>{const n=ringsOf(g);return {size:n,rings:n};},
   form:p=>{const n=+$(p+'Size').value;return {size:ENG[n]?n:48,rings:ENG[n]?n:48};},
   replay:zzReplay,

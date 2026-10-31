@@ -704,7 +704,7 @@ function nodeEdges(par,spots){const th=PR*.26,gap=PR*.055,hole=PR-3*th-2*gap;
 function nodeDots(par,spots){for(const n of spots)el('circle',{cx:X(n.i),cy:Y(n.i),r:n.r,fill:'var(--accent)'},par);}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'gyges',size:36,codeTag:'GYGES1',i18n:GY_I18N,
+const GAME={id:'essai-gyges',size:36,codeTag:'GYGES1',i18n:GY_I18N,
   rules:g=>({adv:!!(g&&g.adv),setup:smOf(g)}),
   form:p=>({adv:$(p+'Adv').checked,setup:smOf({setup:$(p+'Setup').value})}),
   replay:gyReplay,

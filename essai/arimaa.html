@@ -514,7 +514,7 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
     const tx=el('text',{x:bx,y:by+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'var(--bg)','pointer-events':'none'},lay);tx.textContent=H.n;}}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'arimaa',size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
+const GAME={id:'essai-arimaa',size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
   rules:()=>({}),form:()=>({}),
   replay:arReplay,
   legal:(st,code)=>legalCode(st,code)?code:null,

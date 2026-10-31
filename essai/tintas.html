@@ -384,7 +384,7 @@ function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
   if(hv>=0)pawn(pcs,X(hv),Y(hv),.5);}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
+const GAME={id:'essai-tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   rules:g=>({setup:setupOf(g)}),
   form:p=>({setup:E.genSetup()}),      // every new game: a new random board
   replay:tiReplay,

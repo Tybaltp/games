@@ -429,7 +429,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // the last flight: its trajectory, dotted
   if(lm&&lm.t==='f'){const a=lm.cells[0],b=E.dest(lm,a);el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'2 7','stroke-linecap':'round',opacity:.9,'pointer-events':'none'},svg);}}
 // ---------- the interface with common/core.js ----------
-const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
+const GAME={id:'essai-volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   rules:()=>({}),form:()=>({}),
   replay:voReplay,
   legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,

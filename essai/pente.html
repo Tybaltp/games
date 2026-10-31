@@ -672,7 +672,7 @@ function oldCode(v){v=String(v||'').replace(/\s+/g,'');if(v.indexOf('PENTE1.')!=
 $('rForm').addEventListener('submit',()=>{const c=oldCode($('rIn').value);if(c)$('rIn').value=c;});   // before core's own handler
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
+const GAME={id:'essai-pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   rules:()=>({}),form:()=>({}),
   replay:peReplay,
   legal:(st,code)=>legalCode(st,code),

@@ -434,7 +434,7 @@ function drawBoard(st,last,pv,marks,mc){const svg=$('svg');svg.textContent='';cl
     if(pv.pend||pv.swap)innerFrame(gl,pv.cells,2.6,{stroke:'var(--accent)','stroke-dasharray':'6 5','stroke-linecap':'butt'});}}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
+const GAME={id:'essai-dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
   rules:()=>({}),form:()=>({}),
   replay:dbReplay,
   legal:(st,code)=>{const mv=dec(code);return mv&&E.validate(st.es,mv)?enc(mv):null;},
