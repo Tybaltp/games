@@ -5,18 +5,18 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=1">
 <style>
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}
-/* Layout: board on the left, game column on the right; stacked on phones */
+/* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
   --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
   --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--ghost:#355b75;
   --o1:#ffb347;--o2:#e07a12;--o3:#8a4300;--b1:#6fb3ff;--b2:#1f6fd6;--b3:#0b3a7a;
+  --s0:var(--o2);--s0e:var(--o3);--s1:var(--b2);--s1e:var(--b3);
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --board-ar:650/579.615;        /* viewBox of the board (650×579.6; 610×579.6 without the coordinates) */
 }
+html.nocoords{--board-ar:610/579.615}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
   --sky:#1d3b52;--sky-edge:#122838;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
@@ -25,122 +25,20 @@
   --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
   --sky:#1d3b52;--sky-edge:#122838;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
-.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-h1{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.02em;margin:0;line-height:1}
-h1 span{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;margin-left:.4em}
-select,button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
-button:hover:not(:disabled),select:hover{border-color:var(--muted)}
-button:disabled{opacity:.45;cursor:default}
-button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
-.boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
-.board{position:relative}
-.notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:10px;font-weight:500;font-size:.9rem;text-align:center;border:1px solid transparent}
-.notice.on{background:var(--panel);border-color:var(--line)}
-.notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.players{display:flex;justify-content:space-between;gap:8px}
-.players.side-only{flex-direction:column}
-.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
-.player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.player.active .who{color:var(--ink)}
-.player .clock{font-size:1.4rem;line-height:1.1}
+/* the sky behind the board, on every layout */
+.board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 30%,var(--sky),var(--sky-edge));border:0}
+.board{--bp:10px;padding:10px;border-radius:18px}
+html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
+@media (orientation:landscape) and (max-height:500px){.board{--bp:4px;padding:4px;border-radius:12px}}
+/* players' cards: birds in the sky, in reserve, number of flocks */
 .player .tally{display:flex;gap:6px;font-size:.66rem;overflow:hidden;letter-spacing:-.01em}
 .player .tally span::before{content:attr(title) ' ';color:var(--muted)}
 .player .tally span{color:var(--ink);font-weight:500}
-.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.side details.prominent summary{color:var(--ink);font-size:1rem}
-.side details.prominent .link input{font-size:.95rem;padding:9px 10px}
-.side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
-.side details > *:not(summary){margin-top:8px}
-.side details .link,.side details .hint{margin-top:6px}
-@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
-.board{background:radial-gradient(120% 90% at 50% 30%,var(--sky),var(--sky-edge));border-radius:18px;padding:10px;min-width:0}
-.board svg{display:block;width:100%;height:auto;max-height:80vh;margin:0 auto;touch-action:manipulation}
-.status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
-.status.turn{border-color:var(--accent)}
-.status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.side{display:flex;flex-direction:column;gap:12px;min-width:0}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.card h2{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
-.home button.big{padding:14px;font-size:1.05rem}
-.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.85rem;cursor:pointer}
-.linkish{color:var(--ink)}
-.picks{display:flex;flex-direction:column;gap:8px}
-.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
-.pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
-.joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
-.home .err:empty{display:none}
-.inv-only{display:none}
-#setup.invited .home > :not(#joinCard){display:none}
-#setup.invited .home > #joinErr:not(:empty){display:block}
-#setup.invited .inv-only{display:block}#setup.invited .noinv{display:none}
-.home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
-.home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
-.home details{padding:10px 14px}
-.home details .card{margin-top:10px}
-.who{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
-.bird{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
-.bird.c0{background:var(--o2);border:1.5px solid var(--o3)}
-.bird.c1{background:var(--b2);border:1.5px solid var(--b3)}
-.hint{font-size:.8rem;color:var(--muted);margin:0}
-ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:2px}
-ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
-ol.log .n{color:var(--muted)}
-ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
-ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
-.navbar{display:flex;align-items:center;justify-content:center;gap:6px}
-.navbar button{min-width:44px;padding:6px 10px}
-.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
-details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
-details summary{cursor:pointer;font-weight:600}
-details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
-details li{margin:.25em 0}
-.cell{cursor:pointer}
-@media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{opacity:.45}}}
-
-[hidden]{display:none!important}
-.view{display:flex;flex-direction:column;gap:16px}
-a{color:inherit}
-.lobby{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
-@media (max-width:820px){.lobby{grid-template-columns:minmax(0,1fr)}}
-.form{display:flex;flex-direction:column;gap:10px}
-.form label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
-.clock{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.clock.run{color:var(--ink)}
-.clock.idle{color:var(--muted)}
-.clock.low{color:var(--danger)}
-.link{display:flex;gap:6px}
-.link input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.78rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
-.confirm{display:flex;gap:8px}
-.confirm button{flex:1}
-.toggle{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
-.toggle input{width:18px;height:18px;accent-color:var(--accent)}
-.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
-.empty{color:var(--muted);margin:0}
-.txt{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
-#watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
-
-/* header breadcrumb: games / game name */
-h1 a.crumb{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;text-decoration:none}
-h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
-h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
-h1 a.gname{color:inherit;text-decoration:none}
-@media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html">Volo</a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html"><b id="ttl" style="font-weight:inherit">Volo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -150,13 +48,18 @@ h1 a.gname{color:inherit;text-decoration:none}
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
-        <button type="button" class="pick" data-pick="local"><b data-i18n="m_local">On this device</b><span data-i18n="m_localTxt">Both sides on the same screen, to try the game or play face to face.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="orangeIs">Orange (plays first)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
       </form>
       <form class="form" id="testForm" hidden>
         <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
@@ -189,12 +92,14 @@ h1 a.gname{color:inherit;text-decoration:none}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="board"><svg id="svg" viewBox="-340 -390 680 780" role="img" aria-label="Volo board"></svg></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-331 -289.808 650 579.615" role="img" aria-label="Volo board"></svg></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <div class="notice" id="notice"></div>
   </div>
-  <aside class="side">
+  <aside class="side" id="side" tabindex="-1">
     <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
       <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
@@ -205,9 +110,6 @@ h1 a.gname{color:inherit;text-decoration:none}
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
-    <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
-    <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancel">Cancel</button></div></div>
-    <div class="card" id="selCard" hidden><div class="confirm"><button type="button" id="selCancel" data-i18n="cancel">Cancel</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
       <p class="hint" id="rmTxt" hidden></p>
@@ -217,9 +119,8 @@ h1 a.gname{color:inherit;text-decoration:none}
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
-      <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-      <div class="confirm" id="undoBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo previous move</button></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -228,10 +129,13 @@ h1 a.gname{color:inherit;text-decoration:none}
     </details>
     <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
+    </div>
   </aside>
 </main>
+<div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
+<script src="common/core.js?v=1"></script>
 <script>
 function VoloEngine(){
   // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
@@ -318,38 +222,9 @@ function VoloEngine(){
     return null;}
   return {N,Q,R,NB,AT,TURN,PASS,MAX,NEST,init,gen,flights,placements,canPass,expand,base,dest,apply,outcome,connected,regions,emptyClass,count,flockCount,comps};
 }
-// ===== Volo peer to peer =====
-const SIZE=120;
-const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
-const I18N={fr:{
- leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
- sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",orangeIs:"Orange (commence)",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
- join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
- haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup précédent",
- inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
- resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
- yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",regions:"Régions",regionsTxt:"Votre coup sépare les oiseaux adverses en plusieurs régions. Cliquez un oiseau de la région qui reste ; les autres s'envolent.",
- start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
- invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
- fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
- hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
- rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
- noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",orange:"orange",blue:"bleu",first:"commence",
- sky:"ciel",reserve:"rés.",flocks:"nuées",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
- noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
- st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
- st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
- draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
- st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
- st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
- st_pending:"Coup en attente : confirmez pour l'envoyer, ou annulez.",st_sending:"Envoi du coup…",st_oppGoneRun:"Adversaire déconnecté (sa pendule tourne). ",st_oppGone:"Adversaire déconnecté. ",
- st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_tapAgain:"Touchez à nouveau le point d'arrivée pour voler.",
- st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne ; cliquez la sélection pour annuler.",st_turn:"À vous : ajoutez un oiseau sur un point libre, ou cliquez un oiseau pour le faire voler.",st_mayPass:" Vous pouvez aussi passer.",
- st_yours:"À vous de jouer.",st_their:"{n} doit jouer.",st_watching:" Vous observez.",ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
- rules:`<summary>Règles en bref</summary><ul>
+// Volo strings, merged over the shared ones (core.js)
+const VO_I18N={fr:{
+ title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_tapAgain:"Touchez à nouveau le point d'arrivée pour voler.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
  <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
@@ -357,36 +232,9 @@ const I18N={fr:{
  <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
  <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
- <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`
+ <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",keepR:"Garder {r}"
 },en:{
- leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
- sub:"peer to peer",create:"Create a game",nick:"Your nickname",orangeIs:"Orange (plays first)",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
- join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
- haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo previous move",
- inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
- resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
- yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",regions:"Regions",regionsTxt:"Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.",
- start:"Start",startBtn:"Start the game",pass:"Pass",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
- invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
- fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
- hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
- rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
- noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",orange:"orange",blue:"blue",first:"first",
- sky:"sky",reserve:"res.",flocks:"flocks",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
- noPeer:"The connection library could not load: check your Internet access, then reload the page.",
- st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
- st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
- draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
- st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
- st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
- st_pending:"Move pending: confirm to send it, or cancel.",st_sending:"Sending move…",st_oppGoneRun:"Opponent disconnected (their clock is running). ",st_oppGone:"Opponent disconnected. ",
- st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_tapAgain:"Tap the landing point again to fly there.",
- st_sel:"Click a landing point, or a bird in line to extend the line; click the selection to cancel.",st_turn:"Your turn: add a bird on an empty point, or click a bird to let it fly.",st_mayPass:" You may also pass.",
- st_yours:"Your turn.",st_their:"{n} to move.",st_watching:" You are watching.",ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
- rules:`<summary>Rules in brief</summary><ul>
+ title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_tapAgain:"Tap the landing point again to fly there.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
  <li><b>Add a bird</b>: on any empty point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
@@ -394,293 +242,39 @@ const I18N={fr:{
  <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
  <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
  <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
- <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`
+ <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",keepR:"Keep {r}"
 }};
-let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
-function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
-const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
-function applyStatic(){document.documentElement.lang=lang;
-  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
-  document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
-  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
-  document.getElementById('rules').innerHTML=t('rules');
-  const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('volo-tc'));}catch(e){return null;}})()||'20+10';
-  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status('');});
-applyStatic();
 const E=VoloEngine(),{N,TURN}=E;
+const SIZE=120;
 const CN=p=>t(p?'blue':'orange');
-const $=id=>document.getElementById(id);
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
-// Nickname shared by all the games (games-name), with this game's former key as fallback
-const nickGet=()=>LS.get('games-name','')||LS.get('volo-name',''),nickSet=v=>{LS.set('games-name',v);LS.set('volo-name',v);};
-const MYID=pickTabId('volo',(()=>{try{return JSON.parse(localStorage.getItem('volo-p2p-cid'));}catch(e){return null;}})());
-const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
-
-function pickTabId(key,seed){const R=()=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(16)))s+=a[b%a.length];return s;};
-  try{const L=localStorage,S1=sessionStorage;let id=S1.getItem(key+'-tab');
-    if(!id){let ids=[];try{ids=JSON.parse(L.getItem(key+'-tabs')||'[]')||[];}catch(e){}if(!ids.length&&seed)ids=[seed];const now=Date.now();
-      id=ids.slice().reverse().find(x=>now-(+L.getItem(key+'-alive-'+x)||0)>5000);
-      if(!id){id=R();ids.push(id);}L.setItem(key+'-tabs',JSON.stringify(ids.filter((x,k)=>ids.indexOf(x)===k).slice(-10)));S1.setItem(key+'-tab',id);}
-    const beat=()=>{try{L.setItem(key+'-alive-'+id,String(Date.now()));}catch(e){}};beat();setInterval(beat,1500);return id;}catch(e){return R();}}
-function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t.charCodeAt(k);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
 // ---------- board ----------
 const SP=50,X=i=>SP*(E.Q[i]+E.R[i]/2),Y=i=>SP*0.866025*E.R[i];
 const ROWS=[],QMIN={};for(let i=0;i<N;i++){if(!ROWS.includes(E.R[i]))ROWS.push(E.R[i]);QMIN[E.R[i]]=Math.min(QMIN[E.R[i]]??99,E.Q[i]);}ROWS.sort((a,b)=>a-b);
 const name=i=>'abcdefghijklm'[ROWS.indexOf(E.R[i])]+(E.Q[i]-QMIN[E.R[i]]+1);
-(()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
-  $('svg').setAttribute('viewBox',`${x0-56} ${y0-30} ${x1-x0+100} ${y1-y0+60}`);})();
+// viewBox: room on the left for the row letters (core: coordsOn); without them, the same margin on both sides (--board-ar too)
+const VB=(()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
+  return [`${x0-56} ${y0-30} ${x1-x0+100} ${y1-y0+60}`,`${x0-30} ${y0-30} ${x1-x0+60} ${y1-y0+60}`];})();
 const enc=m=>m.t==='x'?'x':(m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'+m.k)+(m.keep>=0?'k'+m.keep:'');
 const txtOf=m=>m.t==='x'?'pass':m.t==='p'?'+'+name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
-let memoKey='',memoVal=null;
-function replay(size,moves,result){const key=moves.join(',')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
+// a move awaiting confirmation: « Passer » for a pass, the regions mentioned when the move removes some
+const describe=m=>m.t==='x'?t('pass'):txtOf(m)+(m.keep>=0?' ('+t('regions').toLowerCase()+')':'');
+// st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code
+function voReplay(rules,moves){
   let st=E.init();const log=[];let last=null,over=null;
   for(const code of moves){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv){over={w:-1,why:'w_bad'};break;}
     const r=E.apply(st,mv);st=r.st;let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;
     log.push({p,txt:t});last={mv,removed:r.removed};
     const o=E.outcome(st,p,mv);if(o){over=o;break;}}
-  if(!over&&result)over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
-  memoKey=key;memoVal={st,log,last,over};return memoVal;}
+  st.turn=st[TURN];return {st,log,last,over};}
 
-// ---------- network (PeerJS) ----------
-// Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
-let role=null;          // 'host' | 'guest' | 'watch' | 'test' (local, both sides)
-let peer=null;
-let view=null;          // public state shown {size,names,first,moves,clock,running,elapsed,result,guestOn,watchers,recvAt}
-let mySeat=-1;
-// ui.hist: the selections made in this sequence, one per click (ui.sel is the last one); kept while the landing, regions and confirmation are prepared
-let ui={sel:[],hist:[],basemv:null,pending:null,hover:-1},sending=false;
-const H={};             // host-only state
-
-function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
-  const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent=txt;}}
-function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
-function peerOpts(){return {debug:1};}
-function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
-
-// --- host ---
-function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
-  running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
-  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null};}
-// Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
-// colours swapped (the players exchange seats), same time control.
-function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g.size,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
-  if(op==='ask'&&(!rm||rm.st==='no'))g.rematch={from:s,st:'ask'};
-  else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
-  else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
-  else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
-    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.result=null;g.rematch=null;
-    g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
-    mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
-  else return;
-  hostBroadcast();}
-function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});}
-// The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
-function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
-  const r=replay(g.size,g.moves,g.result),absentTurn=!r.over&&r.st[TURN]!==mySeat,want=!live&&absentTurn;
-  if(want&&!g.paused){if(g.running&&!r.over){const tt=r.st[TURN];g.clock[tt]=Math.max(0,g.clock[tt]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
-  else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
-const PID=c=>'volo-p2p-'+c;
-const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
-function hostSave(){const g=H.game;LS.set('volo-p2p-host',{code:H.code,guestCid:H.guestCid,game:g,elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});}
-function hostReady(s){const g=H.game;if(g.started||g.result||!g.names[0]||!g.names[1])return;g.ready[s]=true;
-  if(g.ready[0]&&g.ready[1]){g.started=true;g.running=true;H.turnStart=Date.now();}hostBroadcast();}
-function hostBroadcast(bump){if(bump)H.game.ver=(H.game.ver||0)+1;hostSyncPause();hostSave();const pub=hostPublic();
-  for(const c of H.conns)if(c.open)c.send({t:'state',game:pub});
-  showState(pub);}
-function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
-  if(saved){Object.assign(H,{code:saved.code,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
-  H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);
-  if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
-  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
-  setHash('host-'+H.code);status(t('st_open'));showGame();
-  const me=newPeer(H.peerId);peer=me;
-  me.on('open',()=>{if(peer!==me)return;fillCodes();hostBroadcast();});
-  me.on('connection',conn=>{if(peer!==me){try{conn.close();}catch(e){}return;}conn.on('data',d=>{if(peer===me)hostOnData(conn,d);});conn.on('close',()=>{if(peer===me)hostDrop(conn);});conn.on('error',()=>{if(peer===me)hostDrop(conn);});});
-  me.on('disconnected',()=>{if(peer!==me)return;status(t('st_lostMm'));setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500);});
-  me.on('error',e=>{if(peer!==me)return;
-    if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
-    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
-function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
-  if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.st[TURN]]=Math.max(0,pub.clock[r.st[TURN]]-pub.elapsed);}
-  clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
-function becomeHost(){if(!view)return;if(C.pending){pendClear();delete view.runSeat;}LS.del('volo-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
-  const rem=remaining(),v=view;
-  H.code=C.code;H.guestCid=null;H.game={size:v.size,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
-    ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0};
-  if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
-  H.turnStart=Date.now();hostStart(null);}
-function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
-function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping')return;const g=H.game;
-  if(d.t==='hello'){
-    const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
-    if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
-    if(d.role==='play'&&s>=0&&s!==mySeat){
-      if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
-      g.th[s]=th;H.guestCid=d.cid;H.guestConn=conn;conn.seat=s;H.conns.add(conn);if(d.name)g.names[s]=String(d.name).slice(0,24);
-      const o=d.s;if(o&&typeof o==='object'&&o.size===g.size&&Array.isArray(o.moves)&&o.moves.length>g.moves.length&&g.moves.every((x,k)=>o.moves[k]===x)){
-        g.moves=o.moves.slice();g.clock=o.clock.slice();g.result=o.result||null;g.started=!!o.started;g.running=!!o.started;g.paused=true;H.turnStart=Date.now();}
-      conn.send({t:'welcome',role:'guest',seat:s});hostBroadcast();return;}
-    if(d.role==='play'){conn.send({t:'reject',why:'t_refused'});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
-    H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
-  if(conn!==H.guestConn)return;
-  const s=conn.seat;
-  if(d.t==='move')hostMove(s,d.n,d.code,conn);
-  if(d.t==='start')hostReady(s);
-  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
-  if(d.t==='rematch')rematchOp(s,d.op);}
-function hostMove(s,n,code,conn){const g=H.game;if(conn&&n===g.moves.length-1&&g.moves[n]===code){conn.send({t:'state',game:hostPublic()});return false;}if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
-  const r=replay(g.size,g.moves,g.result);if(r.over||r.st[TURN]!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
-  const mv=E.gen(r.st).find(m=>enc(m)===code);if(!mv){conn&&conn.send({t:'nack'});return false;}
-  const now=Date.now();
-  if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
-  g.moves.push(code);g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
-let saveTick=0;
-setInterval(()=>{if(role!=='host'||!H.game)return;if(++saveTick%25===0)hostSave();if(H.game.result||!H.game.running||H.game.paused||!H.game.tc)return;const g=H.game,r=replay(g.size,g.moves,g.result);if(r.over)return;
-  const t=r.st[TURN];if(g.clock[t]-(Date.now()-H.turnStart)<=0){g.clock[t]=0;g.result={winner:1-t,reason:'time'};hostBroadcast();}},200);
-
-// Heartbeat: host and guest exchange a small message every 2 s; after ~9 s without any message,
-// the guest (or spectator) treats the connection as lost, and the host treats the guest as away.
-setInterval(()=>{const now=Date.now();
-  if(role==='host'&&H.conns){for(const c of H.conns)if(c.open){try{c.send({t:'ping'});}catch(e){}}
-    const gc=H.guestConn;if(gc&&gc.lastSeen&&now-gc.lastSeen>9000){try{gc.close();}catch(e){}hostDrop(gc);}}
-  else if((role==='guest'||role==='watch')&&C.conn&&C.conn.open&&!C.stop){try{C.conn.send({t:'ping'});}catch(e){}
-    if(C.lastSeen&&now-C.lastSeen>9000){const c=C.conn;C.conn=null;try{c.close();}catch(e){}clientLost();}}},2000);
-
-// --- guest / spectator ---
-let C={};   // {code,cid,name,conn,retry}
-function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4){$('joinErr').textContent=t('codeLen');return;}
-  clearTimeout(C.t);clearTimeout(C.ct);C={code,host:PID(code),play:!asWatch,name:nm,cid:MYID,retry:0,lostSince:0};
-  $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+code);
-  role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));
-  const sv=LS.get('volo-p2p-guest',null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
-  if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
-  {const pd=LS.get('volo-p2p-pending',null);if(!asWatch&&pd&&pd.code===code&&view&&view.moves.length===pd.n){C.pending={n:pd.n,code:pd.mv,at:Date.now(),sent:0};pendView();sending=true;renderGame();}}
-  const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
-  me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view)status(t('st_noTable'));}
-    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
-  me.on('disconnected',()=>setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500));}
-function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.connect(C.host,{reliable:true});C.conn=conn;clearTimeout(C.ct);
-  C.ct=setTimeout(()=>{if(C.conn===conn&&!conn.open)clientLost();},7000);
-  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,s:mySeat>=0&&view?(C.pending&&C.pending.base||view):null});C.lastSeen=Date.now();});
-  conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
-  conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
-function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;if(C.pending)sending=true;
-  if(view&&!view.paused&&view.started&&!view.result){const r=replay(view.size,view.moves,view.result);
-    if(!r.over&&r.st[TURN]!==mySeat){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();}renderGame();}
-  clientRetry();}
-function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.stop)return;
-  if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
-  if(peer&&peer.open)clientConnect();else{if(peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}clientLost();}},3500);}
-function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now();if(d.t==='ping')return;
-  if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);}
-  else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
-  else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();showState(d.game);if(C.pending){pendView();sending=true;renderGame();}}
-  else if(d.t==='nack'){sending=false;if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
-
-// ---------- game view ----------
-function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;}
-function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
-function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'';
-  view={...g,recvAt:Date.now()};
-  if(role==='guest'&&mySeat>=0){if(g.result)LS.del('volo-p2p-guest');else LS.set('volo-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
-  if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result))resetUi();
-  renderGame();}
-function resetUi(){ui.sel=[];ui.hist=[];ui.basemv=null;ui.pending=null;ui.hover=-1;}
+// ---------- move preparation ----------
+// ui: sel (the birds selected to fly), hist (the successive selections), basemv (a move that cuts the opponent's birds
+// into regions: the one that stays is still to choose), pending (the complete move, awaiting confirmation), hover
+const newUi=()=>({sel:[],hist:[],basemv:null,pending:null,hover:-1});
 // a move is being prepared: a selection, a region choice or a pending confirmation
 const preparing=()=>!!(ui.sel.length||ui.basemv||ui.pending);
-// Cancel: drop the whole prepared sequence, back to the neutral board
+// Reset: drop the whole prepared sequence, back to the neutral board
 function cancelPrep(){if(!preparing())return;resetUi();renderGame();}
-function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[view.runSeat??r.st[TURN]]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
-const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
-function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st[TURN]===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
-
-// Navigation through the moves: for everyone once the game is over, for spectators at any time.
-// navAt=null follows the game live; otherwise the board shows the position after navAt moves.
-let navAt=null,navKey=null,navVal=null;
-const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch'));
-function navPos(k){const key=view.moves.slice(0,k).join(',');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view.size,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
-function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
-function renderGame(){if(!view)return;if(role==='test')LS.set(TK,view);const r=replay(view.size,view.moves,view.result);
-  if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
-  const d=navAt===null?r:navPos(navAt),turn=d.st[TURN];
-  const mine=navAt===null&&isMyTurn(r),legal=r.over||navAt!==null?[]:E.gen(r.st);
-  const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st[TURN]===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
-  const hm=mine&&!ui.pending&&!ui.basemv&&ui.sel.length&&ui.hover>=0?legal.find(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===ui.hover):null;
-  const gm=ui.basemv?null:(ui.pending||hm);
-  const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
-  if(navAt!==null)drawBoard(d.st,d.st,[],false,d.last);
-  else drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
-  {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
-    if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  const nm=s=>role==='test'?view.names[s]:(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
-  const canPass=legal.some(m=>m.t==='x'),onlyPass=legal.length===1&&canPass;
-  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&role!=='test'?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
-  else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
-  else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
-  else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
-  else if(ui.pending)quiet();
-  else if(sending)quiet();
-  else if(mine){
-    if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn');else if(onlyPass)status(t('st_mustPass'),'turn');else quiet();}
-  else quiet();
-  if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
-  else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'));
-  const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
-  const host=wide?$('playersSide'):$('playersTop');host.textContent='';(wide?$('playersTop'):$('playersSide')).textContent='';
-  for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
-    const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="bird c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
-    const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
-    const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
-    ty.innerHTML=`<span title="${t('sky')}">${on}</span><span title="${t('reserve')}">${E.MAX-on}</span><span title="${t('flocks')}">${fl}</span>`;
-    el.append(h,ck,ty);host.appendChild(el);}
-  tick();
-  $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending)+(ui.pending.keep>=0?' ('+t('regions').toLowerCase()+')':'');
-  $('keepCard').hidden=!(ui.basemv&&!ui.pending);
-  $('selCard').hidden=!(ui.sel.length&&!ui.basemv&&!ui.pending);
-  $('myCard').hidden=!(role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('undoBox').hidden=role!=='test'||preparing();if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
-  $('passBox').hidden=!(mine&&canPass&&!ui.basemv&&!ui.pending);
-  const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
-  if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
-    $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='test'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
-    if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
-    // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='test'||!(mySeat>=0&&view.started);
-  $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||role==='test'),rm=role==='ai'||role==='test'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
-    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
-    $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
-    $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
-  const ol=$('log');ol.textContent='';
-  const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
-  r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
-    const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
-    const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);ol.appendChild(li);});
-  const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
-let audioCtx=null,lastMine=false;
-document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
-let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('volo-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
-function sndSave(){try{localStorage.setItem('volo-sound',JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}
-function sndBind(){const c=document.getElementById('sndOn'),r=document.getElementById('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
-  c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
-  r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
-function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
-let cdSec=null;
-function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
-  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
-  cdSec=s;}
-function tick(){if(!view||!view.tc)return;const r=replay(view.size,view.moves,view.result),rem=remaining();
-  countdown(mySeat>=0&&view.running&&!r.over&&(view.runSeat??r.st[TURN])===mySeat,rem[Math.max(0,mySeat)]);
-  for(const p of [0,1]){const el=$('clock'+p);if(!el)continue;el.textContent=fmt(rem[p]);
-    const run=view.running&&!r.over&&(view.runSeat??r.st[TURN])===p;el.className='clock '+(run?'run':'idle')+(rem[p]<60000?' low':'');}}
-setInterval(tick,250);
-window.addEventListener('resize',()=>{if(view)renderGame();});
-
-// ---------- input ----------
 // Flights whose segment is exactly the current selection
 const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,k)=>c===sel[k]);
 function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
@@ -689,7 +283,7 @@ const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().rev
 // Rewind: back to the moment bird c was selected in this sequence (what came after is dropped)
 function rewindTo(c){const k=ui.hist.findIndex(h=>h.includes(c));ui.hist=k<0?[]:ui.hist.slice(0,k+1);ui.sel=k<0?[]:ui.hist[k].slice();
   ui.basemv=null;ui.pending=null;ui.hover=-1;renderGame();}
-function clickCell(i){if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   const legal=E.gen(r.st),me=mySeat+1,st=r.st;
   const prep=ui.pending||ui.basemv;
   if(prep){ // a highlighted bird of the prepared move: the added bird drops the move, a bird of the line goes back to its selection
@@ -718,127 +312,47 @@ function clickCell(i){if(!view)return;const r=replay(view.size,view.moves,view.r
   if(st[i]===me){ui.sel=[i];ui.hist=[[i]];renderGame();return;}
   const pl=legal.find(m=>m.t==='p'&&m.at===i);if(pl)pick(pl);}
 // pick: base move chosen; if several variants exist (regions), ask which one stays
-function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view.size,view.moves,view.result);const vs=E.expand(r.st,mv);
+function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
   if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
-// A move takes several clicks: it always waits for the final confirmation before it is sent
+// A move takes several clicks: it always waits for the final confirmation (in the action bar) before it is sent
 function choose(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;ui.pending=mv;renderGame();}
-function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
-  if(role==='host'){hostMove(mySeat,n,code,null);return;}
-  if(role==='test'){testPlay(code);return;}
-  if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
-  sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('volo-p2p-pending',{code:C.code,n,mv:code});
-  C.conn.send({t:'move',n,code});renderGame();}
-// A move sent by the guest is shown at once on top of the host's position, until the host confirms it (or refuses it).
-function pendView(){if(!C.pending||!view||view.moves.length!==C.pending.n)return;const rem=remaining();C.pending.base=view;
-  view={...view,moves:view.moves.concat([C.pending.code]),clock:rem,elapsed:0,recvAt:Date.now(),runSeat:mySeat};}
-function pendClear(){C.pending=null;LS.del('volo-p2p-pending');}
-// resend until confirmed; after 1.5 s, say that the move waits for the host
-setInterval(()=>{if(role!=='guest'||!C.pending||!view)return;const now=Date.now();
-  if(C.conn&&C.conn.open&&now-C.pending.sent>3000){C.pending.sent=now;try{C.conn.send({t:'move',n:C.pending.n,code:C.pending.code});}catch(e){}}
-  if(!C.pending.shown&&now-C.pending.at>1500){C.pending.shown=true;renderGame();}},1000);
-$('cancelMv').onclick=cancelPrep;
-$('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
-$('keepCancel').onclick=cancelPrep;$('selCancel').onclick=cancelPrep;
-$('passBtn').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);};
-$('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
-$('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
-$('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
-  if(role==='test'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};renderGame();}return;}
-  if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
-$('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{if(role==='test'){startTest();return;}rmSend('ask');};
-// Test game: the tester plays both sides on this device; mySeat follows the side to move.
-const TK='volo-test';   // the game on this device, kept across a reload
-function startTest(){C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);navAt=null;sending=false;role='test';mySeat=0;setHash('test');
-  view={size:SIZE,tc:null,names:[t('p1'),t('p2')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,
-    started:true,ready:[true,true],th:[null,null],paused:false,ver:0,rematch:null,recvAt:Date.now()};LS.set(TK,view);
-  resetUi();showGame();renderGame();}
-function testTurn(){LS.set(TK,view);const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];resetUi();renderGame();}
-function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
-function testUndo(){if(!view.moves.length||preparing())return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
-$('undoBtn').onclick=()=>{if(role==='test')testUndo();};
-$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest();});
-// Home: "Create a game", then the opponent (link, this device), then that choice's options
-let homeK='';
-function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
-  $('createForm').hidden=k!=='link';$('testForm').hidden=k!=='local';
-  const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
-$('newBtn').onclick=()=>homeStep('pick');
-$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
-document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
-$('joinOpen').onclick=()=>{$('joinCard').hidden=false;$('jCode').focus();};
-// An invitation link opens straight on the name to play under (the saved nickname by default)
-function invited(on){$('setup').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
-$('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';};
-$('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
-$('navFirst').onclick=()=>navGo(0);
-$('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
-$('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
-$('navLast').onclick=()=>navGo(null);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view&&preparing()&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')){e.preventDefault();cancelPrep();}});
-document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
-  const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
-// Home: leave the game and come back to Volo's own start page
-$('homeBtn').onclick=()=>{C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
-// Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
-const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden;
-$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
-$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
+function doPass(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);}
+// The region choice: one command per region of the opponent's birds (lettered on the board), « Keep A », « Keep B »…
+function regionBtns(st){if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.basemv),1-mySeat);
+  return E.expand(st,ui.basemv).map(mv=>({k:rg.list.indexOf(rg.lab[mv.keep]),mv})).sort((a,b)=>a.k-b.k)
+    .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv);}}));}
+let ptrType='mouse';
+$('svg').addEventListener('pointerdown',e=>{ptrType=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
-let hoverT=0;
 function hoverCell(i){if(!view||ui.pending||ui.basemv||!ui.sel.length)return;if(i===ui.hover)return;
-  const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   const ok=i>=0&&E.gen(r.st).some(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===i);const nv=ok?i:-1;if(nv===ui.hover)return;ui.hover=nv;renderGame();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest('[data-i]');hoverCell(g?+g.dataset.i:-1);});
   $('svg').addEventListener('pointerleave',()=>hoverCell(-1));}
 
-// ---------- invitation codes ----------
-function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
-  $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
-  if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=base+'#watch-'+code;}}
-document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
-  const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
-  try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
-
-// ---------- start screen ----------
-$('hName').value=nickGet();$('jName').value=nickGet();
-$('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('hName').value.trim()||t('p1');nickSet(nm);
-  const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(Math.random()<.5?'host':'guest');const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('volo-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
-  const names=first==='host'?[nm,'']:['',nm];
-  const th=[null,null];th[first==='host'?0:1]=hh(MYID);
-  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
-  H.turnStart=Date.now();hostStart(null);});
-function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
-$('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
-$('jWatch').onclick=()=>joinClick(true);
-$('resumeBtn').onclick=()=>{const s=LS.get('volo-p2p-host',null);if(s){hostStart(s);return;}const sg=LS.get('volo-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
-function exportCode(){const v=view,c=remaining();const p={size:v.size,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
-  return 'VOLO1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
-function importCode(t){t=String(t||'').replace(/\s+/g,'');if(t.indexOf('VOLO1.')!==0)throw 0;
-  const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(6)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;p.size=SIZE;return p;}
-$('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=false;inp.select();
-  try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('rcCopy'),1500);},()=>{});}catch(e){}};
-$('rForm').addEventListener('submit',e=>{e.preventDefault();let p;try{p=importCode($('rIn').value);}catch(x){$('joinErr').textContent=t('badResume');$('rSeats').innerHTML='';return;}
-  const box=$('rSeats');box.innerHTML=[0,1].map(k=>`<button type="button" class="primary" data-rseat="${k}">${t('iam',{n:String(p.names[k]||t(k?'p2':'p1')).replace(/[&<>"']/g,'')})}</button>`).join('');
-  box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(+b.dataset.rseat,p));});
-function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const th=[null,null];th[seat]=hh(MYID);
-  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
-    started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
-function init(){const s0=E.init();drawBoard(s0,s0,[],false,null);
-  const saved=LS.get('volo-p2p-host',null),sg=LS.get('volo-p2p-guest',null);
-  if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
-  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').dataset.i18n='inProgressGuest';$('resumeTxt').textContent=t('inProgressGuest');}
-  status('');
-  if(location.hash==='#test'){const sv=LS.get(TK,null);startTest();if(sv&&sv.moves){view={...sv,names:view.names};testTurn();}return;}
-  const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
-  if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
-  $('jCode').value=m[2];
-  if(m[1]==='join'){invited(true);return;}
-  joinClick(m[1]==='watch');}
+// ---------- the board and the action bar (hooks) ----------
+function voBoard({r,d,mine}){
+  if(navAt!==null){drawBoard(d.st,d.st,[],false,d.last);return {legal:[]};}
+  const legal=r.over?[]:E.gen(r.st);
+  const hm=mine&&!ui.pending&&!ui.basemv&&ui.sel.length&&ui.hover>=0?legal.find(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===ui.hover):null;
+  const gm=ui.basemv?null:(ui.pending&&ui.pending.t!=='x'?ui.pending:null)||hm;   // a pass has nothing to show on the board
+  const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
+  drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
+  const canPass=legal.some(m=>m.t==='x');
+  return {legal,canPass,onlyPass:legal.length===1&&canPass};}
+// My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
+function voTurnStatus({r,o,prep,undoB,RST}){
+  if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn',[RST].concat(regionBtns(r.st)));
+  else if(ui.sel.length)status(t(ui.hover>=0&&ptrType==='touch'?'st_tapAgain':'st_sel'),'turn',[RST]);
+  else if(prep)status('','turn',[RST]);
+  else if(o.onlyPass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass},undoB]);
+  else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',[undoB,o.canPass?{label:t('pass'),on:doPass}:null]);}
+// Players' cards: birds in the sky, in reserve, and flocks, under each name (added to the cards the shared code draws)
+function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
+  for(const p of [0,1]){const pc=$('pl'+p);if(!pc)continue;const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
+    ty.innerHTML=`<span title="${t('sky')}">${on}</span><span title="${t('reserve')}">${E.MAX-on}</span><span title="${t('flocks')}">${fl}</span>`;pc.appendChild(ty);}}
+{const coreRender=renderGame;renderGame=function(){coreRender();voTally();};}
 
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg';
@@ -846,10 +360,11 @@ function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.set
 function bird(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:18,fill:c?'var(--b2)':'var(--o2)',stroke:c?'var(--b3)':'var(--o3)','stroke-width':1.6},g);if(op)e.setAttribute('opacity',op);}
 // cur: real position; st: position shown (with the move being prepared); legal: moves in cur
 function drawBoard(cur,st,legal,interactive,last){const svg=$('svg');svg.textContent='';
+  svg.setAttribute('viewBox',VB[coordsOn?0:1]);
     // grid lines between neighbouring points
   const grid=el('g',{stroke:'var(--grid)','stroke-width':1.3,opacity:.75},svg);
   for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
-  for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
+  if(coordsOn)for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
   const lm=last&&last.mv,me=mySeat+1;
   const flyers=new Set(),places=new Set(),lands=new Set(),keepable=new Set(),moved=new Set();
   if(interactive&&!ui.basemv){for(const m of legal){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel)){const z=E.dest(m,ui.sel[0]);if(st[z]!==me)lands.add(z);}}else if(m.t==='p'&&!ui.sel.length)places.add(m.at);}}
@@ -874,6 +389,15 @@ function drawBoard(cur,st,legal,interactive,last){const svg=$('svg');svg.textCon
     const spots=lm.t==='p'?[lm.at]:lm.cells.map(z=>E.dest(lm,z)).filter(z=>!lm.cells.includes(z));
     for(const z of spots){bird(gl,X(z),Y(z),c,.5);el('circle',{cx:X(z),cy:Y(z),r:21,fill:'none',stroke:'var(--accent)','stroke-width':2.5,'stroke-dasharray':'4 4'},gl);}}
   if(lm&&lm.t==='f'&&!last.preview){const a=lm.cells[0],b=E.dest(lm,a);el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'2 7','stroke-linecap':'round',opacity:.9,'pointer-events':'none'},svg);}}
-init();sndBind();
+// ---------- the interface with common/core.js ----------
+const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
+  rules:()=>({}),form:()=>({}),
+  replay:voReplay,
+  legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,
+  enc,describe,newUi,preparing,cancel:cancelPrep,
+  board:voBoard,turnStatus:voTurnStatus,
+  hintable:()=>false,   // no computer opponent, so no hint (free play has undo only)
+  home:()=>{const s0=E.init();drawBoard(s0,s0,[],false,null);}};
+coreStart();
 </script>
 </body></html>

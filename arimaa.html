@@ -5,18 +5,19 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=1">
 <style>
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}
-/* Layout: board on the left, game column on the right; stacked on phones */
+/* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
   --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6a645a;--line:#ddd7cb;
   --wood:#e2d3b1;--wood-edge:#c9b386;--sq:#f3ead6;--gridl:#c2ad82;--trap:#e3b4a2;--trapk:#a5563f;--coord:#7b6a4a;
   --g1:#f3c13a;--g3:#7d560a;--gk:#3b2800;--s1:#6f7d8b;--s3:#28323c;--sk:#ffffff;
+  --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
   --accent:#2f7d8c;--accent-ink:#ffffff;--danger:#cf4a35;
-  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --frost:rgba(226,243,255,.75);
+  --board-ar:506/508;            /* viewBox of the board (506×508; 488×488 without the coordinates) */
 }
+html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
   --wood:#3a3226;--wood-edge:#2a241b;--sq:#4a4234;--gridl:#2c261d;--trap:#7a463a;--trapk:#e19a83;--coord:#b9a888;
@@ -25,119 +26,12 @@
   --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
   --wood:#3a3226;--wood-edge:#2a241b;--sq:#4a4234;--gridl:#2c261d;--trap:#7a463a;--trapk:#e19a83;--coord:#b9a888;
   --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
-.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-h1{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.02em;margin:0;line-height:1}
-h1 span{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;margin-left:.4em}
-select,button{font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
-button:hover:not(:disabled),select:hover{border-color:var(--muted)}
-button:disabled{opacity:.45;cursor:default}
-button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
-.boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
-.board{position:relative}
-.notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:10px;font-weight:500;font-size:.9rem;text-align:center;border:1px solid transparent}
-.notice.on{background:var(--panel);border-color:var(--line)}
-.notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.players{display:flex;justify-content:space-between;gap:8px}
-.players.side-only{flex-direction:column}
-.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
-.player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.player .who{font-size:1rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.player.active .who{color:var(--ink)}
-.player .clock{font-size:1.4rem;line-height:1.1}
+/* the board sits on its wood frame, on phones too (thinner there) */
+.board{background:linear-gradient(var(--wood),var(--wood-edge));border:0;border-radius:16px}
+html.ingame:not(.wide) .board{--bp:4px;padding:4px;border-radius:10px;background:linear-gradient(var(--wood),var(--wood-edge))}
 .player .caps{min-height:24px;margin-top:3px;display:flex;align-items:center}
 .player .caps svg{display:block;max-width:100%;height:auto}
-.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.side details.prominent summary{color:var(--ink);font-size:1rem}
-.side details.prominent .link input{font-size:.95rem;padding:9px 10px}
-.side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
-.side details > *:not(summary){margin-top:8px}
-.side details .link,.side details .hint{margin-top:6px}
-@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
-.board{background:linear-gradient(var(--wood),var(--wood-edge));border-radius:16px;padding:8px;min-width:0}
-.board svg{display:block;width:100%;height:auto;max-height:80vh;margin:0 auto;touch-action:manipulation}
-.status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
-.status.turn{border-color:var(--accent)}
-.status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.side{display:flex;flex-direction:column;gap:12px;min-width:0}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.card h2{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.steps{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--ink);white-space:pre}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
-.home button.big{padding:14px;font-size:1.05rem}
-.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.85rem;cursor:pointer}
-.linkish{color:var(--ink)}
-.picks{display:flex;flex-direction:column;gap:8px}
-.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
-.pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
-.joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
-.home .err:empty{display:none}
-.inv-only{display:none}
-#setup.invited .home > :not(#joinCard){display:none}
-#setup.invited .home > #joinErr:not(:empty){display:block}
-#setup.invited .inv-only{display:block}#setup.invited .noinv{display:none}
-.home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
-.home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
-.home details{padding:10px 14px}
-.home details .card{margin-top:10px}
-.who{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
-.tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
-.pc{width:15px;height:15px;border-radius:50%;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
-.pc.c0{background:var(--g1);border:1.5px solid var(--g3)}
-.pc.c1{background:var(--s1);border:1.5px solid var(--s3)}
-.hint{font-size:.8rem;color:var(--muted);margin:0}
-ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.8rem;max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:2px}
-ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
-ol.log .n{color:var(--muted)}
 ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);font-size:.74rem;line-height:1.3}
-ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
-ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
-.navbar{display:flex;align-items:center;justify-content:center;gap:6px}
-.navbar button{min-width:44px;padding:6px 10px}
-.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
-details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
-details summary{cursor:pointer;font-weight:600}
-details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
-details li{margin:.25em 0}
-.cell{cursor:pointer}
-.pl{font-family:var(--f-display);font-weight:800;font-size:25px;pointer-events:none}
-@media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{opacity:.45}}}
-
-[hidden]{display:none!important}
-.view{display:flex;flex-direction:column;gap:16px}
-a{color:inherit}
-.form{display:flex;flex-direction:column;gap:10px}
-.form label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
-.clock{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.clock.run{color:var(--ink)}
-.clock.idle{color:var(--muted)}
-.clock.low{color:var(--danger)}
-.link{display:flex;gap:6px}
-.link input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.78rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
-.confirm{display:flex;gap:8px}
-.confirm button{flex:1}
-.toggle{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
-.toggle input{width:18px;height:18px;accent-color:var(--accent)}
-.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
-.empty{color:var(--muted);margin:0}
-.txt{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
-#watchInfo{text-transform:none;letter-spacing:0;font-weight:400}
-
-/* header breadcrumb: games / game name */
-h1 a.crumb{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;text-decoration:none}
-h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
-h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
-h1 a.gname{color:inherit;text-decoration:none}
-@media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
-:root{--frost:rgba(226,243,255,.75)}
 #svg .lp{opacity:.5;transition:opacity .12s}
 #svg .lp.prep{opacity:1}
 #svg.lpfocus .lp{opacity:.12}
@@ -145,7 +39,7 @@ h1 a.gname{color:inherit;text-decoration:none}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="arimaa.html">Arimaa</a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="arimaa.html"><b id="ttl" style="font-weight:inherit">Arimaa</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -155,13 +49,18 @@ h1 a.gname{color:inherit;text-decoration:none}
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
-        <button type="button" class="pick" data-pick="local"><b data-i18n="m_local">On this device</b><span data-i18n="m_localTxt">Both sides on the same screen, to try the game or play face to face.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
       </form>
       <form class="form" id="testForm" hidden>
         <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
@@ -194,12 +93,14 @@ h1 a.gname{color:inherit;text-decoration:none}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="board"><svg id="svg" viewBox="-22 -4 506 508" role="img" aria-label="Arimaa board"></svg></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-22 -4 506 508" role="img" aria-label="Arimaa board"></svg></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <div class="notice" id="notice"></div>
   </div>
-  <aside class="side">
+  <aside class="side" id="side" tabindex="-1">
     <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
       <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
@@ -210,9 +111,6 @@ h1 a.gname{color:inherit;text-decoration:none}
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
-    <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt" style="font-family:var(--f-mono)"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
-    <div class="card" id="setupCard" hidden><h2 data-i18n="setupH">Setup</h2><p class="hint" data-i18n="setupTxt"></p><div class="confirm"><button type="button" id="setupReset" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="setupGo" data-i18n="setupGo">Confirm the setup</button></div></div>
-    <div class="card" id="turnCard" hidden><h2><span data-i18n="yourTurn">Your turn</span><span class="steps" id="stepCnt"></span></h2><div class="confirm"><button type="button" id="undoStep" data-i18n="undoStep">Undo step</button><button type="button" id="cancelTurn" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="endTurn" data-i18n="endTurn">End turn</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
       <p class="hint" id="rmTxt" hidden></p>
@@ -223,7 +121,7 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="myCard" hidden>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-      <div class="confirm" id="testBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo previous move</button></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -232,10 +130,13 @@ h1 a.gname{color:inherit;text-decoration:none}
     </details>
     <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
+    </div>
   </aside>
 </main>
+<div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
+<script src="common/core.js?v=1"></script>
 <script>
 // ===== Arimaa rules engine =====
 // Board: 64 squares, index = row*8+col, row 0 = rank 1 (Gold's home), col 0 = file a.
@@ -309,41 +210,17 @@ function ArimaaEngine(){
     return null;}
   return {LET,TRAPS,isTrap,NB,SETUP_SQ,DEFAULT,sq,letter,sgn,frozen,actions,code,apply,bkey,setup,turn,hasLegal,outcome,rabbits,pieces};
 }
-// ===== Arimaa peer to peer =====
-const SIZE='arimaa';
-const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
-const I18N={fr:{
- leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
- sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",goldIs:"Or (commence)",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
- join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
- haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
- undo:"Annuler le coup précédent",
- inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
- resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
- yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
- setupH:"Mise en place",setupTxt:"Cliquez deux de vos cases l'une après l'autre pour échanger leurs pièces.",setupGo:"Valider la disposition",
- yourTurn:"Votre tour",steps:"pas {k}/4",undoStep:"Annuler le pas",endTurn:"Terminer le tour",
- start:"Départ",startBtn:"Démarrer la partie",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
- invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
- fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
- hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
- rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
- noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",gold:"Or",silver:"Argent",
- t_caps:"Pièces prises : {l}",iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
- noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
-st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
- st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
- draw:"Partie interrompue : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
- st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
- st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
- st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",
- st_enemyTo:"Cliquez où va la pièce adverse : une case vide pour la pousser, votre pièce pour la tirer.",st_pusher:"Cliquez la pièce qui pousse.",st_pullTo:"Cliquez la case où va votre pièce qui tire.",
+// Arimaa strings, merged over the shared ones (core.js)
+const AR_I18N={fr:{
+ title:"Arimaa",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
+ m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
+ setupGo:"Valider la disposition",undoStep:"Annuler le pas",endTurn:"Terminer le tour",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
+ st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
+ st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
- ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",
- pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",pull_t:"{A} {fa} tire {b} {fb} en {to}",
+ w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",
+ pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",pull_t:"{A} {fa} tire {b} {fb} en {to}",
+ st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
@@ -353,41 +230,21 @@ st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de m
  <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
  <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
- <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
+ <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat (sur écran tactile : un premier toucher l'affiche, un second le joue). Recliquer une pièce déjà déplacée dans le tour revient au moment où elle a été choisie. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>
  <p class="hint">Images des pièces : <a href="https://game-icons.net">game-icons.net</a>, licence <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> — lapin, chameau, éléphant et cheval par <a href="https://delapouite.com">Delapouite</a> ; chat et chien par <a href="https://lorcblog.blogspot.com">Lorc</a>.</p>`
 },en:{
- leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
- sub:"peer to peer",create:"Create a game",nick:"Your nickname",goldIs:"Gold (plays first)",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
- join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
- haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
- undo:"Undo previous move",
- inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
- resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
- yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
- setupH:"Setup",setupTxt:"Click two of your squares one after the other to swap their pieces.",setupGo:"Confirm the setup",
- yourTurn:"Your turn",steps:"step {k}/4",undoStep:"Undo step",endTurn:"End turn",
- start:"Start",startBtn:"Start the game",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
- invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
- fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
- hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
- rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
- noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",gold:"Gold",silver:"Silver",
- t_caps:"Captured pieces: {l}",iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
- noPeer:"The connection library could not load: check your Internet access, then reload the page.",
-st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
- st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
- draw:"Game stopped: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
- st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
- st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
- st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",
- st_enemyTo:"Click where the opposing piece goes: an empty square to push it, your piece to pull it.",st_pusher:"Click the piece that pushes.",st_pullTo:"Click the square your pulling piece moves to.",
+ title:"Arimaa",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
+ m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
+ setupGo:"Confirm the setup",undoStep:"Undo step",endTurn:"End turn",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
+ st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",st_soloTurn:"{n} to move.",
+ st_steps:"Step {k}/4: go on, or end the turn.",st_steps4:"Step 4/4: end the turn.",
  st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
- ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",
- pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",st_pushPull:"Choose the arrival square: the pushed piece goes there, or your piece goes there pulling. Hover a free neighbouring square to see the result.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
+ w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",
+ pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
+ st_pushPull:"Choose the arrival square: the pushed piece goes there, or your piece goes there pulling. Hover a free neighbouring square to see the result.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
@@ -397,13 +254,12 @@ st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking serv
  <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
  <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
- <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
+ <li><b>Playing</b>: click one of your pieces, then its arrival square; hovering a square previews the result (on a touch screen: a first tap shows it, a second plays it). Clicking again a piece already moved in this turn goes back to the moment it was chosen. The turn's commands are in the bar under the board: Reset, Undo step, End turn; in free play, Undo last move. Setup: click two of your squares to swap their pieces, then Confirm the setup.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>
  <p class="hint">Piece images: <a href="https://game-icons.net">game-icons.net</a>, licensed <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> — rabbit, camel, elephant and horse by <a href="https://delapouite.com">Delapouite</a>; cat and dog by <a href="https://lorcblog.blogspot.com">Lorc</a>.</p>`
 }};
-let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
-function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
-const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
 // Piece images from game-icons.net (CC BY 3.0): rabbit, camel, elephant head and horse head by Delapouite;
 // cat and hound by Lorc. One silhouette path each, in a 512×512 box; holes show the colour of the piece.
 const ICONS={R:'M242.29 27.29c-4.165 0-4.79.695-5.593 3.058-.803 2.362-.714 8.368 4.065 17.097 8.758 16 32.356 39.726 78.675 64.582 7.15-7.48 15.604-12.92 24.57-16.713-25.48-14.076-44.05-29.58-58.892-42.158-18.93-16.04-31.326-25.867-42.826-25.867zm-66.274 54.66c-3.815.007-4.68.864-5.07 1.355-.39.49-1 1.882-.485 5.125 1.03 6.484 7.16 18.015 18 28.943 21.683 21.855 60.793 42.287 109.542 34.72 2.13-.33 4.725-.616 7.846 1.194 3.12 1.81 4.73 5.96 4.77 8.36.076 4.807-1.495 6.874-2.722 9.546-2.452 5.345-4.35 11.657-4.375 11.47v.003c1.98 15 14.374 26.28 32.396 34.63 18.023 8.353 40.75 13.004 58.875 14.737 12.552 1.2 27.23.995 40.9-1.388-1.555-2.715-2.676-5.576-3.31-8.516-1.763-8.156.105-16.39 4.093-23.327 6.392-11.12 18.112-19.685 32.36-22.83-4.64-7.837-10.434-16.323-17.024-24.592-19.92-24.992-47.433-46.955-67.978-47.384-20.465-.427-44.107 6.055-57.367 24.242-2.24 3.07-5.56 4.144-8.018 4.46-2.457.318-4.623.1-6.92-.284-4.592-.766-9.7-2.373-15.613-4.527-11.825-4.308-26.625-10.89-42.127-17.774-15.502-6.883-31.668-14.06-45.744-19.44-14.076-5.38-26.546-8.735-32.027-8.724zm224.422 61.915a16 16 0 0 1 15.533 15.994 16 16 0 0 1-32 0 16 16 0 0 1 16.467-15.995zM39.79 190.777c-.804.006-2.017.25-4.017 1.24a9 9 0 0 0-.002 0c-4.252 2.103-7.437 7.213-8.883 16.325-1.447 9.11-.696 21.27 1.888 33.53 2.585 12.263 6.954 24.683 12.116 34.634 3.023 5.827 6.386 10.568 9.53 14.133 4.966-17.297 13.943-33.833 27.697-48.44-3.153-2.038-5.968-4.422-8.365-7.046-7.05-7.717-11.604-16.873-15.648-24.877-4.045-8.003-7.82-14.854-10.64-17.605-1.408-1.376-2.22-1.714-2.99-1.84-.192-.032-.414-.057-.683-.055zm437.63 2.06c-11.655 1.13-21.29 7.89-25.342 14.936-2.183 3.797-2.794 7.368-2.105 10.555.51 2.36 1.71 4.797 4.408 7.29 11.853-4.564 21.157-11.42 26.145-20.938-.286.42.182-1.32-.504-4.184-.494-2.07-1.397-4.71-2.6-7.66zm-198.496 7.724c-2.463-.004-4.896.007-7.3.034-71.537.806-120.588 13.47-152.624 32.187-36.613 21.393-51.716 50.092-54.844 81.44-3.128 31.346 6.6 65.513 22 94.56 14.84 27.988 35.094 51.027 51.97 62.22H312.19c-.134-1.91-.67-3.555-1.502-5.188-1.637-3.21-4.918-6.56-10.032-9.687-10.228-6.256-27.12-11.045-44.812-14.438-17.693-3.392-36.175-5.596-50.625-8-7.227-1.2-13.393-2.377-18.532-4.125-2.57-.873-4.92-1.813-7.313-3.593-2.392-1.782-5.313-5.385-5.313-9.97 0-2.61 1.27-4.982 2.375-6.22 1.107-1.236 2.03-1.74 2.75-2.124 1.442-.765 2.283-.952 3.125-1.156 1.686-.408 3.238-.605 5.125-.813 3.776-.414 8.714-.75 14.72-1.187 12.01-.875 28.107-2.106 44.968-4.688 33.722-5.162 69.382-16.778 81.156-36.437 6.403-10.69 5.69-20.67-.56-31.156-6.253-10.487-18.818-20.728-35.72-27.376-33.803-13.297-84.07-12.464-132.72 22.47l-10.5-14.627c33.327-23.93 67.99-33.66 99-33.78 18.608-.072 35.892 3.33 50.782 9.187 19.854 7.81 35.666 19.93 44.594 34.906 8.93 14.976 10.196 33.537.563 49.625-17.64 29.45-58.476 39.55-93.876 44.97-5.897.902-11.315 1.47-16.844 2.092 8.423 1.25 17.318 2.606 26.22 4.313 18.544 3.556 36.893 8.25 50.842 16.78 6.975 4.267 12.99 9.656 16.657 16.845 2.058 4.04 3.204 8.593 3.37 13.375h130.66c2.072-1.76 3.435-3.254 3.844-4.063.538-1.064.46-1.178.25-2.062-.423-1.77-3.667-6.165-7.78-11.125-2.527-3.044-11.017-7.917-21.658-10.594-10.64-2.677-23.344-3.65-34.25-2.22l-2.344.283-2.218-.876c-6.667-2.715-11.864-9.652-12.25-16.313-.386-6.66 1.89-12.352 4.72-18.467 5.655-12.23 14.802-26.366 22.186-42.72 7.384-16.352 12.907-34.52 11.72-53.843-1.153-18.73-8.467-38.93-27.84-60.88-.622-.052-1.248-.1-1.86-.16h-.002c-19.505-1.864-43.524-6.62-64.08-16.146-15.233-7.06-29.065-17.167-36.415-31.074-4.692-.1-9.332-.172-13.85-.18z',
@@ -417,35 +273,10 @@ const ICON_DX={R:-3,C:-10,D:52,H:34,M:24,E:1};
 function drawIcon(g,L,cx,cy,sz,ink){const NS='http://www.w3.org/2000/svg',gr=document.createElementNS(NS,'g'),e=document.createElementNS(NS,'path');
   gr.setAttribute('transform',`translate(${cx-sz/2+(ICON_DX[L]||0)*sz/512} ${cy-sz/2}) scale(${sz/512})`);e.setAttribute('d',ICONS[L]);e.setAttribute('fill',ink);
   gr.appendChild(e);g.appendChild(gr);return gr;}
-function applyStatic(){document.documentElement.lang=lang;
-  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
-  document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
-  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
-  document.getElementById('rules').innerHTML=t('rules');
-  const rc=document.getElementById('resumeTxt');if(rc&&rc.dataset.guest)rc.textContent=t('inProgressGuest');
-  const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('arimaa-tc'));}catch(e){return null;}})()||'20+10';
-  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status('');});
-applyStatic();
+// ===== Arimaa: the page's side of common/core.js =====
 const E=ArimaaEngine();
-const $=id=>document.getElementById(id);
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
-// Nickname shared by all the games (games-name), with this game's former key as fallback
-const nickGet=()=>LS.get('games-name','')||LS.get('arimaa-name',''),nickSet=v=>{LS.set('games-name',v);LS.set('arimaa-name',v);};
-const MYID=pickTabId('arimaa',(()=>{try{return JSON.parse(localStorage.getItem('arimaa-p2p-cid'));}catch(e){return null;}})());
-const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
-
-function pickTabId(key,seed){const R=()=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(16)))s+=a[b%a.length];return s;};
-  try{const L=localStorage,S1=sessionStorage;let id=S1.getItem(key+'-tab');
-    if(!id){let ids=[];try{ids=JSON.parse(L.getItem(key+'-tabs')||'[]')||[];}catch(e){}if(!ids.length&&seed)ids=[seed];const now=Date.now();
-      id=ids.slice().reverse().find(x=>now-(+L.getItem(key+'-alive-'+x)||0)>5000);
-      if(!id){id=R();ids.push(id);}L.setItem(key+'-tabs',JSON.stringify(ids.filter((x,k)=>ids.indexOf(x)===k).slice(-10)));S1.setItem(key+'-tab',id);}
-    const beat=()=>{try{L.setItem(key+'-alive-'+id,String(Date.now()));}catch(e){}};beat();setInterval(beat,1500);return id;}catch(e){return R();}}
-function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t.charCodeAt(k);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
-
 // ---------- game replay ----------
 // moves[0] = Gold's setup, moves[1] = Silver's setup, then one full turn per entry, Gold and Silver alternately (seat = index % 2).
-let memoKey='',memoVal=null;
 // Detail of a turn, replayed action by action from the board before it: one path per piece that moved
 // (own: moved by the player; otherwise pushed or pulled), with the number of each step, and the pushes and pulls.
 function turnDetail(b,s,code){const at=new Map(),paths=new Map(),acts=[];let cur=b,used=0,n=0;
@@ -459,7 +290,8 @@ function turnDetail(b,s,code){const at=new Map(),paths=new Map(),acts=[];let cur
   return {paths:[...paths.values()],acts};}
 function turnPhrase(det){if(!det||!det.acts.length)return '';const pn=I18N[lang].pn,cap=w=>w.charAt(0).toUpperCase()+w.slice(1);
   return det.acts.map(a=>t(a.k==='P'?'push_t':'pull_t',{A:cap(pn[Math.abs(a.va)-1]),fa:E.sq(a.a),b:pn[Math.abs(a.ve)-1],fb:E.sq(a.e),to:E.sq(a.to)})).join(' · ');}
-function replay(size,moves,result){const key=moves.join('|')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
+// No rule options (rules = {}); replay() in core memoises and adds the result
+function arReplay(rules,moves){
   let b=new Int8Array(64);const reps=new Map(),log=[];let last=null,over=null;
   for(let k=0;k<moves.length;k++){const p=k%2,code=moves[k];
     if(k<2){const r=E.setup(b,p,code);if(!r){over={w:-1,why:'w_bad'};break;}b=r.b;log.push({p,txt:r.toks.join(' ')});last={mv:[],caps:[],setup:true};
@@ -469,161 +301,18 @@ function replay(size,moves,result){const key=moves.join('|')+'|'+JSON.stringify(
     b=r.b;const kk=E.bkey(b)+(1-p);reps.set(kk,(reps.get(kk)||0)+1);
     log.push({p,txt:r.toks.join(' '),det});last={mv:r.mv,caps:r.caps,det};
     const o=E.outcome(b,p,reps);if(o){over=o;break;}}
-  if(!over&&result)over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
-  memoKey=key;memoVal={st:{b,turn:moves.length%2,n:moves.length,reps},log,last,over};return memoVal;}
-
-// ---------- network (PeerJS) ----------
-// Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
-let role=null;          // 'host' | 'guest' | 'watch'
-let peer=null;
-let view=null;          // public state shown {size,names,first,moves,clock,running,elapsed,result,guestOn,watchers,recvAt}
-let mySeat=-1;
-let ui={},sending=false;resetUi();
-const H={};             // host-only state
-
-function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
-  const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent=txt;}}
-function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
-function peerOpts(){return {debug:1};}
-function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
-
-// --- host ---
-function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
-  running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
-  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null};}
-// Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
-// colours swapped (the players exchange seats), same time control.
-function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g.size,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
-  if(op==='ask'&&(!rm||rm.st==='no'))g.rematch={from:s,st:'ask'};
-  else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
-  else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
-  else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
-    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.result=null;g.rematch=null;
-    g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
-    mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
-  else return;
-  hostBroadcast();}
-function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});}
-// The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
-function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
-  const r=replay(g.size,g.moves,g.result),absentTurn=!r.over&&r.st.turn!==mySeat,want=!live&&absentTurn;
-  if(want&&!g.paused){if(g.running&&!r.over){const tt=r.st.turn;g.clock[tt]=Math.max(0,g.clock[tt]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
-  else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
-const PID=c=>'arimaa-p2p-'+c;
-const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
-function hostSave(){const g=H.game;LS.set('arimaa-p2p-host',{code:H.code,guestCid:H.guestCid,game:g,elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});}
-function hostReady(s){const g=H.game;if(g.started||g.result||!g.names[0]||!g.names[1])return;g.ready[s]=true;
-  if(g.ready[0]&&g.ready[1]){g.started=true;g.running=true;H.turnStart=Date.now();}hostBroadcast();}
-function hostBroadcast(bump){if(bump)H.game.ver=(H.game.ver||0)+1;hostSyncPause();hostSave();const pub=hostPublic();
-  for(const c of H.conns)if(c.open)c.send({t:'state',game:pub});
-  showState(pub);}
-function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
-  if(saved){Object.assign(H,{code:saved.code,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
-  H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);
-  if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
-  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
-  setHash('host-'+H.code);status(t('st_open'));showGame();
-  const me=newPeer(H.peerId);peer=me;
-  me.on('open',()=>{if(peer!==me)return;fillCodes();hostBroadcast();});
-  me.on('connection',conn=>{if(peer!==me){try{conn.close();}catch(e){}return;}conn.on('data',d=>{if(peer===me)hostOnData(conn,d);});conn.on('close',()=>{if(peer===me)hostDrop(conn);});conn.on('error',()=>{if(peer===me)hostDrop(conn);});});
-  me.on('disconnected',()=>{if(peer!==me)return;status(t('st_lostMm'));setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500);});
-  me.on('error',e=>{if(peer!==me)return;
-    if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
-    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
-function becomeClient(){const pub=hostPublic(),code=H.code,seat=mySeat,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
-  if(pub.running&&!pub.result){const r=replay(pub.size,pub.moves,pub.result);if(!r.over)pub.clock[r.st.turn]=Math.max(0,pub.clock[r.st.turn]-pub.elapsed);}
-  clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
-function becomeHost(){if(!view)return;if(C.pending){pendClear();delete view.runSeat;}LS.del('arimaa-p2p-guest');C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
-  const rem=remaining(),v=view;
-  H.code=C.code;H.guestCid=null;H.game={size:v.size,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
-    ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0};
-  if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
-  H.turnStart=Date.now();hostStart(null);}
-function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
-function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping')return;const g=H.game;
-  if(d.t==='hello'){
-    const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
-    if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
-    if(d.role==='play'&&s>=0&&s!==mySeat){
-      if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
-      g.th[s]=th;H.guestCid=d.cid;H.guestConn=conn;conn.seat=s;H.conns.add(conn);if(d.name)g.names[s]=String(d.name).slice(0,24);
-      const o=d.s;if(o&&typeof o==='object'&&o.size===g.size&&Array.isArray(o.moves)&&o.moves.length>g.moves.length&&g.moves.every((x,k)=>o.moves[k]===x)){
-        g.moves=o.moves.slice();g.clock=o.clock.slice();g.result=o.result||null;g.started=!!o.started;g.running=!!o.started;g.paused=true;H.turnStart=Date.now();}
-      conn.send({t:'welcome',role:'guest',seat:s});hostBroadcast();return;}
-    if(d.role==='play'){conn.send({t:'reject',why:'t_refused'});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
-    H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
-  if(conn!==H.guestConn)return;
-  const s=conn.seat;
-  if(d.t==='move')hostMove(s,d.n,d.code,conn);
-  if(d.t==='start')hostReady(s);
-  if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
-  if(d.t==='rematch')rematchOp(s,d.op);}
+  return {st:{b,turn:moves.length%2,n:moves.length,reps},log,last,over};}
 // the host checks every setup and turn with the rules engine before accepting it
-function legalCode(r,code){if(typeof code!=='string')return false;if(r.st.n<2)return !!E.setup(r.st.b,r.st.turn,code);return !!E.turn(r.st.b,r.st.turn,code,r.st.reps);}
-function hostMove(s,n,code,conn){const g=H.game;if(conn&&n===g.moves.length-1&&g.moves[n]===code){conn.send({t:'state',game:hostPublic()});return false;}if(g.result||!g.started||g.paused){conn&&conn.send({t:'nack'});return false;}
-  const r=replay(g.size,g.moves,g.result);if(r.over||r.st.turn!==s||n!==g.moves.length||!H.guestConn&&s!==mySeat){conn&&conn.send({t:'nack'});return false;}
-  if(!legalCode(r,code)){conn&&conn.send({t:'nack'});return false;}
-  const now=Date.now();
-  if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
-  g.moves.push(code);g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
-let saveTick=0;
-setInterval(()=>{if(role!=='host'||!H.game)return;if(++saveTick%25===0)hostSave();if(H.game.result||!H.game.running||H.game.paused||!H.game.tc)return;const g=H.game,r=replay(g.size,g.moves,g.result);if(r.over)return;
-  const t=r.st.turn;if(g.clock[t]-(Date.now()-H.turnStart)<=0){g.clock[t]=0;g.result={winner:1-t,reason:'time'};hostBroadcast();}},200);
-
-// Heartbeat: host and guest exchange a small message every 2 s; after ~9 s without any message,
-// the guest (or spectator) treats the connection as lost, and the host treats the guest as away.
-setInterval(()=>{const now=Date.now();
-  if(role==='host'&&H.conns){for(const c of H.conns)if(c.open){try{c.send({t:'ping'});}catch(e){}}
-    const gc=H.guestConn;if(gc&&gc.lastSeen&&now-gc.lastSeen>9000){try{gc.close();}catch(e){}hostDrop(gc);}}
-  else if((role==='guest'||role==='watch')&&C.conn&&C.conn.open&&!C.stop){try{C.conn.send({t:'ping'});}catch(e){}
-    if(C.lastSeen&&now-C.lastSeen>9000){const c=C.conn;C.conn=null;try{c.close();}catch(e){}clientLost();}}},2000);
-
-// --- guest / spectator ---
-let C={};   // {code,cid,name,conn,retry}
-function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4){$('joinErr').textContent=t('codeLen');return;}
-  clearTimeout(C.t);clearTimeout(C.ct);C={code,host:PID(code),play:!asWatch,name:nm,cid:MYID,retry:0,lostSince:0};
-  $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+code);
-  role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));
-  const sv=LS.get('arimaa-p2p-guest',null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
-  if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
-  {const pd=LS.get('arimaa-p2p-pending',null);if(!asWatch&&pd&&pd.code===code&&view&&view.moves.length===pd.n){C.pending={n:pd.n,code:pd.mv,at:Date.now(),sent:0};pendView();sending=true;renderGame();}}
-  const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
-  me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view)status(t('st_noTable'));}
-    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
-  me.on('disconnected',()=>setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500));}
-function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.connect(C.host,{reliable:true});C.conn=conn;clearTimeout(C.ct);
-  C.ct=setTimeout(()=>{if(C.conn===conn&&!conn.open)clientLost();},7000);
-  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,s:mySeat>=0&&view?(C.pending&&C.pending.base||view):null});C.lastSeen=Date.now();});
-  conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
-  conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
-function clientLost(){if(C.stop)return;C.lostSince=C.lostSince||Date.now();sending=false;if(C.pending)sending=true;
-  if(view&&!view.paused&&view.started&&!view.result){const r=replay(view.size,view.moves,view.result);
-    if(!r.over&&r.st.turn!==mySeat){view.clock=remaining();view.running=false;view.elapsed=0;view.paused=true;view.recvAt=Date.now();}renderGame();}
-  clientRetry();}
-function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.stop)return;
-  if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
-  if(peer&&peer.open)clientConnect();else{if(peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}clientLost();}},3500);}
-function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now();if(d.t==='ping')return;
-  if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);}
-  else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
-  else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();showState(d.game);if(C.pending){pendView();sending=true;renderGame();}}
-  else if(d.t==='nack'){sending=false;if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));resetUi();renderGame();}}
+function legalCode(st,code){if(typeof code!=='string')return false;if(st.n<2)return !!E.setup(st.b,st.turn,code);return !!E.turn(st.b,st.turn,code,st.reps);}
+function describe(code,st){const r=st.n<2?E.setup(st.b,st.turn,code):E.turn(st.b,st.turn,code,st.reps);return r?r.toks.join(' '):String(code);}
 
 // ---------- game view ----------
-function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;}
-function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
-function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'',prevSeat=ui.seat;
-  view={...g,recvAt:Date.now()};
-  if(role==='guest'&&mySeat>=0){if(g.result)LS.del('arimaa-p2p-guest');else LS.set('arimaa-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
-  if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result)||prevSeat!==mySeat)resetUi();
-  renderGame();}
 // ui: steps of the turn being prepared (local preview, sent only when the turn is finished), current selection, setup arrangement
-function resetUi(){ui={acts:[],sel:-1,enemy:-1,via:-1,hover:-1,tap:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1,seat:mySeat};}
+function newUi(){return {acts:[],sel:-1,enemy:-1,via:-1,hover:-1,tap:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1};}
 function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.tap=-1;ui.cand=[];ui.candKind='';}
-// Something is being prepared (steps, a selection, a pending confirmation, a changed setup); otherwise the board is neutral
+// Something is being prepared (steps, a selection, a changed setup); otherwise the board is neutral
 function prepared(){return !!(ui.acts.length||ui.sel>=0||ui.enemy>=0||ui.pending||ui.swap>=0||(ui.setup&&mySeat>=0&&ui.setup.join('')!==E.DEFAULT[mySeat]));}
-// "Cancel": drop the whole prepared turn (or setup) and come back to the neutral board
+// « Réinitialiser » (Reset, Escape): drop the whole prepared turn (or setup) and come back to the neutral board
 function cancelPrep(){if(!view||!prepared())return;const h=ui.hover;resetUi();ui.hover=h;renderGame();}
 // Pieces moved in the turn being prepared: current square -> {k: index of the piece's first action, own}
 function seqPieces(b){const at=new Map(),g=E.sgn(mySeat);ui.acts.forEach((a,k)=>{const x=E.apply(b,a);
@@ -633,100 +322,40 @@ function seqPieces(b){const at=new Map(),g=E.sgn(mySeat);ui.acts.forEach((a,k)=>
 // opposing piece: just before the push or pull that moved it, with that push or pull's arrival squares offered)
 function rewindTo(e){const a=ui.acts[e.k];ui.acts=ui.acts.slice(0,e.k);clearSel();
   if(a.k==='m')ui.sel=a.f;else{ui.sel=a.a;if(!e.own){ui.via=a.a;ui.enemy=a.e;}}renderGame();}
-function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[view.runSeat??r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
-const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
-function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st.turn===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
 // position of the turn being prepared
 function preview(r){let b=r.st.b,used=0;const caps=[],toks=[],mv=[];for(const a of ui.acts){const x=E.apply(b,a);b=x.b;used+=x.n;caps.push(...x.caps);toks.push(...x.toks);mv.push(...x.mv);}return {b,used,caps,toks,mv};}
 function endState(r,pv){if(!pv.used)return 'none';if(E.bkey(pv.b)===E.bkey(r.st.b))return 'same';if((r.st.reps.get(E.bkey(pv.b)+(1-r.st.turn))||0)>=2)return 'rep';return 'ok';}
 function setupBoard(r){if(!ui.setup)ui.setup=E.DEFAULT[mySeat].split('');const b=r.st.b.slice();E.SETUP_SQ[mySeat].forEach((i,k)=>{b[i]=(E.LET.indexOf(ui.setup[k])+1)*E.sgn(mySeat);});return b;}
-
-// Navigation through the moves: for everyone once the game is over, for spectators at any time.
-// navAt=null follows the game live; otherwise the board shows the position after navAt moves.
-let navAt=null,navKey=null,navVal=null;
-const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch'));
-function navPos(k){const key=view.moves.slice(0,k).join('|');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view.size,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
-function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
-function renderGame(){if(!view)return;if(role==='test')LS.set(TK,view);const r=replay(view.size,view.moves,view.result);
-  if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
-  const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
-  const mine=navAt===null&&isMyTurn(r),setupPhase=r.st.n<2;
-  const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
-  const nm=s=>role==='test'?view.names[s]:(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
-  let pv=null,es='none';
+// core's renderGame: the board, then the bar under it for my turn (turnStatus) and the opponent's (waitStatus)
+let shownD=null;   // position shown (live or navigated), for the captured pieces under the players
+function arBoard({r,d,mine}){shownD=d;const o={setup:r.st.n<2,pv:null,es:'none'};
   if(navAt!==null)drawBoard({real:d.st.b,shown:d.st.b,last:d.last});
-  else if(mine&&setupPhase)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
-  else if(mine){pv=preview(r);es=endState(r,pv);
+  else if(mine&&o.setup)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
+  else if(mine){const pv=preview(r);o.pv=pv;o.es=endState(r,pv);
     const cur=ui.acts.length?{det:turnDetail(r.st.b,mySeat,ui.acts.map(E.code).join(',')),caps:[],prep:true}:r.last;
-    drawBoard({real:r.st.b,shown:pv.b,pv,hl:ui.pending?null:highlights(pv),last:cur,hov:ui.pending?null:hoverPreview(pv)});}
+    drawBoard({real:r.st.b,shown:pv.b,pv,hl:highlights(pv),last:cur,hov:hoverPreview(pv)});}
   else drawBoard({real:r.st.b,shown:r.st.b,last:r.last});
-  {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
-    if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&role!=='test'?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
-  else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
-  else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
-  else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
-  else if(ui.pending||sending)quiet();
-  else if(mine&&setupPhase)status(t('st_setup'),'turn');
-  else if(mine){if(ui.enemy>=0)status(t('st_pushPull'),'turn');
-    else if(es==='same')status(t('st_same'));else if(es==='rep')status(t('st_rep3'));else quiet();}
-  else if(setupPhase&&navAt===null)status(t('st_oppSetup',{n:nm(r.st.turn)}));
-  else quiet();
-  if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
-  else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'));
-  const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
-  const host=wide?$('playersSide'):$('playersTop');host.textContent='';(wide?$('playersTop'):$('playersSide')).textContent='';
-  const pad=n=>String(n).padStart(2,' ');
-  for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&turn===p?' active':'');el.id='pl'+p;
-    const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="pc c${p}" title="${t(p?'silver':'gold')}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
-    const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
-    const ty=document.createElement('div');ty.className='caps';if(d.st.n>1-p)capsRow(ty,d.st.b,1-p);
-    el.append(h,ck,ty);host.appendChild(el);}
-  tick();
-  $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=ui.pendingTxt||'';
-  $('setupCard').hidden=!(mine&&setupPhase);if(mine&&setupPhase)$('setupReset').hidden=!prepared();
-  $('turnCard').hidden=!(mine&&!setupPhase&&!ui.pending);
-  if(pv){$('stepCnt').textContent=t('steps',{k:pv.used});$('undoStep').disabled=!ui.acts.length;$('cancelTurn').hidden=!prepared();$('endTurn').disabled=es!=='ok';}
-  $('myCard').hidden=!(role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('testBox').hidden=role!=='test'||prepared();if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
-  const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
-  if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
-    $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='test'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
-    if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
-    // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='test'||!(mySeat>=0&&view.started);
-  $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='test'),rm=role==='test'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
-    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
-    $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
-    $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
-  const ol=$('log');ol.textContent='';
-  const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
-  r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
-    const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
-    const c=document.createElement('span');c.textContent=e.txt;li.append(a,b,c);
-    const ph=turnPhrase(e.det);if(ph){const x=document.createElement('span');x.className='desc';x.textContent=ph;li.appendChild(x);}ol.appendChild(li);});
-  const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
-let audioCtx=null,lastMine=false;
-document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
-let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('arimaa-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
-function sndSave(){try{localStorage.setItem('arimaa-sound',JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}
-function sndBind(){const c=document.getElementById('sndOn'),r=document.getElementById('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
-  c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
-  r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
-function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
-let cdSec=null;
-function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
-  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
-  cdSec=s;}
-function tick(){if(!view||!view.tc)return;const r=replay(view.size,view.moves,view.result),rem=remaining();
-  countdown(mySeat>=0&&view.running&&!r.over&&(view.runSeat??r.st.turn)===mySeat,rem[Math.max(0,mySeat)]);
-  for(const p of [0,1]){const el=$('clock'+p);if(!el)continue;el.textContent=fmt(rem[p]);
-    const run=view.running&&!r.over&&(view.runSeat??r.st.turn)===p;el.className='clock '+(run?'run':'idle')+(rem[p]<60000?' low':'');}}
-setInterval(tick,250);
-window.addEventListener('resize',()=>{if(view)renderGame();});
+  return o;}
+// The bar: setup → (Undo last move | Reset) + Validate the setup · turn, nothing engaged → Undo last move (free play) ·
+// steps or a selection → Reset, Undo step (once a step is played), End turn (once the turn is complete and allowed)
+function arTurnStatus({r,o,prep,idle,RST}){
+  if(o.setup){status(t('st_setup'),'turn',(prep?[RST]:idle).concat([{label:t('setupGo'),primary:true,on:setupGo}]));return;}
+  const pv=o.pv,es=o.es;let msg;
+  if(ui.enemy>=0)msg=t('st_pushPull');else if(es==='same')msg=t('st_same');else if(es==='rep')msg=t('st_rep3');
+  else if(pv&&pv.used)msg=t(pv.used>=4?'st_steps4':'st_steps',{k:pv.used});
+  else msg=solo()?t('st_soloTurn',{n:seatName(r.st.turn)}):t('st_yourTurn');
+  status(msg,'turn',prep?[RST,ui.acts.length?{label:t('undoStep'),on:undoStep}:null,es==='ok'?{label:t('endTurn'),primary:true,on:endTurn}:null]:idle);}
+function arWaitStatus({r}){if(r.st.n<2){status(t('st_oppSetup',{n:seatName(r.st.turn)}));return true;}return false;}
+// Captured pieces under each player (the opposing pieces gone from the board) and the pushes and pulls of each turn in the move list
+function arPlayerCard(el,p,d){const ty=document.createElement('div');ty.className='caps';if(d&&d.st.n>1-p)capsRow(ty,d.st.b,1-p);el.appendChild(ty);}
+// Until core.js calls GAME.playerCard and GAME.logDesc itself, they are applied once core's renderGame has drawn the panel
+if(!/GAME\.playerCard/.test(renderGame.toString())){const coreRender=renderGame;
+  renderGame=function(){coreRender();if(!view)return;
+    const host=$('playersSide')&&!$('playersSide').hidden?$('playersSide'):$('playersTop');
+    Array.from(host.children).forEach((el,p)=>{if(p<2)arPlayerCard(el,p,shownD);});
+    const r=replay(view,view.moves,view.result),ol=$('log');
+    Array.from(ol.children).forEach((li,j)=>{const ph=r.log[j]?turnPhrase(r.log[j].det):'';if(!ph)return;const x=document.createElement('span');x.className='desc';x.textContent=ph;li.appendChild(x);});
+    if(navAt===null)ol.scrollTop=ol.scrollHeight;};}
 
 // ---------- input ----------
 // Squares to highlight on the preview position for the current selection state
@@ -759,7 +388,7 @@ function hoverPreview(pv){const i=ui.hover>=0?ui.hover:ui.tap,acts=hoverActs(pv.
   let b=pv.b,n=0;const caps=[];for(const a of acts){const x=E.apply(b,a);b=x.b;n+=x.n;caps.push(...x.caps);}
   return {b,caps,n,to:i,walk:acts[0].k==='m'?[acts[0].f].concat(acts.map(a=>a.t)):null};}
 let lastPtr='mouse';
-function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
     if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;tone(520,.06,.03);}
     renderGame();return;}
@@ -779,129 +408,18 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.mo
   if(canAct){ui.sel=i;renderGame();return;}
   renderGame();}
 function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();}
-function endTurn(){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
-  const pv=preview(r);if(endState(r,pv)!=='ok')return;clearSel();const code=ui.acts.map(E.code).join(',');
-  send(code);}   // "End the turn" is the confirmation
-function send(code){if(sending)return;ui.pending=null;const n=view.moves.length;
-  if(role==='host'){hostMove(mySeat,n,code,null);return;}
-  if(role==='test'){testPlay(code);return;}
-  if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
-  sending=true;C.pending={n,code,at:Date.now(),sent:Date.now()};pendView();LS.set('arimaa-p2p-pending',{code:C.code,n,mv:code});
-  C.conn.send({t:'move',n,code});renderGame();}
-// A move sent by the guest is shown at once on top of the host's position, until the host confirms it (or refuses it).
-function pendView(){if(!C.pending||!view||view.moves.length!==C.pending.n)return;const rem=remaining();C.pending.base=view;
-  view={...view,moves:view.moves.concat([C.pending.code]),clock:rem,elapsed:0,recvAt:Date.now(),runSeat:mySeat};}
-function pendClear(){C.pending=null;LS.del('arimaa-p2p-pending');}
-// resend until confirmed; after 1.5 s, say that the move waits for the host
-setInterval(()=>{if(role!=='guest'||!C.pending||!view)return;const now=Date.now();
-  if(C.conn&&C.conn.open&&now-C.pending.sent>3000){C.pending.sent=now;try{C.conn.send({t:'move',n:C.pending.n,code:C.pending.code});}catch(e){}}
-  if(!C.pending.shown&&now-C.pending.at>1500){C.pending.shown=true;renderGame();}},1000);
-$('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
-$('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
-$('undoStep').onclick=()=>{if(ui.pending)return;clearSel();ui.acts.pop();renderGame();};
-$('endTurn').onclick=endTurn;
-$('setupReset').onclick=cancelPrep;
-$('cancelTurn').onclick=cancelPrep;
-$('setupGo').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n>=2)return;setupBoard(r);send('S'+ui.setup.join(''));};
-$('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
-$('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
-$('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
-  if(role==='test'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};resetUi();renderGame();}return;}
-  if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
-$('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{if(role==='test'){startTest();return;}rmSend('ask');};
-// Test game: the tester plays both sides on this device; the board turns to the side to move.
-const TK='arimaa-test';   // the game on this device, kept across a reload
-function startTest(){C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);try{peer&&peer.destroy();}catch(e){}peer=null;
-  navAt=null;role='test';mySeat=0;sending=false;setHash('test');
-  view={size:SIZE,tc:null,names:[t('gold'),t('silver')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,
-    started:true,ready:[true,true],paused:false,ver:0,rematch:null,recvAt:Date.now()};LS.set(TK,view);
-  resetUi();showGame();renderGame();}
-function testTurn(){LS.set(TK,view);const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
-function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
-function testUndo(){if(!view.moves.length||prepared())return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
-$('undoBtn').onclick=()=>{if(role==='test')testUndo();};
-$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest();});
-// Home: "Create a game", then the opponent (link, this device), then that choice's options
-let homeK='';
-function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
-  $('createForm').hidden=k!=='link';$('testForm').hidden=k!=='local';
-  const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
-$('newBtn').onclick=()=>homeStep('pick');
-$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
-document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
-$('joinOpen').onclick=()=>{$('joinCard').hidden=false;$('jCode').focus();};
-// An invitation link opens straight on the name to play under (the saved nickname by default)
-function invited(on){$('setup').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
-$('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';};
-$('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
-$('navFirst').onclick=()=>navGo(0);
-$('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
-$('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
-$('navLast').onclick=()=>navGo(null);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view&&prepared()&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')){e.preventDefault();cancelPrep();}});
-document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
-  const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
-// Home: leave the game and come back to Arimaa's own start page
-$('homeBtn').onclick=()=>{C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
-// Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
-const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden;
-$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
-$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
+function undoStep(){if(ui.pending)return;clearSel();ui.acts.pop();renderGame();}
+// « Terminer le tour » is the confirmation: the turn is sent at once
+function endTurn(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
+  const pv=preview(r);if(endState(r,pv)!=='ok')return;clearSel();send(ui.acts.map(E.code).join(','));}
+function setupGo(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n>=2)return;setupBoard(r);send('S'+ui.setup.join(''));}
 $('svg').addEventListener('pointerdown',e=>{lastPtr=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickSq(+g.dataset.i);});
 
-// ---------- invitation codes ----------
-function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
-  $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
-  if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=base+'#watch-'+code;}}
-document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
-  const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
-  try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
-
-// ---------- start screen ----------
-$('hName').value=nickGet();$('jName').value=nickGet();
-$('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('hName').value.trim()||t('p1');nickSet(nm);
-  const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(Math.random()<.5?'host':'guest');const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('arimaa-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
-  const names=first==='host'?[nm,'']:['',nm];
-  const th=[null,null];th[first==='host'?0:1]=hh(MYID);
-  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
-  H.turnStart=Date.now();hostStart(null);});
-function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
-$('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
-$('jWatch').onclick=()=>joinClick(true);
-$('resumeBtn').onclick=()=>{const s=LS.get('arimaa-p2p-host',null);if(s&&s.game&&!s.game.result){hostStart(s);return;}const sg=LS.get('arimaa-p2p-guest',null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
-function exportCode(){const v=view,c=remaining();const p={size:v.size,tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
-  return 'ARIMAA1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
-function importCode(t){t=String(t||'').replace(/\s+/g,'');if(t.indexOf('ARIMAA1.')!==0)throw 0;
-  const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(8)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;p.size=SIZE;return p;}
-$('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=false;inp.select();
-  try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('rcCopy'),1500);},()=>{});}catch(e){}};
-$('rForm').addEventListener('submit',e=>{e.preventDefault();let p;try{p=importCode($('rIn').value);}catch(x){$('joinErr').textContent=t('badResume');$('rSeats').innerHTML='';return;}
-  const box=$('rSeats');box.innerHTML=[0,1].map(k=>`<button type="button" class="primary" data-rseat="${k}">${t('iam',{n:String(p.names[k]||t(k?'p2':'p1')).replace(/[&<>"']/g,'')})}</button>`).join('');
-  box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(+b.dataset.rseat,p));});
-function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const th=[null,null];th[seat]=hh(MYID);
-  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:SIZE,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
-    started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
-function init(){drawBoard({real:new Int8Array(64),shown:new Int8Array(64)});
-  const saved=LS.get('arimaa-p2p-host',null),sg=LS.get('arimaa-p2p-guest',null);
-  if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
-  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeTxt').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
-  status('');
-  if(location.hash==='#test'){const sv=LS.get(TK,null);startTest();if(sv&&sv.moves){view={...sv,names:view.names};testTurn();}return;}
-  const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
-  if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
-  $('jCode').value=m[2];
-  if(m[1]==='join'){invited(true);return;}
-  joinClick(m[1]==='watch');}
-
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg',S=60;
-// Silver sees the board turned half a turn, its own pieces at the bottom.
-const FL=()=>mySeat===1&&role!=='test',X=i=>(FL()?7-(i&7):i&7)*S,Y=i=>(FL()?i>>3:7-(i>>3))*S;
+// Silver sees the board turned half a turn, its own pieces at the bottom (core: flip, over the network only)
+const X=i=>(flip?7-(i&7):i&7)*S,Y=i=>(flip?i>>3:7-(i>>3))*S;
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'pointer-events':'none'},g);if(op!==undefined)gr.setAttribute('opacity',op);
   el('circle',{cx,cy,r:23,fill:gold?'var(--g1)':'var(--s1)',stroke:gold?'var(--g3)':'var(--s3)','stroke-width':2},gr);
@@ -930,7 +448,6 @@ function lastPath(g,P,k,end,prep){const col=P.own?'var(--accent)':'var(--ink)',c
   if(!P.own)el('polyline',{points:pts,fill:'none',stroke:'var(--bg)','stroke-width':7,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':'2 9',opacity:.6},gr);
   el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':P.own?4.5:4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':P.own?'':'2 9'},gr);
   el('circle',{cx:c[0][0],cy:c[0][1],r:P.own?6:5,fill:col},gr);}
-function lastUnder(){}
 function lastOver(g,L,shown){lastEnds=new Map();if(!L||!L.det)return;
   L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];
     if(shown[end]&&!L.prep)ring(g,end,{w:3,c:P.own?'var(--accent)':'var(--ink)',dash:P.own?'':'5 4'});
@@ -959,9 +476,11 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   for(let i=0;i<64;i++){const g=el('g',{class:'cell','data-i':i},svg),x=X(i),y=Y(i),trap=E.isTrap[i];
     el('rect',{x,y,width:S,height:S,fill:trap?'var(--trap)':'var(--sq)',stroke:'var(--gridl)','stroke-width':1.2},g);
   }
-  for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=(FL()?'hgfedcba':'abcdefgh')[c];}
-  for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(FL()?8-r:r+1);}
-  const under=el('g',{'pointer-events':'none'},svg);lastUnder(under,o.last);
+  // coordinates (core: coordsOn): a–h under the board, 1–8 on its left; without them, a tighter viewBox (--board-ar too)
+  svg.setAttribute('viewBox',coordsOn?'-22 -4 506 508':'-4 -4 488 488');
+  if(coordsOn){
+    for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=(flip?'hgfedcba':'abcdefgh')[c];}
+    for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(flip?8-r:r+1);}}
   const lay=el('g',{'pointer-events':'none'},svg);trapLinks(lay,shown);
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
     for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
@@ -983,6 +502,17 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
     for(const [c,w] of H.caps){piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}
     const bx=X(H.to)+S-11,by=Y(H.to)+11;el('circle',{cx:bx,cy:by,r:9,fill:'var(--accent)','pointer-events':'none'},lay);
     const tx=el('text',{x:bx,y:by+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'var(--bg)','pointer-events':'none'},lay);tx.textContent=H.n;}}
-init();sndBind();
+
+// ---------- the interface with common/core.js ----------
+const GAME={id:'arimaa',size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
+  rules:()=>({}),form:()=>({}),
+  replay:arReplay,
+  legal:(st,code)=>legalCode(st,code)?code:null,
+  enc:c=>c,describe,newUi,preparing:prepared,cancel:cancelPrep,
+  board:arBoard,turnStatus:arTurnStatus,waitStatus:arWaitStatus,
+  hintable:()=>false,   // no computer: no Hint button (core offers it in free play otherwise)
+  playerCard:arPlayerCard,logDesc:e=>turnPhrase(e.det),
+  home:()=>drawBoard({real:new Int8Array(64),shown:new Int8Array(64)})};
+coreStart();
 </script>
 </body></html>

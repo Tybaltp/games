@@ -57,6 +57,8 @@ html.ingame.wide .side .notice .btns button{flex:1 1 auto}
 html.ingame:not(.wide) body{padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-top:max(6px,env(safe-area-inset-top,0px));padding-bottom:max(6px,var(--sab))}
 html.ingame:not(.wide) .wrap,html.ingame:not(.wide) .boardwrap{gap:6px}
 html.ingame:not(.wide) h1{font-size:1.45rem}
+/* a long game name stays on one line, shortened, so the language switch and ⋯ stay on screen */
+html.ingame header h1{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}html.ingame header .seg,html.ingame header .optbtn{flex-shrink:0}
 html.ingame:not(.wide) .board{--bp:0px;padding:0;border:0;border-radius:0;background:none}
 html.ingame:not(.wide) .player{padding:4px 8px;border-radius:10px}
 html.ingame:not(.wide) .player .who{font-size:.9rem}

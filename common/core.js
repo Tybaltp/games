@@ -1,4 +1,6 @@
 // ===== Shared code of the two-player games (common/core.js) =====
+// The pages load this file and games.css with a version (?v=N): bump N in every page after changing either, so
+// browsers never mix a cached shared file with a newer page.
 // Everything that is not a game's rules or board: storage, language, home page, link games over PeerJS (host / guest /
 // spectator, reconnection, takeover, rematch, resume codes, clocks), computer opponent plumbing, face to face (clock),
 // free play (undo, hints), action bar, side panel and bottom sheet, sounds. A plain script: its top-level names are
@@ -28,6 +30,8 @@
 //  waitStatus?(c)                the opponent's turn, live: calls status() and returns true, or false for « X to move »
 //  pendText?(mv,st)              [message, confirm label] for a move awaiting confirmation
 //  hintable?(o), hintOk?(mv)     Hint offered now · a found move may be shown
+//  playerCard?(el,p,d)          Add game content to seat p's card (d: the position shown)
+//  logDesc?(e)                   Extra description line under a move-list entry
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
 //  home()                        draws the board shown on the home page (and again when the coordinates are switched)
@@ -124,7 +128,7 @@ function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t
 let flip=false;   // the board is turned so that a player's own side is at the bottom (seat 1 over the network)
 let memoKey='',memoVal=null;
 // rules: the game or view object (its rule fields); the result (time, resignation) ends the game when the moves do not
-function replay(rules,moves,result){const key=JSON.stringify(GAME.rules(rules))+'|'+moves.join(',')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
+function replay(rules,moves,result){const key=lang+'|'+JSON.stringify(GAME.rules(rules))+'|'+moves.join(',')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
   const v=GAME.replay(rules,moves);if(!v.over&&result)v.over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
   memoKey=key;memoVal=v;return v;}
 const sameRules=(a,b)=>JSON.stringify(GAME.rules(a))===JSON.stringify(GAME.rules(b));
@@ -135,7 +139,7 @@ let role=null;          // 'host' | 'guest' | 'watch' | 'ai' (against the comput
 // Both sides on this device (the seat follows the side to move, the board stays put)
 const solo=()=>role==='test'||role==='local';
 // Take-back and hints: against the computer and in free play only
-const canUndo=()=>role==='ai'||role==='test',canHint=canUndo;
+const canUndo=()=>role==='ai'||role==='test',canHint=()=>canUndo()&&!!GAME.aiSrc;   // hints need the game's AI
 let peer=null;
 let mySeat=-1;
 let ui={},sending=false;
@@ -351,7 +355,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&(ns&&navAt===null?!(view.held&&view.held[p]):turn===p)?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="dot c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
-    el.append(h,ck);host.appendChild(el);}
+    el.append(h,ck);if(GAME.playerCard)GAME.playerCard(el,p,d);host.appendChild(el);}
   tick();
   // side panel: settings only (level of the computer and its opinion, against the computer only: hints use GAME.hintLevel)
   $('myCard').hidden=!(role==='ai'||solo()||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
@@ -375,7 +379,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
   r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
-    const c=document.createElement('span');c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);ol.appendChild(li);});
+    const c=document.createElement('span');c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
   const ce=ol.querySelector('.cur');if(ce&&navAt!==null){const a=ce.getBoundingClientRect(),b=ol.getBoundingClientRect();if(a.top<b.top)ol.scrollTop+=a.top-b.top;else if(a.bottom>b.bottom)ol.scrollTop+=a.bottom-b.bottom;}else ol.scrollTop=ol.scrollHeight;sheetAttn();}
 // Players' cards in the side panel: wide screens, and landscape phones (board and panel side by side)
 const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';
@@ -520,7 +524,7 @@ function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));re
 function exportCode(){const v=view,c=remaining();const p={size:v.size,...GAME.rules(v),tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
   return GAME.codeTag+'.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
 function importCode(t){const tag=GAME.codeTag+'.';t=String(t||'').replace(/\s+/g,'');if(t.indexOf(tag)!==0)throw 0;
-  const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(tag.length)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;p.size=GAME.size;Object.assign(p,GAME.rules(p));return p;}
+  const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(tag.length)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;const rr=GAME.rules(p);p.size=GAME.size;Object.assign(p,rr);return p;}
 function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
   const th=[null,null];th[seat]=hh(MYID);
   Object.assign(H,{code:rnd(6),guestCid:null,game:{size:GAME.size,...GAME.rules(p),hold:null,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
