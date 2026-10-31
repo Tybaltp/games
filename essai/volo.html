@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en"><head>
+<meta name="robots" content="noindex"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Volo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="../common/games.css?v=5">
+<style>
+/* Volo palette (light, dark) and board; the shared layout is in common/games.css */
+:root{
+  --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
+  --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--ghost:#355b75;
+  --o1:#ffb347;--o2:#e07a12;--o3:#8a4300;--b1:#6fb3ff;--b2:#1f6fd6;--b3:#0b3a7a;
+  --s0:var(--o2);--s0e:var(--o3);--s1:var(--b2);--s1e:var(--b3);
+  --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
+  --board-ar:650/579.615;        /* viewBox of the board (650×579.6; 610×579.6 without the coordinates) */
+}
+html.nocoords{--board-ar:610/579.615}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --sky:#1d3b52;--sky-edge:#122838;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --sky:#1d3b52;--sky-edge:#122838;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
+/* the sky behind the board, on every layout */
+.board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 30%,var(--sky),var(--sky-edge));border:0}
+.board{--bp:10px;padding:10px;border-radius:18px}
+html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
+@media (orientation:landscape) and (max-height:500px){.board{--bp:4px;padding:4px;border-radius:12px}}
+/* players' cards: birds in the sky, in reserve, number of flocks */
+.player .tally{display:flex;gap:6px;font-size:.66rem;overflow:hidden;letter-spacing:-.01em}
+.player{container-type:inline-size}
+.player .tally span::before{content:attr(data-l) ' ';color:var(--muted)}
+/* full words when the card is wide enough, the abbreviations only on narrow cards */
+@container (max-width:190px){.player .tally span::before{content:attr(data-s) ' '}}
+@container (max-width:165px){.player .tally{flex-wrap:wrap;row-gap:0}}
+.player .tally span{color:var(--ink);font-weight:500}
+.tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="../index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html"><b id="ttl" style="font-weight:inherit">Volo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
+      <div class="picks" id="newPick" hidden>
+        <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
+      </div>
+      <form class="form" id="createForm" hidden>
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <label for="cFirst"><span data-i18n="orangeIs">Orange (plays first)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <div class="card primary-card" id="joinCard" hidden>
+      <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
+      <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
+      <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
+      <form class="form" id="joinForm">
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+      </form>
+      <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
+    </div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="VOLO1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-331 -289.808 650 579.615" role="img" aria-label="Volo board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="notice" id="notice"></div>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
+      <p class="hint" id="watchInfo"></p>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <div class="card" id="myCard" hidden>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+    </div>
+    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
+      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
+</main>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
+</div>
+<script src="../common/core.js?v=5"></script>
+<script>
+function VoloEngine(){
+  // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
+  const RAD=6,cells=[];
+  for(let q=-RAD;q<=RAD;q++)for(let r=-RAD;r<=RAD;r++){const s=-q-r;if(Math.abs(s)>RAD)continue;
+    const m=Math.max(Math.abs(q),Math.abs(r),Math.abs(s)),mn=Math.min(Math.abs(q),Math.abs(r),Math.abs(s));
+    if(m===0)continue;                 // centre
+    if(m===RAD&&mn===0)continue;       // corners
+    cells.push([q,r]);}
+  const N=cells.length,Q=new Int8Array(N),R=new Int8Array(N),AT={};
+  cells.forEach(([q,r],i)=>{Q[i]=q;R[i]=r;AT[q+','+r]=i;});
+  const DQ=[1,1,0,-1,-1,0],DR=[0,-1,-1,0,1,1];
+  const NB=new Int8Array(N*6).fill(-1);
+  for(let i=0;i<N;i++)for(let d=0;d<6;d++){const k=AT[(Q[i]+DQ[d])+','+(R[i]+DR[d])];NB[i*6+d]=k===undefined?-1:k;}
+  const TURN=N,PASS=N+1,SZ=N+2,MAX=60;
+  // Nests: one step inward from each removed corner; Orange (1) and Blue (2) alternate.
+  const NEST=[];for(let d=0;d<6;d++)NEST.push(AT[(DQ[d]*(RAD-1))+','+(DR[d]*(RAD-1))]);
+  function init(){const s=new Int8Array(SZ);NEST.forEach((c,k)=>{s[c]=1+(k&1);});s[TURN]=0;s[PASS]=0;return s;}
+  const color=p=>p+1;
+  // Connected components over a predicate; labels (-1 = not in graph) and their number.
+  function comps(s,ok){const lab=new Int16Array(N).fill(-1);let n=0;
+    for(let i=0;i<N;i++){if(lab[i]>=0||!ok(i))continue;const st=[i];lab[i]=n;
+      while(st.length){const x=st.pop();for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&lab[y]<0&&ok(y)){lab[y]=n;st.push(y);}}}n++;}
+    return {lab,n};}
+  function count(s,p){let n=0;const c=color(p);for(let i=0;i<N;i++)if(s[i]===c)n++;return n;}
+  function flockCount(s,p){const c=color(p);return comps(s,i=>s[i]===c).n;}
+  function connected(s,p){return count(s,p)>0&&flockCount(s,p)===1;}
+  // Regions of player p: components of the cells not occupied by the opponent; returns the labels of those holding p's birds.
+  function regions(s,p){const c=color(p),o=3-c;const {lab,n}=comps(s,i=>s[i]!==o);const has=new Uint8Array(n);for(let i=0;i<N;i++)if(s[i]===c)has[lab[i]]=1;
+    const list=[];for(let k=0;k<n;k++)if(has[k])list.push(k);return {lab,list};}
+  // Empty areas bounded by birds: 1 = only p's birds around (own area), 2 = only the opponent's (controlled by the opponent), 3 = mixed.
+  function emptyClass(s,p){const c=color(p),o=3-c;const {lab,n}=comps(s,i=>s[i]===0);const cls=new Uint8Array(n);
+    for(let i=0;i<N;i++){if(s[i]!==0)continue;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y<0)continue;if(s[y]===c)cls[lab[i]]|=1;else if(s[y]===o)cls[lab[i]]|=2;}}
+    return {lab,cls};}
+  function placements(s){const p=s[TURN],c=color(p);if(count(s,p)>=MAX)return [];const out=[];const {lab,cls}=emptyClass(s,p);
+    for(let i=0;i<N;i++){if(s[i]!==0)continue;let adj=false;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y>=0&&s[y]===c){adj=true;break;}}if(adj)continue;
+      if(cls[lab[i]]===2)continue;out.push({t:'p',at:i,own:cls[lab[i]]===1,keep:-1});}
+    return out;}
+  // Flights: a straight segment of p's birds moves k steps in direction d. Opponent birds block; friendly birds may be flown over.
+  function flights(s){const p=s[TURN],c=color(p),out=[];
+    const F=comps(s,i=>s[i]===c);                       // flocks before the move
+    const size=new Int16Array(F.n);for(let i=0;i<N;i++)if(F.lab[i]>=0)size[F.lab[i]]++;
+    for(let a=0;a<3;a++){const back=a+3;
+      for(let i=0;i<N;i++){if(s[i]!==c)continue;const pr=NB[i*6+back];if(pr>=0&&s[pr]===c)continue;   // i starts a run along axis a
+        const run=[i];let x=i;while(true){x=NB[x*6+a];if(x<0||s[x]!==c)break;run.push(x);}
+        for(let u=0;u<run.length;u++)for(let v=u;v<run.length;v++){const seg=run.slice(u,v+1);if(a>0&&seg.length===1)continue; // single birds handled once (axis 0)
+          const inSeg=new Uint8Array(N);seg.forEach(z=>inSeg[z]=1);
+          for(let d=0;d<6;d++){let pos=seg.slice();
+            for(let k=1;;k++){let ok=true;const nxt=[];
+              for(const z of pos){const y=NB[z*6+d];if(y<0||(s[y]!==0&&!inSeg[y])){ok=false;break;}nxt.push(y);}
+              if(!ok)break;pos=nxt;
+              if(pos.some(z=>s[z]!==0&&!inSeg[z]))continue;        // landing points must be free (or vacated by the segment itself)
+              const t=s.slice();seg.forEach(z=>t[z]=0);pos.forEach(z=>t[z]=c);
+              // no flock split, and the moving birds' flock must grow
+              const G=comps(t,i2=>t[i2]===c);const gsize=new Int16Array(G.n);for(let i2=0;i2<N;i2++)if(G.lab[i2]>=0)gsize[G.lab[i2]]++;
+              const map=new Int16Array(N).fill(-1);seg.forEach((z,j)=>map[z]=pos[j]);
+              const first=new Int16Array(F.n).fill(-1);let split=false;
+              for(let i2=0;i2<N&&!split;i2++){const f=F.lab[i2];if(f<0)continue;const w=map[i2]>=0?map[i2]:i2;const g=G.lab[w];if(first[f]<0)first[f]=g;else if(first[f]!==g)split=true;}
+              if(split)continue;
+              if(gsize[G.lab[pos[0]]]<=size[F.lab[seg[0]]])continue;
+              out.push({t:'f',cells:seg,d,k,keep:-1});}}}}}
+    return out;}
+  function canPass(s){const pl=placements(s);if(pl.some(m=>!m.own))return false;return flights(s).length===0;}
+  // Complete a base move with the regions it creates: if the opponent's birds end up in several regions, one of them must be kept.
+  function expand(s,mv){if(mv.t==='x')return [mv];const t=base(s,mv),p=s[TURN];
+    if(connected(t,p))return [mv];
+    const rg=regions(t,1-p);if(rg.list.length<2)return [mv];
+    return rg.list.map(k=>{let keep=-1;for(let i=0;i<N;i++)if(rg.lab[i]===k&&t[i]===color(1-p)){keep=i;break;}return {...mv,keep};});}
+  function gen(s){const out=[];for(const mv of flights(s).concat(placements(s)))for(const m of expand(s,mv))out.push(m);if(canPass(s))out.push({t:'x',keep:-1});return out;}
+  function dest(mv,z){let y=z;for(let j=0;j<mv.k;j++)y=NB[y*6+mv.d];return y;}
+  function base(s,mv){const t=s.slice(),c=color(s[TURN]);
+    if(mv.t==='p')t[mv.at]=c;
+    else if(mv.t==='f'){mv.cells.forEach(z=>t[z]=0);for(const z of mv.cells)t[dest(mv,z)]=c;}
+    return t;}
+  // apply: returns {st,removed:[cells]}; the result of the move is read with outcome()
+  function apply(s,mv){const p=s[TURN],t=base(s,mv),removed=[];
+    t[PASS]=mv.t==='x'?s[PASS]+1:0;
+    if(mv.keep>=0){const rg=regions(t,1-p),kk=rg.lab[mv.keep],o=color(1-p);for(let i=0;i<N;i++)if(t[i]===o&&rg.lab[i]!==kk){t[i]=0;removed.push(i);}}
+    t[TURN]=1-p;return {st:t,removed};}
+  // outcome after a move by p: {w:p|1-p|-1 (draw), why} or null
+  function outcome(t,p,mv){if(mv.t==='x')return t[PASS]>=2?{w:-1,why:'w_pass'}:null;
+    if(connected(t,p))return {w:p,why:'w_flock'};
+    if(mv.keep>=0&&connected(t,1-p))return {w:1-p,why:'w_region'};
+    return null;}
+  return {N,Q,R,NB,AT,TURN,PASS,MAX,NEST,init,gen,flights,placements,canPass,expand,base,dest,apply,outcome,connected,regions,emptyClass,count,flockCount,comps};
+}
+// Volo strings, merged over the shared ones (core.js)
+const VO_I18N={fr:{
+ title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
+ <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
+ <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
+ <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
+ <li><b>Voler</b> : un oiseau seul, ou une ligne droite de vos oiseaux, avance en ligne droite (en file ou de front) sur des points vides seulement ; tout oiseau bloque le passage. Il doit se poser contre un autre de vos oiseaux de sorte que sa nuée grandisse, sans scinder aucune nuée.</li>
+ <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
+ <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
+ <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
+ <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",keepR:"Garder {r}"
+},en:{
+ title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
+ <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
+ <li><b>Add a bird</b>: on any empty point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
+ <li><b>Fly</b>: a single bird, or a straight line of your birds, moves any distance in a straight line (in file or side by side) over empty points only; any bird blocks the way. It must land next to one of your other birds so that its flock grows, and no flock may be split.</li>
+ <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
+ <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
+ <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
+ <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",keepR:"Keep {r}"
+}};
+const E=VoloEngine(),{N,TURN}=E;
+const SIZE=120;
+const CN=p=>t(p?'blue':'orange');
+// ---------- board ----------
+const SP=50,X=i=>SP*(E.Q[i]+E.R[i]/2),Y=i=>SP*0.866025*E.R[i];
+const ROWS=[],QMIN={};for(let i=0;i<N;i++){if(!ROWS.includes(E.R[i]))ROWS.push(E.R[i]);QMIN[E.R[i]]=Math.min(QMIN[E.R[i]]??99,E.Q[i]);}ROWS.sort((a,b)=>a-b);
+const name=i=>'abcdefghijklm'[ROWS.indexOf(E.R[i])]+(E.Q[i]-QMIN[E.R[i]]+1);
+// viewBox: room on the left for the row letters (core: coordsOn); without them, the same margin on both sides (--board-ar too)
+const VB=(()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
+  return [`${x0-56} ${y0-30} ${x1-x0+100} ${y1-y0+60}`,`${x0-30} ${y0-30} ${x1-x0+60} ${y1-y0+60}`];})();
+const enc=m=>m.t==='x'?'x':(m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'+m.k)+(m.keep>=0?'k'+m.keep:'');
+const txtOf=m=>m.t==='x'?'pass':m.t==='p'?'+'+name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
+// a move awaiting confirmation: « Passer » for a pass, the regions mentioned when the move removes some
+const describe=m=>m.t==='x'?t('pass'):txtOf(m)+(m.keep>=0?' ('+t('regions').toLowerCase()+')':'');
+// st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code
+function voReplay(rules,moves){
+  let st=E.init();const log=[];let last=null,over=null;
+  for(const code of moves){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv){over={w:-1,why:'w_bad'};break;}
+    const r=E.apply(st,mv);st=r.st;let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;
+    log.push({p,txt:t});last={mv,removed:r.removed};
+    const o=E.outcome(st,p,mv);if(o){over=o;break;}}
+  st.turn=st[TURN];return {st,log,last,over};}
+
+// ---------- move preparation ----------
+// ui: sel (the birds selected to fly), hist (the successive selections), basemv (a move that cuts the opponent's birds
+// into regions: the one that stays is still to choose), pending (the complete move, awaiting confirmation), hover
+// (the point under the mouse: a legal target, or an opponent's bird during the region choice; -1 = none)
+const newUi=()=>({sel:[],hist:[],basemv:null,pending:null,hover:-1});
+const hov=()=>typeof ui.hover==='number'?ui.hover:-1;   // core may clear it to null
+// a move is being prepared: a selection, a region choice or a pending confirmation
+const preparing=()=>!!(ui.sel.length||ui.basemv||ui.pending);
+// Reset: drop the whole prepared sequence, back to the neutral board
+function cancelPrep(){if(!preparing())return;resetUi();renderGame();}
+// Flights whose segment is exactly the current selection
+const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,k)=>c===sel[k]);
+function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
+  for(let d=0;d<6;d++){const path=[];let x=a;for(let k=0;k<14;k++){x=E.NB[x*6+d];if(x<0)break;if(x===b)return {d,path};path.push(x);}}return null;}
+const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
+// The landing point clicked for a flight: where the leading bird lands (in file, the front bird; side by side, the first
+// bird of the line). Always a free point, and a different one for each flight of the same line.
+function landAt(m){if(m.cells.length>1&&m.d===lineThrough(m.cells[0],m.cells[1]).d)return E.dest(m,m.cells[m.cells.length-1]);return E.dest(m,m.cells[0]);}
+// The provisional birds of a prepared move: the bird added, or where the flying birds land
+const provCells=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>E.dest(m,c)):[];
+let curLegal=[];   // legal moves of the position drawn (for the hover)
+// A click (or a single tap) plays one step; a click on a provisional bird goes back one step.
+function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  const legal=E.gen(r.st),me=mySeat+1,st=r.st;ui.hover=-1;
+  const prep=ui.pending||ui.basemv;
+  // the region choice, or a move awaiting confirmation that removes birds: an opponent's bird picks its region
+  // (the region already kept: back to the choice)
+  const kmv=ui.basemv||(ui.pending&&ui.pending.keep>=0?ui.pending:null);
+  if(kmv){const t=E.base(st,kmv);
+    if(t[i]===3-me){const rg=E.regions(t,1-mySeat);
+      if(ui.pending&&rg.lab[ui.pending.keep]===rg.lab[i]){ui.basemv={...ui.pending,keep:-1};ui.pending=null;renderGame();return;}
+      const mv=E.expand(st,kmv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv);}return;}}
+  if(prep){
+    // a provisional bird: the added bird drops the move, a flown bird goes back to the selected line
+    if(provCells(prep).includes(i)){if(prep.t==='p'){cancelPrep();return;}
+      ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];ui.pending=null;ui.basemv=null;renderGame();return;}
+    // otherwise only a click that starts another step replaces the prepared move: another landing point of the same
+    // line, another addition, one of my birds (the points the flying birds left are ignored)
+    const isLand=prep.t==='f'&&legal.some(m=>sameSeg(m,prep.cells)&&landAt(m)===i);
+    const isOwn=st[i]===me&&!(prep.t==='f'&&prep.cells.includes(i));
+    const isPl=prep.t!=='f'&&legal.some(m=>m.t==='p'&&m.at===i);
+    if(!(isLand||isOwn||isPl))return;
+    ui.pending=null;ui.basemv=null;
+    if(prep.t==='f'){ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];}else{ui.sel=[];ui.hist=[];}}
+  if(ui.sel.length){
+    const sel=ui.sel;
+    const land=legal.find(m=>sameSeg(m,sel)&&landAt(m)===i);
+    if(land){pick(land);return;}
+    if(st[i]===me){
+      // a selected bird: back to the selection before it was added (the first bird: nothing selected)
+      if(sel.includes(i)){const k=ui.hist.findIndex(h=>h.includes(i));ui.hist=k>0?ui.hist.slice(0,k):[];ui.sel=k>0?ui.hist[k-1].slice():[];renderGame();return;}
+      // extend the selection along its axis (or pick an axis for a single bird)
+      const ends=[sel[0],sel[sel.length-1]];
+      for(const e of ends){const L=lineThrough(e,i);if(!L)continue;if(L.path.some(x=>st[x]!==me||sel.includes(x)))continue;
+        if(sel.length>1){const ax=lineThrough(sel[0],sel[1]).d%3;if(L.d%3!==ax)continue;}
+        const add=L.path.concat([i]);ui.sel=normSel(e===sel[0]?add.reverse().concat(sel):sel.concat(add));ui.hist.push(ui.sel.slice());renderGame();return;}
+      ui.sel=[i];ui.hist=[[i]];renderGame();return;}
+    ui.sel=[];ui.hist=[];renderGame();return;}
+  if(st[i]===me){ui.sel=[i];ui.hist=[[i]];renderGame();return;}
+  const pl=legal.find(m=>m.t==='p'&&m.at===i);if(pl)pick(pl);}
+// pick: base move chosen; if several variants exist (regions), ask which one stays
+function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
+  if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
+// A move always waits for the final confirmation (in the action bar) before it is sent
+function choose(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;ui.pending=mv;renderGame();}
+function doPass(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);}
+// The region choice: one command per region of the opponent's birds (lettered on the board), « Keep A », « Keep B »…;
+// hovering a command shows the result (the birds of the other regions fade)
+function regionBtns(st){if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.basemv),1-mySeat);
+  return E.expand(st,ui.basemv).map(mv=>({k:rg.list.indexOf(rg.lab[mv.keep]),mv})).sort((a,b)=>a.k-b.k)
+    .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv);},
+      hover:on=>{if(!ui.basemv)return;ui.hover=on?mv.keep:-1;redrawBoard();}}));}
+// The board alone (the hover changes nothing in the action bar)
+function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);voBoard({r,d:r,mine:isMyTurn(r)});}
+$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
+// With a mouse: the bird to add, or the flight to the point hovered, in transparency (legal targets only); during the
+// region choice, an opponent's bird hovered fades the birds of the other regions
+function hoverCell(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  const st=r.st;let nv=-1;
+  if(i>=0){if(ui.basemv){if(E.base(st,ui.basemv)[i]===2-mySeat)nv=i;}
+    else if(ui.sel.length){if(curLegal.some(m=>sameSeg(m,ui.sel)&&landAt(m)===i))nv=i;}
+    else if(curLegal.some(m=>m.t==='p'&&m.at===i))nv=i;}
+  if(nv===hov())return;ui.hover=nv;redrawBoard();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest('[data-i]');hoverCell(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverCell(-1));}
+
+// ---------- the board and the action bar (hooks) ----------
+function voBoard({r,d,mine}){
+  if(navAt!==null){drawBoard(d.st,{last:d.last});return {legal:[]};}
+  const legal=r.over?[]:E.gen(r.st);curLegal=mine?legal:[];
+  const h=hov();let pv=null;
+  if(mine){
+    if(ui.basemv)pv={prov:ui.basemv,region:true,hover:h};
+    else if(ui.pending){if(ui.pending.t!=='x')pv={prov:ui.pending};}   // a pass has nothing to show on the board
+    else if(h>=0){const m=ui.sel.length?legal.find(m=>sameSeg(m,ui.sel)&&landAt(m)===h):legal.find(m=>m.t==='p'&&m.at===h);if(m)pv={hover:m};}}
+  // the last move is marked until a move is being prepared
+  drawBoard(r.st,{legal,interactive:mine&&!ui.pending&&!ui.basemv,pv,last:mine&&preparing()?null:r.last});
+  const canPass=legal.some(m=>m.t==='x');
+  return {legal,canPass,onlyPass:legal.length===1&&canPass};}
+// My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
+function voTurnStatus({r,o,prep,undoB,RST}){
+  if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn',[RST].concat(regionBtns(r.st)));
+  else if(ui.sel.length)status(t('st_sel'),'turn',[RST]);
+  else if(prep)status('','turn',[RST]);
+  else if(o.onlyPass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass},undoB]);
+  else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',[undoB,o.canPass?{label:t('pass'),on:doPass}:null]);}
+// Players' cards: birds in the sky, in reserve, and flocks, under each name (added to the cards the shared code draws)
+function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
+  for(const p of [0,1]){const pc=$('pl'+p);if(!pc)continue;const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
+    const lab=(l,s)=>`title="${t(l)}" data-l="${t(l)}" data-s="${t(s||l)}"`;
+    ty.innerHTML=`<span ${lab('sky')}>${on}</span><span ${lab('reserveL','reserve')}>${E.MAX-on}</span><span ${lab('flocks')}>${fl}</span>`;pc.appendChild(ty);}}
+{const coreRender=renderGame;renderGame=function(){coreRender();voTally();};}
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function bird(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:18,fill:c?'var(--b2)':'var(--o2)',stroke:c?'var(--b3)':'var(--o3)','stroke-width':1.6},g);if(op)e.setAttribute('opacity',op);}
+const LASTDOT='#13202a';   // the last move's dot on the birds (dark on both colours, in both themes)
+// cur: real position. opt: {legal (moves in cur), interactive, last (the last move, to mark), pv: {hover:mv} (in transparency)
+// or {prov:mv, region, hover} (a provisional move: the board after it, its birds opaque in a dashed frame)}
+function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
+  svg.setAttribute('viewBox',VB[coordsOn?0:1]);
+    // grid lines between neighbouring points
+  const grid=el('g',{stroke:'var(--grid)','stroke-width':1.3,opacity:.75},svg);
+  for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
+  if(coordsOn)for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
+  const pv=opt.pv||null,prov=pv&&pv.prov,last=opt.last,lm=last&&last.mv,me=mySeat+1;
+  const st=prov?E.base(cur,prov):cur;   // the removed regions are only faded
+  const marked=new Set(prov?provCells(prov):[]);
+  // regions of the opponent's birds: lettered during the choice; the birds of the regions that go are faded
+  let rg=null,kk=-1;
+  if(prov&&(pv.region||prov.keep>=0)){rg=E.regions(st,1-mySeat);kk=pv.region?(pv.hover>=0&&st[pv.hover]===3-me?rg.lab[pv.hover]:-1):rg.lab[prov.keep];}
+  const flyers=new Set(),places=new Set(),lands=new Set(),moved=new Set();
+  if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel))lands.add(landAt(m));}else if(m.t==='p'&&!ui.sel.length)places.add(m.at);}
+  if(lm&&lm.t==='f')for(const c of lm.cells)moved.add(E.dest(lm,c));
+  for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
+    const c=st[i];
+    el('circle',{cx:x,cy:y,r:c?19:3.2,fill:c?'transparent':'var(--dot)',stroke:'none'},g);
+    if(!c)el('circle',{cx:x,cy:y,r:16,fill:'transparent'},g);   // easier to click
+    if(places.has(i))el('circle',{cx:x,cy:y,r:6.5,fill:'none',stroke:'var(--accent)','stroke-width':1.6,opacity:.5},g);
+    if(lands.has(i))el('circle',{cx:x,cy:y,r:13,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
+    // birds removed by the last move: a small cross on their point
+    if(last&&last.removed&&last.removed.includes(i)&&!c){const q=6;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:'var(--danger)','stroke-width':2.4,'stroke-linecap':'round',fill:'none'},g);}
+    if(c){const fade=rg&&kk>=0&&c===3-me&&rg.lab[i]!==kk;bird(g,x,y,c-1,fade?.3:0);
+      if(flyers.has(i))el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
+      if(ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
+      if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
+      if(lm&&((lm.t==='p'&&lm.at===i)||moved.has(i)))el('circle',{cx:x,cy:y,r:4.5,fill:LASTDOT,'pointer-events':'none'},g);
+      if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
+        const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
+  // hovered: the bird to add, or the birds of the flight where they land, in transparency
+  if(pv&&pv.hover){const m=pv.hover,gl=el('g',{'pointer-events':'none'},svg);
+    for(const z of provCells(m).filter(z=>m.t==='p'||!m.cells.includes(z)))bird(gl,X(z),Y(z),mySeat,.5);}
+  // the last flight: its trajectory, dotted
+  if(lm&&lm.t==='f'){const a=lm.cells[0],b=E.dest(lm,a);el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'2 7','stroke-linecap':'round',opacity:.9,'pointer-events':'none'},svg);}}
+// ---------- the interface with common/core.js ----------
+const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
+  rules:()=>({}),form:()=>({}),
+  replay:voReplay,
+  legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,
+  enc,describe,newUi,preparing,cancel:cancelPrep,
+  board:voBoard,turnStatus:voTurnStatus,
+  hintable:()=>false,   // no computer opponent, so no hint (free play has undo only)
+  home:()=>{drawBoard(E.init(),{});}};
+coreStart();
+</script>
+</body></html>

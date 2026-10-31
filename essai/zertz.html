@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en"><head>
+<meta name="robots" content="noindex"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zèrtz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="../common/games.css?v=5">
+<style>
+/* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
+:root{
+  --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
+  --plate:#2a4852;--plate-edge:#1f3840;--ring:#cfd8db;--ring-hole:#2a4852;--ghost:#6d8a93;
+  --m0:#f7f9fa;--m0e:#8e999d;--m1:#8f999d;--m1e:#556063;--m2:#22272a;--m2e:#000000;
+  --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
+  /* viewBox of the board: 48 rings 500×595 (500×565 without the coordinates), 37 rings 440×526 (440×496) */
+  --board-ar:500/595;
+}
+html.nocoords{--board-ar:500/565}
+html.b37{--board-ar:440/526}
+html.b37.nocoords{--board-ar:440/496}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#b9c6ca;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#b9c6ca;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
+/* the plate under the rings, on every screen (the light rings need it) */
+.board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 40%,var(--plate),var(--plate-edge));border-color:var(--plate-edge)}
+html.ingame:not(.wide) .board{border-radius:14px}
+.ring{cursor:pointer}
+/* the marbles belong to nobody: no seat colour on the players' cards, the captures instead */
+.player .dot{display:none}
+.player{container-type:inline-size}
+@container (max-width:170px){.player .tally{gap:5px;font-size:.7rem}}
+.tally{display:flex;gap:10px;font-family:var(--f-mono);font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;overflow:hidden}
+.tally div{display:flex;align-items:center;gap:3px}
+.tally .goal{color:var(--muted)}
+.mb{width:14px;height:14px;border-radius:50%;flex:none;display:inline-block}
+.mb.c0{background:var(--m0);border:1.5px solid var(--m0e)}
+.mb.c1{background:var(--m1);border:1.5px solid var(--m1e)}
+.mb.c2{background:var(--m2);border:1.5px solid var(--m2e)}
+/* dark mode: the black marble icon gets a light rim, or it vanishes on the dark panel */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mb.c2{box-shadow:0 0 0 1.5px var(--muted)}}:root[data-theme="dark"] .mb.c2{box-shadow:0 0 0 1.5px var(--muted)}
+.near{color:var(--danger);font-weight:600}
+/* the shared pool and the colour to place, under the board */
+.poolbar{display:flex;align-items:center;gap:8px;flex:none;min-width:0}
+.poolbar .plabel{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.colors{display:flex;gap:6px;flex:1 1 auto;min-width:0;max-width:340px;margin-left:auto}
+.colors button{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding:5px 8px;min-width:0}
+.colors button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="../index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="zertz.html"><b id="ttl" style="font-weight:inherit">Zèrtz</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
+      <div class="picks" id="newPick" hidden>
+        <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
+      </div>
+      <form class="form" id="createForm" hidden>
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <label for="cSize"><span data-i18n="board">Board</span><select id="cSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">First player</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aSize"><span data-i18n="board">Board</span><select id="aSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <label for="aFirst"><span data-i18n="firstIs">First player</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fSize"><span data-i18n="board">Board</span><select id="fSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <label for="tSize"><span data-i18n="board">Board</span><select id="tSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <div class="card primary-card" id="joinCard" hidden>
+      <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
+      <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
+      <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
+      <form class="form" id="joinForm">
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+      </form>
+      <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
+    </div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="ZERTZ1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-240 -282.5 500 595" role="img" aria-label="Zèrtz board"></svg></div></div>
+    <!-- the shared pool, and the colour of the marble to place -->
+    <div class="poolbar" id="poolBar"><span class="plabel" id="poolLbl"></span><div class="colors" id="colors" role="group"></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="notice" id="notice"></div>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
+      <p class="hint" id="watchInfo"></p>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+    </div>
+    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
+      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
+</main>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
+</div>
+<script src="../common/core.js?v=5"></script>
+<script>
+function ZertzEngine(size){
+  const B=size===48?[-3,4,-4,3,-3,4]:[-3,3,-3,3,-3,3],cells=[];
+  for(let q=B[0];q<=B[1];q++)for(let r=B[2];r<=B[3];r++){const t=-q-r;if(t>=B[4]&&t<=B[5])cells.push([q,r]);}
+  const N=cells.length,Q=new Int8Array(N),R=new Int8Array(N),AT={};
+  cells.forEach(([q,r],i)=>{Q[i]=q;R[i]=r;AT[q+','+r]=i;});
+  const DQ=[1,1,0,-1,-1,0],DR=[0,-1,-1,0,1,1];
+  const NB=new Int8Array(N*6).fill(-1);
+  for(let i=0;i<N;i++)for(let d=0;d<6;d++){const k=AT[(Q[i]+DQ[d])+','+(R[i]+DR[d])];NB[i*6+d]=k===undefined?-1:k;}
+  const MID=new Int8Array(N*N).fill(-1);
+  for(let i=0;i<N;i++)for(let d=0;d<6;d++){const j=NB[i*6+d];if(j<0)continue;const k=NB[j*6+d];if(k>=0)MID[i*N+k]=j;}
+  const M=N,POOL=2*N,CAP=2*N+3,TURN=2*N+9,SPLIT=2*N+10,SZ=2*N+11,WIN=100000,INF=1e9;
+  function init(){const s=new Int8Array(SZ);for(let i=0;i<N;i++)s[i]=1;s[POOL]=6;s[POOL+1]=8;s[POOL+2]=10;return s;}
+  function won(s,p){const c=CAP+p*3,w=s[c],g=s[c+1],b=s[c+2];return w>=4||g>=5||b>=6||(w>=3&&g>=3&&b>=3);}
+  function isFree(s,i){if(!s[i]||s[M+i])return false;for(let d=0;d<6;d++){const a=NB[i*6+d],b=NB[i*6+(d+1)%6];if((a<0||!s[a])&&(b<0||!s[b]))return true;}return false;}
+  function dfs(s,i,path,out){let any=false;for(let d=0;d<6;d++){const j=NB[i*6+d];if(j<0||!s[M+j])continue;const k=NB[j*6+d];if(k<0||!s[k]||s[M+k])continue;any=true;const mi=s[M+i],mj=s[M+j];s[M+k]=mi;s[M+i]=0;s[M+j]=0;path.push(k);dfs(s,k,path,out);path.pop();s[M+i]=mi;s[M+j]=mj;s[M+k]=0;}if(!any&&path.length>1)out.push({t:1,path:path.slice()});}
+  function captures(s){const out=[];for(let i=0;i<N;i++)if(s[M+i])dfs(s,i,[i],out);return out;}
+  function colors(s){const p=s[TURN],c=[];if(s[POOL]+s[POOL+1]+s[POOL+2]>0){for(let k=0;k<3;k++)if(s[POOL+k]>0)c.push(k);}else for(let k=0;k<3;k++)if(s[CAP+p*3+k]>0)c.push(k);return c;}
+  function placements(s){const out=[],cols=colors(s),empty=[],free=[];
+    for(let i=0;i<N;i++)if(s[i]&&!s[M+i]){empty.push(i);if(isFree(s,i))free.push(i);}
+    for(const c of cols)for(const x of empty){let any=false;for(const f of free)if(f!==x){any=true;out.push({t:0,c,at:x,rm:f});}if(!any)out.push({t:0,c,at:x,rm:-1});}
+    return out;}
+  function gen(s){const c=captures(s);return c.length?c:placements(s);}
+  function cuts(t,f){let arcs=0;for(let d=0;d<6;d++){const a=NB[f*6+d],b=NB[f*6+(d+5)%6];if(a>=0&&t[a]&&!(b>=0&&t[b]))arcs++;}return arcs>=2;}
+  function isolate(t,p){let comps=0;const lab=new Int8Array(N).fill(-1);
+    for(let i=0;i<N;i++){if(!t[i]||lab[i]>=0)continue;comps++;const st=[i],comp=[];lab[i]=i;let full=true;
+      while(st.length){const x=st.pop();comp.push(x);if(!t[M+x])full=false;for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&t[y]&&lab[y]<0){lab[y]=i;st.push(y);}}}
+      if(full){comps--;for(const x of comp){t[CAP+p*3+t[M+x]-1]++;t[x]=0;t[M+x]=0;}}}
+    t[SPLIT]=comps>1?1:0;}
+  function apply(s,mv){const t=s.slice(),p=t[TURN];
+    if(mv.t===1){const P=mv.path;for(let k=0;k+1<P.length;k++){const a=P[k],b=P[k+1],j=MID[a*N+b];t[CAP+p*3+t[M+j]-1]++;t[M+b]=t[M+a];t[M+a]=0;t[M+j]=0;}}
+    else{t[M+mv.at]=mv.c+1;if(t[POOL+mv.c]>0)t[POOL+mv.c]--;else t[CAP+p*3+mv.c]--;if(mv.rm>=0)t[mv.rm]=0;if(t[SPLIT]||(mv.rm>=0&&cuts(t,mv.rm)))isolate(t,p);}
+    t[TURN]=1-p;return t;}
+  function prog(s,p){const c=CAP+p*3,w=s[c]/4,g=s[c+1]/5,b=s[c+2]/6,m=Math.min(s[c],s[c+1],s[c+2])/3;return Math.max(w,g,b,m)*1000+(w+g+b)*300+m*200;}
+  function evalS(s){const p=s[TURN];return prog(s,p)-prog(s,1-p);}
+  // Forcing moves: placements that create a capture (which the opponent must then take).
+  // No capture exists before the placement (otherwise the side to move would have to capture), so any new capture involves the placed marble.
+  function forcesAt(s,x){for(let d=0;d<6;d++){const y=NB[x*6+d];if(y<0||!s[y]||!s[M+y])continue;
+      const z=NB[y*6+d];if(z>=0&&s[z]&&!s[M+z])return true;           // x saute par-dessus y
+      const w=NB[x*6+(d+3)%6];if(w>=0&&s[w]&&!s[M+w])return true;}      // y saute par-dessus x
+    return false;}
+  function sumCap(t){return t[CAP]+t[CAP+1]+t[CAP+2]+t[CAP+3]+t[CAP+4]+t[CAP+5];}
+  function forcing(s){const out=[],cols=colors(s),free=[],iso=[];
+    for(let i=0;i<N;i++)if(isFree(s,i))free.push(i);
+    let neutral=-1;
+    for(const f of free){let near=false;for(let d=0;d<6;d++){const a=NB[f*6+d];if(a>=0&&s[a]&&s[M+a]){near=true;break;}}
+      if(near){const u=s.slice();u[f]=0;const b0=sumCap(u);isolate(u,s[TURN]);if(sumCap(u)>b0){iso.push(f);continue;}}
+      if(neutral<0)neutral=f;}
+    for(let x=0;x<N;x++){if(!s[x]||s[M+x]||!forcesAt(s,x))continue;
+      // rings touched by the created captures: only removing those changes the forced line
+      s[M+x]=1;const L=new Set();for(const m of captures(s))for(const i of m.path)L.add(i);s[M+x]=0;
+      const rms=iso.filter(f=>f!==x);for(const f of free)if(f!==x&&L.has(f)&&!rms.includes(f))rms.push(f);
+      let nt=neutral;if(nt===x){nt=-1;for(const f of free)if(f!==x&&!rms.includes(f)){nt=f;break;}}
+      if(nt>=0&&!rms.includes(nt))rms.push(nt);
+      if(!rms.length){let any=false;for(const f of free)if(f!==x){rms.push(f);any=true;break;}if(!any)rms.push(-1);}
+      for(const c of cols)for(const f of rms)out.push({t:0,c,at:x,rm:f});}
+    return out;}
+  const key=m=>m.c*10000+m.at*100+m.rm+1;
+  let deadline=0,stop=false,nodes=0,BEAM=10,FB=3,QK=12,QM=450;
+  function tick(){if((++nodes&1023)===0&&Date.now()>deadline)stop=true;}
+  // Quiescence search: captures are played out to the end; without a capture, the side to move may stop
+  // or try a forcing move (budget fb per line).
+  function qs(s,alpha,beta,ply,fb){const sp=evalS(s);if(fb<=0||ply>60)return sp;if(sp>=beta)return sp;if(sp>alpha)alpha=sp;
+    const p=s[TURN],fm=forcing(s);if(!fm.length)return sp;
+    let best=sp;
+    if(fb===1){for(const mv of fm){const c=apply(s,mv);if(won(c,p))return WIN-ply;const v=-neg(c,0,-beta,-alpha,ply+1,0);if(v>best){best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}}return best;}
+    const sc=[];for(const mv of fm){const c=apply(s,mv);if(won(c,p))return WIN-ply;sc.push([-neg(c,0,-INF,INF,ply+1,0),c]);}
+    sc.sort((a,b)=>b[0]-a[0]);
+    // keep only sacrifices of at most one marble, the QK most promising
+    let k=0;
+    for(const [v0,c] of sc){if(v0<sp-QM||++k>QK)break;const v=-neg(c,0,-beta,-alpha,ply+1,fb-1);if(stop)return best;if(v>best)best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}
+    return best;}
+  function neg(s,depth,alpha,beta,ply,fb){tick();if(stop)return 0;const p=s[TURN];
+    const caps=captures(s);
+    if(caps.length){if(ply>60)return evalS(s);let best=-INF;for(const mv of caps){const c=apply(s,mv);const sc=won(c,p)?WIN-ply:-neg(c,depth,-beta,-alpha,ply+1,fb);if(sc>best)best=sc;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
+    if(depth<=0)return qs(s,alpha,beta,ply,fb);
+    const pl=placements(s);if(!pl.length)return -WIN+ply;
+    if(depth===1){const fm=forcing(s),seen=new Set(fm.map(key)),order=fm.concat(pl.filter(m=>!seen.has(key(m))));
+      let best=-INF;for(const mv of order){const c=apply(s,mv);const sc=won(c,p)?WIN-ply:-neg(c,0,-beta,-alpha,ply+1,fb);if(sc>best)best=sc;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
+    const sc=[];for(const mv of pl){const c=apply(s,mv);if(won(c,p))return WIN-ply;sc.push([-neg(c,0,-INF,INF,ply+1,0),c,key(mv)]);if(stop)return 0;}
+    sc.sort((a,b)=>b[0]-a[0]);const fk=new Set(forcing(s).map(key));
+    const cand=sc.filter((x,i)=>i<BEAM||fk.has(x[2]));
+    let best=-INF;
+    for(const x of cand){const v=-neg(x[1],depth-1,-beta,-alpha,ply+1,fb);if(stop)return best>-INF?best:0;if(v>best)best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
+  // Iterative deepening on two axes: depth of quiet moves and number of forcing moves read beyond it.
+  function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,time=o.time||3000,K0=o.rootBeam||30;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
+    deadline=Date.now()+time;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
+    const fk=new Set(moves[0].t===0?forcing(s).map(key):[]);
+    let list=[];for(const mv of moves){const c=apply(s,mv);const sc=won(c,p)?WIN:-neg(c,0,-INF,INF,1,0);list.push({mv,c,sc,f:mv.t===0&&fk.has(key(mv))});}
+    deadline=Math.max(deadline,Date.now()+200);stop=false;
+    list.sort((a,b)=>b.sc-a.sc);let reached=[0,0];
+    // forced lines first, then depth of quiet moves
+    const plan=[];for(let f=1;f<=maxF;f++)plan.push([1,f]);for(let d=2;d<=maxD;d++)for(let f=Math.max(1,maxF-1);f<=maxF;f++)plan.push([d,f]);
+    if(list[0].sc<WIN/2)for(const [d,f] of plan){let alpha=-INF;const res=[],rest=[];
+      list.forEach((x,i)=>((i<K0||x.f||moves[0].t===1)?res:rest).push(x));
+      const done=[];
+      for(const x of res){const v=-neg(x.c,d-1,-INF,-alpha,1,f);if(stop)break;done.push({...x,sc:v});if(v>alpha)alpha=v;if(alpha>WIN/2)break;}
+      if(stop){if(done.length&&done.some(x=>x.sc>WIN/2)){done.sort((a,b)=>b.sc-a.sc);list=done.concat(list);}break;}
+      const seen=new Set(done.map(x=>x.mv));
+      done.sort((a,b)=>b.sc-a.sc);list=done.concat(list.filter(x=>!seen.has(x.mv)).map(x=>({...x,sc:-INF})));reached=[d,f];
+      if(list[0].sc>WIN/2)break;}
+    // avoid a move that loses by force if another one does not
+    let pick=list[0];
+    if(o.noise){const top=list.filter(x=>x.sc>list[0].sc-o.noise&&x.sc>-WIN/2).slice(0,8);pick=top[Math.floor(Math.random()*top.length)]||pick;}
+    return {move:pick.mv,score:pick.sc,depth:reached[0],fb:reached[1],nodes};}
+  return {SPLIT,forcing,evalS,N,Q,R,NB,MID,M,POOL,CAP,TURN,init,gen,captures,placements,apply,won,isFree,search,colors};
+}
+// ===== Zèrtz on the shared code (common/core.js) =====
+const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
+const GOAL=[4,5,6];
+// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, time, random choice among near-best moves)
+const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,time:1500,noise:150},fort:{depth:3,fb:3,time:3000}};
+const HINT=LEVELS.fort;
+// Zèrtz strings, merged over the shared ones (core.js)
+const ZZ_I18N={fr:{
+ title:"Zèrtz",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
+ pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
+ c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup avant l'envoi",
+ st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
+ st_place:"Choisissez une couleur, puis un anneau vide.",st_placeN:"{n} : choisissez une couleur, puis un anneau vide.",
+ st_placeOwn:"Réserve vide : posez une de vos billes capturées.",st_placeOwnN:"{n} : réserve vide, posez une de vos billes capturées.",
+ draw:"Partie interrompue : {why}.",
+ w_g0:"4 billes blanches",w_g1:"5 billes grises",w_g2:"6 billes noires",w_each:"3 billes de chaque couleur",w_nomove:"l'adversaire n'a plus de coup",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li>Les billes sont communes aux deux joueurs. Si une prise est possible, elle est obligatoire.</li>
+ <li><b>Poser</b> : posez une bille de la réserve sur un anneau vide, puis retirez un anneau libre (vide, au bord, qui peut glisser hors du plateau).</li>
+ <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
+ <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
+ <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
+ <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile : un premier toucher l'affiche, un second le joue). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+},en:{
+ title:"Zèrtz",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
+ pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
+ c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move before sending",
+ st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
+ st_place:"Choose a colour, then an empty ring.",st_placeN:"{n}: choose a colour, then an empty ring.",
+ st_placeOwn:"Pool empty: place one of your captured marbles.",st_placeOwnN:"{n}: pool empty, place one of your captured marbles.",
+ draw:"Game interrupted: {why}.",
+ w_g0:"4 white marbles",w_g1:"5 grey marbles",w_g2:"6 black marbles",w_each:"3 marbles of each colour",w_nomove:"the opponent has no move left",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li>Marbles are shared by both players. If a capture is possible, it is mandatory.</li>
+ <li><b>Place</b>: put a marble from the pool on an empty ring, then remove a free ring (empty, on the edge, able to slide off the board).</li>
+ <li><b>Capture</b>: a marble jumps over a neighbour onto the empty ring just behind it; the capture continues as long as possible.</li>
+ <li><b>Isolate</b>: a separated group of rings that is fully occupied goes to the player who isolated it.</li>
+ <li><b>Win</b>: 3 of each colour, 4 white, 5 grey or 6 black. Also on time or by resignation.</li>
+ <li><b>Play</b>: choose the colour under the board, click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen: a first tap shows it, a second plays it). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+}};
+const CN=k=>t('c'+k);
+
+// ---------- board ----------
+// Board size: the game's `size` field (48 or 37 rings). `rings` repeats it for the resume codes (core's importCode resets
+// size to GAME.size before reading the rules); missing in older saves and codes, where size alone says it.
+const ringsOf=g=>g&&ENG[g.rings]?+g.rings:g&&ENG[g.size]?+g.size:48;
+let E,N,M,CAP,POOL,TURN,CX=0,CY=0,COLQ=[],RMAX={},BOTTOM=238,SIZE=0,VB=[0,0,0,0];
+const X=i=>60*E.Q[i]-CX,Y=i=>69.282*(E.R[i]+E.Q[i]/2)-CY;
+const name=i=>'abcdefgh'[COLQ.indexOf(E.Q[i])]+(RMAX[E.Q[i]]-E.R[i]+1);
+// html.b37 picks the board's aspect ratio (--board-ar) for the 37-ring board
+function setBoard(sz){if(sz===SIZE)return;SIZE=sz;E=ENG[sz];({N,M,CAP,POOL,TURN}=E);
+  let sx=0,sy=0;COLQ=[];RMAX={};
+  for(let i=0;i<N;i++){sx+=60*E.Q[i];sy+=69.282*(E.R[i]+E.Q[i]/2);if(!COLQ.includes(E.Q[i]))COLQ.push(E.Q[i]);RMAX[E.Q[i]]=Math.max(RMAX[E.Q[i]]??-99,E.R[i]);}
+  CX=sx/N;CY=sy/N;COLQ.sort((a,b)=>a-b);
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
+  VB=[x0-40,y0-40,x1-x0+80,y1-y0+80];BOTTOM=y1+52;document.documentElement.classList.toggle('b37',sz===37);}
+const enc=m=>m.t===1?'x'+m.path.join('.'):'p'+[m.c,m.at,m.rm].join('.');
+const txtOf=m=>m.t===1?m.path.map(name).join('×'):t('L'+m.c)+' '+name(m.at)+(m.rm>=0?' −'+name(m.rm):'');
+function reasonWin(st,p){const c=CAP+p*3;for(let k=0;k<3;k++)if(st[c+k]>=GOAL[k])return 'w_g'+k;return 'w_each';}
+// rules: the game or view object (its size); replay() in core memoises and adds the result. st is the engine's array,
+// with st.turn = the seat to move. The log keeps the move (its text is written at display time, in the current language).
+function zzReplay(rules,moves){setBoard(ringsOf(rules));
+  let st=E.init();const log=[];let last=null,over=null;
+  for(const code of moves){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv){over={w:-1,why:'w_bad'};break;}
+    const before=st;st=E.apply(st,mv);let g=0;
+    if(mv.t===0){for(let k=0;k<6;k++)g+=st[CAP+k]-before[CAP+k];if(before[POOL+mv.c]===0)g++;}
+    log.push({p,mv,g});const removed=[];for(let i=0;i<N;i++)if(before[i]&&!st[i])removed.push(i);last={mv,removed};
+    if(E.won(st,p)){over={w:p,why:reasonWin(st,p)};break;}
+    if(!E.gen(st).length){over={w:p,why:'w_nomove'};break;}}
+  st.turn=st[TURN];return {st,log,last,over};}
+const logTxt=e=>txtOf(e.mv)+(e.g>0?' ⊕'+e.g:'');
+
+// ---------- game view ----------
+// ui: color (of the marble to place), at (marble placed, waiting for its ring removal), path (capture being played),
+// pending (move awaiting confirmation), hover / tap (ring under the pointer / first tap on a touch screen)
+function newUi(){return {color:ui&&ui.color||0,at:null,path:null,pending:null,hover:-1,tap:-1};}
+const diff=(a,b)=>{const o=[];for(let i=0;i<N;i++)if(a[i]&&!b[i])o.push(i);return o;};
+// Move shown in transparency: the pending move, or the one under the pointer / first tap
+function hoverMove(legal){const i=ui.hover;if(i<0||!legal.length)return null;
+  if(legal[0].t===1){const P=ui.path;return P?legal.find(m=>m.path.length===P.length+1&&P.every((x,k)=>m.path[k]===x)&&m.path[P.length]===i)||null:null;}
+  if(ui.at!==null)return legal.find(m=>m.c===ui.color&&m.at===ui.at&&m.rm===i)||null;
+  const opts=legal.filter(m=>m.c===ui.color&&m.at===i);return opts.length===1&&opts[0].rm<0?opts[0]:opts.length?{t:0,c:ui.color,at:i,rm:-1,part:true}:null;}
+// (a suggestion shown is drawn exactly like a move awaiting confirmation)
+// prov: the whole move is provisional (awaiting confirmation, or a suggestion): opaque, dashed frames; otherwise what the
+// pointer / first tap adds is shown in transparency, without a frame, over what was already clicked (provisional:
+// the placed marble ui.at, the capture path ui.path)
+function preview(st,legal,mine){const prov=!!(mine&&hintOn()&&hintMv||ui.pending),mv=(mine&&hintOn()?hintMv:null)||ui.pending||(mine&&!ui.pending?hoverMove(legal):null);
+  const P=mine&&!prov?ui.path:null,jumped=Q=>{const o=[];for(let k=0;k+1<Q.length;k++)o.push(E.MID[Q[k]*N+Q[k+1]]);return o;};
+  if(!mv&&ui.at!==null&&mine)return {mv:{t:0,c:ui.color,at:ui.at,rm:-1,part:true},gone:[],taken:[],prov,atProv:true};
+  // a capture path being clicked: the marble already stands on its last landing, the marbles it jumped are lifted
+  if(!mv&&P&&P.length>1){const j=jumped(P);return {mv:{t:1,path:P},gone:[],taken:j,provTaken:j,prov:true,atProv:true,part:true};}
+  if(!mv)return null;if(mv.part)return {mv,gone:[],taken:[],provTaken:[],prov,atProv:ui.at!==null};
+  const after=E.apply(st,mv),gone=diff(st,after),taken=mv.t===1?jumped(mv.path):[];
+  for(const i of gone)if(st[M+i])taken.push(i);
+  return {mv,gone,taken,prov,atProv:prov||ui.at!==null,provTaken:prov?taken:P?jumped(P):[]};}
+// core's renderGame: the board and the pool bar, then the action bar for my turn (turnStatus)
+let shownSt=null;   // position shown (the players' cards show its captures)
+function zzBoard({r,d,mine}){setBoard(ringsOf(view));if(ui.hover==null)ui.hover=-1;
+  const live=navAt===null,legal=r.over||!live?[]:E.gen(r.st),caps=!!(legal.length&&legal[0].t===1);
+  if(mine){const cols=E.colors(r.st);if(!cols.includes(ui.color))ui.color=cols[0]??0;}
+  drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint'&&!hintOn(),live&&mine&&(prepared()||hintOn())?null:d.last,live?preview(r.st,legal,mine):null);
+  shownSt=d.st;poolBar(d.st,r,mine,caps);
+  return {caps};}
+// The shared pool (once empty, the marbles each player captured) and the colour to place: under the board, always in view
+function poolBar(st,r,mine,caps){const pool=[st[POOL],st[POOL+1],st[POOL+2]],n=pool[0]+pool[1]+pool[2],fromCap=n===0,cols=r.over?[]:E.colors(r.st);
+  const lb=$('poolLbl');lb.textContent=fromCap?t('poolLblE'):t('poolLbl',{n});lb.title=fromCap?t('h_empty'):t('pool')+' · '+t('poolN',{n});
+  const hc=mine&&hintOn()&&hintMv.t===0?hintMv.c:-1,cb=$('colors');cb.textContent='';cb.setAttribute('aria-label',t('pool'));
+  for(let k=0;k<3;k++){const b=document.createElement('button');b.type='button';b.id='col'+k;
+    const v=fromCap&&mySeat>=0?st[CAP+mySeat*3+k]:pool[k];b.innerHTML=`<span class="mb c${k}"></span>${v}`;
+    b.setAttribute('aria-pressed',String(hc>=0?hc===k:mine&&ui.color===k));b.setAttribute('aria-label',CN(k)+', '+v);b.title=CN(k);
+    b.disabled=!(mine&&!ui.pending&&!caps&&cols.includes(k));
+    b.onclick=()=>{if(busy==='hint')stopAI();hintMv=null;ui.color=k;ui.at=null;ui.hover=-1;ui.tap=-1;renderGame();};cb.appendChild(b);}}
+// Nothing engaged: Undo last move / Hint · something engaged (a marble placed, a capture started, a first tap): Reset
+function zzTurnStatus({r,o,prep,idle,RST}){
+  if(o.caps)status(t(ui.path?'st_capPath':'st_capStart'),'turn',prep?[RST]:idle);
+  else if(ui.at!==null)status(t('st_remove'),'turn',[RST]);
+  else{const own=r.st[POOL]+r.st[POOL+1]+r.st[POOL+2]===0,k=own?'st_placeOwn':'st_place';
+    status(solo()?t(k+'N',{n:seatName(r.st[TURN])}):t(k),'turn',prep?[RST]:idle);}}
+// Players' cards (built by core): the marbles each player captured, out of the goal of each colour
+function addTallies(){if(!view||!shownSt)return;const st=shownSt;
+  for(const p of [0,1]){const el=$('pl'+p);if(!el||el.querySelector('.tally'))continue;
+    const ty=document.createElement('div');ty.className='tally';const c=CAP+p*3;
+    for(let k=0;k<3;k++){const x=document.createElement('div');const v=st[c+k];x.title=CN(k);x.innerHTML=`<span class="mb c${k}"></span><span class="${v>=GOAL[k]-1&&v>0?'near':''}">${v}</span><span class="goal">/${GOAL[k]}</span>`;ty.appendChild(x);}
+    el.appendChild(ty);}}
+// core rebuilds the cards at every render, after the board: the captures are added right after (before the page is painted)
+if(typeof MutationObserver!=='undefined'){const mo=new MutationObserver(addTallies);for(const id of ['playersTop','playersSide'])mo.observe($(id),{childList:true});}
+
+// ---------- input ----------
+// A move is being prepared: a marble placed (waiting for its ring removal), a capture path started, a move awaiting confirmation,
+// or a first tap that previews a move on a touch screen.
+function prepared(){return !!ui.pending||ui.at!==null||!!ui.path||(ui.hover>=0&&ui.tap===ui.hover);}
+// Reset: drop the whole prepared move, back to the plain board of the current position
+function cancelPrep(){ui.at=null;ui.path=null;ui.pending=null;ui.hover=-1;ui.tap=-1;renderGame();}
+// Click while the move awaits confirmation: the placed marble / the start or a ring of the capture path
+// rewinds to that point; the last element (removed ring, last landing, or a marble placed without removal) is taken back.
+function clickPending(i){const mv=ui.pending;ui.hover=-1;ui.tap=-1;
+  if(mv.t===1){const P=mv.path,k=P.lastIndexOf(i);if(k<0)return;ui.pending=null;ui.path=P.slice(0,k===P.length-1?k:k+1);renderGame();return;}
+  if(i!==mv.at&&i!==mv.rm)return;ui.pending=null;ui.at=mv.rm>=0?mv.at:null;renderGame();}
+function clickRing(i){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;setBoard(ringsOf(view));
+  // a suggestion shown (or being looked for) goes away, and the click counts as usual
+  if(busy==='hint')stopAI();if(hintMv){hintMv=null;ui.hover=-1;ui.tap=-1;}
+  if(ui.pending){clickPending(i);return;}
+  const legal=E.gen(r.st),caps=legal[0]&&legal[0].t===1;
+  if(caps){const P=ui.path;
+    if(!P){if(legal.some(m=>m.path[0]===i))ui.path=[i];renderGame();return;}
+    const cand=legal.filter(m=>P.every((x,k)=>m.path[k]===x));
+    if(cand.some(m=>m.path[P.length]===i)){const done=cand.find(m=>m.path.length===P.length+1&&m.path[P.length]===i);
+      if(done){if(ui.hover===i)choose(done);else{ui.hover=ui.tap=i;renderGame();}return;}P.push(i);ui.hover=-1;renderGame();return;}
+    // a ring of the path: the current end is taken back, an earlier one rewinds the path to it
+    if(P.length>1){const k=P.lastIndexOf(i);if(k>=0){ui.path=P.slice(0,k===P.length-1?k:k+1);ui.hover=-1;renderGame();}return;}
+    if(P.length===1){ui.path=legal.some(m=>m.path[0]===i)&&i!==P[0]?[i]:null;renderGame();}return;}
+  const c=ui.color;
+  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){if(ui.hover===i)choose(mv);else{ui.hover=ui.tap=i;renderGame();}return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
+  const opts=legal.filter(m=>m.c===c&&m.at===i);if(!opts.length){renderGame();return;}
+  if(opts.length===1&&opts[0].rm<0){if(ui.hover===i)choose(opts[0]);else{ui.hover=ui.tap=i;renderGame();}return;}ui.at=i;ui.hover=-1;renderGame();}
+// A complete move waits for Confirm (unless « Confirm each move » is off)
+function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;ui.tap=-1;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
+$('needConfirm').checked=LS.get('zertz-confirm',true);
+$('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
+$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
+// With a mouse, hovering shows the move, so one click plays it; on a touch screen the first tap shows it.
+function hoverRing(i){if(!view||navAt!==null||ui.pending||hintMv||i===ui.hover)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;setBoard(ringsOf(view));
+  const old=ui.hover;ui.hover=i;ui.tap=-1;if(i>=0&&!hoverMove(E.gen(r.st)))ui.hover=-1;if(ui.hover!==old)renderGame();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest('[data-i]');hoverRing(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverRing(-1));}
+
+// ---------- computer opponent ----------
+// A forced move: the search found a single move, or a win before reading on (no depth, no forcing line)
+function zzSearch(s,opt){const r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.depth&&!r.fb};}
+function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>50000)return {k:'ai_win'};if(s<-50000)return {k:'ai_lost'};
+  return {k:Math.abs(s)<150?'ai_eq':s>0?(s>800?'ai_much':'ai_better'):(s<-800?'ai_muchWorse':'ai_worse'),d:r.depth};}
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function marble(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:22,fill:`var(--m${c})`,stroke:`var(--m${c}e)`,'stroke-width':2},g);if(op)e.setAttribute('opacity',op);}
+function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv)last=null;
+  // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox (--board-ar too)
+  svg.setAttribute('viewBox',`${VB[0]} ${VB[1]} ${VB[2]} ${VB[3]+(coordsOn?30:0)}`);
+  if(coordsOn)for(const q of COLQ){const t=el('text',{x:60*q-CX,y:BOTTOM,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--ghost)'},svg);t.textContent='abcdefgh'[COLQ.indexOf(q)];}
+  const caps=legal.length&&legal[0].t===1,lm=last&&last.mv;
+  const starters=new Set(),targets=new Set(),removable=new Set();
+  if(interactive&&caps){if(!ui.path)legal.forEach(m=>starters.add(m.path[0]));else{const P=ui.path;legal.filter(m=>P.every((x,k)=>m.path[k]===x)).forEach(m=>{if(m.path[P.length]!==undefined)targets.add(m.path[P.length]);});}}
+  if(interactive&&!caps&&ui.at!==null)legal.forEach(m=>{if(m.c===ui.color&&m.at===ui.at&&m.rm>=0)removable.add(m.rm);});
+  // frames are drawn inside the ring (r 27, between the marble and the ring's edge): solid for the last move and the
+  // selected marble, dashed for what is provisional; what the pointer previews has no frame, only transparency
+  const fr=(g,x,y,col,o)=>el('circle',Object.assign({cx:x,cy:y,r:27,fill:'none',stroke:col,'stroke-width':3},o||{}),g),DASH={'stroke-dasharray':'4 4'};
+  const lmLand=lm&&(lm.t===1?lm.path[lm.path.length-1]:lm.at);
+  const pmv=pv&&pv.mv,land=pmv?pmv.t===1?pmv.path[pmv.path.length-1]:pmv.at:-1,from=pmv&&pmv.t===1?pmv.path[0]:-1;
+  for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'ring','data-i':i},svg);
+    if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1.2,'stroke-dasharray':'3 5',opacity:wasRm?.9:.55},g);g.style.cursor='default';continue;}
+    const fade=pv&&pv.gone.includes(i);   // ring that the previewed move removes: shown in transparency
+    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.35:1},g);
+    el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
+    if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)',{class:'pulse'});const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
+    if(targets.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    // marbles that the previewed move lifts (jumped, isolated) or moves away (the jumping one): in transparency
+    const c=st[M+i],lift=pv&&(pv.taken.includes(i)||i===from);
+    if(c)marble(g,x,y,c-1,lift?.35:0);
+    if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
+    if(pv){
+      if(fade&&pv.prov)fr(g,x,y,'var(--danger)',DASH);
+      if(c&&pv.taken.includes(i)&&(pv.prov||pv.provTaken&&pv.provTaken.includes(i)))fr(g,x,y,'var(--danger)',DASH);
+      if(land===i){const col=pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,solid=pv.prov||pmv.t===0&&pv.atProv;
+        marble(g,x,y,col,solid?0:.5);if(solid)fr(g,x,y,'var(--accent)',DASH);}}
+    if(starters.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    // the jumping marble picked (path not started yet): the element to click again to drop it
+    if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
+  const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};
+  if(lm&&lm.t===1)path(lm.path,'2 8');if(pv&&pv.mv.t===1)path(pv.mv.path,'4 6');else if(ui.path)path(ui.path);}
+
+// ---------- the interface with common/core.js ----------
+const GAME={id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
+  rules:g=>{const n=ringsOf(g);return {size:n,rings:n};},
+  form:p=>{const n=+$(p+'Size').value;return {size:ENG[n]?n:48,rings:ENG[n]?n:48};},
+  replay:zzReplay,
+  legal:(st,code,g)=>ENG[ringsOf(g)].gen(st).some(m=>enc(m)===code)?code:null,
+  enc,describe:mv=>txtOf(mv),newUi,preparing:prepared,cancel:cancelPrep,
+  board:zzBoard,turnStatus:zzTurnStatus,
+  logText:e=>logTxt(e),
+  home:()=>{setBoard(48);drawBoard(ENG[48].init(),[],false,null);},
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc:()=>ZertzEngine.toString()+`
+const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
+function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.depth&&!r.fb};}`,
+  aiPos:st=>Array.from(st),
+  aiSearch:(st,opt)=>zzSearch(Int8Array.from(st),opt),
+  evalInfo:res=>evalInfo(res)};
+coreStart();
+</script>
+</body></html>
