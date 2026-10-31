@@ -42,6 +42,9 @@ h1{font-weight:400;letter-spacing:0}
 .mini{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .mini.b{background:#151716;box-shadow:0 0 0 1px var(--ring-b)}.mini.w{background:#f4f3ee;box-shadow:0 0 0 1px var(--ring-w)}
 .mini.u{border:1px dashed var(--muted)}
+.player .cnt.pairs{gap:4px}
+.pair{display:inline-flex;gap:2px;align-items:center;justify-content:center;width:26px;height:15px;border-radius:8px;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.pair.e{border:1px dashed color-mix(in srgb,var(--muted) 70%,transparent);background:none;box-sizing:border-box}
 .notice button .pst{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}
 /* Swap2 choice: up to five commands (Black, White, +2 stones, then Undo / Hint), on two rows if needed */
 .notice.choose .btns{flex-wrap:wrap;justify-content:center;row-gap:4px}
@@ -543,7 +546,8 @@ function pick(c){if(busy==='hint')stopAI();hintMv=null;const r=replay(view,view.
 function playerCard(el,p,d){const st=d.st,col=st.color[p],dot=el.querySelector&&el.querySelector('.dot');
   if(dot){dot.className='dot pst '+(col===1?'b':col===2?'w':'u');dot.title=col?CN(col):'';}
   const n=col?st.caps[col]:0,x=document.createElement('div');x.className='cnt';x.title=t('captured',{n});
-  x.innerHTML=`<span class="mini ${col?(col===1?'w':'b'):'u'}"></span>${n}/5`;el.appendChild(x);}
+  // five slots, each filled by a captured pair of the opponent's stones
+  const oc=col===1?'w':'b';x.className='cnt pairs';x.innerHTML=[0,1,2,3,4].map(k=>k<n?`<span class="pair"><span class="mini ${oc}"></span><span class="mini ${oc}"></span></span>`:'<span class="pair e"></span>').join('');el.appendChild(x);}
 
 // ---------- input ----------
 const prepared=()=>ui.tent.length>0||ui.add2||!!ui.pending;
