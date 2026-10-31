@@ -206,7 +206,8 @@ h1 a.gname{color:inherit;text-decoration:none}
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
     <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
-    <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancelMove">Cancel the move</button></div></div>
+    <div class="card" id="keepCard" hidden><h2 data-i18n="regions">Regions</h2><p class="hint" data-i18n="regionsTxt">Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.</p><div class="confirm"><button type="button" id="keepCancel" data-i18n="cancel">Cancel</button></div></div>
+    <div class="card" id="selCard" hidden><div class="confirm"><button type="button" id="selCancel" data-i18n="cancel">Cancel</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
       <p class="hint" id="rmTxt" hidden></p>
@@ -218,7 +219,7 @@ h1 a.gname{color:inherit;text-decoration:none}
     <div class="card" id="myCard" hidden>
       <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-      <div class="confirm" id="undoBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo move</button></div>
+      <div class="confirm" id="undoBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo previous move</button></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -325,10 +326,10 @@ const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",orangeIs:"Orange (commence)",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
- haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup",
+ haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup précédent",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
- yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",regions:"Régions",regionsTxt:"Votre coup sépare les oiseaux adverses en plusieurs régions. Cliquez un oiseau de la région qui reste ; les autres s'envolent.",cancelMove:"Annuler le coup",
+ yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",regions:"Régions",regionsTxt:"Votre coup sépare les oiseaux adverses en plusieurs régions. Cliquez un oiseau de la région qui reste ; les autres s'envolent.",
  start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
@@ -362,10 +363,10 @@ const I18N={fr:{
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",orangeIs:"Orange (plays first)",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
- haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo move",
+ haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo previous move",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
- yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",regions:"Regions",regionsTxt:"Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.",cancelMove:"Cancel the move",
+ yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",regions:"Regions",regionsTxt:"Your move cuts the opponent's birds into several regions. Click a bird in the region that stays; the others fly away.",
  start:"Start",startBtn:"Start the game",pass:"Pass",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
  fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
@@ -447,7 +448,8 @@ let role=null;          // 'host' | 'guest' | 'watch' | 'test' (local, both side
 let peer=null;
 let view=null;          // public state shown {size,names,first,moves,clock,running,elapsed,result,guestOn,watchers,recvAt}
 let mySeat=-1;
-let ui={sel:[],basemv:null,pending:null,hover:-1},sending=false;
+// ui.hist: the selections made in this sequence, one per click (ui.sel is the last one); kept while the landing, regions and confirmation are prepared
+let ui={sel:[],hist:[],basemv:null,pending:null,hover:-1},sending=false;
 const H={};             // host-only state
 
 function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
@@ -585,7 +587,11 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
   if(role==='guest'&&mySeat>=0){if(g.result)LS.del('volo-p2p-guest');else LS.set('volo-p2p-guest',{code:C.code,seat:mySeat,name:C.name,view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result))resetUi();
   renderGame();}
-function resetUi(){ui.sel=[];ui.basemv=null;ui.pending=null;ui.hover=-1;}
+function resetUi(){ui.sel=[];ui.hist=[];ui.basemv=null;ui.pending=null;ui.hover=-1;}
+// a move is being prepared: a selection, a region choice or a pending confirmation
+const preparing=()=>!!(ui.sel.length||ui.basemv||ui.pending);
+// Cancel: drop the whole prepared sequence, back to the neutral board
+function cancelPrep(){if(!preparing())return;resetUi();renderGame();}
 function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[view.runSeat??r.st[TURN]]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
 function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st[TURN]===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
@@ -632,8 +638,9 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   tick();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending)+(ui.pending.keep>=0?' ('+t('regions').toLowerCase()+')':'');
   $('keepCard').hidden=!(ui.basemv&&!ui.pending);
+  $('selCard').hidden=!(ui.sel.length&&!ui.basemv&&!ui.pending);
   $('myCard').hidden=!(role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('undoBox').hidden=role!=='test';if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  $('undoBox').hidden=role!=='test'||preparing();if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
   $('passBox').hidden=!(mine&&canPass&&!ui.basemv&&!ui.pending);
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
@@ -679,8 +686,17 @@ const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,
 function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
   for(let d=0;d<6;d++){const path=[];let x=a;for(let k=0;k<14;k++){x=E.NB[x*6+d];if(x<0)break;if(x===b)return {d,path};path.push(x);}}return null;}
 const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
-function clickCell(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+// Rewind: back to the moment bird c was selected in this sequence (what came after is dropped)
+function rewindTo(c){const k=ui.hist.findIndex(h=>h.includes(c));ui.hist=k<0?[]:ui.hist.slice(0,k+1);ui.sel=k<0?[]:ui.hist[k].slice();
+  ui.basemv=null;ui.pending=null;ui.hover=-1;renderGame();}
+function clickCell(i){if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
   const legal=E.gen(r.st),me=mySeat+1,st=r.st;
+  const prep=ui.pending||ui.basemv;
+  if(prep){ // a highlighted bird of the prepared move: the added bird drops the move, a bird of the line goes back to its selection
+    if(prep.t==='p'&&prep.at===i){cancelPrep();return;}
+    if(prep.t==='f'){const o=prep.cells.includes(i)?i:prep.cells.find(c=>E.dest(prep,c)===i);
+      if(o!==undefined&&(st[i]===me||!st[i])){if(!ui.hist.length)ui.hist=[prep.cells.slice()];rewindTo(o);return;}}
+    if(ui.pending)return;}
   if(ui.basemv){ // choose the region that stays
     const t=E.base(st,ui.basemv);if(t[i]!==3-me)return;const rg=E.regions(t,1-mySeat);
     const mv=E.expand(st,ui.basemv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv);}return;}
@@ -690,21 +706,22 @@ function clickCell(i){if(!view||ui.pending)return;const r=replay(view.size,view.
     if(land&&st[i]!==me){if(ui.hover===i)pick(land);else{ui.hover=i;renderGame();}return;}
     ui.hover=-1;
     if(st[i]===me){
-      if(sel.includes(i)){ui.sel=[];renderGame();return;}
+      // the last selected birds: deselect; a bird selected earlier: back to that selection
+      if(sel.includes(i)){const k=ui.hist.findIndex(h=>h.includes(i));if(k>=0&&k<ui.hist.length-1)rewindTo(i);else{ui.sel=[];ui.hist=[];renderGame();}return;}
       // extend the selection along its axis (or pick an axis for a single bird)
       const ends=[sel[0],sel[sel.length-1]];
       for(const e of ends){const L=lineThrough(e,i);if(!L)continue;if(L.path.some(x=>st[x]!==me||sel.includes(x)))continue;
         if(sel.length>1){const ax=lineThrough(sel[0],sel[1]).d%3;if(L.d%3!==ax)continue;}
-        const add=L.path.concat([i]);ui.sel=normSel(e===sel[0]?add.reverse().concat(sel):sel.concat(add));renderGame();return;}
-      ui.sel=[i];renderGame();return;}
-    ui.sel=[];renderGame();return;}
-  if(st[i]===me){ui.sel=[i];renderGame();return;}
+        const add=L.path.concat([i]);ui.sel=normSel(e===sel[0]?add.reverse().concat(sel):sel.concat(add));ui.hist.push(ui.sel.slice());renderGame();return;}
+      ui.sel=[i];ui.hist=[[i]];renderGame();return;}
+    ui.sel=[];ui.hist=[];renderGame();return;}
+  if(st[i]===me){ui.sel=[i];ui.hist=[[i]];renderGame();return;}
   const pl=legal.find(m=>m.t==='p'&&m.at===i);if(pl)pick(pl);}
 // pick: base move chosen; if several variants exist (regions), ask which one stays
-function pick(mv){ui.sel=[];ui.hover=-1;const r=replay(view.size,view.moves,view.result);const vs=E.expand(r.st,mv);
+function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view.size,view.moves,view.result);const vs=E.expand(r.st,mv);
   if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
 // A move takes several clicks: it always waits for the final confirmation before it is sent
-function choose(mv){ui.sel=[];ui.hover=-1;ui.basemv=null;ui.pending=mv;renderGame();}
+function choose(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;ui.pending=mv;renderGame();}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(role==='test'){testPlay(code);return;}
@@ -719,9 +736,9 @@ function pendClear(){C.pending=null;LS.del('volo-p2p-pending');}
 setInterval(()=>{if(role!=='guest'||!C.pending||!view)return;const now=Date.now();
   if(C.conn&&C.conn.open&&now-C.pending.sent>3000){C.pending.sent=now;try{C.conn.send({t:'move',n:C.pending.n,code:C.pending.code});}catch(e){}}
   if(!C.pending.shown&&now-C.pending.at>1500){C.pending.shown=true;renderGame();}},1000);
-$('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
+$('cancelMv').onclick=cancelPrep;
 $('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
-$('keepCancel').onclick=()=>{ui.basemv=null;renderGame();};
+$('keepCancel').onclick=cancelPrep;$('selCancel').onclick=cancelPrep;
 $('passBtn').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);};
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
@@ -737,7 +754,7 @@ function startTest(){C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);navAt=null
   resetUi();showGame();renderGame();}
 function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];resetUi();renderGame();}
 function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
-function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
+function testUndo(){if(!view.moves.length||preparing())return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
 $('undoBtn').onclick=()=>{if(role==='test')testUndo();};
 $('testForm').addEventListener('submit',e=>{e.preventDefault();startTest();});
 // Home: "Create a game", then the opponent (link, this device), then that choice's options
@@ -757,6 +774,7 @@ $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
 $('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
 $('navLast').onclick=()=>navGo(null);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view&&preparing()&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')){e.preventDefault();cancelPrep();}});
 document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
   const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
 // Home: leave the game and come back to Volo's own start page

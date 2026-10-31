@@ -231,7 +231,7 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="myCard" hidden>
       <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
-        <div class="confirm"><button type="button" id="undoBtn" data-i18n="undo">Undo move</button><button type="button" id="hintBtn" data-i18n="hint">Hint</button></div>
+        <div class="confirm"><button type="button" id="undoBtn" data-i18n="undo">Undo previous move</button><button type="button" id="hintBtn" data-i18n="hint">Hint</button></div>
         <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
         <p class="hint" id="aiInfo"></p>
       </div>
@@ -389,10 +389,10 @@ const I18N={fr:{
  interrupted:"Partie interrompue : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
- st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance).",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour annuler.",
+ st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
- computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",
+ computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup précédent",hint:"Suggestion",
  st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",hint_move:"Suggestion : {m}.",
  ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",
  ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",
@@ -429,10 +429,10 @@ const I18N={fr:{
  interrupted:"Game interrupted: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
- st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted).",st_remove:"Remove a free ring (marked in red), or click the marble again to cancel.",
+ st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
  leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
- computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",
+ computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo previous move",hint:"Hint",
  st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",hint_move:"Hint: {m}.",
  ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",
  ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",
@@ -505,7 +505,7 @@ let role=null;          // 'host' | 'guest' | 'watch'
 let peer=null;
 let view=null;          // public state shown {size,tc,names,first,moves,clock,running,elapsed,result,guestOn,watchers,recvAt}
 let mySeat=-1;
-let ui={color:0,at:null,path:null,pending:null,hover:-1},sending=false;
+let ui={color:0,at:null,path:null,pending:null,hover:-1,tap:-1},sending=false;
 const H={};             // host-only state
 
 function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
@@ -673,6 +673,7 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
   else if(ui.pending||sending)quiet();
   else if(role==='ai'&&busy)status(t(busy==='hint'?'hintBusy':'st_aiThinking'));
   else if(mine&&caps)status(ui.path?t('st_capPath'):t('st_capStart'),'turn');
+  else if(mine&&ui.at!==null)status(t('st_remove'),'turn');
   else quiet();
   if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
   else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'));
@@ -693,10 +694,10 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
     b.setAttribute('aria-pressed',String(mine&&ui.color===k));b.setAttribute('aria-label',CN(k)+', '+v);
     b.disabled=!(mine&&!ui.pending&&!caps&&cols.includes(k));b.onclick=()=>{ui.color=k;ui.at=null;ui.hover=-1;renderGame();};cb.appendChild(b);}
   $('colorhint').textContent=mySeat<0?'':fromCap?t('h_empty'):caps&&mine?t('h_capt'):t('h_choose');
-  $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending);
+  const prep=mine&&prepared();$('confirmCard').hidden=!prep;$('sendMv').hidden=$('pendingTxt').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=txtOf(ui.pending);
   $('myCard').hidden=!(role==='ai'||role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
   $('aiBox').hidden=role!=='ai'&&role!=='test';for(const id of ['hintBtn','aiInfo'])$(id).hidden=role==='test';$('gLevel').parentNode.hidden=role==='test';
-  if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  $('undoBtn').hidden=prep;if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
   if(role==='ai'){$('undoBtn').disabled=!r.log.some(e=>e.p===mySeat);$('hintBtn').disabled=!mine||!!busy||!!ui.pending;
     $('aiInfo').textContent=hintMv?t('hint_move',{m:txtOf(hintMv)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
@@ -751,18 +752,31 @@ setInterval(tick,250);
 window.addEventListener('resize',()=>{if(view)renderGame();});
 
 // ---------- input ----------
-function clickRing(i){if(!view||ui.pending)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+// A move is being prepared: a marble placed (waiting for its ring removal), a capture path started, a move awaiting confirmation,
+// or a first tap that previews a move on a touch screen.
+function prepared(){return !!ui.pending||ui.at!==null||!!ui.path||(ui.hover>=0&&ui.tap===ui.hover);}
+// "Cancel": drop the whole prepared move, back to the plain board of the current position
+function cancelPrep(){ui.at=null;ui.path=null;ui.pending=null;ui.hover=-1;ui.tap=-1;renderGame();}
+// Click while the move awaits confirmation: the placed marble / the start or a ring of the capture path
+// rewinds to that point; the last element (removed ring, last landing, or a marble placed without removal) is taken back.
+function clickPending(i){const mv=ui.pending;ui.hover=-1;ui.tap=-1;
+  if(mv.t===1){const P=mv.path,k=P.lastIndexOf(i);if(k<0)return;ui.pending=null;ui.path=P.slice(0,k===P.length-1?k:k+1);renderGame();return;}
+  if(i!==mv.at&&i!==mv.rm)return;ui.pending=null;ui.at=mv.rm>=0?mv.at:null;renderGame();}
+function clickRing(i){if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
+  if(ui.pending){clickPending(i);return;}
   const legal=E.gen(r.st),caps=legal[0]&&legal[0].t===1;
   if(caps){const P=ui.path;
     if(!P){if(legal.some(m=>m.path[0]===i))ui.path=[i];renderGame();return;}
     const cand=legal.filter(m=>P.every((x,k)=>m.path[k]===x));
     if(cand.some(m=>m.path[P.length]===i)){const done=cand.find(m=>m.path.length===P.length+1&&m.path[P.length]===i);
-      if(done){if(ui.hover===i)choose(done);else{ui.hover=i;renderGame();}return;}P.push(i);ui.hover=-1;renderGame();return;}
+      if(done){if(ui.hover===i)choose(done);else{ui.hover=ui.tap=i;renderGame();}return;}P.push(i);ui.hover=-1;renderGame();return;}
+    // a ring of the path: the current end is taken back, an earlier one rewinds the path to it
+    if(P.length>1){const k=P.lastIndexOf(i);if(k>=0){ui.path=P.slice(0,k===P.length-1?k:k+1);ui.hover=-1;renderGame();}return;}
     if(P.length===1){ui.path=legal.some(m=>m.path[0]===i)&&i!==P[0]?[i]:null;renderGame();}return;}
   const c=ui.color;
-  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){if(ui.hover===i)choose(mv);else{ui.hover=i;renderGame();}return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
+  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){if(ui.hover===i)choose(mv);else{ui.hover=ui.tap=i;renderGame();}return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
   const opts=legal.filter(m=>m.c===c&&m.at===i);if(!opts.length)return;
-  if(opts.length===1&&opts[0].rm<0){if(ui.hover===i)choose(opts[0]);else{ui.hover=i;renderGame();}return;}ui.at=i;ui.hover=-1;renderGame();}
+  if(opts.length===1&&opts[0].rm<0){if(ui.hover===i)choose(opts[0]);else{ui.hover=ui.tap=i;renderGame();}return;}ui.at=i;ui.hover=-1;renderGame();}
 function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
 function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.moves.length;
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
@@ -779,7 +793,8 @@ function pendClear(){C.pending=null;LS.del('zertz-p2p-pending');}
 setInterval(()=>{if(role!=='guest'||!C.pending||!view)return;const now=Date.now();
   if(C.conn&&C.conn.open&&now-C.pending.sent>3000){C.pending.sent=now;try{C.conn.send({t:'move',n:C.pending.n,code:C.pending.code});}catch(e){}}
   if(!C.pending.shown&&now-C.pending.at>1500){C.pending.shown=true;renderGame();}},1000);
-$('cancelMv').onclick=()=>{ui.pending=null;ui.hover=-1;renderGame();};
+$('cancelMv').onclick=cancelPrep;
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!view||$('confirmCard').hidden)return;e.preventDefault();cancelPrep();});
 $('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
 $('needConfirm').checked=LS.get('zertz-confirm',true);
 $('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
@@ -806,7 +821,7 @@ $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ'
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
 // With a mouse, hovering shows the move, so one click plays it; on a touch screen the first tap shows it.
 function hoverRing(i){if(!view||ui.pending||i===ui.hover)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;
-  const old=ui.hover;ui.hover=i;if(i>=0&&!hoverMove(E.gen(r.st)))ui.hover=-1;if(ui.hover!==old)renderGame();}
+  const old=ui.hover;ui.hover=i;ui.tap=-1;if(i>=0&&!hoverMove(E.gen(r.st)))ui.hover=-1;if(ui.hover!==old)renderGame();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest('[data-i]');hoverRing(g?+g.dataset.i:-1);});
   $('svg').addEventListener('pointerleave',()=>hoverRing(-1));}
@@ -824,12 +839,12 @@ function ask(st,opt,cb){const msg={size:view.size,st:Array.from(st),opt};
   catch(e){worker=null;setTimeout(()=>cb(E.search(st,opt)),30);}}   // no worker (some file:// setups): search on the page
 function startAI(size,seat){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('');
   view={size,tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
-  ui={color:0,at:null,path:null,pending:null,hover:-1};aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
+  ui={color:0,at:null,path:null,pending:null,hover:-1,tap:-1};aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
 // Test game: the tester plays both sides on this device; the commands follow the side to move.
 function startTest(size){stopAI();navAt=null;role='test';mySeat=0;C.stop=true;setHash('test');
   view={size,tc:null,names:[t('p1'),t('p2')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
-  ui={color:0,at:null,path:null,pending:null,hover:-1};aiInfo=null;hintMv=null;showGame();renderGame();}
-function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];ui={color:ui.color,at:null,path:null,pending:null,hover:-1};renderGame();}
+  ui={color:0,at:null,path:null,pending:null,hover:-1,tap:-1};aiInfo=null;hintMv=null;showGame();renderGame();}
+function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];ui={color:ui.color,at:null,path:null,pending:null,hover:-1,tap:-1};renderGame();}
 function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
 function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
 $('testForm').addEventListener('submit',e=>{e.preventDefault();startTest(+$('tSize').value);});
@@ -857,7 +872,7 @@ $('undoBtn').onclick=()=>{if(role==='test'){testUndo();return;}if(role!=='ai')re
   const turnAt=k=>replay(view.size,m.slice(0,k),null).st[TURN];let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
   if(turnAt(k)!==mySeat)k=0;
-  view.moves=m.slice(0,k);view.result=null;ui={color:ui.color,at:null,path:null,pending:null,hover:-1};aiInfo=null;hintMv=null;renderGame();aiStep();};
+  view.moves=m.slice(0,k);view.result=null;ui={color:ui.color,at:null,path:null,pending:null,hover:-1,tap:-1};aiInfo=null;hintMv=null;renderGame();aiStep();};
 $('hintBtn').onclick=()=>{if(role!=='ai'||busy)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;const n=view.moves.length;busy='hint';renderGame();
   ask(r.st,HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move){hintMv=res.move;if(res.move.t===0)ui.color=res.move.c;}renderGame();});};
 for(const id of ['aLevel','gLevel'])$(id).addEventListener('change',e=>{level=e.target.value;LS.set('zertz-level',level);$('aLevel').value=level;$('gLevel').value=level;});

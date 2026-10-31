@@ -232,7 +232,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
       <label class="toggle" for="hints"><input type="checkbox" id="hints" checked> <span data-i18n="hints">Show playable squares</span></label>
       <label class="toggle" for="confirm"><input type="checkbox" id="confirm"> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-      <div class="confirm" id="undoBox" hidden><button type="button" id="b-undo" data-i18n="undo">Undo move</button></div>
+      <div class="confirm" id="undoBox" hidden><button type="button" id="b-undo" data-i18n="undo">Undo previous move</button></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -359,7 +359,7 @@ const I18N={fr:{
  tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
- haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup",
+ haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup précédent",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",
  more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
@@ -373,7 +373,7 @@ const I18N={fr:{
  rematch:"Rejouer",offerSent:"Proposition envoyée.",offerFrom:"{n} propose une nouvelle partie, couleurs inversées.",offerRefused:"{n} a refusé.",accept:"Accepter",decline:"Refuser",withdraw:"Annuler",
  lg_rematch:"Nouvelle partie : {n} ouvre.",
  leaveQ:"Une partie est en cours. La quitter ?",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
- yourMove:"Votre coup",confirmMv:"Confirmer le coup",clear:"Effacer",endTurn:"Finir le tour",newGame:"Nouvelle partie",
+ yourMove:"Votre coup",confirmMv:"Confirmer le coup",endTurn:"Finir le tour",newGame:"Nouvelle partie",
  pass:"Passer",passEnd:"Passer et finir",hints:"Montrer les cases jouables",needConfirm:"Confirmer chaque coup avant l'envoi",sounds:"Sons",
  resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",moves:"Coups",
@@ -412,7 +412,7 @@ st_open:"Ouverture de la table…",st_conn:"Connexion à la table…",
  tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
- haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo move",
+ haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo previous move",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",
  more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
@@ -426,7 +426,7 @@ st_open:"Ouverture de la table…",st_conn:"Connexion à la table…",
  rematch:"Rematch",offerSent:"Offer sent.",offerFrom:"{n} offers a new game, colours swapped.",offerRefused:"{n} declined.",accept:"Accept",decline:"Decline",withdraw:"Withdraw",
  lg_rematch:"New game: {n} opens.",
  leaveQ:"A game is in progress. Leave it?",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
- yourMove:"Your move",confirmMv:"Confirm move",clear:"Clear",endTurn:"End turn",newGame:"New game",
+ yourMove:"Your move",confirmMv:"Confirm move",endTurn:"End turn",newGame:"New game",
  pass:"Pass",passEnd:"Pass and end",hints:"Show playable squares",needConfirm:"Confirm each move before sending",sounds:"Sounds",
  resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",moves:"Moves",
@@ -493,10 +493,19 @@ function ctx(){
   if(d.phase==='play') return {st:net.st,color:colorOfSeat(d,seat),opening:false,active:true};
   return {st:net.st,active:false};
 }
+// a move is being prepared: a tile placed, an own tile selected for a bridge, or a move waiting for confirmation
+const preparing=()=>!!(inp.awaiting||inp.draft.length||inp.bridge||inp.sel!==null);
 function onCell(i){
-  const c=ctx(); if(!c.active||inp.awaiting) return;
+  const c=ctx(); if(!c.active) return;
   const st=c.st, p=c.color;
-  if(inp.draft.includes(i)){ st.cells[i]=0; inp.draft=inp.draft.filter(x=>x!==i); inp.oneLeft=false; inp.hover=-1; return renderAll(); }
+  // a tile of the move being prepared (even at the confirm step): remove it and the tile placed after it
+  if(inp.draft.includes(i)){ const k=inp.draft.indexOf(i); for(const x of inp.draft.slice(k)) st.cells[x]=0;
+    inp.draft=inp.draft.slice(0,k); inp.awaiting=null; inp.hover=-1;
+    inp.oneLeft=!c.opening&&inp.draft.length===1&&legalCells(st,p).length===0; return renderAll(); }
+  // an end of the bridge waiting for confirmation: back to its first tile just selected
+  if(inp.bridge&&(i===inp.bridge.a||i===inp.bridge.e.b)){ const a=inp.bridge.a; undoBridge(st);
+    inp.bridge=null; inp.awaiting=null; inp.sel=a; inp.hover=-1; return renderAll(); }
+  if(inp.awaiting) return;
   if(st.cells[i]===p && !c.opening){
     if(inp.draft.length) return;
     if(inp.sel!==null && inp.sel!==i){
@@ -973,7 +982,7 @@ function renderBoard(){
   for(let i=0;i<NN;i++){
     let cls='hit';
     if(legal.has(i)) cls+=' legal';
-    else if(c.active&&!inp.awaiting&&((!c.opening&&st.cells[i]===c.color&&(!st.bridged[i]||tgts.has(i)))||inp.draft.includes(i))) cls+=' own';
+    else if(c.active&&(inp.draft.includes(i)||(inp.bridge&&(i===inp.bridge.a||i===inp.bridge.e.b))||(!inp.awaiting&&!c.opening&&st.cells[i]===c.color&&(!st.bridged[i]||tgts.has(i))))) cls+=' own';
     out.push(`<rect class="${cls}" data-i="${i}" x="${X(C(i))}" y="${Y(R(i))}" width="${CS}" height="${CS}" rx="6"><title>${lab(i)}</title></rect>`);
   }
   svg.innerHTML=out.join('');
@@ -1013,6 +1022,8 @@ document.addEventListener('keydown',e=>{ if($('game').hidden||!navAllowed(net.da
   const n=navMoves(net.data).length, k=navAt??n;
   if(e.key==='ArrowLeft') goNav(k-1); else if(e.key==='ArrowRight') goNav(k+1); else if(e.key==='Home') goNav(0); else if(e.key==='End') goNav(Infinity); else return;
   e.preventDefault(); });
+// Escape: cancel the move being prepared
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||$('game').hidden||!$('namedlg').hidden||!preparing()) return; e.preventDefault(); cancelInput(); });
 // Exceptional messages only, on the reserved line under the board
 function notice(txt,cls){ const n=$('notice'); n.className='notice'+(txt?' on'+(cls?' '+cls:''):''); n.textContent=txt||''; }
 function renderPlayers(d,real){
@@ -1074,17 +1085,17 @@ function renderPanel(){
     $('startBtns').innerHTML=(both?`<button type="button" class="primary" id="b-ready" ${rd?'disabled':''}>${esc(t(rd?'waitingOpp':'startBtn'))}</button>`:'')+`<button type="button" id="b-leave">${esc(t('leaveSeat'))}</button>`;
     const br=$('b-ready'); if(br) br.onclick=startReady; $('b-leave').onclick=leaveSeat; }
   $('pieCard').hidden=!(d&&d.phase==='pie'&&seat==='B'&&myTurn);
-  // move being prepared: Confirm / Cancel, End turn, Clear only when they apply
-  const inMove=myTurn&&(d.phase==='opening'||d.phase==='play')&&(inp.awaiting||inp.draft.length||inp.bridge||inp.oneLeft);
+  // move being prepared: Confirm, End turn when they apply, Cancel throughout the preparation
+  const inMove=myTurn&&(d.phase==='opening'||d.phase==='play')&&preparing();
   $('moveCard').hidden=!inMove;
   if(inMove){ $('pendingTxt').textContent=inp.awaiting?moveText(inp.awaiting):''; $('pendingTxt').hidden=!inp.awaiting;
     $('moveBtns').innerHTML=inp.awaiting?`<button type="button" class="primary" id="b-ok">${esc(t('confirmMv'))}</button><button type="button" id="b-cancel">${esc(t('cancel'))}</button>`
-      :(inp.oneLeft?`<button type="button" class="primary" id="b-one">${esc(t('endTurn'))}</button>`:'')+`<button type="button" id="b-cancel">${esc(t('clear'))}</button>`;
+      :(inp.oneLeft?`<button type="button" class="primary" id="b-one">${esc(t('endTurn'))}</button>`:'')+`<button type="button" id="b-cancel">${esc(t('cancel'))}</button>`;
     const on=(id,f)=>{const el=$(id); if(el) el.onclick=f;};
     on('b-ok',()=>{ const m=inp.awaiting; inp.awaiting=null; commitInput(m); }); on('b-cancel',cancelInput); on('b-one',()=>finishInput({type:'t',cells:inp.draft.slice()})); }
   $('endCard').hidden=!(inGame&&d&&d.phase==='over'); if(!$('endCard').hidden) renderEnd(d,seat);
   const live=!!(d&&seat&&ACTIVE.includes(d.phase));
-  $('myCard').hidden=!(live||(net.test&&d)); $('undoBox').hidden=!net.test;
+  $('myCard').hidden=!(live||(net.test&&d)); $('undoBox').hidden=!net.test||preparing();   // only on a neutral board
   if(net.test){ $('b-undo').disabled=!net.testHist.length; if(!live){ $('passBox').hidden=$('resignBox').hidden=$('resignAsk').hidden=true; } }
   if(live){ const canP=d.phase==='play'&&myTurn&&!inp.awaiting&&!inp.draft.length&&!inp.bridge&&canPass(net.st,colorOfSeat(d,seat));
     $('passBox').hidden=!canP; $('b-pass').textContent=t(colorOfSeat(d,seat)===2||d.finalTurn?'passEnd':'pass');

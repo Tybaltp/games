@@ -211,8 +211,8 @@ h1 a.gname{color:inherit;text-decoration:none}
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
     <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt" style="font-family:var(--f-mono)"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
-    <div class="card" id="setupCard" hidden><h2 data-i18n="setupH">Setup</h2><p class="hint" data-i18n="setupTxt"></p><div class="confirm"><button type="button" id="setupReset" data-i18n="setupReset">Default</button><button type="button" class="primary" id="setupGo" data-i18n="setupGo">Confirm the setup</button></div></div>
-    <div class="card" id="turnCard" hidden><h2><span data-i18n="yourTurn">Your turn</span><span class="steps" id="stepCnt"></span></h2><div class="confirm"><button type="button" id="undoStep" data-i18n="undoStep">Undo step</button><button type="button" class="primary" id="endTurn" data-i18n="endTurn">End turn</button></div></div>
+    <div class="card" id="setupCard" hidden><h2 data-i18n="setupH">Setup</h2><p class="hint" data-i18n="setupTxt"></p><div class="confirm"><button type="button" id="setupReset" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="setupGo" data-i18n="setupGo">Confirm the setup</button></div></div>
+    <div class="card" id="turnCard" hidden><h2><span data-i18n="yourTurn">Your turn</span><span class="steps" id="stepCnt"></span></h2><div class="confirm"><button type="button" id="undoStep" data-i18n="undoStep">Undo step</button><button type="button" id="cancelTurn" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="endTurn" data-i18n="endTurn">End turn</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
       <p class="hint" id="rmTxt" hidden></p>
@@ -223,7 +223,7 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="myCard" hidden>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-      <div class="confirm" id="testBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo move</button></div>
+      <div class="confirm" id="testBox" hidden><button type="button" id="undoBtn" data-i18n="undo">Undo previous move</button></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
@@ -318,11 +318,11 @@ const I18N={fr:{
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
  haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
- undo:"Annuler le coup",
+ undo:"Annuler le coup précédent",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
- setupH:"Mise en place",setupTxt:"Cliquez deux de vos cases l'une après l'autre pour échanger leurs pièces.",setupReset:"Par défaut",setupGo:"Valider la disposition",
+ setupH:"Mise en place",setupTxt:"Cliquez deux de vos cases l'une après l'autre pour échanger leurs pièces.",setupGo:"Valider la disposition",
  yourTurn:"Votre tour",steps:"pas {k}/4",undoStep:"Annuler le pas",endTurn:"Terminer le tour",
  start:"Départ",startBtn:"Démarrer la partie",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
@@ -362,11 +362,11 @@ st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de m
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
  haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
- undo:"Undo move",
+ undo:"Undo previous move",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
- setupH:"Setup",setupTxt:"Click two of your squares one after the other to swap their pieces.",setupReset:"Default",setupGo:"Confirm the setup",
+ setupH:"Setup",setupTxt:"Click two of your squares one after the other to swap their pieces.",setupGo:"Confirm the setup",
  yourTurn:"Your turn",steps:"step {k}/4",undoStep:"Undo step",endTurn:"End turn",
  start:"Start",startBtn:"Start the game",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
@@ -621,6 +621,18 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
 // ui: steps of the turn being prepared (local preview, sent only when the turn is finished), current selection, setup arrangement
 function resetUi(){ui={acts:[],sel:-1,enemy:-1,via:-1,hover:-1,tap:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1,seat:mySeat};}
 function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.tap=-1;ui.cand=[];ui.candKind='';}
+// Something is being prepared (steps, a selection, a pending confirmation, a changed setup); otherwise the board is neutral
+function prepared(){return !!(ui.acts.length||ui.sel>=0||ui.enemy>=0||ui.pending||ui.swap>=0||(ui.setup&&mySeat>=0&&ui.setup.join('')!==E.DEFAULT[mySeat]));}
+// "Cancel": drop the whole prepared turn (or setup) and come back to the neutral board
+function cancelPrep(){if(!view||!prepared())return;const h=ui.hover;resetUi();ui.hover=h;renderGame();}
+// Pieces moved in the turn being prepared: current square -> {k: index of the piece's first action, own}
+function seqPieces(b){const at=new Map(),g=E.sgn(mySeat);ui.acts.forEach((a,k)=>{const x=E.apply(b,a);
+    for(const [f,t] of x.mv){const e=at.get(f)||{k,own:Math.sign(b[f])===g};at.delete(f);at.set(t,e);}
+    b=x.b;for(const q of [...at.keys()])if(!b[q])at.delete(q);});return at;}
+// Rewind: back to the moment that piece was selected (own piece: selected again with its choices of then;
+// opposing piece: just before the push or pull that moved it, with that push or pull's arrival squares offered)
+function rewindTo(e){const a=ui.acts[e.k];ui.acts=ui.acts.slice(0,e.k);clearSel();
+  if(a.k==='m')ui.sel=a.f;else{ui.sel=a.a;if(!e.own){ui.via=a.a;ui.enemy=a.e;}}renderGame();}
 function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view.size,view.moves,view.result);if(!r.over)c[view.runSeat??r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
 function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&r.st.turn===mySeat&&!sending&&!!view.names[1-mySeat]&&ready;}
@@ -672,11 +684,11 @@ function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.r
     el.append(h,ck,ty);host.appendChild(el);}
   tick();
   $('confirmCard').hidden=!ui.pending;if(ui.pending)$('pendingTxt').textContent=ui.pendingTxt||'';
-  $('setupCard').hidden=!(mine&&setupPhase);
+  $('setupCard').hidden=!(mine&&setupPhase);if(mine&&setupPhase)$('setupReset').hidden=!prepared();
   $('turnCard').hidden=!(mine&&!setupPhase&&!ui.pending);
-  if(pv){$('stepCnt').textContent=t('steps',{k:pv.used});$('undoStep').disabled=!ui.acts.length;$('endTurn').disabled=es!=='ok';}
+  if(pv){$('stepCnt').textContent=t('steps',{k:pv.used});$('undoStep').disabled=!ui.acts.length;$('cancelTurn').hidden=!prepared();$('endTurn').disabled=es!=='ok';}
   $('myCard').hidden=!(role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('testBox').hidden=role!=='test';if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  $('testBox').hidden=role!=='test'||prepared();if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
@@ -761,6 +773,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view.size,view.mo
     const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){if(twice(i))return;ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
     if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===ui.sel)){ui.enemy=i;ui.via=ui.sel;renderGame();return;}
     const via=ui.sel;clearSel();if(i===via){renderGame();return;}}
+  {const e=seqPieces(r.st.b).get(i);if(e){rewindTo(e);return;}}   // a piece already moved in this turn: rewind
   if(mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i)){ui.sel=i;renderGame();return;}
   renderGame();}
 function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();}
@@ -785,7 +798,8 @@ $('cancelMv').onclick=()=>{ui.pending=null;renderGame();};
 $('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
 $('undoStep').onclick=()=>{if(ui.pending)return;clearSel();ui.acts.pop();renderGame();};
 $('endTurn').onclick=endTurn;
-$('setupReset').onclick=()=>{if(mySeat<0)return;ui.setup=E.DEFAULT[mySeat].split('');ui.swap=-1;renderGame();};
+$('setupReset').onclick=cancelPrep;
+$('cancelTurn').onclick=cancelPrep;
 $('setupGo').onclick=()=>{if(!view)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r)||r.st.n>=2)return;setupBoard(r);send('S'+ui.setup.join(''));};
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
@@ -802,7 +816,7 @@ function startTest(){C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);try{peer&&
   resetUi();showGame();renderGame();}
 function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
 function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
-function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
+function testUndo(){if(!view.moves.length||prepared())return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
 $('undoBtn').onclick=()=>{if(role==='test')testUndo();};
 $('testForm').addEventListener('submit',e=>{e.preventDefault();startTest();});
 // Home: "Create a game", then the opponent (link, this device), then that choice's options
@@ -822,6 +836,7 @@ $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
 $('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
 $('navLast').onclick=()=>navGo(null);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view&&prepared()&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')){e.preventDefault();cancelPrep();}});
 document.addEventListener('keydown',e=>{if(!view||$('nav').hidden||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
   const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
 // Home: leave the game and come back to Arimaa's own start page
