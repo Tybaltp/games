@@ -25,14 +25,14 @@ html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121819;--panel:#1a2224;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
   --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--coord:#8fa9a8;
-  --stone:#ece5d5;--stone-edge:#9c907a;--trach:#262b30;--trach-edge:#0b0d0f;
+  --stone:#f0e3c8;--stone-edge:#a8916b;--trach:#2e2723;--trach-edge:#110c09;
   --oak:#d2a463;--oak-edge:#86622f;--walnut:#5a3720;--walnut-edge:#1f130a;
   --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
   --danger:#ef7b65;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121819;--panel:#1a2224;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
   --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--coord:#8fa9a8;
-  --stone:#ece5d5;--stone-edge:#9c907a;--trach:#262b30;--trach-edge:#0b0d0f;
+  --stone:#f0e3c8;--stone-edge:#a8916b;--trach:#2e2723;--trach-edge:#110c09;
   --oak:#d2a463;--oak-edge:#86622f;--walnut:#5a3720;--walnut-edge:#1f130a;
   --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
   --danger:#ef7b65;color-scheme:dark}
@@ -434,7 +434,11 @@ function drawBoard(real,last,a){
   // gone once a move is being prepared
   const lastF=i=>`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`;
   if(active&&(ui.sel!==null||ui.draft.length||ui.bridge));
-  else if(last&&last.m&&last.m.t==='t'){for(const i of last.m.cells)if(real.cells[i])out.push(lastF(i));}
+  else if(last&&last.m&&last.m.t==='t'){const cs=last.m.cells.filter(i=>real.cells[i]);
+    // two neighbouring tiles share one frame
+    if(cs.length===2&&Math.abs(RW(cs[0])-RW(cs[1]))+Math.abs(CL(cs[0])-CL(cs[1]))===1){const c0=Math.min(CL(cs[0]),CL(cs[1])),r0=Math.min(RW(cs[0]),RW(cs[1])),w=CL(cs[0])===CL(cs[1])?1:2,h=3-w;
+      out.push(`<rect x="${X(c0)+2}" y="${Y(r0)+2}" width="${w*CS-4}" height="${h*CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);}
+    else for(const i of cs)out.push(lastF(i));}
   else if(lastB){const k=out.findIndex(x=>x.startsWith('<g opacity'));out.splice(k<0?out.length:k,0,lastF(lastB.a),lastF(lastB.b));}
   // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
   // (the yellow frames go in under the previewed bridges)
