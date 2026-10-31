@@ -36,6 +36,7 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
 <details class="how"><summary data-i18n="howT"></summary>
   <ul>
+    <li data-i18n-html="how0"></li>
     <li data-i18n-html="how1"></li>
     <li data-i18n-html="how2"></li>
     <li data-i18n-html="how3"></li>
@@ -58,6 +59,7 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 const I18N={
  fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
      howT:"Comment ça marche ?",
+     how0:"<b>Quatre façons de jouer.</b> Inviter quelqu'un par un lien, affronter l'ordinateur (Gygès, Pente, Ponte del Diavolo, Zèrtz), jouer face à face sur le même appareil, ou en mode libre pour essayer et analyser, avec annulation et suggestions.",
      how1:"<b>Pas d'hébergement.</b> Il n'y a pas de serveur de jeu : la partie tourne dans le navigateur de celui qui la crée. Un service public (PeerJS) sert seulement à mettre les deux navigateurs en relation grâce au code.",
      how2:"<b>De navigateur à navigateur.</b> Les coups passent d'un joueur à l'autre directement, ou par un relais quand le réseau l'impose. Rien n'est enregistré ailleurs que dans vos deux navigateurs. Les spectateurs se connectent de la même façon.",
      how3:"<b>Robuste aux déconnexions.</b> Chaque joueur garde la position. Si l'hôte disparaît, l'invité reprend l'hébergement sous le même code après une dizaine de secondes. Les pendules s'arrêtent quand c'est au tour du joueur absent, et reprennent à son retour.",
@@ -69,6 +71,7 @@ const I18N={
      tintas:"Un pion commun, sept couleurs : collectionnez-en une.",dblocks:"Posez vos polyominos coin contre coin, couvrez le plus de cases."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
      howT:"How does it work?",
+     how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer (Gygès, Pente, Ponte del Diavolo, Zèrtz), play face to face on the same device, or in free mode to try things and analyse, with undo and hints.",
      how1:"<b>No hosting.</b> There is no game server: the game runs in the browser of whoever creates it. A public service (PeerJS) is only used to put the two browsers in touch through the code.",
      how2:"<b>Browser to browser.</b> Moves go from one player to the other directly, or through a relay when the network requires it. Nothing is stored anywhere but in your two browsers. Spectators connect the same way.",
      how3:"<b>Robust to disconnections.</b> Each player keeps the position. If the host drops out, the guest takes over hosting under the same code after about ten seconds. The clocks stop when it is the absent player's turn, and resume when they are back.",
