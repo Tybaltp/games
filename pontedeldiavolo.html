@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=3">
+<link rel="stylesheet" href="common/games.css?v=5">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
@@ -170,7 +170,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=3"></script>
+<script src="common/core.js?v=5"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
 /*ENGINE*/
@@ -551,7 +551,7 @@ function greedy(S,C,o){const top=C.slice(0,o.pick||C.length),b=top[0].s,T=o.temp
   let r=Math.random()*tot;for(let i=0;i<top.length;i++){r-=w[i];if(r<=0)return {m:top[i].m,s:top[i].s,depth:1};}return {m:top[0].m,s:top[0].s,depth:1};}
 function mcts(S,C0,o){const me=G.turn(S),root={S,C:C0,ch:[],n:0,w:0},cap=deadline;
   const pw=k=>Math.max(1,Math.ceil((o.pwC||2)*Math.pow(k+1,o.pwA||.5)));
-  const cx=o.c===undefined?.7:o.c,scale=o.scale||3;let sims=0;
+  const cx=o.c===undefined?.7:o.c,scale=o.scale||3;let sims=0,maxD=1;
   for(;sims<(o.sims||2000);sims++){if((sims&15)===0&&now()>cap)break;
     let node=root;const path=[root];
     while(!G.done(node.S)){
@@ -566,13 +566,13 @@ function mcts(S,C0,o){const me=G.turn(S),root={S,C:C0,ch:[],n:0,w:0},cap=deadlin
     const P=G.scratch(node.S);if(!G.done(P))G.playout(P,o);let v;
     if(G.done(P)){const f=G.result(P,me);v=f>0?.9+Math.min(.1,(f-1000)/50):f<0?.1-Math.min(.1,(-1000-f)/50):.5;}
     else v=1/(1+Math.exp(-G.eval(P,me)/scale));
-    for(const x of path){x.n++;x.w+=v;}}
+    for(const x of path){x.n++;x.w+=v;}if(path.length-1>maxD)maxD=path.length-1;}
   nodes=sims;
   // the move: the most visited, or drawn by visits^(1/temp)
   const ch=root.ch.slice().sort((a,b)=>b.n-a.n);let pick=ch[0];
   if(o.temp){const ws=ch.map(x=>Math.pow(x.n,1/o.temp));let r=Math.random()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<ch.length;i++){r-=ws[i];if(r<=0){pick=ch[i];break;}}}
   const q=pick.n?pick.w/pick.n:.5;
-  return {m:pick.m,s:Math.log(Math.max(1e-3,q)/Math.max(1e-3,1-q))*scale,depth:Math.round(Math.log2(sims+1))};}
+  return {m:pick.m,s:Math.log(Math.max(1e-3,q)/Math.max(1e-3,1-q))*scale,depth:maxD};}   // depth: the longest line of the tree
 return {start,greedy,beam,mcts,nodes:()=>nodes};
 }
 function PonteAI(){
@@ -778,7 +778,7 @@ return {search,fromPos,gen,play,copy,evalS,final,score,canP,canB,cellsOf,bridges
 // moves · 'beam' iterative-deepening alpha-beta on the best candidates · 'mcts' (see AISearch). Common: cells, the single
 // squares paired into two-tile candidates; time, the budget (ms). greedy: pick, moves drawn from · temp, softmax
 // temperature (points of evaluation). beam: depth, plies read at most · widths, candidates kept at each ply ·
-// cellsIn, squares paired below the root · noise, a move within this many points of the best, at random. mcts: sims,
+// cellsIn, squares paired below the root (mcts too) · noise, a move within this many points of the best, at random. mcts: sims,
 // playouts (time is only a cap) · rand, share of random tiles in playouts (others: the best of a few) · brP, share of
 // playout turns that build a bridge when one is useful · temp, final choice by visits^(1/temp) (0: most visited) ·
 // pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · c, UCT exploration · cut, playout turns before
@@ -786,7 +786,8 @@ return {search,fromPos,gen,play,copy,evalS,final,score,canP,canB,cellsOf,bridges
 const LEVELS={
   debutant:{algo:'greedy',cells:12,pick:8,temp:.6},
   moyen:{algo:'beam',depth:2,cells:16,widths:[10,10],time:1000},
-  fort:{algo:'beam',depth:4,cells:20,widths:[12,8,6,5],time:2500}};
+  // MCTS beat the deeper beam (depth 5, same time) 69 % over 78 self-play games, so Fort is MCTS
+  fort:{algo:'mcts',sims:5000,time:3000,cells:20,cellsIn:10,pwC:2,pwA:.45,c:.35,cut:4,rand:.3,brP:.5,scale:2,temp:0}};
 const HINT=LEVELS.fort;
 const aiPos=st=>({cells:Array.from(st.cells),bridges:st.bridges.map(B=>[Math.min(B.a,B.b),Math.max(B.a,B.b),B.o]),phase:st.phase,toMove:st.toMove,finalTurn:st.finalTurn,colorA:st.colorA});
 let pageAI=null;   // the search on the page itself, when no worker can be made
