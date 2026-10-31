@@ -363,19 +363,24 @@ function hoverMove(legal){const i=ui.hover;if(i<0||!legal.length)return null;
   if(ui.at!==null)return legal.find(m=>m.c===ui.color&&m.at===ui.at&&m.rm===i)||null;
   const opts=legal.filter(m=>m.c===ui.color&&m.at===i);return opts.length===1&&opts[0].rm<0?opts[0]:opts.length?{t:0,c:ui.color,at:i,rm:-1,part:true}:null;}
 // (a suggestion shown is drawn exactly like a move awaiting confirmation)
-function preview(st,legal,mine){const mv=(mine&&hintOn()?hintMv:null)||ui.pending||(mine&&!ui.pending?hoverMove(legal):null);
-  if(!mv&&ui.at!==null&&mine)return {mv:{t:0,c:ui.color,at:ui.at,rm:-1,part:true},gone:[],taken:[]};
-  if(!mv)return null;if(mv.part)return {mv,gone:[],taken:[]};
-  const after=E.apply(st,mv),gone=diff(st,after),taken=[];
-  if(mv.t===1)for(let k=0;k+1<mv.path.length;k++)taken.push(E.MID[mv.path[k]*N+mv.path[k+1]]);
+// prov: the whole move is provisional (awaiting confirmation, or a suggestion): opaque, dashed frames; otherwise what the
+// pointer / first tap adds is shown in transparency, without a frame, over what was already clicked (provisional:
+// the placed marble ui.at, the capture path ui.path)
+function preview(st,legal,mine){const prov=!!(mine&&hintOn()&&hintMv||ui.pending),mv=(mine&&hintOn()?hintMv:null)||ui.pending||(mine&&!ui.pending?hoverMove(legal):null);
+  const P=mine&&!prov?ui.path:null,jumped=Q=>{const o=[];for(let k=0;k+1<Q.length;k++)o.push(E.MID[Q[k]*N+Q[k+1]]);return o;};
+  if(!mv&&ui.at!==null&&mine)return {mv:{t:0,c:ui.color,at:ui.at,rm:-1,part:true},gone:[],taken:[],prov,atProv:true};
+  // a capture path being clicked: the marble already stands on its last landing, the marbles it jumped are lifted
+  if(!mv&&P&&P.length>1){const j=jumped(P);return {mv:{t:1,path:P},gone:[],taken:j,provTaken:j,prov:true,atProv:true,part:true};}
+  if(!mv)return null;if(mv.part)return {mv,gone:[],taken:[],provTaken:[],prov,atProv:ui.at!==null};
+  const after=E.apply(st,mv),gone=diff(st,after),taken=mv.t===1?jumped(mv.path):[];
   for(const i of gone)if(st[M+i])taken.push(i);
-  return {mv,gone,taken};}
+  return {mv,gone,taken,prov,atProv:prov||ui.at!==null,provTaken:prov?taken:P?jumped(P):[]};}
 // core's renderGame: the board and the pool bar, then the action bar for my turn (turnStatus)
 let shownSt=null;   // position shown (the players' cards show its captures)
 function zzBoard({r,d,mine}){setBoard(ringsOf(view));if(ui.hover==null)ui.hover=-1;
   const live=navAt===null,legal=r.over||!live?[]:E.gen(r.st),caps=!!(legal.length&&legal[0].t===1);
   if(mine){const cols=E.colors(r.st);if(!cols.includes(ui.color))ui.color=cols[0]??0;}
-  drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint'&&!hintOn(),d.last,live?preview(r.st,legal,mine):null);
+  drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint'&&!hintOn(),live&&mine&&(prepared()||hintOn())?null:d.last,live?preview(r.st,legal,mine):null);
   shownSt=d.st;poolBar(d.st,r,mine,caps);
   return {caps};}
 // The shared pool (once empty, the marbles each player captured) and the colour to place: under the board, always in view
@@ -460,23 +465,30 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
   const starters=new Set(),targets=new Set(),removable=new Set();
   if(interactive&&caps){if(!ui.path)legal.forEach(m=>starters.add(m.path[0]));else{const P=ui.path;legal.filter(m=>P.every((x,k)=>m.path[k]===x)).forEach(m=>{if(m.path[P.length]!==undefined)targets.add(m.path[P.length]);});}}
   if(interactive&&!caps&&ui.at!==null)legal.forEach(m=>{if(m.c===ui.color&&m.at===ui.at&&m.rm>=0)removable.add(m.rm);});
+  // frames are drawn inside the ring (r 27, between the marble and the ring's edge): solid for the last move and the
+  // selected marble, dashed for what is provisional; what the pointer previews has no frame, only transparency
+  const fr=(g,x,y,col,o)=>el('circle',Object.assign({cx:x,cy:y,r:27,fill:'none',stroke:col,'stroke-width':3},o||{}),g),DASH={'stroke-dasharray':'4 4'};
+  const lmLand=lm&&(lm.t===1?lm.path[lm.path.length-1]:lm.at);
+  const pmv=pv&&pv.mv,land=pmv?pmv.t===1?pmv.path[pmv.path.length-1]:pmv.at:-1,from=pmv&&pmv.t===1?pmv.path[0]:-1;
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'ring','data-i':i},svg);
     if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1.2,'stroke-dasharray':'3 5',opacity:wasRm?.9:.55},g);g.style.cursor='default';continue;}
     const fade=pv&&pv.gone.includes(i);   // ring that the previewed move removes: shown in transparency
     el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.35:1},g);
     el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
-    if(removable.has(i)&&!fade){el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--danger)','stroke-width':4,class:'pulse'},g);const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
-    if(targets.has(i))el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
-    const c=st[M+i];
-    if(c)marble(g,x,y,c-1,0);
-    if(lm&&lm.t===0&&lm.at===i&&c)el('circle',{cx:x,cy:y,r:27,fill:'none',stroke:'var(--accent)','stroke-width':3},g);
-    if(pv){const mv=pv.mv;
-      if(fade)el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--danger)','stroke-width':3,'stroke-dasharray':'4 4'},g);
-      if(pv.taken.includes(i))el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:'var(--danger)','stroke-width':2.5,'stroke-dasharray':'4 4'},g);
-      const land=mv.t===1?mv.path[mv.path.length-1]:mv.at,col=mv.t===1?st[M+mv.path[0]]-1:mv.c;
-      if(land===i){marble(g,x,y,col,.5);el('circle',{cx:x,cy:y,r:27,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);}}
-    if(starters.has(i))el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
-    if(ui.path&&ui.path[ui.path.length-1]===i)el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':5},g);}
+    if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)',{class:'pulse'});const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
+    if(targets.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    // marbles that the previewed move lifts (jumped, isolated) or moves away (the jumping one): in transparency
+    const c=st[M+i],lift=pv&&(pv.taken.includes(i)||i===from);
+    if(c)marble(g,x,y,c-1,lift?.35:0);
+    if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
+    if(pv){
+      if(fade&&pv.prov)fr(g,x,y,'var(--danger)',DASH);
+      if(c&&pv.taken.includes(i)&&(pv.prov||pv.provTaken&&pv.provTaken.includes(i)))fr(g,x,y,'var(--danger)',DASH);
+      if(land===i){const col=pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,solid=pv.prov||pmv.t===0&&pv.atProv;
+        marble(g,x,y,col,solid?0:.5);if(solid)fr(g,x,y,'var(--accent)',DASH);}}
+    if(starters.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    // the jumping marble picked (path not started yet): the element to click again to drop it
+    if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
   const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};
   if(lm&&lm.t===1)path(lm.path,'2 8');if(pv&&pv.mv.t===1)path(pv.mv.path,'4 6');else if(ui.path)path(ui.path);}
 
