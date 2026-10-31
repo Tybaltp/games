@@ -361,7 +361,9 @@ const liveSt=()=>{if(!view||navAt!==null)return null;const r=replay(view,view.mo
   return isMyTurn(r)&&(r.st.phase==='opening'||r.st.phase==='play')?r:null;};
 function onCell(i){const r=liveSt();if(!r)return;const st=r.st,op=st.phase==='opening',p=mover(st);
   // a tile of the move being prepared (even at the confirm step): remove it and the tile placed after it
-  if(ui.draft.includes(i)){ui.draft=ui.draft.slice(0,ui.draft.indexOf(i));ui.pending=null;ui.hover=-1;
+  // a tile placed this turn: only that one is taken back (the order of the two tiles doesn't matter);
+  // the other stays if it is still placeable on its own
+  if(ui.draft.includes(i)){const keep=ui.draft.filter(x=>x!==i);ui.draft=[];for(const x of keep)if(canPlace(work(st),p,x))ui.draft.push(x);ui.pending=null;ui.hover=-1;
     ui.oneLeft=!op&&ui.draft.length===1&&legalCells(work(st),p).length===0;renderGame();return;}
   // an end of the bridge awaiting confirmation: back to its first tile just selected
   if(ui.bridge&&(i===ui.bridge.a||i===ui.bridge.b)){ui.sel=ui.bridge.a;ui.bridge=null;ui.pending=null;ui.hover=-1;renderGame();return;}
