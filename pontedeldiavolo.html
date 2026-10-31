@@ -14,7 +14,7 @@
   --stone:#f1ebde;--stone-edge:#9c8f74;
   --trach:#454b52;--trach-edge:#1c1f23;
   --oak:#c89c5f;--oak-edge:#8a6532;--walnut:#5e3b22;--walnut-edge:#2e1c10;
-  --accent:#a8761c;--accent-soft:rgba(168,118,28,.18);--accent-ink:#fff;--hint:rgba(255,255,255,.55);
+  --accent:#a8761c;--accent-soft:rgba(168,118,28,.18);--accent-ink:#fff;
   --danger:#b3412e;
   --s0:var(--stone);--s0e:var(--stone-edge);--s1:var(--trach);--s1e:var(--trach-edge);
   --f-display:'Bodoni Moda',Didot,'Bodoni 72',Georgia,serif;
@@ -27,14 +27,14 @@ html.nocoords{--board-ar:1/1}
   --water:#2c4b4c;--water-deep:#243f40;--grid:rgba(255,255,255,.07);--coord:#8fa9a8;
   --stone:#e4dccb;--stone-edge:#8f8370;--trach:#3b4148;--trach-edge:#0c0e10;
   --oak:#c49553;--oak-edge:#7d5a2a;--walnut:#6b4428;--walnut-edge:#2a1a0e;
-  --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;--hint:rgba(255,255,255,.35);
+  --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
   --danger:#ef7b65;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121819;--panel:#1a2224;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
   --water:#2c4b4c;--water-deep:#243f40;--grid:rgba(255,255,255,.07);--coord:#8fa9a8;
   --stone:#e4dccb;--stone-edge:#8f8370;--trach:#3b4148;--trach-edge:#0c0e10;
   --oak:#c49553;--oak-edge:#7d5a2a;--walnut:#6b4428;--walnut-edge:#2a1a0e;
-  --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;--hint:rgba(255,255,255,.35);
+  --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
   --danger:#ef7b65;color-scheme:dark}
 h1{font-weight:700;letter-spacing:-.01em}
 h1 em{font-style:italic;font-weight:500;color:var(--accent)}
@@ -142,7 +142,6 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
-      <label class="toggle" for="hints"><input type="checkbox" id="hints" checked> <span data-i18n="hints">Show playable squares</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
@@ -260,7 +259,7 @@ function canPass(st,p){for(let c=0;c<NN;c++) if(canPlace(st,p,c)) return false; 
 const PD_I18N={fr:{
  title:"Ponte del Diavolo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
- hints:"Montrer les cases jouables",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",
+ takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",
  pts:"pts",isl:"îles",brg:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
  lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
  st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
@@ -281,7 +280,7 @@ const PD_I18N={fr:{
 },en:{
  title:"Ponte del Diavolo",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
- hints:"Show playable squares",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",
+ takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",
  pts:"pts",isl:"isl.",brg:"br.",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
  lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",
  st_opening:"Place the two opening light tiles.",st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
@@ -448,7 +447,6 @@ function drawBoard(real,last,a){
       out.push(`<rect class="tgt" x="${X(CL(e.b))+3}" y="${Y(RW(e.b))+3}" width="${CS-6}" height="${CS-6}" rx="7"/>`);}}
   const canInput=active&&!ui.pending&&ui.sel===null&&ui.draft.length<2;
   const legal=canInput?new Set(legalCells(st,a.p)):new Set();
-  if($('hints').checked)for(const i of legal)if(i!==ui.hover)out.push(`<circle cx="${X(CL(i))+CS/2}" cy="${Y(RW(i))+CS/2}" r="4.5" fill="var(--hint)"/>`);
   for(let i=0;i<NN;i++){let cls='hit';
     if(legal.has(i))cls+=' legal';
     else if(active&&(ui.draft.includes(i)||(ui.bridge&&(i===ui.bridge.a||i===ui.bridge.b))||(!ui.pending&&!a.opening&&st.cells[i]===a.p&&(!st.bridged[i]||tgts.has(i)))))cls+=' own';
@@ -486,9 +484,6 @@ const GAME={id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
   playerCard:pdCard,logText:pdLogText,logDesc:pdLogDesc,
   applyStatic:()=>{$('ttl').innerHTML='Ponte <em>del</em> Diavolo';},
   home:()=>drawBoard(initSt(),null,null)};
-// « Show playable squares », kept on this device
-$('hints').checked=LS.get(K('hints'),true)!==false;
-$('hints').addEventListener('change',()=>{LS.set(K('hints'),$('hints').checked);if(view)renderGame();});
 
 // ---------- games saved by the former version of this page ----------
 // Its free-play game ('pdd-test', {doc,hist}) and its resume codes (PONTE1.) held the whole board document; they are
