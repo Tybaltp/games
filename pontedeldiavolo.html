@@ -140,6 +140,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
     </div>
     <div class="card" id="myCard" hidden>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -256,7 +257,7 @@ function canPass(st,p){for(let c=0;c<NN;c++) if(canPlace(st,p,c)) return false; 
 const PD_I18N={fr:{
  title:"Ponte del Diavolo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
- takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",
+ needConfirm:"Confirmer chaque coup avant l'envoi",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",
  pts:"pts",isl:"îles",brg:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
  lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
  st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
@@ -277,7 +278,7 @@ const PD_I18N={fr:{
 },en:{
  title:"Ponte del Diavolo",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
- takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",
+ needConfirm:"Confirm each move before sending",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",
  pts:"pts",isl:"isl.",brg:"br.",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
  lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",
  st_opening:"Place the two opening light tiles.",st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
@@ -369,14 +370,16 @@ function onCell(i){const r=liveSt();if(!r)return;const st=r.st,op=st.phase==='op
   if(w.cells[i]===p&&!op){
     if(ui.draft.length)return;
     if(ui.sel!==null&&ui.sel!==i){const e=findEdge(ui.sel,i);
-      if(e&&canBridge(w,p,ui.sel,e)){ui.bridge={a:ui.sel,b:i};ui.pending={t:'b',a:ui.sel,b:i};ui.sel=null;ui.hover=-1;renderGame();return;}}
+      if(e&&canBridge(w,p,ui.sel,e)){ui.bridge={a:ui.sel,b:i};ui.pending={t:'b',a:ui.sel,b:i};ui.sel=null;ui.hover=-1;complete();return;}}
     ui.sel=w.bridged[i]||ui.sel===i?null:i;ui.hover=-1;renderGame();return;}
   if(ui.sel!==null){ui.sel=null;ui.hover=-1;renderGame();return;}
   if(!canPlace(w,p,i))return;
   ui.draft.push(i);ui.hover=-1;
-  if(ui.draft.length===2){ui.pending={t:'t',cells:ui.draft.slice()};ui.oneLeft=false;}
-  else ui.oneLeft=!op&&legalCells(work(st),p).length===0;
+  if(ui.draft.length===2){ui.pending={t:'t',cells:ui.draft.slice()};ui.oneLeft=false;complete();return;}
+  ui.oneLeft=!op&&legalCells(work(st),p).length===0;
   renderGame();}
+// A complete move: it waits for Confirm, or goes at once when « Confirmer chaque coup » is off
+function complete(){if($('needConfirm').checked)renderGame();else send(ui.pending);}
 // With a mouse, hovering shows the tile or the bridge a click would add
 function hoverCell(i){const r=liveSt();
   if(!r||ui.pending){if(ui.hover>=0||ui.hoverOwn>=0){ui.hover=ui.hoverOwn=-1;if(view)renderGame();}return;}
@@ -386,7 +389,7 @@ function hoverCell(i){const r=liveSt();
   // one of my squares a bridge can start from: its possible bridges are shown
   const own=i>=0&&!ok&&ui.sel===null&&!ui.draft.length&&r.st.phase==='play'&&w.cells[i]===p&&!w.bridged[i]&&BR[i].some(e=>canBridge(w,p,i,e))?i:-1;
   const nv=ok?i:-1;if(nv!==ui.hover||own!==(ui.hoverOwn??-1)){ui.hover=nv;ui.hoverOwn=own;pdBoard({r,d:r,mine:true});}}
-function endOne(){if(ui.draft.length===1&&ui.oneLeft){ui.pending={t:'t',cells:ui.draft.slice()};renderGame();}}
+function endOne(){if(ui.draft.length===1&&ui.oneLeft){ui.pending={t:'t',cells:ui.draft.slice()};complete();}}
 function doPass(){const r=liveSt();if(r&&r.st.phase==='play'&&canPass(r.st,r.st.toMove)&&!preparing()){ui.pending={t:'x'};renderGame();}}
 const svg=$('board');
 svg.addEventListener('click',ev=>{const g=ev.target.closest('[data-i]');if(g)onCell(+g.dataset.i);});
@@ -483,6 +486,8 @@ const pdLogText=e=>(e.col?NAME(e.col)+' — ':'')+describe(e.m);
 const pdLogDesc=e=>e.notes.map(x=>x.k==='lg_forced'?t('lg_forced',{c:NAME(x.c)}):t(x.k)).join(' ');
 
 // ---------- the interface with common/core.js ----------
+$('needConfirm').checked=LS.get('pdd-confirmEach',true)!==false;
+$('needConfirm').onchange=e=>LS.set('pdd-confirmEach',e.target.checked);
 const GAME={id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
   rules:()=>({}),form:()=>({}),
   replay:pdReplay,
