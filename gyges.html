@@ -842,7 +842,7 @@ function calc(st){if(E.setup(st)&&!ui.place){const rs=blockOn()?bRes():E.reserve
         // where the current movement may end: stop squares and pieces to bounce on, with every path leading there
         for(const p of ui.hist[ui.hist.length-1])for(const e of segEnds(st,ui.sel,p,adv)){const l=o.ends.get(e.x);if(l)l.push(e);else o.ends.set(e.x,[e]);}}}}
   calcKey=key;calcVal=o;return o;}
-// The move shown as a preview: the move awaiting confirmation, a move awaiting a second tap, the hovered (or tapped) next movement, or the path clicked so far
+// The move shown as a preview: the move awaiting confirmation, the hovered (or tapped) next movement, or the path clicked so far
 function previewOf(st,o){const mv=ui.pending||ui.done;
   if(mv&&mv.t==='b')return null;   // the arrangement is already on the board shown
   if(mv)return mv.t==='p'?{place:mv}:{s:mv.s,cells:mv.path,ext:[],rep:mv.rep,full:true};
@@ -950,7 +950,7 @@ setInterval(tick,250);
 window.addEventListener('resize',()=>{if(view)renderGame();});
 
 // ---------- input ----------
-// Mouse: a click plays (hovering only previews where a displaced piece goes). Touch: a first tap previews a finished move, a second tap on the same spot plays it.
+// A click or a tap plays the step (with a mouse, hovering previews it first); the move is sent only on Confirm.
 let ptrType='mouse';
 const touchy=()=>ptrType!=='mouse';
 // Moves take several steps: every move waits for the final confirmation before it is sent
@@ -958,7 +958,7 @@ function finish(mv){choose(mv);}
 function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (reserve piece)
   if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(ui.pending){rewindPending(x);return;}
-  const st=meSt(r),o=calc(st),adv=!!view.adv,key=String(x),tapped=ui.tap;ui.bad=false;ui.tap=null;
+  const st=meSt(r),o=calc(st),adv=!!view.adv,key=String(x);ui.bad=false;ui.tap=null;
   if(ui.done&&ui.doneKey===key){choose(ui.done);return;}
   ui.done=null;
   // block setup: reserve piece, then an empty square of my row; a piece of the arrangement goes back to the reserve (picked);
@@ -977,34 +977,33 @@ function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (rese
   if(typeof x!=='number')return;
   if(ui.sel<0){if(o.playable.has(x)){ui.sel=x;ui.path=[];ui.hist=[[[]]];ui.marks=[];ui.drop=false;ui.landOk=false;}renderGame();return;}
   if(ui.drop){if(o.drops.has(x)){finish({t:'m',s:ui.sel,path:ui.path.slice(),rep:x},key);return;}
-    if(!rewindTo(x))renderGame();return;}
+    if(x===activeSpot())rewindTo(x);else renderGame();return;}
   const hits=o.ends.get(x)||[];
-  if(hits.length){if(touchy()&&tapped!==x){ui.tap=x;renderGame();return;}   // touch: a first tap shows the movement
+  if(hits.length){
     const fin=hits.find(e=>e.done);if(fin){choose({t:'m',s:ui.sel,path:fin.path,rep:-1});return;}
     ui.hist.push(hits.map(e=>e.path));ui.marks.push(x);ui.path=hits[0].path;ui.landOk=false;renderGame();return;}
-  // touch: with a movement shown, tapping the current position only clears it
-  if(tapped!==null&&x===(ui.marks.length?ui.marks[ui.marks.length-1]:ui.sel)){renderGame();return;}
-  if(x===ui.sel&&!ui.marks.length){cancelSel();return;}
-  if(rewindTo(x))return;
+  // the active piece (the last one bounced on, else the start) is the only one that takes the move back, one step
+  if(x===activeSpot()){if(!ui.marks.length)cancelSel();else rewindTo(x);return;}
   if(!ui.marks.length&&o.playable.has(x)){ui.sel=x;ui.path=[];ui.hist=[[[]]];ui.landOk=false;renderGame();return;}
   ui.bad=true;renderGame();}
-// Clicking a highlighted piece of the move being prepared: the last one picked is put back (the piece reached last is
-// left, back to the step before); an earlier one (the start, or a piece bounced on before) takes the move back to the
-// moment it was picked, with the choices offered then. Once a choice was made on the last piece (bounce on, or replace
-// it), that piece counts as an earlier one: back to the arrival on it.
+// The piece the move goes on from: the last one bounced on, else the start
+const activeSpot=()=>ui.marks.length?ui.marks[ui.marks.length-1]:ui.sel;
+// Clicking the active piece takes the move back one step: the piece reached last is left (back to the step before);
+// once a choice was made on it (bounce on, or replace it), back to the arrival on it.
+// Rings of the move being prepared: the active piece in full, the start (when the move has gone on) faint and dashed
+function seqRings(ov){const a=activeSpot();if(a!==ui.sel)ring(ov,X(ui.sel),Y(ui.sel),PR+4,{'stroke-width':1.6,'stroke-dasharray':'3 4',opacity:.65});ring(ov,X(a),Y(a),PR+4,{'stroke-width':3.5});}
 function rewindTo(x){if(ui.sel<0||typeof x!=='number')return false;
   let j=x===ui.sel?-1:ui.marks.lastIndexOf(x);if(x!==ui.sel&&j<0)return false;
   if(j>=0&&j===ui.marks.length-1&&!ui.landOk&&!ui.drop)j--;
   ui.marks=ui.marks.slice(0,j+1);ui.hist=ui.hist.slice(0,j+2);ui.path=ui.hist[ui.hist.length-1][0];
   ui.drop=false;ui.landOk=false;ui.bad=false;ui.tap=null;ui.done=null;renderGame();return true;}
-// While a move waits for confirmation, its pieces stay clickable: the start or a piece bounced on goes back to the
-// moment it was picked (the last piece reached, to the arrival on it); in the placement, the piece put down or the
-// reserve piece goes back to the reserve piece just picked.
+// While a move waits for confirmation, the active piece stays clickable: back to the arrival on it (or to the start
+// just picked); in the placement, the piece put down or the reserve piece goes back to the reserve piece just picked.
 function rewindPending(x){const p=ui.pending;
   if(p.t==='b'){if(typeof x==='number'&&mySeat>=0&&E.rowOf(x)===E.home(mySeat)){const bl=p.row.slice(),c=x%6;ui.place=bl[c];ui.placeAuto=false;bl[c]=0;ui.block=bl;ui.pending=null;ui.hover=null;renderGame();}return;}
   if(p.t==='p'){if(x===p.at||x==='r'+p.k){ui.pending=null;ui.hover=null;renderGame();}return;}
   if(p.t!=='m'||typeof x!=='number'||ui.sel<0)return;
-  const j=x===ui.sel?-1:ui.marks.lastIndexOf(x);if(x!==ui.sel&&j<0)return;
+  if(x!==activeSpot())return;
   ui.pending=null;ui.hover=null;ui.landOk=true;rewindTo(x);}
 // Ends of the current segment from a partial path: the empty square or goal where the piece stops (done), or the piece it lands on
 function segEnds(st,s,path,adv){const out=[],n=path.length;
@@ -1240,10 +1239,10 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
   if(o&&opt.interactive){
     if(o.setup)for(const i of o.homes)el('circle',{cx:X(i),cy:Y(i),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2},ov);
     if(ui.sel<0&&!ui.pending&&!ui.done)for(const i of o.playable)ring(ov,X(i),Y(i),PR+3.5,{'stroke-width':1.8,opacity:.8});
-    if(ui.sel>=0){ring(ov,X(ui.sel),Y(ui.sel),PR+4,{'stroke-width':3.5});for(const m of ui.marks)ring(ov,X(m),Y(m),PR+4,{'stroke-width':3});
+    if(ui.sel>=0){seqRings(ov);
       for(const x of o.drops)el('circle',{cx:X(x),cy:Y(x),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2,class:'pulse'},ov);}}
-  // a move waiting for confirmation: its start and the pieces bounced on stay ringed, a click on them takes the move back
-  else if(o&&opt.prep&&ui.pending&&ui.pending.t==='m'&&ui.sel>=0){ring(ov,X(ui.sel),Y(ui.sel),PR+4,{'stroke-width':3.5});for(const m of ui.marks)ring(ov,X(m),Y(m),PR+4,{'stroke-width':3});}
+  // a move waiting for confirmation: its active piece stays ringed, a click on it takes the move back one step
+  else if(o&&opt.prep&&ui.pending&&ui.pending.t==='m'&&ui.sel>=0)seqRings(ov);
   if(pv){const gh=el('g',{'pointer-events':'none'},svg);
     if(pv.place){const i=pv.place.at;piece(gh,X(i),Y(i),pv.place.k,PR,.55);ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
     else{const cells=pv.cells.concat(pv.ext||[]),k=st.b[pv.s];
