@@ -809,12 +809,13 @@ $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tr
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
 $('newGame').onclick=()=>{if(role==='test'){startTest();return;}rmSend('ask');};
 // Test game: the tester plays both sides on this device; the board turns to the side to move.
+const TK='arimaa-test';   // the game on this device, kept across a reload
 function startTest(){C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);try{peer&&peer.destroy();}catch(e){}peer=null;
   navAt=null;role='test';mySeat=0;sending=false;setHash('test');
   view={size:SIZE,tc:null,names:[t('gold'),t('silver')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,
-    started:true,ready:[true,true],paused:false,ver:0,rematch:null,recvAt:Date.now()};
+    started:true,ready:[true,true],paused:false,ver:0,rematch:null,recvAt:Date.now()};LS.set(TK,view);
   resetUi();showGame();renderGame();}
-function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
+function testTurn(){LS.set(TK,view);const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
 function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
 function testUndo(){if(!view.moves.length||prepared())return;view.moves=view.moves.slice(0,-1);view.result=null;navAt=null;testTurn();}
 $('undoBtn').onclick=()=>{if(role==='test')testUndo();};
@@ -888,7 +889,7 @@ function init(){drawBoard({real:new Int8Array(64),shown:new Int8Array(64)});
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeTxt').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
   status('');
-  if(location.hash==='#test'){startTest();return;}
+  if(location.hash==='#test'){const sv=LS.get(TK,null);startTest();if(sv&&sv.moves){view={...sv,names:view.names};testTurn();}return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];

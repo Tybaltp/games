@@ -841,10 +841,11 @@ function startAI(size,seat){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=tru
   view={size,tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
   ui={color:0,at:null,path:null,pending:null,hover:-1,tap:-1};aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
 // Test game: the tester plays both sides on this device; the commands follow the side to move.
+const TK='zertz-test';   // the game on this device, kept across a reload
 function startTest(size){stopAI();navAt=null;role='test';mySeat=0;C.stop=true;setHash('test');
-  view={size,tc:null,names:[t('p1'),t('p2')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
+  view={size,tc:null,names:[t('p1'),t('p2')],first:'host',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};LS.set(TK,view);
   ui={color:0,at:null,path:null,pending:null,hover:-1,tap:-1};aiInfo=null;hintMv=null;showGame();renderGame();}
-function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];ui={color:ui.color,at:null,path:null,pending:null,hover:-1,tap:-1};renderGame();}
+function testTurn(){LS.set(TK,view);const r=replay(view.size,view.moves,view.result);if(!r.over)mySeat=r.st[TURN];ui={color:ui.color,at:null,path:null,pending:null,hover:-1,tap:-1};renderGame();}
 function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
 function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
 $('testForm').addEventListener('submit',e=>{e.preventDefault();startTest(+$('tSize').value);});
@@ -921,7 +922,7 @@ function init(){setBoard(48);drawBoard(ENG[48].init(),[],false,null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('inProgressTxt').dataset.i18n='inProgressGuest';$('inProgressTxt').textContent=t('inProgressGuest');}
   status('');
-  if(location.hash==='#test'){startTest(48);return;}
+  if(location.hash==='#test'){const sv=LS.get(TK,null);startTest(sv?sv.size:48);if(sv&&sv.moves){view={...sv,names:view.names};testTurn();}return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];

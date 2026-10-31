@@ -810,10 +810,12 @@ function doHint(){if(!canHint())return;const key=stateKey();busy='hint';render()
   render();});}
 function undo(){if(preparing())return;if(mode==='test'){testUndo();return;}if(mode!=='ai'||!hist.length)return;resetWorker();S=JSON.parse(hist.pop());tent=[];localMode='';clearHint();aiInfo=null;navAt=null;resignArm=false;toast(t('undone'));render();aiStep();}
 // Test game: the tester plays both sides on this device; the commands follow the side to move.
+const TK='pente-test';   // the game on this device, kept across a reload
+const testSave=()=>{try{localStorage.setItem(TK,JSON.stringify({S,hist}));}catch(e){}};
 function startTest(){leaveCurrent();mode='test';code=null;
  S=newState(null,'H',{H:'',G:''},null,1,null);S.phase='open';S.turnStart=Date.now();mySeat='H';
- hist=[];navAt=null;tent=[];localMode='';setHash('test');showGame();}
-function testTurn(){if(!S.result)mySeat=turnSeat(S)||mySeat;tent=[];localMode='';navAt=null;resignArm=false;render();}
+ hist=[];navAt=null;tent=[];localMode='';setHash('test');testSave();showGame();}
+function testTurn(){testSave();if(!S.result)mySeat=turnSeat(S)||mySeat;tent=[];localMode='';navAt=null;resignArm=false;render();}
 function testUndo(){if(!hist.length)return;S=JSON.parse(hist.pop());testTurn();toast(t('undone'));}
 function newAIGame(){const f=other(S.first);resetWorker();S=newState(null,f,{H:'',G:''},null,(S.game||1)+1,null);S.phase='open';S.turnStart=Date.now();hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';resignArm=false;render();aiStep();}
 
@@ -1251,7 +1253,7 @@ function bootHost(c){const raw=store.get('pente-host-'+c);if(!raw){$('lErr').tex
  if(!S.th){S.th={H:hh(token),G:S.gtoken?hh(S.gtoken):null};delete S.gtoken;}if(!S.ready)S.ready={H:true,G:true};
  mySeat=seatOf()||'H';freeze(S.savedAt||S.turnStart);showGame();startHost();hostTimers();changed();return true;}
 refreshResume();
-(function boot(){if(location.hash==='#test'){startTest();return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
+(function boot(){if(location.hash==='#test'){let sv=null;try{sv=JSON.parse(localStorage.getItem(TK));}catch(e){}startTest();if(sv&&sv.S){S=sv.S;hist=sv.hist||[];testTurn();}return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
  if(m[1]==='host'){bootHost(m[2]);return;}
  $('jCode').value=m[2];
  if(m[1]==='join'){invited(true);return;}

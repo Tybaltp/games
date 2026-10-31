@@ -1155,8 +1155,9 @@ $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=tru
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;netResign();};
 
 /* ---------- test game ---------- */
-// The tester plays both sides on this device: no network, nothing saved; the local document plays the host's part.
+// The tester plays both sides on this device: no network, kept only in this browser; the local document plays the host's part.
 // Both seats carry this tab's id, and mySeat() returns the side to move.
+const TK='pdd-test';   // the game on this device, kept across a reload
 function startTest(){
   closeNet(); net.wantSeat=false; net.test=true; net.gid='TEST'; net.testSeat='A'; net.testHist=[]; setHash('test');
   const me=net.myId;
@@ -1165,7 +1166,7 @@ function startTest(){
     turnSeat:'A',moveNo:1,epoch:0,paused:false,result:null,watchers:1};
   $('resignBox').hidden=false; $('resignAsk').hidden=true; showGame(); testTurn();
 }
-function testTurn(){ const d=net.doc; if(d.turnSeat) net.testSeat=d.turnSeat; inp=newInput(); broadcast(); }
+function testTurn(){ try{localStorage.setItem(TK,JSON.stringify({doc:net.doc,hist:net.testHist}));}catch(e){} const d=net.doc; if(d.turnSeat) net.testSeat=d.turnSeat; inp=newInput(); broadcast(); }
 function testPlay(msg){ if(!net.test||!net.doc||msg.t!=='patch') return;
   const lg=msg.p.log, forced=!!(lg&&lg.length>net.doc.log.length&&lg.slice(net.doc.log.length).some(e=>e.k==='lg_forced'));
   net.testHist.push({doc:jclone(net.doc),forced}); merge(net.doc,msg.p); testTurn(); }
@@ -1248,7 +1249,8 @@ $('invOther').onclick=()=>{ invited(false); try{ history.replaceState(null,'',lo
 applyStatic(); sndBind();
 (function boot(){
   const nm=currentNick(); $('cName').value=nm; $('jName').value=nm;
-  if(location.hash==='#test') return startTest();
+  if(location.hash==='#test'){ let sv=null; try{sv=JSON.parse(localStorage.getItem(TK));}catch(e){} startTest();
+    if(sv&&sv.doc){ net.doc=sv.doc; net.testHist=sv.hist||[]; for(const k of ['A','B'])if(net.doc.seats[k])net.doc.seats[k].id=net.myId; testTurn(); } return; }
   const m=/^#(join|watch|host)-([a-z0-9]{6})$/i.exec(location.hash);
   if(!m) return showLanding();
   status('');
