@@ -431,18 +431,19 @@ function drawBoard(real,last,a){
     bridge(B.a,B.b,B.o);}
   if(last&&last.m&&last.m.t==='t')for(const i of last.m.cells)if(real.cells[i])out.push(`<circle cx="${X(CL(i))+CS-16}" cy="${Y(RW(i))+16}" r="6" fill="var(--accent)"/>`);
   // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
-  const col=a?a.p:1;
+  // (the yellow frames go in under the previewed bridges)
+  const col=a?a.p:1,fi=out.length,frame=i=>out.splice(fi,0,`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
   const ghostTile=i=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity=".5"/>`,
     `<rect x="${X(CL(i))+g+2}" y="${Y(RW(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`);};
   const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
   if(active){for(const i of ui.draft)ghostTile(i);
     if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b);
-    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,1);const h=ui.hover;out.push(`<rect x="${X(CL(h))+2}" y="${Y(RW(h))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);}else ghostTile(ui.hover);}
+    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,1);frame(ui.hover);}else ghostTile(ui.hover);}
     // hovering one of my squares: the bridges possible from it, in transparency
     if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0){const h=ui.hoverOwn;for(const e of BR[h])if(canBridge(st,a.p,h,e))ghostBridge(h,e.b,.3);}}
   const tgts=new Set();
   if(active&&ui.sel!==null){
-    const i=ui.sel;out.push(`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
+    const i=ui.sel;frame(i);
     // every bridge possible from the selected square, in transparency (the hovered one stronger)
     for(const e of BR[i])if(canBridge(st,a.p,i,e)){tgts.add(e.b);if(e.b!==ui.hover)ghostBridge(i,e.b,.3);}}
   const canInput=active&&!ui.pending&&ui.sel===null&&ui.draft.length<2;
