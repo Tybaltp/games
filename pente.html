@@ -34,7 +34,8 @@ h1{font-weight:400;letter-spacing:0}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:#D3AE76;border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
 /* stones: the seat's colour on the players' cards (unknown until the Swap2 choice), in the bar's choice buttons */
-.dot.pst{width:16px;height:16px;border-radius:50%}
+.dot.pst{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
+.player .who{padding:2px 0 2px 2px}   /* room for the stone's outer ring, which the name's overflow would cut */
 .pst.b{background:#1c1f1e;border:1px solid #000;box-shadow:0 0 0 1px var(--ring-b)}
 .pst.w{background:#f7f6f1;border:1px solid rgba(0,0,0,.6)}
 .pst.u{background:none;border:1.5px dashed var(--muted)}
