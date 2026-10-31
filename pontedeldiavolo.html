@@ -428,21 +428,23 @@ function drawBoard(real,last,a){
       `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${o===1?'var(--oak)':'var(--walnut)'}" stroke-width="16" stroke-linecap="round"/></g>`);};
   for(const B of real.bridges){
     bridge(B.a,B.b,B.o);}
-  // the last move: a thin yellow frame round each tile placed, or round both ends of the bridge (under the bridge)
-  const lastF=i=>`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="3"/>`;
-  if(last&&last.m&&last.m.t==='t'){for(const i of last.m.cells)if(real.cells[i])out.push(lastF(i));}
+  // the last move: a yellow frame round each tile placed, or round both ends of the bridge (under the bridge);
+  // gone once a move is being prepared
+  const lastF=i=>`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`;
+  if(active&&(ui.sel!==null||ui.draft.length||ui.bridge));
+  else if(last&&last.m&&last.m.t==='t'){for(const i of last.m.cells)if(real.cells[i])out.push(lastF(i));}
   else if(lastB){const k=out.findIndex(x=>x.startsWith('<g opacity'));out.splice(k<0?out.length:k,0,lastF(lastB.a),lastF(lastB.b));}
   // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
   // (the yellow frames go in under the previewed bridges)
-  const col=a?a.p:1,fi=out.length,frame=i=>out.splice(fi,0,`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
+  const col=a?a.p:1,fi=out.length,frame=(i,dash)=>out.splice(fi,0,`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"${dash?' stroke-dasharray="9 6"':''}/>`);   // dashed: hovered
   const ghostTile=i=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity=".5"/>`,
     `<rect x="${X(CL(i))+g+2}" y="${Y(RW(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`);};
   const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
   if(active){for(const i of ui.draft)ghostTile(i);
     if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b);
-    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,.55);frame(ui.hover);}else ghostTile(ui.hover);}
+    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,.55);frame(ui.hover,1);}else ghostTile(ui.hover);}
     // hovering one of my squares a bridge can start from: the selection frame only
-    if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0)frame(ui.hoverOwn);}
+    if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0)frame(ui.hoverOwn,1);}
   const tgts=new Set();
   if(active&&ui.sel!==null){
     const i=ui.sel;frame(i);
