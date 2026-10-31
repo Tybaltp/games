@@ -446,11 +446,12 @@ function drawBoard(real,last,a){
   // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
   // (the yellow frames go in under the previewed bridges)
   const col=a?a.p:1,fi=out.length,frame=(i,dash)=>out.splice(fi,0,`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"${dash?' stroke-dasharray="9 6"':''}/>`);   // dashed: hovered
-  const ghostTile=i=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity=".5"/>`,
+  // op: .5 for the tile under the pointer, 1 for a tile already clicked (its dashed frame says it isn't played yet)
+  const ghostTile=(i,op)=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity="${op||.5}"/>`,
     `<rect x="${X(CL(i))+g+2}" y="${Y(RW(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`);};
   const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
-  if(active){for(const i of ui.draft)ghostTile(i);
-    if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b);
+  if(active){for(const i of ui.draft)ghostTile(i,1);
+    if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b,1);
     if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,.55);frame(ui.hover,1);}else ghostTile(ui.hover);}
     // hovering one of my squares a bridge can start from: the selection frame only
     if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0)frame(ui.hoverOwn,1);}
