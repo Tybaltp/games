@@ -992,20 +992,29 @@ const activeSpot=()=>ui.marks.length?ui.marks[ui.marks.length-1]:ui.sel;
 // Clicking the active piece takes the move back one step: the piece reached last is left (back to the step before);
 // once a choice was made on it (bounce on, or replace it), back to the arrival on it.
 // Ring of the move being prepared: the active piece (the start and the pieces bounced on carry a dot on the path)
-function seqRings(ov){const a=activeSpot();ring(ov,X(a),Y(a),PR+4,{'stroke-width':3.5});}
+function seqRings(ov){const p=ui.pending&&ui.pending.t==='m'?ui.pending:null;
+  if(!p){const a=activeSpot();ring(ov,X(a),Y(a),PR+4,{'stroke-width':3.5});return;}
+  endRings(ov,p,mySeat);}
+// End of a move: the full ring on its last action; with a replacement, a thin ring where the moving piece went
+function endRings(par,mv,q){const f=mv.path[mv.path.length-1],[fx,fy]=PT(f,q);
+  if(mv.rep>=0){ring(par,fx,fy,PR+3,{'stroke-width':1.9});ring(par,X(mv.rep),Y(mv.rep),PR+4,{'stroke-width':3.5});}
+  else ring(par,fx,fy,(f===G?GR:PR)+4,{'stroke-width':3.5});}
+// The path stops at the edge of the ring on the square it ends on
+const endGap=mv=>mv.rep>=0?PR+3:(mv.path[mv.path.length-1]===G?GR:PR)+4;
 function rewindTo(x){if(ui.sel<0||typeof x!=='number')return false;
   let j=x===ui.sel?-1:ui.marks.lastIndexOf(x);if(x!==ui.sel&&j<0)return false;
   if(j>=0&&j===ui.marks.length-1&&!ui.landOk&&!ui.drop)j--;
   ui.marks=ui.marks.slice(0,j+1);ui.hist=ui.hist.slice(0,j+2);ui.path=ui.hist[ui.hist.length-1][0];
   ui.drop=false;ui.landOk=false;ui.bad=false;ui.tap=null;ui.done=null;renderGame();return true;}
-// While a move waits for confirmation, the active piece stays clickable: back to the arrival on it (or to the start
-// just picked); in the placement, the piece put down or the reserve piece goes back to the reserve piece just picked.
+// While a move waits for confirmation, its last action stays clickable: back to the step before; in the placement, the piece put down or the reserve piece goes back to the reserve piece just picked.
 function rewindPending(x){const p=ui.pending;
   if(p.t==='b'){if(typeof x==='number'&&mySeat>=0&&E.rowOf(x)===E.home(mySeat)){const bl=p.row.slice(),c=x%6;ui.place=bl[c];ui.placeAuto=false;bl[c]=0;ui.block=bl;ui.pending=null;ui.hover=null;renderGame();}return;}
   if(p.t==='p'){if(x===p.at||x==='r'+p.k){ui.pending=null;ui.hover=null;renderGame();}return;}
   if(p.t!=='m'||typeof x!=='number'||ui.sel<0)return;
-  if(x!==activeSpot())return;
-  ui.pending=null;ui.hover=null;ui.landOk=true;rewindTo(x);}
+  if(x!==pendEnd(p))return;
+  ui.pending=null;ui.hover=null;renderGame();}   // the step before is kept as it was (the path, the drop to choose)
+// The last action of a move: where the replaced piece goes, else the square reached
+const pendEnd=p=>p.rep>=0?p.rep:p.path[p.path.length-1];
 // Ends of the current segment from a partial path: the empty square or goal where the piece stops (done), or the piece it lands on
 function segEnds(st,s,path,adv){const out=[],n=path.length;
   (function dfs(p){const w=E.walk(st,s,p,adv);if(!w)return;
@@ -1234,9 +1243,8 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
   if(st.prov)for(const i of st.prov)ring(ov,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2,opacity:.8});   // arrangement not validated yet
   const lastMv=last&&last.mv;
   if(lastMv&&!pv){if(lastMv.t==='p')ring(ov,X(lastMv.at),Y(lastMv.at),PR+3,{'stroke-width':2.5});
-    else if(lastMv.t==='m'){pathLine(ov,last.p,lastMv.s,lastMv.path,{opacity:.55});const fin=lastMv.path[lastMv.path.length-1],[fx,fy]=PT(fin,last.p);ring(ov,fx,fy,(fin===G?GR:PR)+3,{'stroke-width':2.5});
-      if(lastMv.rep>=0)ring(ov,X(lastMv.rep),Y(lastMv.rep),PR+3,{'stroke-width':1.6,'stroke-dasharray':'3 3'});
-      el('circle',{cx:X(lastMv.s),cy:Y(lastMv.s),r:5,fill:'var(--accent)',opacity:.7},ov);}}
+    else if(lastMv.t==='m'){const pb=last.prev.b,ns=[{i:lastMv.s,r:NODE_S,k:0}].concat(lastMv.path.slice(0,-1).filter(i=>i!==G&&i!==lastMv.s&&pb[i]).map(i=>({i,r:NODE_B,k:pb[i]})));
+      nodeEdges(ov,ns);pathLine(ov,last.p,lastMv.s,lastMv.path,{trim:endGap(lastMv)});nodeDots(ov,ns);endRings(ov,lastMv,last.p);}}
   // the computer's suggestion, faint
   const hm=opt.hint;if(hm&&!pv)if(hm.t==='p')ring(ov,X(hm.at),Y(hm.at),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5,opacity:.7});
     else if(hm.t==='m'){pathLine(ov,mySeat,hm.s,hm.path,{opacity:.45});const [hx,hy]=PT(hm.path[hm.path.length-1],mySeat);ring(ov,hx,hy,PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5,opacity:.7});}
@@ -1252,19 +1260,22 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
     else{const cells=pv.cells.concat(pv.ext||[]),k=st.b[pv.s];
       // the steps already played in full, the hovered next movement fainter
       const ns=nodeSpots(st,pv);nodeEdges(gh,ns);
-      if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
-        if(res){for(const i of resCh)if(res[i])ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});
+      const pm=ui.pending&&ui.pending.t==='m'?ui.pending:null;
+      if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,pm?{trim:endGap(pm)}:{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
+        if(res){if(!pm)for(const i of resCh)if(res[i])ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});
           if(end===G){piece(gh,ex,ey,k,PR,.6);ring(gh,ex,ey,GR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}
         // ending on a piece to bounce on: that piece is shown selected in transparency (once played, its solid ring says it)
         else if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}
       nodeDots(gh,ns);}}}
 // thin path from the start square through the steps (G = the mover's target goal)
-function pathLine(par,p,s,cells,a){const pts=[[X(s),Y(s)]].concat(cells.map(x=>PT(x,p)));
+function pathLine(par,p,s,cells,a){const pts=[[X(s),Y(s)]].concat(cells.map(x=>PT(x,p)));a={...a};
+  if(a.trim&&pts.length>1){const [x1,y1]=pts[pts.length-2],[x2,y2]=pts[pts.length-1],d=Math.hypot(x2-x1,y2-y1);if(d>a.trim)pts[pts.length-1]=[x2-(x2-x1)*a.trim/d,y2-(y2-y1)*a.trim/d];}delete a.trim;
   el('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':1.9,'stroke-linecap':'round','stroke-linejoin':'round',...a},par);}
 // Nodes of the move being prepared: a dot on each piece bounced on, a slightly larger one on the start. On a three-ring
 // piece the dot gets a soft edge where it meets the white inner ring (not in the open centre, not under the path).
 const NODE_B=3.75,NODE_S=4.9;
-function nodeSpots(st,pv){if(ui.sel<0||pv.s!==ui.sel)return [];return [{i:pv.s,r:NODE_S,k:st.b[pv.s]}].concat(ui.marks.map(i=>({i,r:NODE_B,k:st.b[i]})));}
+function nodeSpots(st,pv){if(ui.sel<0||pv.s!==ui.sel)return [];const rep=ui.pending&&ui.pending.rep>=0,ms=rep?ui.marks.slice(0,-1):ui.marks;   // the piece replaced: its square has the end ring
+  return [{i:pv.s,r:NODE_S,k:st.b[pv.s]}].concat(ms.map(i=>({i,r:NODE_B,k:st.b[i]})));}
 function nodeEdges(par,spots){const th=PR*.26,gap=PR*.055,hole=PR-3*th-2*gap;
   for(const n of spots){if(n.k!==3)continue;const id='nm'+n.i,m=el('mask',{id,maskUnits:'userSpaceOnUse',x:0,y:0,width:2000,height:2000},el('defs',{},par));
     el('rect',{x:-500,y:-500,width:3000,height:3000,fill:'white'},m);el('circle',{cx:X(n.i),cy:Y(n.i),r:hole,fill:'black'},m);
