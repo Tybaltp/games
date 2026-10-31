@@ -282,37 +282,36 @@ function tiBoard({r,d,mine,ms}){
   const opts=mine&&!ui.pending?ct.opts:[];
   const hv=opts.includes(ui.hover)?ui.hover:-1;
   if(navAt!==null)drawBoard(d.st,{last:d.last});
-  else drawBoard(r.st,{last:mine&&ui.seq.length?null:r.last,pend:mine?ui.seq.concat(hv>=0?[hv]:[]):[],targets:opts,many:mine&&ct.x.n===0&&ct.x.kind!=='line'});
+  else drawBoard(r.st,{last:r.last,pend:mine?ui.seq:[],hover:hv,targets:opts,many:mine&&ct.x.n===0&&ct.x.kind!=='line'});
   return ct;}
 // Nothing taken yet: the kind of turn, with Undo last move where the game allows it · pieces taken: Reset + End turn
 // (the turn awaiting confirmation is core's: Reset + Confirm turn, see pendText)
 function tiTurnStatus({r,o,idle,RST}){const x=o.x;
   if(!ui.seq.length){status(x.kind==='first'?t('st_first'):x.kind==='jump'?t('st_jump'):solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',idle);return;}
-  status(t('t_cont',{c:t('colsF')[x.first]}),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endTurn}]);}
-// End turn: straight to the opponent, or first awaiting confirmation (option « Confirm each move »)
-function endTurn(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!ui.seq.length||ui.pending)return;
-  if($('needConfirm').checked){ui.pending=ui.seq.slice();ui.hover=-1;renderGame();return;}
+  status(t('t_cont',{c:t('colsF')[x.first]}),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:()=>endTurn(false)}]);}
+// End turn. The button (auto false) is the player's own decision to stop: the turn is sent at once. A turn that ends by itself
+// (auto: nothing left to take) awaits confirmation when it took several pieces (a long sequence), or with the option
+// « Confirm each move » for a single piece; never when it wins the game.
+function endTurn(auto){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!ui.seq.length||ui.pending)return;
+  const res=E.play(r.st,ui.seq),wins=!!(res&&E.outcome(res.st));
+  if(auto&&!wins&&(ui.seq.length>1||$('needConfirm').checked)){ui.pending=ui.seq.slice();ui.hover=-1;renderGame();return;}
   const seq=ui.seq.slice();resetUi();send(seq);}
 
 // ---------- input ----------
-// A click on a highlighted piece takes it (on a touch screen, the first tap shows the capture, the second makes it).
+// A click (or a single tap) on a piece that can be taken takes it; with a mouse, hovering previews it first.
 // After a capture, the turn goes on if a piece of the same colour can be reached; otherwise it ends.
-// A click on a piece already taken this turn: the last one is put back; an earlier one (or any, once the turn awaits confirmation)
-// brings the turn back to the moment it was taken, with the choices offered then.
-function clickCell(i,direct){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+// A click on a piece already taken this turn: the last one is put back (also once the turn awaits confirmation: one step back);
+// an earlier one brings the turn back to the moment it was taken, with the choices offered then.
+function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   const k=ui.seq.indexOf(i);
-  if(k>=0){ui.seq=ui.seq.slice(0,!ui.pending&&k===ui.seq.length-1?k:k+1);ui.pending=null;ui.hover=-1;renderGame();return;}
+  if(k>=0){ui.seq=ui.seq.slice(0,k===ui.seq.length-1?k:k+1);ui.pending=null;ui.hover=-1;renderGame();return;}
   if(ui.pending)return;
-  const ct=curTurn(r.st);if(!ct)return;
-  if(!ct.opts.includes(i)){if(ui.hover>=0){ui.hover=-1;renderGame();}return;}
-  if(ui.hover!==i&&!direct){ui.hover=i;renderGame();return;}
+  const ct=curTurn(r.st);if(!ct||!ct.opts.includes(i))return;
   ui.seq.push(i);ui.hover=-1;tone(880,.06,.03);
-  const nx=curTurn(r.st);if(!nx||!nx.opts.length){endTurn();return;}
+  const nx=curTurn(r.st);if(!nx||!nx.opts.length){endTurn(true);return;}
   renderGame();}
 const HOVER=!!(window.matchMedia&&window.matchMedia('(hover:hover)').matches);
-let lastPtr='mouse';
-$('svg').addEventListener('pointerdown',e=>{lastPtr=e.pointerType||'mouse';});
-$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i,HOVER&&lastPtr==='mouse');});
+$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
 function hoverCell(i){if(!view||ui.pending)return;if(i===ui.hover)return;
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const ct=curTurn(r.st);
   const nv=ct&&ct.opts.includes(i)?i:-1;if(nv===ui.hover)return;ui.hover=nv;renderGame();}
@@ -349,15 +348,21 @@ importCode=function(s){const tag=GAME.codeTag+'.',raw=String(s||'').replace(/\s+
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
-const HEXPTS=(()=>{const r=HR-1.6,a=[];for(let k=0;k<6;k++){const an=Math.PI/3*k;a.push((r*Math.cos(an)).toFixed(2)+','+(r*Math.sin(an)).toFixed(2));}return a.join(' ');})();
+const hexPts=r=>{const a=[];for(let k=0;k<6;k++){const an=Math.PI/3*k;a.push((r*Math.cos(an)).toFixed(2)+','+(r*Math.sin(an)).toFixed(2));}return a.join(' ');};
+const HEXPTS=hexPts(HR-1.6),FRAMEPTS=hexPts(HR-4.8);   // the cell; a frame drawn inside it, clear of the piece
+function frame(g,i,col,dash){const a={points:FRAMEPTS,transform:`translate(${X(i)} ${Y(i)})`,fill:'none',stroke:col,'stroke-width':2.5,'stroke-linejoin':'round'};
+  if(dash)a['stroke-dasharray']='4 3.5';el('polygon',a,g);}
 function piece(g,x,y,c,op){const p=el('g',{transform:`translate(${x} ${y})`},g);if(op)p.setAttribute('opacity',op);
   el('circle',{r:19,fill:`var(--k${c})`,stroke:`var(--k${c}s)`,'stroke-width':1.8},p);
   if(cbOn){const s=el('g',{transform:'scale(1.95)',fill:`var(--k${c}i)`},p);s.innerHTML=SYM[c];}}
 function pawn(g,x,y,op){const p=el('g',{transform:`translate(${x} ${y})`,'pointer-events':'none'},g);if(op)p.setAttribute('opacity',op);
   el('circle',{r:14,fill:'var(--pawn)',stroke:'var(--pawn-ink)','stroke-width':4},p);el('circle',{r:5,fill:'var(--pawn-ink)'},p);}
-// st: real position; o.last: last turn {seq,from}; o.pend: captures being prepared (shown in transparency); o.targets: cells that can be taken
+// st: real position; o.last: last turn {seq,from}, hidden while a turn is being prepared; o.pend: captures chosen this turn
+// (provisional: piece faded, as it is leaving the board, dashed frame, the pawn on the last one); o.hover: the piece a click
+// would take (the pawn shown on it in transparency, nothing else); o.targets: pieces that can be taken, with a thin ring,
+// except when o.many (first move or jump: every piece can be taken, so no ring)
 function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
-  const pend=o.pend||[],targets=new Set(o.targets||[]),last=o.last;
+  const pend=o.pend||[],targets=new Set(o.many?[]:o.targets||[]),last=pend.length?null:o.last,hv=o.hover>=0?o.hover:-1;
   const hexes=el('g',{},svg);
   for(let i=0;i<N;i++){const g=el('g',{class:'cell','data-i':i,transform:`translate(${X(i)} ${Y(i)})`},hexes);
     el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.4},g);}
@@ -365,15 +370,17 @@ function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
   // path of the pawn: last turn (accent) or the turn being prepared (dashed)
   const path=(from,seq,dash,col)=>{const pts=(from>=0?[from]:[]).concat(seq);if(pts.length<2)return;
     el('polyline',{points:pts.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:col,'stroke-width':3,'stroke-dasharray':dash,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.85},pcs);};
-  if(last&&!pend.length){path(last.from,last.seq,'2 7','var(--accent)');
+  // last turn: dotted path, a dot on each cell emptied on the way, a solid frame round the pawn
+  if(last){path(last.from,last.seq,'2 7','var(--accent)');
     for(const i of last.seq.slice(0,-1))el('circle',{cx:X(i),cy:Y(i),r:6,fill:'none',stroke:'var(--accent)','stroke-width':2.5},pcs);}
   for(let i=0;i<N;i++){const c=st.b[i];if(c<0)continue;const x=X(i),y=Y(i);
     const taking=pend.includes(i);piece(pcs,x,y,c,taking?.35:0);
-    if(taking)el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':2.5,'stroke-dasharray':'4 4'},pcs);
-    else if(targets.has(i))el('circle',{cx:x,cy:y,r:23,fill:'none',stroke:'var(--hl)','stroke-width':o.many?1.6:3.2,class:o.many?'':'pulse',opacity:o.many?.55:1},pcs);}
+    if(taking)frame(pcs,i,'var(--hl)',true);
+    else if(targets.has(i))el('circle',{cx:x,cy:y,r:22.5,fill:'none',stroke:'var(--hl)','stroke-width':1.8,opacity:.7},pcs);}
   if(pend.length)path(st.pawn,pend,'3 6','var(--hl)');
-  if(st.pawn>=0){pawn(pcs,X(st.pawn),Y(st.pawn));if(last&&!pend.length)el('circle',{cx:X(st.pawn),cy:Y(st.pawn),r:22,fill:'none',stroke:'var(--accent)','stroke-width':3},pcs);}
-  if(pend.length){const z=pend[pend.length-1];pawn(pcs,X(z),Y(z),.55);el('circle',{cx:X(z),cy:Y(z),r:25,fill:'none',stroke:'var(--hl)','stroke-width':2.5,'stroke-dasharray':'4 4'},pcs);}}
+  const at=pend.length?pend[pend.length-1]:st.pawn;   // the pawn: on the last piece taken this turn, else where it stands
+  if(at>=0){pawn(pcs,X(at),Y(at));if(last)frame(pcs,at,'var(--accent)');}
+  if(hv>=0)pawn(pcs,X(hv),Y(hv),.5);}
 
 // ---------- the interface with common/core.js ----------
 const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
