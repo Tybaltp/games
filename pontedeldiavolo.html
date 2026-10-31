@@ -446,10 +446,10 @@ function drawBoard(real,last,a){
   else if(lastB){const k=out.findIndex(x=>x.startsWith('<g opacity'));out.splice(k<0?out.length:k,0,lastF(lastB.a),lastF(lastB.b));}
   // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
   // (the yellow frames go in under the previewed bridges)
-  const col=a?a.p:1,fi=out.length,frame=(i,dash)=>out.splice(fi,0,`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"${dash?' stroke-dasharray="9 6"':''}/>`);   // dashed: hovered
+  const col=a?a.p:1,fi=out.length,frame=(i,dash)=>out.splice(fi,0,dash?`<rect x="${X(CL(i))+li}" y="${Y(RW(i))+li}" width="${CS-2*li}" height="${CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>`:`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);   // dashed (hovered): inside the tile, like the last-move frame
   // op: .5 for the tile under the pointer, 1 for a tile already clicked (its dashed frame says it isn't played yet)
   const ghostTile=(i,op)=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity="${op||.5}"/>`,
-    `<rect x="${X(CL(i))+g+2}" y="${Y(RW(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`);};
+    `<rect x="${X(CL(i))+li}" y="${Y(RW(i))+li}" width="${CS-2*li}" height="${CS-2*li}" rx="4" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="7 5"/>`);};
   const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
   if(active){for(const i of ui.draft)ghostTile(i,1);
     if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b,1);
