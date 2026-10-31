@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=1">
+<link rel="stylesheet" href="common/games.css?v=3">
 <style>
 /* Tintas palette (light, dark), board and colour counters; the shared layout is in common/games.css */
 :root{
@@ -151,7 +151,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=1"></script>
+<script src="common/core.js?v=3"></script>
 <script>
 function TintasEngine(){
   // 49 flat-top hexagons in 9 columns, doubled coordinates (col, r): vertical neighbour at r±2, diagonals at (col±1, r±1).
@@ -205,7 +205,7 @@ const E=TintasEngine(),{N}=E;
 const TI_I18N={fr:{
  title:"Tintas",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
- endTurn:"Terminer le tour",confirmTurn:"Confirmer le tour",
+ endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
  cb:"Daltonien",needConfirm:"Confirmer chaque coup avant l'envoi",
  cols:["rouge","orange","jaune","vert","bleu ciel","bleu","violet"],colsF:["rouge","orange","jaune","verte","bleu ciel","bleue","violette"],
@@ -224,7 +224,7 @@ const TI_I18N={fr:{
 },en:{
  title:"Tintas",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
- endTurn:"End turn",confirmTurn:"Confirm turn",
+ endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
  cb:"Colorblind",needConfirm:"Confirm each move before sending",
  cols:["red","orange","yellow","green","sky blue","blue","purple"],colsF:["red","orange","yellow","green","sky blue","blue","purple"],
@@ -288,7 +288,7 @@ function tiBoard({r,d,mine,ms}){
 // (the turn awaiting confirmation is core's: Reset + Confirm turn, see pendText)
 function tiTurnStatus({r,o,idle,RST}){const x=o.x;
   if(!ui.seq.length){status(x.kind==='first'?t('st_first'):x.kind==='jump'?t('st_jump'):solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',idle);return;}
-  status(t('t_cont',{c:t('colsF')[x.first]}),'turn',[RST,{label:t('endTurn'),primary:true,on:endTurn}]);}
+  status(t('t_cont',{c:t('colsF')[x.first]}),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endTurn}]);}
 // End turn: straight to the opponent, or first awaiting confirmation (option « Confirm each move »)
 function endTurn(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!ui.seq.length||ui.pending)return;
   if($('needConfirm').checked){ui.pending=ui.seq.slice();ui.hover=-1;renderGame();return;}

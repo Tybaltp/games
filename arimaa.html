@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=1">
+<link rel="stylesheet" href="common/games.css?v=3">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -136,7 +136,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=1"></script>
+<script src="common/core.js?v=3"></script>
 <script>
 // ===== Arimaa rules engine =====
 // Board: 64 squares, index = row*8+col, row 0 = rank 1 (Gold's home), col 0 = file a.
@@ -214,7 +214,7 @@ function ArimaaEngine(){
 const AR_I18N={fr:{
  title:"Arimaa",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
- setupGo:"Valider la disposition",undoStep:"Annuler le pas",endTurn:"Terminer le tour",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
+ setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
  st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
  st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
@@ -238,7 +238,7 @@ const AR_I18N={fr:{
 },en:{
  title:"Arimaa",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
- setupGo:"Confirm the setup",undoStep:"Undo step",endTurn:"End turn",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
+ setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
  st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",st_soloTurn:"{n} to move.",
  st_steps:"Step {k}/4: go on, or end the turn.",st_steps4:"Step 4/4: end the turn.",
  st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
@@ -339,12 +339,12 @@ function arBoard({r,d,mine}){shownD=d;const o={setup:r.st.n<2,pv:null,es:'none'}
 // The bar: setup → (Undo last move | Reset) + Validate the setup · turn, nothing engaged → Undo last move (free play) ·
 // steps or a selection → Reset, Undo step (once a step is played), End turn (once the turn is complete and allowed)
 function arTurnStatus({r,o,prep,idle,RST}){
-  if(o.setup){status(t('st_setup'),'turn',(prep?[RST]:idle).concat([{label:t('setupGo'),primary:true,on:setupGo}]));return;}
+  if(o.setup){status(t('st_setup'),'turn',(prep?[RST]:idle).concat([{label:t('setupGo'),short:t('setupGoS'),primary:true,on:setupGo}]));return;}
   const pv=o.pv,es=o.es;let msg;
   if(ui.enemy>=0)msg=t('st_pushPull');else if(es==='same')msg=t('st_same');else if(es==='rep')msg=t('st_rep3');
   else if(pv&&pv.used)msg=t(pv.used>=4?'st_steps4':'st_steps',{k:pv.used});
   else msg=solo()?t('st_soloTurn',{n:seatName(r.st.turn)}):t('st_yourTurn');
-  status(msg,'turn',prep?[RST,ui.acts.length?{label:t('undoStep'),on:undoStep}:null,es==='ok'?{label:t('endTurn'),primary:true,on:endTurn}:null]:idle);}
+  status(msg,'turn',prep?[RST,ui.acts.length?{label:t('undoStep'),short:t('undoStepS'),on:undoStep}:null,es==='ok'?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endTurn}:null]:idle);}
 function arWaitStatus({r}){if(r.st.n<2){status(t('st_oppSetup',{n:seatName(r.st.turn)}));return true;}return false;}
 // Captured pieces under each player (the opposing pieces gone from the board) and the pushes and pulls of each turn in the move list
 function arPlayerCard(el,p,d){const ty=document.createElement('div');ty.className='caps';if(d&&d.st.n>1-p)capsRow(ty,d.st.b,1-p);el.appendChild(ty);}

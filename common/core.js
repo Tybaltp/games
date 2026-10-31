@@ -46,7 +46,7 @@ const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18C={fr:{
- computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
@@ -71,7 +71,7 @@ const I18C={fr:{
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",coords:"Coordonnées"
 },en:{
- computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
@@ -151,8 +151,18 @@ function status(txt,cls,btns){const s=$('status');s.className='status'+(cls?' '+
   const n=$('notice');if(!n)return;btns=(btns||[]).filter(Boolean);n.className='notice on'+(cls?' '+cls:'')+(btns.length?' has-btns':'');n.textContent='';
   if(txt){const sp=document.createElement('span');sp.className='msg';sp.textContent=txt;sp.title=txt;n.appendChild(sp);}
   if(btns.length){const bx=document.createElement('div');bx.className='btns';n.appendChild(bx);
-    for(const b of btns){const e=document.createElement('button');e.type='button';e.textContent=b.label;e.title=b.label;if(b.primary)e.className='primary';if(b.id)e.id=b.id;e.onclick=b.on;
-      if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}bx.appendChild(e);}}}
+    for(const b of btns){const e=document.createElement('button');e.type='button';e.title=b.label;if(b.primary)e.className='primary';if(b.id)e.id=b.id;e.onclick=b.on;
+      // b.short: a shorter label, used only when the buttons don't fit in the bar
+      if(b.short){const l=document.createElement('span'),k=document.createElement('span');l.className='bl';l.textContent=b.label;k.className='bs';k.textContent=b.short;e.append(l,k);}else e.textContent=b.label;
+      if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}bx.appendChild(e);}}
+  fitBtns();}
+// Short labels when the full ones overflow the bar (checked again whenever the bar changes size)
+function fitBtns(){const n=$('notice'),bx=n&&n.querySelector('.btns');if(!bx)return;n.classList.remove('short');
+  if(!bx.querySelector('.bs'))return;
+  // measure the buttons at their natural width (no shrinking): do they fit?
+  bx.classList.add('measure');const over=bx.scrollWidth>bx.clientWidth+1;bx.classList.remove('measure');
+  if(over)n.classList.add('short');}
+
 function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
 function peerOpts(){return {debug:1};}
 function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
@@ -330,7 +340,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   // being prepared), with the game's own commands · move complete: Reset + Confirm · suggestion shown: Play this move +
   // Dismiss · waiting states: the message only.
   const prep=GAME.preparing(),RST={label:t('reset'),on:GAME.cancel};
-  const undoB=canUndo()&&!busy&&undoOk(r)?{label:t('undo'),on:doUndo}:null;
+  const undoB=canUndo()&&!busy&&undoOk(r)?{label:t('undo'),short:t('undoS'),on:doUndo}:null;
   const hintB=canHint()&&!busy&&mine&&(!GAME.hintable||GAME.hintable(o))?{label:t('hint'),on:doHint}:null;
   const idle=[undoB,hintB];
   if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);
@@ -339,7 +349,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
-  else if(mine&&hintOn())status(t('hint_move',{m:GAME.describe(hintMv,ms)}),'turn',[{label:t('hintPlay'),primary:true,on:hintPlay},{label:t('dismiss'),on:hintOff}]);
+  else if(mine&&hintOn())status(t('hint_move',{m:GAME.describe(hintMv,ms)}),'turn',[{label:t('hintPlay'),short:t('hintPlayS'),primary:true,on:hintPlay},{label:t('dismiss'),on:hintOff}]);
   else if(mine&&ui.pending){const [msg,ok]=GAME.pendText?GAME.pendText(ui.pending,ms):[t('pend_mv',{m:GAME.describe(ui.pending,ms)}),t('confirmMv')];
     status(msg,'turn',[RST,{label:ok,primary:true,on:()=>{if(ui.pending)send(ui.pending);}}]);}
   else if(sending)quiet();
@@ -546,7 +556,7 @@ function init(){GAME.home();
   joinClick(m[1]==='watch');}
 
 // ---------- start-up: called by the page once GAME is defined ----------
-function coreStart(){I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en}};
+function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en}};
   if(GAME.levels){level=LS.get(K('level'),null);if(!GAME.levels[level])level=GAME.levelDefault;}
   applyStatic();
   document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status('');});
