@@ -613,7 +613,7 @@ function previewAt(st,c,h){if(ui.piece<0||h<0||!ui.cur)return null;const o=ui.cu
   const R=((h/W)|0)-o[ui.ctr][0],Cc=h%W-o[ui.ctr][1],cells=[];
   for(const [r,q] of o){const rr=R+r,cc=Cc+q;if(rr>=0&&rr<W&&cc>=0&&cc<W)cells.push(rr*W+cc);}
   return {cells,ok:false};}
-function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.result);
+function renderGame(){if(!view)return;if(role==='test')LS.set(TK,view);const r=replay(view.size,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.over?-1:d.toMove;
   const mine=navAt===null&&isMyTurn(r);

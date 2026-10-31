@@ -647,7 +647,7 @@ let navAt=null,navKey=null,navVal=null;
 const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch'));
 function navPos(k){const key=view.moves.slice(0,k).join('|');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view.size,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
 function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
-function renderGame(){if(!view)return;const r=replay(view.size,view.moves,view.result);
+function renderGame(){if(!view)return;if(role==='test')LS.set(TK,view);const r=replay(view.size,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
   const mine=navAt===null&&isMyTurn(r),setupPhase=r.st.n<2;

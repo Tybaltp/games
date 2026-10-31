@@ -577,7 +577,7 @@ function navPos(k){const key=view.setup+'|'+view.moves.slice(0,k).join(',');if(k
 function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
 // Turn being built locally: context after the captures already chosen, and the cells still available
 function curTurn(r){const x=E.ctxOf(r.st,ui.seq);return x?{x,opts:E.options(x)}:null;}
-function renderGame(){if(!view)return;const r=replay(view.setup,view.moves,view.result);
+function renderGame(){if(!view)return;if(role==='test')LS.set(TK,view);const r=replay(view.setup,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
   const mine=navAt===null&&isMyTurn(r);

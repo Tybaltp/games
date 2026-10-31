@@ -782,7 +782,8 @@ function stateKey(){return S?S.game+':'+S.phase+':'+S.log.length+':'+(S.result?1
 function startAI(){leaveCurrent();mode='ai';mySeat='H';code=null;
  const fv=$('aiFirst').value,first=fv==='me'?'H':fv==='ai'?'G':(Math.random()<.5?'H':'G');
  S=newState(null,first,{H:'',G:''},null,1,null);S.phase='open';S.turnStart=Date.now();
- hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';showGame();aiStep();}
+ hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';setHash('ai');showGame();aiStep();}
+const AK='pente-ai';   // the game against the computer, kept across a reload
 function aiStep(){if(mode!=='ai'||!S||S.result||busy)return;if(turnSeat(S)!=='G')return;
  const L=LEVELS[level],key=stateKey();busy='ai';
  const done=(a,info)=>{busy='';if(mode!=='ai'||stateKey()!==key){render();return;}aiInfo=info;act(S,'G',a,Date.now());render();aiStep();};
@@ -1015,6 +1016,7 @@ $('cTc').onchange=()=>{tcChoice=$('cTc').value;store.set('pente-tc',tcChoice);};
 
 function noticeSet(txt,cls){const n=$('notice');n.className='notice'+(txt?' on':'')+(cls?' '+cls:'');n.textContent=txt||'';}
 function render(){
+ try{if(mode==='ai')localStorage.setItem(AK,JSON.stringify({S,hist}));else if(mode==='test')localStorage.setItem(TK,JSON.stringify({S,hist}));}catch(e){}
  $('homeBtn').hidden=true;$('homeBtn').textContent=homeArm?t('leaveQ'):t('home');$('homeBtn').classList.toggle('armed',homeArm);
  if(!mode){draw();return;}
  const wide=window.matchMedia('(min-width:861px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
@@ -1253,7 +1255,9 @@ function bootHost(c){const raw=store.get('pente-host-'+c);if(!raw){$('lErr').tex
  if(!S.th){S.th={H:hh(token),G:S.gtoken?hh(S.gtoken):null};delete S.gtoken;}if(!S.ready)S.ready={H:true,G:true};
  mySeat=seatOf()||'H';freeze(S.savedAt||S.turnStart);showGame();startHost();hostTimers();changed();return true;}
 refreshResume();
-(function boot(){if(location.hash==='#test'){let sv=null;try{sv=JSON.parse(localStorage.getItem(TK));}catch(e){}startTest();if(sv&&sv.S){S=sv.S;hist=sv.hist||[];testTurn();}return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
+(function boot(){if(location.hash==='#ai'){let sv=null;try{sv=JSON.parse(localStorage.getItem(AK));}catch(e){}
+  if(sv&&sv.S){leaveCurrent();mode='ai';mySeat='H';code=null;S=sv.S;hist=sv.hist||[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';setHash('ai');showGame();aiStep();return;}setHash('');}
+ if(location.hash==='#test'){let sv=null;try{sv=JSON.parse(localStorage.getItem(TK));}catch(e){}startTest();if(sv&&sv.S){S=sv.S;hist=sv.hist||[];testTurn();}return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
  if(m[1]==='host'){bootHost(m[2]);return;}
  $('jCode').value=m[2];
  if(m[1]==='join'){invited(true);return;}

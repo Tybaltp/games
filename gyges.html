@@ -855,7 +855,7 @@ function previewOf(st,o){const mv=ui.pending||ui.done;
 // Board only, for a hover outside the board (the Replace button)
 function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const ms=meSt(r),o=calc(ms);
   drawBoard(shown(ms,r),{o,interactive:!ui.pending&&busy!=='hint',prep:!!ui.pending&&busy!=='hint',hint:hintMv,pv:previewOf(r.st,o),last:r.last});}
-function renderGame(){if(!view)return;ui.repHover=false;const r=replay(view,view.moves,view.result);
+function renderGame(){if(!view)return;ui.repHover=false;if(role==='ai')LS.set(AK,{view,mySeat});else if(role==='test')LS.set(TK,view);const r=replay(view,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
   flip=mySeat===1&&role!=='test';   // on one device the board stays put: the players adapt
@@ -1080,7 +1080,8 @@ function stopAI(){if(worker)worker.terminate();worker=null;cbs={};busy='';}
 function ask(st,opt,cb){opt={...opt,adv:!!view.adv};const msg={st:{...st,b:Array.from(st.b)},opt};
   try{if(!worker)makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
   catch(e){worker=null;setTimeout(()=>cb(AI.search(st,opt)),30);}}   // no worker (some file:// setups): search on the page
-function startAI(seat,adv,sm){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('');
+const AK='gyges-ai';   // the game against the computer, kept across a reload
+function startAI(seat,adv,sm){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('ai');
   view={size:SIZE,adv:!!adv,setup:smOf({setup:sm}),tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
   resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
 // Test game: the tester plays both sides on this device; the board turns to the side to move.
@@ -1166,6 +1167,8 @@ function init(){drawBoard(E.init(),{});
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
   status('');
+  if(location.hash==='#ai'){const sv=LS.get(AK,null);if(sv&&sv.view){stopAI();navAt=null;role='ai';mySeat=sv.mySeat;C.stop=true;
+    view={...sv.view,recvAt:Date.now()};resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();return;}setHash('');}
   if(location.hash==='#test'){const sv=LS.get(TK,null);startTest(sv?sv.adv:false,sv?sv.setup:'piece');if(sv&&sv.moves){view={...sv,names:view.names};testTurn();}return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
