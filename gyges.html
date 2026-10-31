@@ -44,10 +44,16 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
 .boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
 .board{position:relative}
-.notice{min-height:3.4em;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px;padding:4px 12px;border-radius:10px;font-weight:500;font-size:.9rem;text-align:center;border:1px solid transparent}
+/* Action bar under the board: the only place for the move commands. Fixed height (the board does not jump when its
+   buttons change), message clamped to 2 lines; on narrow screens the message goes above the buttons. */
+:root{--barH:52px;--chromeY:108px;--navH:0px;--sab:env(safe-area-inset-bottom,0px)}
+.notice{height:var(--barH);flex:none;display:flex;align-items:center;justify-content:center;gap:4px 10px;padding:4px 10px;border-radius:10px;font-weight:500;font-size:.9rem;line-height:1.3;text-align:center;border:1px solid transparent;overflow:hidden;min-width:0}
+.notice .msg{min-width:0;max-width:100%;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.notice .btns{display:flex;gap:6px;flex:none;max-width:100%;min-width:0}
 .notice.on{background:var(--panel);border-color:var(--line)}
 .notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-.notice button{padding:3px 10px;font-size:.85rem}
+.notice button{padding:5px 10px;font-size:.85rem;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:560px){:root{--barH:86px}.notice.has-btns{flex-direction:column;gap:5px}}
 .players{display:flex;justify-content:space-between;gap:8px}
 .players.side-only{flex-direction:column}
 .player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
@@ -61,9 +67,33 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .side details{padding:8px 12px}.side details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
 .side details > *:not(summary){margin-top:8px}
 .side details .link,.side details .hint{margin-top:6px}
-@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}:root{--chromeY:184px}}
 .board{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px;min-width:0}
-.board svg{display:block;width:100%;height:auto;max-height:80vh;margin:0 auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+/* The board is as large as the width allows, but never taller than the viewport minus the header (and, on stacked
+   layouts, the players' cards), the navigation bar when shown and the action bar: the bar is never below the fold. */
+.board svg{display:block;width:100%;height:auto;margin:0 auto;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  max-height:calc(100vh - var(--chromeY) - var(--navH) - var(--barH) - var(--sab));max-height:calc(100dvh - var(--chromeY) - var(--navH) - var(--barH) - var(--sab));min-height:150px}
+main:has(#nav:not([hidden])){--navH:42px}
+/* Phones: the bar sticks to the bottom of the screen (after the side panel in the page, so it stays there while the
+   panel below the board is scrolled), with room for the home indicator */
+@media (max-width:759px){
+  main{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+  .boardwrap{display:contents}
+  .notice{position:sticky;bottom:0;z-index:5;order:10;height:calc(var(--barH) + var(--sab));padding-bottom:calc(4px + var(--sab));background:var(--bg);box-shadow:0 -8px 14px -10px rgba(0,0,0,.35)}
+  .notice.on{background:var(--panel)}.notice.win{background:var(--accent)}
+  :root{--chromeY:176px}}
+/* Landscape phones: board and side panel side by side, compact header; the board column (board + bar) stays in view */
+@media (orientation:landscape) and (max-height:500px){
+  :root{--chromeY:62px;--barH:48px}
+  body{padding-block:6px 12px}
+  .wrap,.view{gap:6px}
+  h1{font-size:1.3rem}h1 a.crumb,h1 .sep{font-size:.85rem}
+  .seg button{padding:3px 8px}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:10px}
+  .boardwrap{display:flex;position:sticky;top:0;gap:6px}
+  .board{padding:4px;border-radius:12px}
+  .notice{order:0;flex-direction:row!important}
+  main:has(#nav:not([hidden])){--navH:40px}}
 .status{font-weight:500;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
 .status.turn{border-color:var(--accent)}
 .status.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
@@ -155,7 +185,8 @@ h1 a.gname{color:inherit;text-decoration:none}
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
         <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
-        <button type="button" class="pick" data-pick="local"><b data-i18n="m_local">On this device</b><span data-i18n="m_localTxt">Both sides on the same screen, to try the game or play face to face.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
@@ -171,6 +202,12 @@ h1 a.gname{color:inherit;text-decoration:none}
         <label for="aSetup"><span data-i18n="setupOpt">Setup</span><select id="aSetup"></select><span class="hint" id="aSetupH"></span></label>
         <label class="toggle" for="aAdv"><input type="checkbox" id="aAdv"> <span data-i18n="advOpt">Advanced rule (replacement)</span></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fSetup"><span data-i18n="setupOpt">Setup</span><select id="fSetup"></select><span class="hint" id="fSetupH"></span></label>
+        <label class="toggle" for="fAdv"><input type="checkbox" id="fAdv"> <span data-i18n="advOpt">Advanced rule (replacement)</span></label>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSetup"><span data-i18n="setupOpt">Setup</span><select id="tSetup"></select><span class="hint" id="tSetupH"></span></label>
@@ -221,7 +258,6 @@ h1 a.gname{color:inherit;text-decoration:none}
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
-    <div class="card" id="confirmCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm"><button type="button" id="cancelMv" data-i18n="cancel">Cancel</button><button type="button" class="primary" id="sendMv" data-i18n="confirmMv">Confirm move</button></div></div>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
       <p class="hint" id="rmTxt" hidden></p>
@@ -232,11 +268,9 @@ h1 a.gname{color:inherit;text-decoration:none}
     </div>
     <div class="card" id="myCard" hidden>
       <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
-        <div class="confirm"><button type="button" id="undoBtn" data-i18n="undo">Undo previous move</button><button type="button" id="hintBtn" data-i18n="hint">Hint</button></div>
         <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
         <p class="hint" id="aiInfo"></p>
       </div>
-      <div class="confirm" id="passBox" hidden><button type="button" id="passBtn" data-i18n="pass">Pass</button></div>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -447,7 +481,7 @@ function GygesAI(E){
 const SIZE=36;
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18N={fr:{
- title:"Gygès",vsAI:"Contre l'ordinateur",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup précédent",hint:"Suggestion",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ title:"Gygès",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",pend_block:"Disposition : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence (pose la première pièce)",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  advOpt:"Règle avancée (remplacement)",
  setupOpt:"Mise en place",su_piece:"Pièce par pièce",su_simul:"En bloc, simultané",su_seq:"En bloc, séquentiel",suIn:"« {m} » dans cette partie",
@@ -457,22 +491,22 @@ const I18N={fr:{
  st_block:"Disposez vos 6 pièces : une pièce de la réserve, puis une case de votre rangée. Cliquez une pièce posée pour la reprendre.",
  st_blockSim:"Disposez vos 6 pièces : une pièce de la réserve, puis une case de votre rangée. Votre adversaire ne les verra qu'une fois les deux dispositions validées.",
  st_simWait:"Disposition validée. En attente de l'adversaire…",st_simWatch:"Les deux joueurs disposent leurs pièces en secret.",st_blockOpp:"{n} dispose ses pièces.",
- hiddenBlock:"disposition cachée",hiddenRow:"pièces cachées",yourBlock:"Votre disposition",validBlock:"Valider la disposition",
+ hiddenBlock:"disposition cachée",hiddenRow:"pièces cachées",validBlock:"Valider la disposition",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
+ pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
  haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
- yourMove:"Votre coup",cancel:"Annuler",confirmMv:"Confirmer le coup",
+ cancel:"Annuler",confirmMv:"Confirmer",
  start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
- rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",newGame:"Nouvelle partie",sounds:"Sons",volume:"Volume",moves:"Coups",
+ rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",sounds:"Sons",moves:"Coups",
  noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",
  iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
- st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
+ st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
  t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
  draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
@@ -488,18 +522,19 @@ const I18N={fr:{
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : faire entrer une pièce dans le but adverse, la case unique derrière la rangée du fond de l'adversaire.</li>
  <li><b>Pièces</b> : 12 pièces neutres, à personne : 4 simples, 4 doubles, 4 triples (1, 2 ou 3 anneaux). Chacun reçoit 2 de chaque et les pose sur les 6 cases de sa propre rangée, selon la mise en place choisie.</li>
- <li><b>Mise en place</b> (<span class="setupState"></span>), choisie à la création ; J1 est le joueur qui commence. <i>Pièce par pièce</i> : on pose une pièce à tour de rôle, J1 la première ; J2 pose la dernière et joue le premier mouvement. <i>En bloc, simultané</i> : les deux joueurs choisissent leurs positions de départ en même temps ; les pièces deviennent visibles une fois le plateau validé ; J1 commence. <i>En bloc, séquentiel</i> : J1 place ses 6 pièces, elles deviennent visibles pour J2, J2 place ses 6 pièces, J1 joue le premier mouvement. En bloc, choisissez une pièce de la réserve puis une case de votre rangée ; cliquez une pièce posée pour la reprendre ; Annuler efface toute la disposition ; Valider la disposition l'envoie.</li>
+ <li><b>Mise en place</b> (<span class="setupState"></span>), choisie à la création ; J1 est le joueur qui commence. <i>Pièce par pièce</i> : on pose une pièce à tour de rôle, J1 la première ; J2 pose la dernière et joue le premier mouvement. <i>En bloc, simultané</i> : les deux joueurs choisissent leurs positions de départ en même temps ; les pièces deviennent visibles une fois le plateau validé ; J1 commence. <i>En bloc, séquentiel</i> : J1 place ses 6 pièces, elles deviennent visibles pour J2, J2 place ses 6 pièces, J1 joue le premier mouvement. En bloc, choisissez une pièce de la réserve puis une case de votre rangée ; cliquez une pièce posée pour la reprendre ; Réinitialiser efface toute la disposition ; Valider la disposition l'envoie.</li>
  <li><b>Quelle pièce</b> : n'importe quelle pièce de votre rangée occupée la plus proche ; si aucune ne peut bouger, celles de la rangée occupée suivante, etc.</li>
  <li><b>Déplacement</b> : exactement autant de pas orthogonaux que la pièce a d'anneaux, en tournant à volonté, à travers des cases vides. Pendant tout le coup, on n'emprunte jamais deux fois le même segment entre deux cases.</li>
  <li><b>Arrivée</b> : sur une case vide, la pièce s'arrête (pas sur sa case de départ). Sur une pièce, elle <b>rebondit</b> : elle repart aussitôt pour autant de pas que cette pièce a d'anneaux ; les rebonds s'enchaînent.</li>
  <li><b>Entrer au but</b> : depuis la rangée du fond adverse, seulement comme dernier pas d'un mouvement. On ne traverse pas un but et on n'entre jamais dans le sien.</li>
  <li><b>Règle avancée</b> (<span class="advState"></span>) : en arrivant sur une pièce, on peut, au lieu de rebondir, prendre sa place ; la pièce délogée est posée sur une case vide, mais pas sur une rangée plus proche de l'adversaire que sa rangée occupée la plus proche.</li>
  <li><b>Passe</b> : sans aucun coup possible, on passe ; si les deux passent de suite, la partie est nulle.</li>
- <li><b>Jouer</b> : cliquez une pièce jouable (cerclée), puis la case où elle s'arrête, ou la pièce sur laquelle elle rebondit, et ainsi de suite, un clic par rebond. Au survol d'une case atteinte directement, le mouvement s'affiche en transparence (sur écran tactile : un premier toucher l'affiche, un second le joue ; toucher la position actuelle l'efface). Cliquer la position actuelle revient en arrière d'une étape ; cliquer une étape plus ancienne y ramène.</li>
- <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion. Pendant une mise en place simultanée, aucune pendule ne tourne.</li></ul>
+ <li><b>Jouer</b> : cliquez une pièce jouable (cerclée), puis la case où elle s'arrête, ou la pièce sur laquelle elle rebondit, et ainsi de suite, un clic par rebond. Au survol d'une case atteinte directement, le mouvement s'affiche en transparence (sur écran tactile : un premier toucher l'affiche, un second le joue ; toucher la position actuelle l'efface). Cliquer la position actuelle revient en arrière d'une étape ; cliquer une étape plus ancienne y ramène. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Rebondir, Remplacer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt. Le temps ajouté par coup est crédité à chaque coup confirmé ; à zéro, la partie est perdue au temps. Pendant une mise en place simultanée, aucune pendule ne tourne.</li></ul>
  <p class="hint" style="margin-top:.6em">Gygès est un jeu de Claude Leroy (1985).</p>`
 },en:{
- title:"Gyges",vsAI:"Against the computer",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo previous move",hint:"Hint",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ title:"Gyges",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_block:"Arrangement: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts (places the first piece)",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  advOpt:"Advanced rule (replacement)",
  setupOpt:"Setup",su_piece:"Piece by piece",su_simul:"Whole row, simultaneous",su_seq:"Whole row, in turn",suIn:"“{m}” in this game",
@@ -509,22 +544,22 @@ const I18N={fr:{
  st_block:"Arrange your 6 pieces: a piece from the reserve, then a square of your row. Click a placed piece to take it back.",
  st_blockSim:"Arrange your 6 pieces: a piece from the reserve, then a square of your row. Your opponent will only see them once both arrangements are validated.",
  st_simWait:"Arrangement validated. Waiting for your opponent…",st_simWatch:"Both players are arranging their pieces in secret.",st_blockOpp:"{n} is arranging their pieces.",
- hiddenBlock:"hidden arrangement",hiddenRow:"pieces hidden",yourBlock:"Your arrangement",validBlock:"Validate the arrangement",
+ hiddenBlock:"hidden arrangement",hiddenRow:"pieces hidden",validBlock:"Validate the arrangement",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
+ pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
  haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
- yourMove:"Your move",cancel:"Cancel",confirmMv:"Confirm move",
+ cancel:"Cancel",confirmMv:"Confirm",
  start:"Start",startBtn:"Start the game",pass:"Pass",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
  fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
- rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",newGame:"New game",sounds:"Sounds",volume:"Volume",moves:"Moves",
+ rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",sounds:"Sounds",moves:"Moves",
  noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",
  iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
- st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
+ st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
  t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
  draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
@@ -540,15 +575,16 @@ const I18N={fr:{
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: get a piece into the opponent's goal, the single square behind the opponent's back row.</li>
  <li><b>Pieces</b>: 12 neutral pieces that belong to nobody: 4 singles, 4 doubles, 4 triples (1, 2 or 3 rings). Each player gets 2 of each and places them on the 6 squares of their own row, as the chosen setup says.</li>
- <li><b>Setup</b> (<span class="setupState"></span>), chosen when the game is created; P1 is the player who starts. <i>Piece by piece</i>: one piece at a time, in turn, P1 first; P2 places the last and makes the first move. <i>Whole row, simultaneous</i>: both players choose their starting positions at the same time; the pieces become visible once the board is validated; P1 starts. <i>Whole row, in turn</i>: P1 places their 6 pieces, they become visible to P2, P2 places their 6 pieces, P1 makes the first move. With a whole row, pick a piece from the reserve, then a square of your row; click a placed piece to take it back; Cancel clears the whole arrangement; Validate the arrangement sends it.</li>
+ <li><b>Setup</b> (<span class="setupState"></span>), chosen when the game is created; P1 is the player who starts. <i>Piece by piece</i>: one piece at a time, in turn, P1 first; P2 places the last and makes the first move. <i>Whole row, simultaneous</i>: both players choose their starting positions at the same time; the pieces become visible once the board is validated; P1 starts. <i>Whole row, in turn</i>: P1 places their 6 pieces, they become visible to P2, P2 places their 6 pieces, P1 makes the first move. With a whole row, pick a piece from the reserve, then a square of your row; click a placed piece to take it back; Reset clears the whole arrangement; Validate the arrangement sends it.</li>
  <li><b>Which piece</b>: any piece of the occupied row nearest to you; if none of them can move, those of the next occupied row, and so on.</li>
  <li><b>Movement</b>: exactly as many orthogonal steps as the piece has rings, turning at will, through empty squares. During the whole move, no line between two squares may be used twice.</li>
  <li><b>Landing</b>: on an empty square the piece stops (not on its starting square). On a piece it <b>bounces</b>: it moves on at once for as many steps as that piece has rings; bounces can chain.</li>
  <li><b>Entering the goal</b>: from the opponent's back row, only as the last step of a movement. A goal cannot be crossed, and you never enter your own.</li>
  <li><b>Advanced rule</b> (<span class="advState"></span>): when landing on a piece, you may take its place instead of bouncing; the displaced piece goes on any empty square, but not on a row closer to the opponent than their nearest occupied row.</li>
  <li><b>Pass</b>: with no move available you pass; if both players pass in a row, the game is a draw.</li>
- <li><b>Playing</b>: click a playable piece (ringed), then the square where it stops, or the piece it bounces on, and so on, one click per bounce. Hovering a square reached directly shows the movement in transparency (on a touch screen: a first tap shows it, a second plays it; tapping the current position clears it). Clicking the current position goes back one step; clicking an earlier step goes back to it.</li>
- <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected. No clock runs during a simultaneous setup.</li></ul>
+ <li><b>Playing</b>: click a playable piece (ringed), then the square where it stops, or the piece it bounces on, and so on, one click per bounce. Hovering a square reached directly shows the movement in transparency (on a touch screen: a first tap shows it, a second plays it; tapping the current position clears it). Clicking the current position goes back one step; clicking an earlier step goes back to it. The move commands are in the bar under the board: Reset, Bounce, Replace, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once. The increment is added on each confirmed move; at zero, the game is lost on time. No clock runs during a simultaneous setup.</li></ul>
  <p class="hint" style="margin-top:.6em">Gyges was designed by Claude Leroy (1985).</p>`
 }};
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
@@ -561,6 +597,8 @@ function applyStatic(){document.documentElement.lang=lang;document.title=t('titl
   $('rules').innerHTML=t('rules');advLine();
   const sel=$('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('gyges-tc'));}catch(e){return null;}})()||'20+10';
   sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');
+  // face to face: its own time control, no clock by default
+  const fs=$('fTc'),fcur=fs.value||LS.get('gyges-local-tc','none');fs.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===fcur?'selected':''}>${tcLabel(x)}</option>`).join('');
   for(const id of ['aLevel','gLevel']){const s=$(id);s.innerHTML=Object.keys(LEVELS).map(k=>`<option value="${k}">${t('lv_'+k)}</option>`).join('');s.value=level;}
   // setup mode: the full description as each option's tooltip, and that of the chosen mode on the line below
   for(const id of SUSEL){const s=$(id);s.innerHTML=SMS.map(m=>`<option value="${m}" title="${t('sud_'+m).replace(/"/g,'&quot;')}">${t('su_'+m)}</option>`).join('');s.value=setupPref;$(id+'H').textContent=t('sud_'+setupPref);}
@@ -581,7 +619,7 @@ const nickGet=()=>LS.get('games-name','')||LS.get('gyges-name',''),nickSet=v=>{L
 // are validated · 'seq' J1's whole row, then J2's. Missing (old saves, resume codes) = 'piece'.
 const SMS=['piece','simul','seq'],smOf=g=>g&&SMS.includes(g.setup)?g.setup:'piece';
 let setupPref=LS.get('gyges-setup','seq');if(!SMS.includes(setupPref))setupPref='seq';
-const SUSEL=['cSetup','aSetup','tSetup'];
+const SUSEL=['cSetup','aSetup','fSetup','tSetup'];
 function setupSel(v){setupPref=v;LS.set('gyges-setup',v);for(const id of SUSEL){$(id).value=v;$(id+'H').textContent=t('sud_'+v);}}
 let view=null;
 applyStatic();
@@ -628,16 +666,24 @@ function replay(rules,moves,result){const adv=!!(rules&&rules.adv),sm=smOf(rules
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
-let role=null;          // 'host' | 'guest' | 'watch' | 'ai' (against the computer, no network)
+let role=null;          // 'host' | 'guest' | 'watch' | 'ai' (against the computer) | 'local' (face to face) | 'test' (free play): no network for the last three
+// Both sides on this device (the seat follows the side to move, the board stays put)
+const solo=()=>role==='test'||role==='local';
+// Take-back and hints: against the computer and in free play only
+const canUndo=()=>role==='ai'||role==='test',canHint=canUndo;
 let peer=null;
 let mySeat=-1;
 let ui={},sending=false;
 const H={};             // host-only state
 
+// The bar under the board (#notice): a message (2 lines at most) and the move commands available now. A command that
+// does not apply is left out, never shown disabled.
 function status(txt,cls,btns){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
-  const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent='';const sp=document.createElement('span');sp.textContent=txt;n.appendChild(sp);
-    for(const b of btns||[]){const e=document.createElement('button');e.type='button';e.textContent=b.label;if(b.primary)e.className='primary';if(b.dis)e.disabled=true;if(b.id)e.id=b.id;e.onclick=b.on;
-      if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}n.appendChild(e);}}}
+  const n=$('notice');if(!n)return;btns=(btns||[]).filter(Boolean);n.className='notice on'+(cls?' '+cls:'')+(btns.length?' has-btns':'');n.textContent='';
+  if(txt){const sp=document.createElement('span');sp.className='msg';sp.textContent=txt;sp.title=txt;n.appendChild(sp);}
+  if(btns.length){const bx=document.createElement('div');bx.className='btns';n.appendChild(bx);
+    for(const b of btns){const e=document.createElement('button');e.type='button';e.textContent=b.label;e.title=b.label;if(b.primary)e.className='primary';if(b.id)e.id=b.id;e.onclick=b.on;
+      if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}bx.appendChild(e);}}}
 function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
 function peerOpts(){return {debug:1};}
 function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
@@ -804,7 +850,7 @@ const meSt=r=>netSim(r)&&mySeat>=0?{...r.st,turn:mySeat}:r.st;
 // Rows validated but not to be shown to this viewer: over the network, the other player's withheld block (held); on this
 // device or against the computer, J1's block while J2 arranges (the moves are played in turn, the display hides J1's).
 function hiddenSeats(r){const h=[false,false];if(smOf(view)!=='simul'||r.over||!E.setup(r.st))return h;
-  if(role==='test'||role==='ai'){if(r.st.n===6&&mySeat!==0)h[0]=true;}
+  if(solo()||role==='ai'){if(r.st.n===6&&mySeat!==0)h[0]=true;}
   else if(r.st.n===0&&view.held)for(const q of [0,1])if(view.held[q]&&q!==mySeat)h[q]=true;
   return h;}
 // Board shown during a block setup: hidden rows emptied (drawn as hidden), my own arrangement (being prepared, or validated
@@ -812,7 +858,8 @@ function hiddenSeats(r){const h=[false,false];if(smOf(view)!=='simul'||r.over||!
 function shown(st,r){if(smOf(view)==='piece'||!E.setup(st))return st;
   const hs=hiddenSeats(r),b=st.b.slice(),hide=new Set(),prov=new Set();
   for(const q of [0,1])if(hs[q]){hide.add(q);for(let c=0;c<6;c++)b[E.home(q)*6+c]=0;}
-  if(mySeat>=0){const h=E.home(mySeat)*6,hm=view.myHold&&E.dec(view.myHold),row=ui.pending&&ui.pending.t==='b'?ui.pending.row:hm&&hm.t==='b'?hm.row:ui.block;
+  if(mySeat>=0){const h=E.home(mySeat)*6,hm=view.myHold&&E.dec(view.myHold),hb=hintOn()&&hintMv.t==='b'?hintMv.row:null,   // a suggested arrangement: shown like a prepared one
+    row=ui.pending&&ui.pending.t==='b'?ui.pending.row:hb||(hm&&hm.t==='b'?hm.row:ui.block);
     if(row&&![0,1,2,3,4,5].some(c=>st.b[h+c]))for(let c=0;c<6;c++)if(row[c]){b[h+c]=row[c];if(!hm)prov.add(h+c);}}
   return {...st,b,hide,prov};}
 resetUi();
@@ -843,9 +890,11 @@ function calc(st){if(E.setup(st)&&!ui.place){const rs=blockOn()?bRes():E.reserve
         for(const p of ui.hist[ui.hist.length-1])for(const e of segEnds(st,ui.sel,p,adv)){const l=o.ends.get(e.x);if(l)l.push(e);else o.ends.set(e.x,[e]);}}}}
   calcKey=key;calcVal=o;return o;}
 // The move shown as a preview: the move awaiting confirmation, the hovered (or tapped) next movement, or the path clicked so far
-function previewOf(st,o){const mv=ui.pending||ui.done;
+// (a suggestion shown is drawn exactly like a move awaiting confirmation)
+function previewOf(st,o){const hm=hintOn()?hintMv:null,mv=hm||ui.pending||ui.done;
   if(mv&&mv.t==='b')return null;   // the arrangement is already on the board shown
-  if(mv)return mv.t==='p'?{place:mv}:{s:mv.s,cells:mv.path,ext:[],rep:mv.rep,full:true};
+  if(mv&&mv.t==='x')return null;
+  if(mv)return mv.t==='p'?{place:mv}:{s:mv.s,cells:mv.path,ext:[],rep:mv.rep,full:true,hint:mv===hm?hm:null};
   if(o.setup){if(ui.place&&ui.hover!==null&&o.homes.has(ui.hover))return {place:{at:ui.hover,k:ui.place}};return null;}
   if(ui.sel<0)return null;
   let ext=[],rep=-1;const h=ui.hover!==null?ui.hover:ui.tap;
@@ -854,73 +903,84 @@ function previewOf(st,o){const mv=ui.pending||ui.done;
   return {s:ui.sel,cells:ui.path,ext,rep,replace:ui.drop||ui.repHover&&o.landed&&!ui.landOk};}
 // Board only, for a hover outside the board (the Replace button)
 function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const ms=meSt(r),o=calc(ms);
-  drawBoard(shown(ms,r),{o,interactive:!ui.pending&&busy!=='hint',prep:!!ui.pending&&busy!=='hint',hint:hintMv,pv:previewOf(r.st,o),last:r.last});}
-function renderGame(){if(!view)return;ui.repHover=false;if(role==='ai')LS.set(AK,{view,mySeat});else if(role==='test')LS.set(TK,view);const r=replay(view,view.moves,view.result);
+  drawBoard(shown(ms,r),boardOpt(true,ms,o,r));}
+// Drawing options of the position to play: clickable spots, the move awaiting confirmation or the suggestion shown
+function boardOpt(mine,ms,o,r){const hs=mine&&hintOn();
+  return {o,interactive:mine&&!ui.pending&&busy!=='hint'&&!hs,prep:mine&&(!!ui.pending||hs)&&busy!=='hint',hint:hs?hintMv:null,pv:mine?previewOf(ms,o):null,last:r.last};}
+function renderGame(){if(!view)return;ui.repHover=false;if(role==='ai')LS.set(AK,{view,mySeat});else if(role==='test')LS.set(TK,view);else if(role==='local')localSave();const r=replay(view,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
-  flip=mySeat===1&&role!=='test';   // on one device the board stays put: the players adapt
+  flip=mySeat===1&&!solo();   // on one device the board stays put: the players adapt
   const mine=navAt===null&&isMyTurn(r),ns=netSim(r),ms=meSt(r);
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
   const o=mine?calc(ms):null;
   if(navAt!==null)drawBoard(d.st,{last:d.last});
-  else drawBoard(shown(ms,r),{o,interactive:mine&&!ui.pending&&busy!=='hint',prep:mine&&!!ui.pending&&busy!=='hint',hint:mine?hintMv:null,pv:mine?previewOf(ms,o):null,last:r.last});
+  else drawBoard(shown(ms,r),boardOpt(mine,ms,o,r));
   {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
-  const nm=s=>role==='test'?view.names[s]:role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+  const nm=s=>solo()?t(s===0?'p1':'p2'):role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
   const cantMove=!r.over&&!E.setup(r.st)&&E.canPass(r.st,!!view.adv);
-  // Cancel: drops the whole move being prepared; offered in every state where something is prepared
-  const cx={label:t('cancel'),on:cancelAll},cxs=preparing()?[cx]:null;
-  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&role!=='test'?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win');
-  else if(role==='ai'&&busy)status(t(busy==='hint'?'hintBusy':'st_aiThinking'),'',busy==='hint'?cxs:null);
+  // The bar under the board: the only place for the move commands.
+  // Nothing engaged: Undo last move / Hint (where the game allows them) · something engaged: Reset (drops the whole move
+  // being prepared) with Bounce / Replace when they apply · move complete: Reset + Confirm (Validate for an arrangement)
+  // · suggestion shown: Play this move + Dismiss · waiting states: the message only.
+  const prep=preparing(),RST={label:t('reset'),on:cancelAll};
+  const undoB=canUndo()&&!busy&&undoOk(r)?{label:t('undo'),on:doUndo}:null;
+  const hintB=canHint()&&!busy&&mine&&!(o&&o.pass)?{label:t('hint'),on:doHint}:null;
+  const idle=[undoB,hintB];
+  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);
+  else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
+  else if(role==='ai'&&busy)status(t('st_aiThinking'));
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
-  else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'),'',mySeat>=0&&!sending?cxs:null);
+  else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
-  else if(ui.pending||sending)quiet();   // a move waiting for confirmation: its Cancel is in the confirm card
+  else if(mine&&hintOn())status(t('hint_move',{m:txtOf(hintMv,ms)}),'turn',[{label:t('hintPlay'),primary:true,on:hintPlay},{label:t('dismiss'),on:hintOff}]);
+  else if(mine&&ui.pending){const isB=ui.pending.t==='b';
+    status(t(isB?'pend_block':'pend_mv',{m:txtOf(ui.pending,ms)}),'turn',[RST,{label:t(isB?'validBlock':'confirmMv'),primary:true,on:()=>{if(ui.pending)send(ui.pending);}}]);}
+  else if(sending)quiet();
   else if(ns&&mySeat>=0&&view.myHold)status(t('st_simWait'));
   else if(ns&&mySeat<0)status(t('st_simWatch'));
   else if(mine){
-    if(o.setup&&o.block)status(t(smOf(view)==='simul'?'st_blockSim':'st_block'),'turn',cxs);
-    else if(o.setup)status(t('st_place'),'turn',cxs);
-    else if(o.pass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass}]);
-    else if(ui.drop)status(t('st_drop'),'turn',[cx]);
-    else if(ui.bad)status(t('st_bad'),'turn',[cx]);
-    else if(o.onPiece&&!o.canBounce&&!o.canReplace)status(t('st_stuck'),'turn',[cx]);
-    else if(ui.marks.length&&!o.landed&&!ui.drop)status(t('st_bounce'),'turn',[cx]);
-    else if(o.landed&&!ui.landOk&&!ui.done)status(t('st_land'),'turn',[cx,{label:t('bounce'),dis:!o.canBounce,on:()=>{ui.landOk=true;renderGame();}},{label:t('replace'),primary:true,dis:!o.canReplace,on:()=>{ui.drop=true;ui.landOk=true;renderGame();},hover:on=>{ui.repHover=on;redrawBoard();}}]);
-    else if(ui.sel>=0)status(t('st_sel'),'turn',[cx]);
-    else if(cxs)status('','turn',cxs);
-    else quiet();}
+    if(o.setup&&o.block)status(t(smOf(view)==='simul'?'st_blockSim':'st_block'),'turn',prep?[RST]:idle);
+    else if(o.setup)status(t('st_place'),'turn',prep?[RST]:idle);
+    else if(o.pass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass},undoB]);
+    else if(ui.drop)status(t('st_drop'),'turn',[RST]);
+    else if(ui.bad)status(t('st_bad'),'turn',[RST]);
+    else if(o.onPiece&&!o.canBounce&&!o.canReplace)status(t('st_stuck'),'turn',[RST]);
+    else if(ui.marks.length&&!o.landed&&!ui.drop)status(t('st_bounce'),'turn',[RST]);
+    else if(o.landed&&!ui.landOk&&!ui.done)status(t('st_land'),'turn',[RST,o.canBounce?{label:t('bounce'),on:()=>{ui.landOk=true;renderGame();}}:null,
+      o.canReplace?{label:t('replace'),primary:true,on:()=>{ui.drop=true;ui.landOk=true;renderGame();},hover:on=>{ui.repHover=on;redrawBoard();}}:null]);
+    else if(ui.sel>=0)status(t('st_sel'),'turn',[RST]);
+    else if(prep)status('','turn',[RST]);
+    else status(solo()?t('st_turn',{n:nm(r.st.turn)}):t('st_yourTurn'),'turn',idle);}
   else if(E.setup(r.st)&&blockOn()&&navAt===null&&!ns)status(t('st_blockOpp',{n:nm(r.st.turn)}));
   else if(cantMove&&navAt===null)status(t('st_theyPass',{n:nm(r.st.turn)}));
+  else if(navAt===null)status(t('st_turn',{n:nm(r.st.turn)}));
   else quiet();
   if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
-  else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'),'',mine?cxs:null);
-  const wide=window.matchMedia('(min-width:821px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
+  else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'),'',mine&&prep?[RST]:null);
+  const wide=window.matchMedia(WIDE).matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
   $('playersTop').textContent='';$('playersSide').textContent='';const host=wide?$('playersSide'):$('playersTop');
   for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&(ns&&navAt===null?!(view.held&&view.held[p]):turn===p)?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="dot c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
     el.append(h,ck);host.appendChild(el);}
   tick();advLine();
-  $('confirmCard').hidden=!ui.pending;if(ui.pending){$('pendingTxt').textContent=txtOf(ui.pending,ms);const isB=ui.pending.t==='b',h2=$('confirmCard').querySelector('h2'),sb=$('sendMv');
-    h2.dataset.i18n=isB?'yourBlock':'yourMove';h2.textContent=t(h2.dataset.i18n);sb.dataset.i18n=isB?'validBlock':'confirmMv';sb.textContent=t(sb.dataset.i18n);}
-  $('myCard').hidden=!(role==='ai'||role==='test'||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
-  $('aiBox').hidden=role!=='ai'&&role!=='test';for(const id of ['hintBtn','aiInfo'])$(id).hidden=role==='test';$('gLevel').parentNode.hidden=role==='test';
-  $('undoBtn').hidden=preparing();   // Undo previous move: only when no move is being prepared
-  if(role==='test')$('undoBtn').disabled=!view.moves.length;$('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
-  if(role==='ai'){$('undoBtn').disabled=!r.log.some(e=>e.p===mySeat);$('hintBtn').disabled=!mine||!!busy||!!ui.pending;
-    $('aiInfo').textContent=hintMv?t('hint_move',{m:txtOf(hintMv,ms)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
-  $('passBox').hidden=!(mine&&o&&o.pass&&!ui.pending);
+  // side panel: settings only (level of the computer, which also sets the strength of the hints in free play; its opinion)
+  $('myCard').hidden=!(role==='ai'||solo()||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('aiBox').hidden=role!=='ai'&&role!=='test';$('aiInfo').hidden=role!=='ai';
+  $('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  if(role==='ai')$('aiInfo').textContent=aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||role==='test'||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||solo()||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||role==='test'||!(mySeat>=0&&view.started);
+    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
   $('endCard').hidden=!r.over;
-  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||role==='test'),rm=role==='ai'||role==='test'?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
+  {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;}
@@ -930,6 +990,8 @@ function renderGame(){if(!view)return;ui.repHover=false;if(role==='ai')LS.set(AK
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
     const c=document.createElement('span');c.textContent=hiddenSeats(r)[e.p]?t('hiddenBlock'):e.txt;li.append(a,b,c);ol.appendChild(li);});
   const ce=ol.querySelector('.cur');if(ce&&navAt!==null)ce.scrollIntoView({block:'nearest'});else ol.scrollTop=ol.scrollHeight;}
+// Players' cards in the side panel: wide screens, and landscape phones (board and panel side by side)
+const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';
 let audioCtx=null,lastMine=false;
 document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('gyges-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
@@ -957,6 +1019,8 @@ const touchy=()=>ptrType!=='mouse';
 function finish(mv){choose(mv);}
 function clickSpot(x){   // x: square 0–35, G (target goal), or 'r'+kind (reserve piece)
   if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  // a suggestion shown (or being looked for) goes away, and the click counts as usual
+  if(busy==='hint')stopAI();if(hintMv){hintMv=null;ui.hover=null;}
   if(ui.pending){rewindPending(x);return;}
   const st=meSt(r),o=calc(st),adv=!!view.adv,key=String(x);ui.bad=false;ui.tap=null;
   if(ui.done&&ui.doneKey===key){choose(ui.done);return;}
@@ -1028,6 +1092,7 @@ function send(mv){if(sending)return;ui.pending=null;const code=enc(mv),n=view.mo
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(role==='ai'){aiPlay(code);return;}
   if(role==='test'){testPlay(code);return;}
+  if(role==='local'){localPlay(code);return;}
   if(!C.conn||!C.conn.open){status(t('st_noHost'));renderGame();return;}
   // simultaneous setup: the block goes to the host, which keeps it hidden; shown here as mine, validated
   if(mv.t==='b'&&simHold(view,replay(view,view.moves,view.result))){C.hold={code,sent:Date.now()};view={...view,myHold:code};C.conn.send({t:'move',n:0,code});showState(view);return;}
@@ -1043,22 +1108,21 @@ setInterval(()=>{if(role==='guest'&&C.hold&&C.conn&&C.conn.open&&Date.now()-C.ho
   if(C.conn&&C.conn.open&&now-C.pending.sent>3000){C.pending.sent=now;try{C.conn.send({t:'move',n:C.pending.n,code:C.pending.code});}catch(e){}}
   if(!C.pending.shown&&now-C.pending.at>1500){C.pending.shown=true;renderGame();}},1000);
 function doPass(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!E.canPass(r.st,!!view.adv))return;choose({t:'x'});}
-$('cancelMv').onclick=cancelAll;
-$('sendMv').onclick=()=>{if(ui.pending)send(ui.pending);};
-$('passBtn').onclick=doPass;
 $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
 $('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
 $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
-  if(role==='ai'||role==='test'){if(!view.result){view.result={winner:1-mySeat,reason:'resign'};stopAI();renderGame();}return;}
+  if(role==='ai'||solo()){if(!view.result){if(role==='local')localFreeze();view.result={winner:1-mySeat,reason:'resign'};stopAI();hintMv=null;resetUi();renderGame();}return;}
   if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
 $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-$('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,view.adv,smOf(view));return;}if(role==='test'){startTest(view.adv,smOf(view));return;}rmSend('ask');};
+$('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,view.adv,smOf(view));return;}if(role==='test'){startTest(view.adv,smOf(view));return;}
+  if(role==='local'){startLocal(view.adv,smOf(view),view.tc);return;}rmSend('ask');};
 $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
 $('navFirst').onclick=()=>navGo(0);
 $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
 $('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
 $('navLast').onclick=()=>navGo(null);
 document.addEventListener('keydown',e=>{if(!view||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
+  if(e.key==='Escape'&&(hintMv||busy==='hint')){hintOff();return;}
   if(e.key==='Escape'&&preparing()){cancelAll();return;}
   if($('nav').hidden)return;
   const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
@@ -1071,7 +1135,7 @@ $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ'
 const spotOf=e=>{const g=e.target.closest('[data-i]');if(!g)return null;const v=g.dataset.i;return v[0]==='r'?v:+v;};
 $('svg').addEventListener('pointerdown',e=>{ptrType=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const x=spotOf(e);if(x!==null)clickSpot(x);});
-function hoverSpot(x){if(!view||ui.pending||ui.done)return;if(x===ui.hover)return;
+function hoverSpot(x){if(!view||ui.pending||ui.done||hintMv)return;if(x===ui.hover)return;
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r)){ui.hover=null;return;}ui.hover=x;renderGame();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;hoverSpot(spotOf(e));});
@@ -1093,19 +1157,47 @@ const AK='gyges-ai';   // the game against the computer, kept across a reload
 function startAI(seat,adv,sm){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;setHash('ai');
   view={size:SIZE,adv:!!adv,setup:smOf({setup:sm}),tc:null,names:seat===0?['me','ai']:['ai','me'],first:seat===0?'me':'ai',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};
   resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();}
-// Test game: the tester plays both sides on this device; the board turns to the side to move.
+// Free play ('test'): one person plays both sides on this device, with take-back and hints, no clock; the seat follows
+// the side to move and the board stays put.
 const TK='gyges-test';   // the game on this device, kept across a reload
+const soloView=(adv,sm,tc)=>({size:SIZE,adv:!!adv,setup:smOf({setup:sm}),tc:tc||null,names:[t('p1'),t('p2')],first:'me',moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()});
 function startTest(adv,sm){stopAI();navAt=null;role='test';mySeat=0;C.stop=true;setHash('test');
-  view={size:SIZE,adv:!!adv,setup:smOf({setup:sm}),tc:null,names:[t('p1'),t('p2')],first:'me',moves:[],clock:[0,0],running:false,elapsed:0,result:null,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:Date.now()};LS.set(TK,view);
+  view=soloView(adv,sm,null);LS.set(TK,view);
   resetUi();hintMv=null;showGame();renderGame();}
-function testTurn(){LS.set(TK,view);const r=replay(view,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
-function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
-function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
+function testTurn(){if(role==='test')LS.set(TK,view);const r=replay(view,view.moves,view.result);if(!r.over)mySeat=r.st.turn;resetUi();renderGame();}
+function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);hintMv=null;testTurn();}
+function testUndo(){if(!view.moves.length)return;stopAI();view.moves=view.moves.slice(0,-1);view.result=null;hintMv=null;testTurn();}
 $('testForm').addEventListener('submit',e=>{e.preventDefault();startTest($('tAdv').checked,$('tSetup').value);});
-// Home: "Create a game", then the opponent (link, computer, this device), then that choice's options
+// Face to face ('local'): two players on this device, no take-back, no hint, the board stays put; an optional chess clock.
+// view.clock holds each side's time at view.recvAt; while view.running, the side to move's clock runs from then
+// (remaining() does the subtraction, as for the link games). On each confirmed move the mover's time is taken off and the
+// increment added; at zero the side to move loses on time. No clock runs during a simultaneous setup.
+// Saved at every render, every second and when the page goes away with the times left (elapsed 0); a reload restores
+// those times and the clock goes on from the moment the page is back (the time of the reload itself is not counted).
+const LK='gyges-local';
+const localRuns=st=>!!view.tc&&!view.result&&!(smOf(view)==='simul'&&E.setup(st));
+function startLocal(adv,sm,tc){stopAI();navAt=null;role='local';mySeat=0;C.stop=true;setHash('local');
+  view=soloView(adv,sm,tc);view.running=localRuns(E.init(view.setup));
+  resetUi();hintMv=null;showGame();renderGame();}
+function localSave(){if(role!=='local'||!view)return;LS.set(LK,{...view,clock:remaining(),elapsed:0,recvAt:0});}
+// stop the clocks where they are (the game ends)
+function localFreeze(){if(!view.tc)return;view.clock=remaining();view.running=false;view.elapsed=0;view.recvAt=Date.now();}
+function localPlay(code){if(view.result)return;const r=replay(view,view.moves,view.result);if(r.over)return;const s=r.st.turn;
+  if(view.tc){const rem=remaining();if(view.running){if(rem[s]<=0){localFlag();return;}rem[s]+=view.tc.inc;}view.clock=rem;}
+  view.moves=view.moves.concat([code]);const r2=replay(view,view.moves,null);
+  view.running=!r2.over&&localRuns(r2.st);view.elapsed=0;view.recvAt=Date.now();testTurn();}
+function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)return;const tt=r.st.turn;localFreeze();view.clock[tt]=0;
+  view.result={winner:1-tt,reason:'time'};resetUi();renderGame();}
+let localTick=0;
+setInterval(()=>{if(role!=='local'||!view||!view.tc||!view.running||view.result)return;const r=replay(view,view.moves,view.result);if(r.over)return;
+  if(remaining()[r.st.turn]<=0)localFlag();else if(++localTick%5===0)localSave();},200);
+window.addEventListener('pagehide',localSave);
+$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tcx=TCS.find(x=>x.id===$('fTc').value)||TCS[TCS.length-1];LS.set('gyges-local-tc',tcx.id);
+  startLocal($('fAdv').checked,$('fSetup').value,tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc});});
+// Home: "Create a game", then the opponent (link, computer, face to face, free play), then that choice's options
 let homeK='';
 function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
-  $('createForm').hidden=k!=='link';$('aiForm').hidden=k!=='ai';$('testForm').hidden=k!=='local';
+  $('createForm').hidden=k!=='link';$('aiForm').hidden=k!=='ai';$('faceForm').hidden=k!=='face';$('testForm').hidden=k!=='free';
   const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
 $('newBtn').onclick=()=>homeStep('pick');
 $('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
@@ -1124,14 +1216,20 @@ function aiStep(){if(role!=='ai'||busy)return;const r=replay(view,view.moves,vie
     if(!res||!res.move){renderGame();return;}aiInfo=E.setup(r.st)?null:evalInfo(res);view.moves=view.moves.concat([enc(res.move)]);renderGame();aiStep();},wait);});}
 function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>5e5)return {k:'ai_win'};if(s<-5e5)return {k:'ai_lost'};
   return {k:Math.abs(s)<60?'ai_eq':s>0?(s>1500?'ai_much':'ai_better'):(s<-1500?'ai_muchWorse':'ai_worse'),d:r.depth};}
-$('undoBtn').onclick=()=>{if(preparing())return;if(role==='test'){testUndo();return;}if(role!=='ai')return;stopAI();const m=view.moves.slice();
-  // back to the last position where it was my turn, before my last move
+// Undo last move: free play takes back one move; against the computer, back to my last turn before my last move
+const undoOk=r=>role==='test'?view.moves.length>0:role==='ai'?r.log.some(e=>e.p===mySeat):false;
+function doUndo(){if(!view||!canUndo()||preparing())return;if(role==='test'){testUndo();return;}stopAI();const m=view.moves.slice();
   const turnAt=k=>replay(view,m.slice(0,k),null).st.turn;let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
   if(turnAt(k)!==mySeat)k=0;
-  view.moves=m.slice(0,k);view.result=null;resetUi();aiInfo=null;hintMv=null;renderGame();aiStep();};
-$('hintBtn').onclick=()=>{if(role!=='ai'||busy)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const n=view.moves.length;busy='hint';renderGame();
-  ask(aiSafe(r.st),HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move)hintMv=res.move;renderGame();});};
+  view.moves=m.slice(0,k);view.result=null;resetUi();aiInfo=null;hintMv=null;renderGame();aiStep();}
+// Hint: looked for by the computer (its strongest level against it; the level chosen in free play), then shown on the
+// board like a move awaiting confirmation; Play this move plays it at once, Dismiss (or a click on the board) drops it.
+const hintOn=()=>!!hintMv&&!busy;
+function doHint(){if(!view||!canHint()||busy)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||preparing())return;const n=view.moves.length;busy='hint';hintMv=null;renderGame();
+  ask(aiSafe(r.st),role==='test'?LEVELS[level]:HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move&&res.move.t!=='x'){hintMv=res.move;resetUi();}renderGame();});}
+function hintOff(){if(busy==='hint')stopAI();hintMv=null;if(ui)ui.hover=null;renderGame();}
+function hintPlay(){const mv=hintMv;if(!mv||busy)return;hintMv=null;resetUi();send(mv);}
 for(const id of ['aLevel','gLevel'])$(id).addEventListener('change',e=>{level=e.target.value;LS.set('gyges-level',level);$('aLevel').value=level;$('gLevel').value=level;});
 const aiFirst=()=>{const v=$('aFirst').value;return v==='me'?0:v==='ai'?1:Math.random()<.5?0:1;};   // seat of the player
 $('aiForm').addEventListener('submit',e=>{e.preventDefault();startAI(aiFirst(),$('aAdv').checked,$('aSetup').value);});
@@ -1178,6 +1276,8 @@ function init(){drawBoard(E.init(),{});
   status('');
   if(location.hash==='#ai'){const sv=LS.get(AK,null);if(sv&&sv.view){stopAI();navAt=null;role='ai';mySeat=sv.mySeat;C.stop=true;
     view={...sv.view,recvAt:Date.now()};resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();return;}setHash('');}
+  if(location.hash==='#local'){const sv=LS.get(LK,null);if(sv&&Array.isArray(sv.moves)){stopAI();navAt=null;role='local';C.stop=true;
+    view={...sv,elapsed:0,recvAt:Date.now()};const r=replay(view,view.moves,view.result);mySeat=r.st.turn;resetUi();hintMv=null;showGame();renderGame();return;}setHash('');}
   if(location.hash==='#test'){const sv=LS.get(TK,null);startTest(sv?sv.adv:false,sv?sv.setup:'piece');if(sv&&sv.moves){view={...sv,names:view.names};testTurn();}return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
@@ -1245,9 +1345,6 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
   if(lastMv&&!pv){if(lastMv.t==='p')ring(ov,X(lastMv.at),Y(lastMv.at),PR+3,{'stroke-width':2.5});
     else if(lastMv.t==='m'){const pb=last.prev.b,ns=[{i:lastMv.s,r:NODE_S,k:0}].concat(lastMv.path.slice(0,-1).filter(i=>i!==G&&i!==lastMv.s&&pb[i]).map(i=>({i,r:NODE_B,k:pb[i]})));
       nodeEdges(ov,ns);pathLine(ov,last.p,lastMv.s,lastMv.path,{trim:endGap(lastMv)});nodeDots(ov,ns);endRings(ov,lastMv,last.p);}}
-  // the computer's suggestion, faint
-  const hm=opt.hint;if(hm&&!pv)if(hm.t==='p')ring(ov,X(hm.at),Y(hm.at),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5,opacity:.7});
-    else if(hm.t==='m'){pathLine(ov,mySeat,hm.s,hm.path,{opacity:.45});const [hx,hy]=PT(hm.path[hm.path.length-1],mySeat);ring(ov,hx,hy,PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5,opacity:.7});}
   if(o&&opt.interactive){
     if(o.setup)for(const i of o.homes)el('circle',{cx:X(i),cy:Y(i),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2},ov);
     if(ui.sel<0&&!ui.pending&&!ui.done)for(const i of o.playable)ring(ov,X(i),Y(i),PR+3.5,{'stroke-width':1.8,opacity:.8});
@@ -1255,15 +1352,17 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
       for(const x of o.drops)el('circle',{cx:X(x),cy:Y(x),r:HR,fill:'color-mix(in srgb,var(--accent) 30%,transparent)',stroke:'var(--accent)','stroke-width':2,class:'pulse'},ov);}}
   // a move waiting for confirmation: its active piece stays ringed, a click on it takes the move back one step
   else if(o&&opt.prep&&ui.pending&&ui.pending.t==='m'&&ui.sel>=0)seqRings(ov);
+  // a suggestion shown: the rings of a complete move (full ring on its last action)
+  else if(o&&opt.hint&&opt.hint.t==='m')endRings(ov,opt.hint,mySeat);
   if(pv){const gh=el('g',{'pointer-events':'none'},svg);
     if(pv.place){const i=pv.place.at;piece(gh,X(i),Y(i),pv.place.k,PR,.55);ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}
     else{const cells=pv.cells.concat(pv.ext||[]),k=st.b[pv.s];
       // the steps already played in full, the hovered next movement fainter
       const ns=nodeSpots(st,pv);nodeEdges(gh,ns);
-      const pm=ui.pending&&ui.pending.t==='m'?ui.pending:null;
+      const pm=ui.pending&&ui.pending.t==='m'?ui.pending:pv.hint||null;
       if(cells.length){if(pv.ext&&pv.ext.length)pathLine(gh,mySeat,pv.s,cells,{opacity:.5});pathLine(gh,mySeat,pv.s,pv.cells,pm?{trim:endGap(pm)}:{});const end=cells[cells.length-1],[ex,ey]=PT(end,mySeat);
         if(res){if(!pm)for(const i of resCh)if(res[i])ring(gh,X(i),Y(i),PR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});
-          if(end===G){piece(gh,ex,ey,k,PR,.6);ring(gh,ex,ey,GR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}
+          if(end===G){piece(gh,ex,ey,k,PR,.6);if(!pm)ring(gh,ex,ey,GR+3,{'stroke-dasharray':'4 4','stroke-width':2.5});}}
         // ending on a piece to bounce on: that piece is shown selected in transparency (once played, its solid ring says it)
         else if(pv.ext&&pv.ext.length)ring(gh,ex,ey,PR+4,{'stroke-width':3.5,opacity:.45});}
       nodeDots(gh,ns);}}}
@@ -1274,7 +1373,11 @@ function pathLine(par,p,s,cells,a){const pts=[[X(s),Y(s)]].concat(cells.map(x=>P
 // Nodes of the move being prepared: a dot on each piece bounced on, a slightly larger one on the start. On a three-ring
 // piece the dot gets a soft edge where it meets the white inner ring (not in the open centre, not under the path).
 const NODE_B=3.75,NODE_S=4.9;
-function nodeSpots(st,pv){if(ui.sel<0||pv.s!==ui.sel)return [];const rep=ui.pending&&ui.pending.rep>=0,ms=rep?ui.marks.slice(0,-1):ui.marks;   // the piece replaced: its square has the end ring
+function nodeSpots(st,pv){
+  // a suggestion: the start, and each piece bounced on (every occupied square on the way, the last one excepted: a
+  // replaced piece has the end ring)
+  if(pv.hint)return [{i:pv.s,r:NODE_S,k:st.b[pv.s]}].concat(pv.hint.path.slice(0,-1).filter(i=>i!==G&&i!==pv.s&&st.b[i]).map(i=>({i,r:NODE_B,k:st.b[i]})));
+  if(ui.sel<0||pv.s!==ui.sel)return [];const rep=ui.pending&&ui.pending.rep>=0,ms=rep?ui.marks.slice(0,-1):ui.marks;   // the piece replaced: its square has the end ring
   return [{i:pv.s,r:NODE_S,k:st.b[pv.s]}].concat(ms.map(i=>({i,r:NODE_B,k:st.b[i]})));}
 function nodeEdges(par,spots){const th=PR*.26,gap=PR*.055,hole=PR-3*th-2*gap;
   for(const n of spots){if(n.k!==3)continue;const id='nm'+n.i,m=el('mask',{id,maskUnits:'userSpaceOnUse',x:0,y:0,width:2000,height:2000},el('defs',{},par));
