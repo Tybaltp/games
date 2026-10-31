@@ -230,7 +230,7 @@ const AR_I18N={fr:{
  <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
  <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
- <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat (sur écran tactile : un premier toucher l'affiche, un second le joue). Recliquer une pièce déjà déplacée dans le tour revient au moment où elle a été choisie. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
+ <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat ; sur écran tactile, un toucher joue le pas. Recliquer une pièce déjà déplacée dans le tour revient au moment où elle a été choisie. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>
@@ -254,7 +254,7 @@ const AR_I18N={fr:{
  <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
  <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
- <li><b>Playing</b>: click one of your pieces, then its arrival square; hovering a square previews the result (on a touch screen: a first tap shows it, a second plays it). Clicking again a piece already moved in this turn goes back to the moment it was chosen. The turn's commands are in the bar under the board: Reset, Undo step, End turn; in free play, Undo last move. Setup: click two of your squares to swap their pieces, then Confirm the setup.</li>
+ <li><b>Playing</b>: click one of your pieces, then its arrival square; hovering a square previews the result; on a touch screen, a tap plays the step. Clicking again a piece already moved in this turn goes back to the moment it was chosen. The turn's commands are in the bar under the board: Reset, Undo step, End turn; in free play, Undo last move. Setup: click two of your squares to swap their pieces, then Confirm the setup.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>
@@ -308,8 +308,8 @@ function describe(code,st){const r=st.n<2?E.setup(st.b,st.turn,code):E.turn(st.b
 
 // ---------- game view ----------
 // ui: steps of the turn being prepared (local preview, sent only when the turn is finished), current selection, setup arrangement
-function newUi(){return {acts:[],sel:-1,enemy:-1,via:-1,hover:-1,tap:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1};}
-function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.tap=-1;ui.cand=[];ui.candKind='';}
+function newUi(){return {acts:[],sel:-1,enemy:-1,via:-1,hover:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1};}
+function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.cand=[];ui.candKind='';}
 // Something is being prepared (steps, a selection, a changed setup); otherwise the board is neutral
 function prepared(){return !!(ui.acts.length||ui.sel>=0||ui.enemy>=0||ui.pending||ui.swap>=0||(ui.setup&&mySeat>=0&&ui.setup.join('')!==E.DEFAULT[mySeat]));}
 // « Réinitialiser » (Reset, Escape): drop the whole prepared turn (or setup) and come back to the neutral board
@@ -332,7 +332,7 @@ function arBoard({r,d,mine}){shownD=d;const o={setup:r.st.n<2,pv:null,es:'none'}
   if(navAt!==null)drawBoard({real:d.st.b,shown:d.st.b,last:d.last});
   else if(mine&&o.setup)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
   else if(mine){const pv=preview(r);o.pv=pv;o.es=endState(r,pv);
-    const cur=ui.acts.length?{det:turnDetail(r.st.b,mySeat,ui.acts.map(E.code).join(',')),caps:[],prep:true}:r.last;
+    const cur=ui.acts.length?{det:turnDetail(r.st.b,mySeat,ui.acts.map(E.code).join(',')),caps:[],prep:true}:ui.sel>=0||ui.enemy>=0?null:r.last;
     drawBoard({real:r.st.b,shown:pv.b,pv,hl:highlights(pv),last:cur,hov:hoverPreview(pv)});}
   else drawBoard({real:r.st.b,shown:r.st.b,last:r.last});
   return o;}
@@ -383,23 +383,21 @@ function hoverActs(b,used,i){if(i<0)return null;const acts=E.actions(b,mySeat,4-
   if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);return a?[a]:null;}
   if(ui.sel<0)return null;const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m)return [m];
   const far=reach(b,mySeat,ui.sel,4-used).get(i);return far?far.path:null;}
-// The hovered (or, on touch, tapped once) square: the position it would give, the pieces lost, the steps it costs
-function hoverPreview(pv){const i=ui.hover>=0?ui.hover:ui.tap,acts=hoverActs(pv.b,pv.used,i);if(!acts)return null;
+// The hovered square: the position it would give, the pieces lost, the steps it costs
+function hoverPreview(pv){const i=ui.hover,acts=hoverActs(pv.b,pv.used,i);if(!acts)return null;
   let b=pv.b,n=0;const caps=[];for(const a of acts){const x=E.apply(b,a);b=x.b;n+=x.n;caps.push(...x.caps);}
   return {b,caps,n,to:i,walk:acts[0].k==='m'?[acts[0].f].concat(acts.map(a=>a.t)):null};}
-let lastPtr='mouse';
 function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
     if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;tone(520,.06,.03);}
     renderGame();return;}
   const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
   const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
-  // touch: a first tap on an arrival square shows the result, a second one plays it
-  const twice=x=>{if(lastPtr!=='touch'||ui.tap===x)return false;ui.tap=x;renderGame();return true;};
-  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){if(twice(i))return;doAct(a);return;}
+  // a click or a single tap plays the step (with a mouse, hovering previews it first)
+  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
     const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
-  else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){if(twice(i))return;doAct(m);return;}
-    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){if(twice(i))return;ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();return;}
+  else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
+    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();winNow();return;}
     if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===ui.sel)){ui.enemy=i;ui.via=ui.sel;renderGame();return;}
     // a second click on the selection deselects it; on a piece already moved in this turn, it rewinds to that piece's first selection
     const via=ui.sel;clearSel();if(i===via){const e=seqPieces(r.st.b).get(i);if(e){rewindTo(e);return;}renderGame();return;}}
@@ -407,13 +405,17 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
   {const e=seqPieces(r.st.b).get(i);if(e&&!canAct){rewindTo(e);return;}}   // a moved piece that can't go on (or a pushed/pulled one): rewind
   if(canAct){ui.sel=i;renderGame();return;}
   renderGame();}
-function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();}
+function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();winNow();}
+// C14: a step that wins the game at once (a rabbit on the far row, the last opposing rabbit taken, the opponent left
+// without a move) ends the turn by itself, with no confirmation
+function winNow(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
+  const pv=preview(r);if(endState(r,pv)!=='ok')return;const reps=new Map(r.st.reps),kk=E.bkey(pv.b)+(1-mySeat);reps.set(kk,(reps.get(kk)||0)+1);
+  const o=E.outcome(pv.b,mySeat,reps);if(o&&o.w===mySeat)endTurn();}
 function undoStep(){if(ui.pending)return;clearSel();ui.acts.pop();renderGame();}
 // « Terminer le tour » is the confirmation: the turn is sent at once
 function endTurn(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
   const pv=preview(r);if(endState(r,pv)!=='ok')return;clearSel();send(ui.acts.map(E.code).join(','));}
 function setupGo(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n>=2)return;setupBoard(r);send('S'+ui.setup.join(''));}
-$('svg').addEventListener('pointerdown',e=>{lastPtr=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickSq(+g.dataset.i);});
 
 // ---------- drawing ----------
@@ -448,11 +450,14 @@ function lastPath(g,P,k,end,prep){const col=P.own?'var(--accent)':'var(--ink)',c
   if(!P.own)el('polyline',{points:pts,fill:'none',stroke:'var(--bg)','stroke-width':7,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':'2 9',opacity:.6},gr);
   el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':P.own?4.5:4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':P.own?'':'2 9'},gr);
   el('circle',{cx:c[0][0],cy:c[0][1],r:P.own?6:5,fill:col},gr);}
-function lastOver(g,L,shown){lastEnds=new Map();if(!L||!L.det)return;
-  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];
-    if(shown[end]&&!L.prep)ring(g,end,{w:3,c:P.own?'var(--accent)':'var(--ink)',dash:P.own?'':'5 4'});
+// Last turn: solid rings (accent: moved by the player; ink, thinner: pushed or pulled). Turn being prepared: the pieces
+// moved so far are provisional, with a dashed ring (none on the selected piece, nor on a piece the hovered move hides).
+function lastOver(g,L,shown,skip){lastEnds=new Map();if(!L||!L.det)return;
+  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1],c=P.own?'var(--accent)':'var(--ink)';
+    if(shown[end]&&!L.prep)ring(g,end,{w:P.own?3:2.5,c});
+    if(shown[end]&&L.prep&&!(skip&&skip(end)))ring(g,end,{w:2.5,c,dash:'4 4'});
     lastPath(g,P,k,!!shown[end],!!L.prep);if(shown[end])lastEnds.set(end,k);});
-  for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}}
+  for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5});}}
 function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   const hoverTo=i=>{if(i===ui.hover)return;ui.hover=i;if(ui.sel>=0||ui.enemy>=0)renderGame();};
@@ -488,17 +493,21 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
       if(v&&op(i)!==0)piece(lay,i,v,op(i));}
     for(const [c,w] of o.pv.caps)if(!shown[c]){if(real[c]!==w)piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'4 4'});}}
   else for(let i=0;i<64;i++)if(shown[i]&&op(i)!==0)piece(lay,i,shown[i],op(i));
-  frost(lay,H&&!H.walk?shown.map((v,i)=>op(i)===0?0:v):shown);lastOver(lay,o.last,shown);
-  if(o.setup){for(const i of E.SETUP_SQ[mySeat])ring(lay,i,{w:1.5,r:26,c:'var(--accent)'});if(ui.swap>=0)ring(lay,E.SETUP_SQ[mySeat][ui.swap],{w:4,r:28});}
+  frost(lay,H&&!H.walk?shown.map((v,i)=>op(i)===0?0:v):shown);
+  lastOver(lay,o.last,shown,i=>op(i)===0||(o.hl&&(i===o.hl.sel||i===o.hl.target)));
+  // setup: the arrangement is provisional until confirmed (dashed rings); the square clicked for a swap, a solid ring
+  if(o.setup){for(const i of E.SETUP_SQ[mySeat])if(i!==E.SETUP_SQ[mySeat][ui.swap])ring(lay,i,{w:2,r:26,dash:'4 4',c:'var(--accent)'});if(ui.swap>=0)ring(lay,E.SETUP_SQ[mySeat][ui.swap],{w:3.5,r:27});}
   const hl=o.hl;
-  if(hl){for(const i of hl.own)if(i!==hl.sel)ring(lay,i,{w:1.6,r:26});
-    for(const i of hl.enemy)ring(lay,i,{w:2,r:26,dash:'2 3'});
-    const swap=H&&!H.walk;if(hl.sel>=0&&!swap)ring(lay,hl.sel,{w:4,r:28});
-    if(hl.target>=0&&!swap)ring(lay,hl.target,{w:4,r:28,c:'var(--ink)',dash:'5 4'});
+  // one active highlight: nothing selected, a thin ring on each piece that can move; a piece selected, its solid ring
+  // (and a thin ink ring on the opposing pieces it can push or pull); a push or pull engaged, the opposing piece ringed too
+  if(hl){if(hl.sel<0)for(const i of hl.own)ring(lay,i,{w:1.6,r:26});
+    for(const i of hl.enemy)ring(lay,i,{w:1.6,r:26,c:'var(--ink)'});
+    const swap=H&&!H.walk;if(hl.sel>=0&&!swap)ring(lay,hl.sel,{w:3.5,r:27});
+    if(hl.target>=0&&!swap)ring(lay,hl.target,{w:3.5,r:27,c:'var(--ink)'});
     for(const i of hl.cand){if(shown[i])ring(lay,i,{w:4,r:28,cls:'pulse'});else el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:10,fill:'var(--accent)',opacity:.75,class:'pulse'},lay);}}
-  // hovered move: its walk, the pieces where they would arrive (transparent, dashed ring), the pieces lost, the steps it costs
+  // hovered move: its walk, the pieces where they would arrive (translucent, no frame), the pieces lost, the steps it costs
   if(H){if(H.walk)el('polyline',{points:H.walk.map(i=>(X(i)+S/2)+','+(Y(i)+S/2)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'1 8','stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},lay);
-    for(let i=0;i<64;i++)if(H.b[i]&&H.b[i]!==shown[i]){piece(lay,i,H.b[i],.6);ring(lay,i,{w:2.5,dash:'4 4'});}
+    for(let i=0;i<64;i++)if(H.b[i]&&H.b[i]!==shown[i])piece(lay,i,H.b[i],.6);
     for(const [c,w] of H.caps){piece(lay,c,w,.3);ring(lay,c,{c:'var(--danger)',w:2.5,dash:'3 4'});}
     const bx=X(H.to)+S-11,by=Y(H.to)+11;el('circle',{cx:bx,cy:by,r:9,fill:'var(--accent)','pointer-events':'none'},lay);
     const tx=el('text',{x:bx,y:by+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'var(--bg)','pointer-events':'none'},lay);tx.textContent=H.n;}}
