@@ -60,9 +60,18 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .status.err{border-color:var(--danger);color:var(--danger)}
 .view{display:flex;flex-direction:column;gap:16px}
 /* home */
-.home{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;width:100%}
-@media (min-width:760px){.home{max-width:880px;display:grid;grid-template-columns:1fr 1fr;align-items:start}
-  .home > #resumeCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
+.home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
+.home button.big{padding:14px;font-size:17px}
+.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:13.5px;cursor:pointer}
+.linkish{color:var(--ink)}
+.picks{display:flex;flex-direction:column;gap:8px}
+.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
+.pick b{font-size:15.5px;color:var(--ink)}.pick span{font-size:13px;color:var(--muted);font-weight:400}
+.joinLine{margin:0;text-align:center;font-size:14px;color:var(--muted)}
+.inv-only{display:none}
+#landing.invited .home > :not(#joinCard){display:none}
+#landing.invited .inv-only{display:block}#landing.invited .noinv{display:none}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .card h2{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
 .home .card.primary-card{border-color:var(--ink);padding:16px 18px;gap:10px}
@@ -157,28 +166,36 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
 
 <section class="view" id="landing">
   <div class="home">
-    <div class="card primary-card">
-      <h2 data-i18n="create">Create a game</h2>
-      <form class="form" id="createForm">
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
+      <div class="picks" id="newPick" hidden>
+        <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="local"><b data-i18n="m_local">On this device</b><span data-i18n="m_localTxt">Both sides on the same screen, to try the game or play face to face.</span></button>
+      </div>
+      <form class="form" id="createForm" hidden>
         <label for="cName"><span data-i18n="nick">Your nickname</span><input id="cName" class="txt" maxlength="24" autocomplete="nickname"></label>
         <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="me" selected data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option><option value="rnd" data-i18n="rnd">Random</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
+      <form class="form" id="testForm" hidden><button class="primary" type="submit" data-i18n="localBtn">Start the game</button></form>
     </div>
-    <div class="card primary-card">
-      <h2 data-i18n="join">Join a game with a code</h2>
+    <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <div class="card primary-card" id="joinCard" hidden>
+      <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
+      <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
+      <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
       <form class="form" id="joinForm">
-        <label for="jCode"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="7" placeholder="K7M2QX" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="7" placeholder="K7M2QX" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
         <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" class="txt" maxlength="24" autocomplete="nickname"></label>
         <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
       </form>
-      <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="inProgressTxt"></p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
-      <div class="card"><h2 data-i18n="testT">Test game</h2><p class="hint" data-i18n="testTxt">The tester plays the moves of both sides on this device, to try the game out.</p>
-        <form class="form" id="testForm"><button type="submit" data-i18n="testBtn">Start a test game</button></form></div>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><div class="form"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PONTE1.…" style="resize:vertical;font-size:12.5px"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="button" id="rGo" data-i18n="load">Load</button></div>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
@@ -341,7 +358,8 @@ const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",me:"Moi",opp:"Mon adversaire",rnd:"Au hasard",
  tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",undo:"Annuler le coup",
+ pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
+ haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",
  more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
@@ -364,13 +382,13 @@ const I18N={fr:{
  mv_pass:"passe",mv_bridge:"pont",noMoves:"Aucun coup pour l'instant.",
  lg_start:"Partie lancée : {n} ouvre.",lg_takeL:"{n} prend les clairs.",lg_dark:"{n} joue les foncés.",lg_pass:"passe",lg_forced:"aucun coup possible, passe",
  lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",lg_time:"{n} a dépassé son temps.",lg_resign:"{n} abandonne.",
- st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_conn:"Connexion à la table…",
+st_open:"Ouverture de la table…",st_conn:"Connexion à la table…",
  st_canSit:"Prenez une place libre pour jouer, ou restez pour observer.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
  st_waitClick:"En attente que {n} clique Démarrer la partie.",st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitPlayers:"En attente des joueurs.",
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
  r_tie:"Égalité parfaite, {w} à {l}{tb}.",r_wins:"{n} gagne, {w} à {l}{tb}.",r_time:"{n} gagne : {l} a dépassé son temps.",r_resign:"{n} gagne : {l} a abandonné.",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
- e_name:"Saisissez votre pseudo pour créer une partie.",e_nameJoin:"Saisissez votre pseudo pour jouer.",e_code:"Saisissez le code de 6 caractères reçu.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
+ e_name:"Saisissez votre pseudo pour créer une partie.",e_nameJoin:"Saisissez votre pseudo pour jouer.",e_code:"Saisissez le code de 6 caractères reçu.",
  t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",badResume:"Ce code de reprise n'est pas valide.",iam:"Je suis {n}",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  pe_unavail:"Aucune partie ouverte avec ce code. Vérifiez le code, et que l'hôte a toujours la page ouverte.",pe_net:"Le service de mise en relation est injoignable. Vérifiez votre connexion ; certains réseaux bloquent ce type de jeu.",
@@ -393,7 +411,8 @@ const I18N={fr:{
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"First player (places the two opening light tiles)",me:"Me",opp:"My opponent",rnd:"Random",
  tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",undo:"Undo move",
+ pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
+ haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo move",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",
  more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
@@ -416,13 +435,13 @@ const I18N={fr:{
  mv_pass:"pass",mv_bridge:"bridge",noMoves:"No moves yet.",
  lg_start:"Game started: {n} opens.",lg_takeL:"{n} takes Light.",lg_dark:"{n} plays Dark.",lg_pass:"pass",lg_forced:"no legal move, pass",
  lg_lastTurn:"Light passed: Dark plays one last turn.",lg_time:"{n} ran out of time.",lg_resign:"{n} resigns.",
- st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_conn:"Connecting to the table…",
+st_open:"Opening the table…",st_conn:"Connecting to the table…",
  st_canSit:"Take a free seat to play, or stay and watch.",st_waitOpp:"Waiting for your opponent: send them the game code.",
  st_waitClick:"Waiting for {n} to click Start the game.",st_waitBoth:"Waiting for both players to start.",st_waitPlayers:"Waiting for players.",
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
  r_tie:"A perfect tie, {w} to {l}{tb}.",r_wins:"{n} wins, {w} to {l}{tb}.",r_time:"{n} wins: {l} ran out of time.",r_resign:"{n} wins: {l} resigned.",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
- e_name:"Enter your nickname to create a game.",e_nameJoin:"Enter your nickname to play.",e_code:"Enter the 6-character code you received.",invited:"You are invited to play: enter your nickname, then click Play.",
+ e_name:"Enter your nickname to create a game.",e_nameJoin:"Enter your nickname to play.",e_code:"Enter the 6-character code you received.",
  t_refused:"Two players are already in this game. You can still watch it: click Watch.",badResume:"This resume code is not valid.",iam:"I am {n}",
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
  pe_unavail:"No open game with this code. Check the code, and that the host still has the page open.",pe_net:"The matchmaking service can't be reached. Check your internet connection; some networks block this kind of game.",
@@ -584,7 +603,7 @@ function applyDoc(d){
       else{
         const c=net.code; net.wantSeat=false; closeNet();
         showLanding('t_refused',true);
-        $('jCode').value=c||'';
+        $('jCode').value=c||''; $('joinCard').hidden=!c;
       }
     }
   }
@@ -1147,15 +1166,16 @@ $('b-undo').onclick=testUndo;
 $('testForm').addEventListener('submit',e=>{ e.preventDefault(); startTest(); });
 
 /* ---------- landing ---------- */
-let homeMsg={k:'st_home',err:false};
-function status(txt,err){ const s=$('status'); s.className='status'+(err?' err':''); s.textContent=txt; }
+let homeMsg={k:'',err:false};
+function status(txt,err){ const s=$('status'); s.className='status'+(err?' err':''); s.textContent=txt; if($('game').hidden) s.hidden=!txt; }   // home: only for a message
 function showGame(){ $('landing').hidden=true; $('status').hidden=true; $('game').hidden=false; renderAll(); }
 // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
 function liveGame(){const d=net.data;return !!net.gid&&!!d&&!!mySeat(d)&&d.phase!=='waiting'&&d.phase!=='over';}
 $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
 $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;closeNet();showLanding();};
 function showLanding(k,err){
-  $('game').hidden=true; $('landing').hidden=false; $('status').hidden=false; homeMsg={k:k||'st_home',err:!!err}; status(t(homeMsg.k),err); refreshHome();
+  $('game').hidden=true; $('landing').hidden=false; homeMsg={k:k||'',err:!!err}; status(k?t(k):'',err); refreshHome();
+  invited(false); homeStep(''); $('joinCard').hidden=!(err&&$('jCode').value);   // after a failed join, the code stays at hand
   try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
 }
 function setHash(h){ try{ history.replaceState(null,'','#'+h); }catch(e){} }
@@ -1202,16 +1222,28 @@ $('resumeBtn').onclick=()=>{ const l=lastGame(); if(!l) return refreshHome(); sh
 $('createForm').addEventListener('submit',e=>{ e.preventDefault(); createClick(); });
 $('joinForm').addEventListener('submit',e=>{ e.preventDefault(); joinClick(false); });
 $('jWatch').onclick=()=>joinClick(true);
+// Home: "Create a game", then the opponent (link, this device), then that choice's options
+let homeK='';
+function homeStep(k){ homeK=k; $('newBtn').hidden=k!==''; $('newHead').hidden=k===''; $('newPick').hidden=k!=='pick';
+  $('createForm').hidden=k!=='link'; $('testForm').hidden=k!=='local';
+  const h=$('newTitle'); h.dataset.i18n=k==='pick'||k===''?'pickOpp':'m_'+k; h.textContent=t(h.dataset.i18n); }
+$('newBtn').onclick=()=>homeStep('pick');
+$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
+document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
+$('joinOpen').onclick=()=>{ $('joinCard').hidden=false; $('jCode').focus(); };
+// An invitation link opens straight on the name to play under (the saved nickname by default)
+function invited(on){ $('landing').classList.toggle('invited',on); $('joinCard').hidden=!on; if(on){ const n=$('jName'); n.value=currentNick(); n.focus(); n.select(); } }
+$('invOther').onclick=()=>{ invited(false); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} $('jCode').value=''; homeMsg={k:'',err:false}; status(''); };
 applyStatic(); sndBind();
 (function boot(){
   const nm=currentNick(); $('cName').value=nm; $('jName').value=nm;
   if(location.hash==='#test') return startTest();
   const m=/^#(join|watch|host)-([a-z0-9]{6})$/i.exec(location.hash);
   if(!m) return showLanding();
-  $('status').hidden=false; status(t('st_home'));
+  status('');
   if(m[1].toLowerCase()==='host'){ const c=m[2].toUpperCase(), d=savedDoc(c); showGame(); if(d&&mySeat(d)) hostGame(c,d,false); else { net.wantSeat=true; joinGame(c); } return; }
   $('jCode').value=m[2].toUpperCase();
-  if(m[1].toLowerCase()==='join'&&!nm){ homeMsg={k:'invited',err:false}; status(t('invited')); $('jName').focus(); return; }
+  if(m[1].toLowerCase()==='join'){ invited(true); return; }
   joinClick(m[1].toLowerCase()==='watch');
 })();
 </script>

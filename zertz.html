@@ -68,9 +68,20 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.home{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:16px;width:100%}
-@media (min-width:760px){.home{max-width:880px;display:grid;grid-template-columns:1fr 1fr;align-items:start}
-  .home > #resumeCard,.home > #aiCard,.home > details{grid-column:1 / -1;max-width:420px;justify-self:center;width:100%}}
+.home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
+.home button.big{padding:14px;font-size:1.05rem}
+.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.85rem;cursor:pointer}
+.linkish{color:var(--ink)}
+.picks{display:flex;flex-direction:column;gap:8px}
+.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
+.pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
+.joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
+.home .err:empty{display:none}
+.inv-only{display:none}
+#setup.invited .home > :not(#joinCard){display:none}
+#setup.invited .home > #joinErr:not(:empty){display:block}
+#setup.invited .inv-only{display:block}#setup.invited .noinv{display:none}
 .home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
 .home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
 .home details{padding:10px 14px}
@@ -139,40 +150,48 @@ h1 a.gname{color:inherit;text-decoration:none}
 
 <section class="view" id="setup">
   <div class="home">
-    <div class="card primary-card">
-      <h2 data-i18n="create">Create a game</h2>
-      <form class="form" id="createForm">
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
+      <div class="picks" id="newPick" hidden>
+        <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
+        <button type="button" class="pick" data-pick="local"><b data-i18n="m_local">On this device</b><span data-i18n="m_localTxt">Both sides on the same screen, to try the game or play face to face.</span></button>
+      </div>
+      <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cSize"><span data-i18n="board">Board</span><select id="cSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
         <label for="cFirst"><span data-i18n="firstIs">First player</span><select id="cFirst"><option value="me" selected data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
-    </div>
-    <div class="card primary-card">
-      <h2 data-i18n="join">Join a game with a code</h2>
-      <form class="form" id="joinForm">
-        <label for="jCode"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
-        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
-        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
-        <p class="hint" id="joinErr"></p>
-      </form>
-      <p class="hint" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-    </div>
-    <div class="card" id="aiCard">
-      <h2 data-i18n="vsAI">Against the computer</h2>
-      <form class="form" id="aiForm">
+      <form class="form" id="aiForm" hidden>
         <label for="aSize"><span data-i18n="board">Board</span><select id="aSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
         <label for="aFirst"><span data-i18n="firstIs">First player</span><select id="aFirst"><option value="me" selected data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <button type="submit" data-i18n="play">Play</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
+      <form class="form" id="testForm" hidden>
+        <label for="tSize"><span data-i18n="board">Board</span><select id="tSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <div class="card primary-card" id="joinCard" hidden>
+      <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
+      <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
+      <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
+      <form class="form" id="joinForm">
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+      </form>
+      <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="inProgressTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
-      <div class="card"><h2 data-i18n="testT">Test game</h2><p class="hint" data-i18n="testTxt">The tester plays the moves of both sides on this device, to try the game out.</p>
-        <form class="form" id="testForm"><label for="tSize"><span data-i18n="board">Board</span><select id="tSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
-        <button type="submit" data-i18n="testBtn">Start a test game</button></form></div>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="ZERTZ1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
@@ -349,7 +368,8 @@ let level=(()=>{try{return JSON.parse(localStorage.getItem('zertz-level'));}catc
 const I18N={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",
+ pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
+ haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
  inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  pool:"Réserve commune",poolN:"{n} billes",poolEmpty:"vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",h_capt:"La prise est obligatoire à ce tour.",h_choose:"Choisissez la couleur à poser.",
@@ -363,7 +383,7 @@ const I18N={fr:{
  c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",
  iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
- st_home:"Créez une partie, ou saisissez le code reçu pour en rejoindre une.",st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
+ st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
  t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
  interrupted:"Partie interrompue : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
@@ -372,7 +392,7 @@ const I18N={fr:{
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance).",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour annuler.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
  leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
- vsAI:"Contre l'ordinateur",computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",
+ computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le coup",hint:"Suggestion",
  st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",hint_move:"Suggestion : {m}.",
  ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",
  ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",
@@ -388,7 +408,8 @@ const I18N={fr:{
 },en:{
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",
+ pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
+ haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
  inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  pool:"Shared pool",poolN:"{n} marbles",poolEmpty:"empty",h_empty:"Pool empty: players place their own captured marbles.",h_capt:"Capture is mandatory this turn.",h_choose:"Choose the colour to place.",
@@ -402,7 +423,7 @@ const I18N={fr:{
  c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",
  iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
- st_home:"Create a game, or enter the code you received to join one.",st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
+ st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
  t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
  interrupted:"Game interrupted: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
@@ -411,7 +432,7 @@ const I18N={fr:{
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted).",st_remove:"Remove a free ring (marked in red), or click the marble again to cancel.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
  leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, colours swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
- vsAI:"Against the computer",computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",
+ computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo move",hint:"Hint",
  st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",hint_move:"Hint: {m}.",
  ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",
  ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",
@@ -436,7 +457,7 @@ function applyStatic(){document.documentElement.lang=lang;
   const sel=document.getElementById('cTc'),cur=sel.value||(()=>{try{return JSON.parse(localStorage.getItem('zertz-tc'));}catch(e){return null;}})()||'20+10';
   sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');
   for(const id of ['aLevel','gLevel']){const s=document.getElementById(id);s.innerHTML=Object.keys(LEVELS).map(k=>`<option value="${k}">${t('lv_'+k)}</option>`).join('');s.value=level;}}
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status(t('st_home'));});
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status('');});
 applyStatic();
 const CN=k=>t('c'+k);
 const $=id=>document.getElementById(id);
@@ -487,7 +508,7 @@ let mySeat=-1;
 let ui={color:0,at:null,path:null,pending:null,hover:-1},sending=false;
 const H={};             // host-only state
 
-function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;
+function status(txt,cls){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
   const n=$('notice');if(n){n.className='notice on'+(cls?' '+cls:'');n.textContent=txt;}}
 function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
 function peerOpts(){return {debug:1};}
@@ -617,7 +638,7 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
 
 // ---------- game view ----------
 function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;}
-function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('status').hidden=false;$('joinErr').textContent=msg||'';status(msg||t('st_home'));}
+function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
 function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'';
   if(g.tc===undefined)g.tc=DEF_TC;
   view={...g,recvAt:Date.now()};
@@ -812,6 +833,18 @@ function testTurn(){const r=replay(view.size,view.moves,view.result);if(!r.over)
 function testPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);testTurn();}
 function testUndo(){if(!view.moves.length)return;view.moves=view.moves.slice(0,-1);view.result=null;testTurn();}
 $('testForm').addEventListener('submit',e=>{e.preventDefault();startTest(+$('tSize').value);});
+// Home: "Create a game", then the opponent (link, computer, this device), then that choice's options
+let homeK='';
+function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
+  $('createForm').hidden=k!=='link';$('aiForm').hidden=k!=='ai';$('testForm').hidden=k!=='local';
+  const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
+$('newBtn').onclick=()=>homeStep('pick');
+$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
+document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
+$('joinOpen').onclick=()=>{$('joinCard').hidden=false;$('jCode').focus();};
+// An invitation link opens straight on the name to play under (the saved nickname by default)
+function invited(on){$('setup').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
+$('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';};
 function aiPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);ui.at=null;ui.path=null;ui.pending=null;ui.hover=-1;hintMv=null;aiInfo=null;renderGame();aiStep();}
 function aiStep(){if(role!=='ai'||busy)return;const r=replay(view.size,view.moves,view.result);if(r.over||r.st[TURN]===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
@@ -871,12 +904,12 @@ function init(){setBoard(48);drawBoard(ENG[48].init(),[],false,null);
   const saved=LS.get('zertz-p2p-host',null),sg=LS.get('zertz-p2p-guest',null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
   else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('inProgressTxt').dataset.i18n='inProgressGuest';$('inProgressTxt').textContent=t('inProgressGuest');}
-  status(t('st_home'));
+  status('');
   if(location.hash==='#test'){startTest(48);return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
   $('jCode').value=m[2];
-  if(m[1]==='join'&&!nickGet()){$('joinErr').textContent=t('invited');$('jName').focus();return;}
+  if(m[1]==='join'){invited(true);return;}
   joinClick(m[1]==='watch');}
 
 // ---------- drawing ----------

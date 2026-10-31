@@ -116,7 +116,20 @@ details.rules ul{margin:8px 0 0;padding-left:18px;display:grid;gap:3px}
 .landing{max-width:900px;margin:0 auto;padding-block:20px 40px;display:grid;gap:24px}
 .landing h1{font-size:64px}
 .lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.cards{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.opts,.picks{display:flex;flex-direction:column;gap:14px}.picks{gap:8px}
+.btn.big{padding:14px;font-size:16px}
+.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.newHead .back,.linkish{font:inherit;background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:13.5px;cursor:pointer}
+.linkish{color:var(--ink);font-weight:600}
+.pick{flex-direction:column;align-items:flex-start;gap:2px}
+.pick b{font-size:15px}.pick span{font-size:12.5px;color:var(--muted);font-weight:400}
+.joinLine{margin:0;text-align:center;font-size:14px;color:var(--muted)}
+.cards>.err:empty{display:none}
+.inv-only{display:none}
+#home.invited .cards>:not(#joinCard){display:none}
+#home.invited .cards>#lErr:not(:empty){display:block}
+#home.invited .inv-only{display:block}#home.invited .noinv{display:none}
 .card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .card h2{margin:0;font-size:13px}
 .card h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -131,11 +144,10 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
 .err{color:var(--bad);font-weight:600;margin:0;min-height:1.2em}
 @media (max-width:860px){.app{grid-template-columns:minmax(0,1fr);gap:18px}.board-wrap{max-width:100%}h1{font-size:34px}.log ol{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .card.primary-card{border-color:var(--ink)}
-.cards>#resumeCard,.cards>#aiCard,.cards>details{grid-column:1/-1;max-width:440px;justify-self:center;width:100%}
 .cards>details.card{display:block}
 .cards>details.card>summary{cursor:pointer;font-weight:600}
 .cards>details.card>.inner{display:flex;flex-direction:column;gap:14px;margin-top:14px}
-@media (max-width:759px){.cards{grid-template-columns:minmax(0,1fr)}.landing h1{font-size:48px}}
+@media (max-width:759px){.landing h1{font-size:48px}}
 @media (max-width:480px){.log ol{grid-template-columns:repeat(3,minmax(0,1fr))}.level{margin-left:0}}
 /* ---- jeu : plateau, joueurs et commandes ; le reste replié ---- */
 .grow{flex:1}
@@ -217,38 +229,48 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
   <p class="lede" data-i18n="lede"></p>
  </header>
  <div class="cards">
-  <section class="card primary-card">
-   <h2 data-i18n="createT"></h2>
-   <label class="field" for="cName"><span data-i18n="nick"></span><input id="cName" maxlength="24" autocomplete="nickname"></label>
-   <label class="field" for="cFirst"><span data-i18n="firstPlayer"></span><select id="cFirst"><option value="me" data-i18n="me"></option><option value="opp" data-i18n="myOpponent"></option><option value="rnd" data-i18n="random"></option></select></label>
-   <label class="field" for="cTc"><span data-i18n="timeControl"></span><select id="cTc"></select></label>
-   <button class="btn primary" id="cGo" data-i18n="create"></button>
+  <section class="card primary-card" id="newCard">
+   <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp"></h2><button type="button" class="back" id="newBack" data-i18n="back"></button></div>
+   <button class="btn primary big" type="button" id="newBtn" data-i18n="createT"></button>
+   <div class="picks" id="newPick" hidden>
+    <button type="button" class="btn pick" data-pick="link"><b data-i18n="m_link"></b><span data-i18n="m_linkTxt"></span></button>
+    <button type="button" class="btn pick" data-pick="ai"><b data-i18n="m_ai"></b><span data-i18n="m_aiTxt"></span></button>
+    <button type="button" class="btn pick" data-pick="local"><b data-i18n="m_local"></b><span data-i18n="m_localTxt"></span></button>
+   </div>
+   <div class="opts" id="createOpts" hidden>
+    <label class="field" for="cName"><span data-i18n="nick"></span><input id="cName" maxlength="24" autocomplete="nickname"></label>
+    <label class="field" for="cFirst"><span data-i18n="firstPlayer"></span><select id="cFirst"><option value="me" data-i18n="me"></option><option value="opp" data-i18n="myOpponent"></option><option value="rnd" data-i18n="random"></option></select></label>
+    <label class="field" for="cTc"><span data-i18n="timeControl"></span><select id="cTc"></select></label>
+    <button class="btn primary" id="cGo" data-i18n="create"></button>
+   </div>
+   <div class="opts" id="aiOpts" hidden>
+    <label class="field" for="hLevel"><span data-i18n="level"></span><select id="hLevel"></select></label>
+    <label class="field" for="aiFirst"><span data-i18n="opener"></span><select id="aiFirst"><option value="me" data-i18n="me"></option><option value="ai" data-i18n="computerCap"></option></select></label>
+    <button class="btn primary" id="goAI" data-i18n="play"></button>
+   </div>
+   <div class="opts" id="testOpts" hidden>
+    <button class="btn primary" id="tGo" data-i18n="localBtn"></button>
+   </div>
   </section>
-  <section class="card primary-card">
-   <h2 data-i18n="joinT"></h2>
-   <label class="field" for="jCode"><span data-i18n="code"></span><input id="jCode" maxlength="12" autocomplete="off" placeholder="k7m2qp"></label>
+  <p class="err" id="lErr"></p>
+  <p class="joinLine noinv"><span data-i18n="haveCode"></span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen"></button></p>
+  <section class="card primary-card" id="joinCard" hidden>
+   <h2 class="noinv" data-i18n="joinT"></h2>
+   <h2 class="inv-only" data-i18n="invitedT"></h2>
+   <p class="note inv-only" data-i18n="invitedTxt"></p>
+   <label class="field noinv" for="jCode"><span data-i18n="code"></span><input id="jCode" maxlength="12" autocomplete="off" placeholder="k7m2qp"></label>
    <label class="field" for="jName"><span data-i18n="nick"></span><input id="jName" maxlength="24" autocomplete="nickname"></label>
    <div class="row"><button class="btn primary" id="jPlay" data-i18n="join"></button><button class="btn" id="jWatch" data-i18n="watch"></button></div>
-   <p class="note" data-i18n="linkHint"></p>
+   <p class="note noinv" data-i18n="linkHint"></p>
+   <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther"></button></p>
   </section>
   <section class="card" id="resumeCard" hidden>
    <h2 data-i18n="inProgress"></h2>
    <p class="note" id="resumeTxt"></p>
    <button class="btn primary" id="resumeBtn" data-i18n="resumeBtn"></button>
   </section>
-  <section class="card" id="aiCard">
-   <h2 data-i18n="vsAI"></h2>
-   <label class="field" for="hLevel"><span data-i18n="level"></span><select id="hLevel"></select></label>
-   <label class="field" for="aiFirst"><span data-i18n="opener"></span><select id="aiFirst"><option value="me" data-i18n="me"></option><option value="ai" data-i18n="computerCap"></option></select></label>
-   <button class="btn" id="goAI" data-i18n="play" style="justify-content:center"></button>
-  </section>
   <details class="card">
    <summary data-i18n="more"></summary>
-   <div class="inner">
-    <h3 data-i18n="testT"></h3>
-    <p class="note" data-i18n="testTxt"></p>
-    <button class="btn" id="tGo" data-i18n="testBtn" style="justify-content:center"></button>
-   </div>
    <div class="inner">
     <h3 data-i18n="resumeTitle"></h3>
     <label class="field" for="rIn"><span data-i18n="resumeCode"></span><textarea id="rIn" rows="3" spellcheck="false" autocomplete="off" placeholder="PENTE1.…"></textarea></label>
@@ -258,7 +280,6 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
    </div>
   </details>
  </div>
- <p class="err" id="lErr"></p>
  <details class="rules"><summary data-i18n="rules"></summary><ul class="rulesList"></ul></details>
 </main>
 
@@ -510,7 +531,7 @@ function rid(n){const a="abcdefghjkmnpqrstuvwxyz23456789";let s="";const r=new U
 const I18N={
 fr:{
  lede:"Le jeu de Pente sur un plateau 15×15 : ouverture Swap2, cinq paires capturées gagnent, les lignes de six et plus gagnent.",
- vsAI:"Contre l'ordinateur",vsHuman:"Contre un joueur",level:"Niveau",
+ vsHuman:"Contre un joueur",level:"Niveau",
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_confirme:"Confirmé",lv_fort:"Fort",lv_expert:"Expert",
  opener:"Qui pose l'ouverture Swap2 ?",me:"Moi",computerCap:"L'ordinateur",computer:"L'ordinateur",play:"Jouer",
  yourName:"Votre nom",timeControl:"Pendule",tc_none:"Sans pendule",firstPlayer:"Premier joueur (pose l'ouverture Swap2)",
@@ -570,10 +591,11 @@ fr:{
  resumeCodeT:"Code de reprise",resumeLast:"En dernier recours, si la connexion ne peut pas être rétablie : l'un ou l'autre joueur colle ce code dans « Reprendre une partie » sur la page d'accueil.",copyResume:"Copier le code de reprise",resumeCopied:"Code de reprise copié.",
  t_seatsTaken:"Les deux places sont prises : vous observez la partie.",t_noConn:"Pas de connexion avec l'hôte.",st_waitHost:"Coup envoyé, en attente de l'hôte…",st_rejected:"Coup refusé par l'hôte : la position a changé. Rejouez.",t_allPlaced:"Toutes les pierres sont posées : validez ou retirez-en une.",
  e_over:"La partie est terminée.",e_notStarted:"La partie n'a pas commencé.",e_notTurn:"Ce n'est pas votre tour.",e_badOpen:"Ouverture invalide.",e_badChoice:"Choix invalide.",e_badMove:"Coup invalide.",
- e_code:"Saisissez le code reçu (6 caractères).",e_nogame:"Cette partie n'existe pas sur cet appareil.",e_invitedName:"Vous êtes invité à jouer : indiquez votre nom puis cliquez sur Jouer.",
+ e_code:"Saisissez le code reçu (6 caractères).",e_nogame:"Cette partie n'existe pas sur cet appareil.",
  tag_swap:"Swap2",tag_pairs:"5 paires",tag_long:"6+ gagne",tag_noclock:"sans pendule",tag_ai:"niveau {lv}",
  createT:"Créer une partie",joinT:"Rejoindre une partie avec un code",nick:"Votre pseudo",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",more:"Autres options",
- testT:"Partie test",testTxt:"Le testeur joue les coups des deux camps, sur cet appareil, pour essayer le jeu.",testBtn:"Lancer une partie test",p1:"Joueur 1",p2:"Joueur 2",
+ pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Six niveaux, pour s'entraîner.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
+ haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",p1:"Joueur 1",p2:"Joueur 2",
  inProgress:"Partie en cours",inProgressHost:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",rulesBrief:"Règles en bref",
  n_waitHost:"En attente de votre adversaire : envoyez-lui le code de la partie.",n_wait:"En attente du second joueur.",n_bothHere:"Les deux joueurs sont là : cliquez sur « Commencer la partie ».",
  n_waitStart:"En attente que {name} clique sur « Commencer la partie ».",n_waitBoth:"En attente du départ des deux joueurs.",
@@ -584,7 +606,7 @@ fr:{
 },
 en:{
  lede:"Pente on a 15×15 board: Swap2 opening, five captured pairs win, lines of six or more win.",
- vsAI:"Against the computer",vsHuman:"Against a player",level:"Level",
+ vsHuman:"Against a player",level:"Level",
  lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_confirme:"Advanced",lv_fort:"Strong",lv_expert:"Expert",
  opener:"Who places the Swap2 opening?",me:"Me",computerCap:"The computer",computer:"The computer",play:"Play",
  yourName:"Your name",timeControl:"Clock",tc_none:"No clock",firstPlayer:"First player (places the Swap2 opening)",
@@ -644,10 +666,11 @@ en:{
  resumeCodeT:"Resume code",resumeLast:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",copyResume:"Copy the resume code",resumeCopied:"Resume code copied.",
  t_seatsTaken:"Both seats are taken: you are watching the game.",t_noConn:"No connection to the host.",st_waitHost:"Move sent, waiting for the host…",st_rejected:"Move rejected by the host: the position has changed. Play again.",t_allPlaced:"All stones are placed: confirm, or remove one.",
  e_over:"The game is over.",e_notStarted:"The game has not started.",e_notTurn:"It is not your turn.",e_badOpen:"Invalid opening.",e_badChoice:"Invalid choice.",e_badMove:"Invalid move.",
- e_code:"Enter the code you received (6 characters).",e_nogame:"This game does not exist on this device.",e_invitedName:"You are invited to play: enter your name, then click Play.",
+ e_code:"Enter the code you received (6 characters).",e_nogame:"This game does not exist on this device.",
  tag_swap:"Swap2",tag_pairs:"5 pairs",tag_long:"6+ wins",tag_noclock:"no clock",tag_ai:"level {lv}",
  createT:"Create a game",joinT:"Join a game with a code",nick:"Your nickname",linkHint:"With an invitation link, the page connects on its own.",more:"Other options",
- testT:"Test game",testTxt:"The tester plays the moves of both sides on this device, to try the game out.",testBtn:"Start a test game",p1:"Player 1",p2:"Player 2",
+ pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Six levels, to practise.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
+ haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",p1:"Player 1",p2:"Player 2",
  inProgress:"Game in progress",inProgressHost:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",rulesBrief:"Rules in brief",
  n_waitHost:"Waiting for your opponent: send them the game code.",n_wait:"Waiting for the second player.",n_bothHere:"Both players are here: click “Start the game”.",
  n_waitStart:"Waiting for {name} to click “Start the game”.",n_waitBoth:"Waiting for both players to start.",
@@ -914,7 +937,7 @@ function onGuestData(d){if(!d||typeof d!=='object')return;lastSeen=performance.n
   render();}
  else if(d.k==='err'){if(pendingAct){S=JSON.parse(pendingAct.host);pendingAct=null;rejectedAt=performance.now();savePending();}pending=false;toast(t(d.m));render();}
  else if(d.k==='note'){toast(t(d.m));}
- else if(d.k==='refused'){refused=true;const c=code;leaveCurrent();setHash('');$('game').hidden=true;$('home').hidden=false;$('jCode').value=c;$('lErr').textContent=t(d.m);render();}}
+ else if(d.k==='refused'){refused=true;const c=code;leaveCurrent();setHash('');$('game').hidden=true;$('home').hidden=false;$('jCode').value=c;$('joinCard').hidden=false;$('lErr').textContent=t(d.m);render();}}
 
 /* ================= actions du joueur ================= */
 function sendAct(a){resignArm=false;
@@ -1156,7 +1179,7 @@ function leaveCurrent(){timers.forEach(x=>{clearInterval(x);clearTimeout(x);});t
  for(const c of conns){try{c.close();}catch(_){}}conns.clear();oppConn=null;
  if(conn){try{conn.close();}catch(_){}}conn=null;if(peer){try{peer.destroy();}catch(_){}}peer=null;
  resetWorker();mode=null;S=null;mySeat=null;pending=false;pendingAct=null;lastSeen=0;rejectedAt=0;tent=[];localMode='';navAt=null;resignArm=false;clearHint();aiInfo=null;hist=[];}
-function goHome(){if(mode==='host'&&code)store.del('pente-host-'+code);if(mode==='guest')store.del('pente-guest');leaveCurrent();setHash('');homeArm=false;document.title='Pente';$('game').hidden=true;$('home').hidden=false;$('lErr').textContent='';refreshResume();render();}
+function goHome(){if(mode==='host'&&code)store.del('pente-host-'+code);if(mode==='guest')store.del('pente-guest');leaveCurrent();setHash('');homeArm=false;document.title='Pente';$('game').hidden=true;$('home').hidden=false;$('lErr').textContent='';invited(false);refreshResume();render();}
 // "Resume game" on the home page, for the host as for the guest
 function lastHosted(){let best=null;try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);if(!key||key.indexOf('pente-host-')!==0)continue;
   let g=null;try{g=JSON.parse(localStorage.getItem(key));}catch(e){}if(!g||g.result||!g.code)continue;if(!best||(g.savedAt||0)>(best.savedAt||0))best=g;}}catch(e){}return best;}
@@ -1175,6 +1198,18 @@ $('optConfirm').addEventListener('change',e=>{confirmOn=e.target.checked;store.s
 for(const sel of ['hLevel','gLevel'])$(sel).addEventListener('change',e=>{level=e.target.value;store.set('pente-level',level);$('hLevel').value=level;$('gLevel').value=level;render();});
 $('bUndo').onclick=undo;$('bHint').onclick=doHint;
 $('goAI').onclick=startAI;$('tGo').onclick=startTest;
+// Home: "Create a game", then the opponent (link, computer, this device), then that choice's options
+let homeK='';
+function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
+ $('createOpts').hidden=k!=='link';$('aiOpts').hidden=k!=='ai';$('testOpts').hidden=k!=='local';
+ const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
+$('newBtn').onclick=()=>homeStep('pick');
+$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
+document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
+$('joinOpen').onclick=()=>{$('joinCard').hidden=false;$('jCode').focus();};
+// An invitation link opens straight on the name to play under (the saved nickname by default)
+function invited(on){$('home').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
+$('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';$('lErr').textContent='';};
 const savedName=nickGet()||'';$('cName').value=savedName;$('jName').value=savedName;
 function cleanCode(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');}
 $('cGo').onclick=()=>{const nm=$('cName').value.trim().slice(0,24);if(nm)nickSet(nm);
@@ -1213,7 +1248,7 @@ refreshResume();
 (function boot(){if(location.hash==='#test'){startTest();return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
  if(m[1]==='host'){bootHost(m[2]);return;}
  $('jCode').value=m[2];
- if(m[1]==='join'&&!nickGet()){$('lErr').textContent=t('e_invitedName');$('jName').focus();return;}
+ if(m[1]==='join'){invited(true);return;}
  join(m[1]==='watch');})();
 })();
 </script>
