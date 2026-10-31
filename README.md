@@ -11,6 +11,7 @@ index.html            accueil (liste des jeux, « Comment ça marche ? »)
 <jeu>.html            une page par jeu : moteur de règles, plateau, ordinateur s'il y en a un, textes du jeu
 common/core.js        tout ce qui n'est pas propre à un jeu (voir plus bas)
 common/games.css      styles communs : accueil, écran de jeu fixe, barre d'actions, tiroir « ⋯ », cartes des joueurs
+common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS), interface documentée en tête ; utilisée par Ponte del Diavolo
 ```
 
 ### Ce que fait le socle commun (`common/core.js`)
