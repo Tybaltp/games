@@ -412,9 +412,11 @@ function drawBoard(real,last,a){
   const shapes=(p,inf,fill)=>{
     for(let i=0;i<NN;i++){if(real.cells[i]!==p)continue;const r=RW(i),cc=CL(i);
       out.push(`<rect x="${X(cc)+g-inf}" y="${Y(r)+g-inf}" width="${CS-2*g+2*inf}" height="${CS-2*g+2*inf}" rx="5" fill="${fill}"/>`);
-      if(cc<N-1&&real.cells[i+1]===p)out.push(`<rect x="${X(cc)+CS-g-1}" y="${Y(r)+g-inf}" width="${2*g+2}" height="${CS-2*g+2*inf}" fill="${fill}"/>`);
-      if(r<N-1&&real.cells[i+N]===p)out.push(`<rect x="${X(cc)+g-inf}" y="${Y(r)+CS-g-1}" width="${CS-2*g+2*inf}" height="${2*g+2}" fill="${fill}"/>`);
-      if(cc<N-1&&r<N-1&&real.cells[i+1]===p&&real.cells[i+N]===p&&real.cells[i+N+1]===p)out.push(`<rect x="${X(cc)+CS-g-1}" y="${Y(r)+CS-g-1}" width="${2*g+2}" height="${2*g+2}" fill="${fill}"/>`);}};
+      // joins reach past the rounded corners (rx 5) so neighbours read as one shape, without notches
+      const o=6;
+      if(cc<N-1&&real.cells[i+1]===p)out.push(`<rect x="${X(cc)+CS-g-o}" y="${Y(r)+g-inf}" width="${2*g+2*o}" height="${CS-2*g+2*inf}" fill="${fill}"/>`);
+      if(r<N-1&&real.cells[i+N]===p)out.push(`<rect x="${X(cc)+g-inf}" y="${Y(r)+CS-g-o}" width="${CS-2*g+2*inf}" height="${2*g+2*o}" fill="${fill}"/>`);
+      if(cc<N-1&&r<N-1&&real.cells[i+1]===p&&real.cells[i+N]===p&&real.cells[i+N+1]===p)out.push(`<rect x="${X(cc)+CS-g-o}" y="${Y(r)+CS-g-o}" width="${2*g+2*o}" height="${2*g+2*o}" fill="${fill}"/>`);}};
   shapes(1,1.5,'var(--stone-edge)');shapes(1,0,'var(--stone)');
   shapes(2,1.5,'var(--trach-edge)');shapes(2,0,'var(--trach)');
   for(const p of [1,2]){const {groups}=analyze(real,p);
