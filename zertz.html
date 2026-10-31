@@ -161,13 +161,13 @@ h1 a.gname{color:inherit;text-decoration:none}
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cSize"><span data-i18n="board">Board</span><select id="cSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
-        <label for="cFirst"><span data-i18n="firstIs">First player</span><select id="cFirst"><option value="me" selected data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">First player</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
         <label for="aSize"><span data-i18n="board">Board</span><select id="aSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
-        <label for="aFirst"><span data-i18n="firstIs">First player</span><select id="aFirst"><option value="me" selected data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aFirst"><span data-i18n="firstIs">First player</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
@@ -366,7 +366,7 @@ const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,tim
 const HINT=LEVELS.fort;
 let level=(()=>{try{return JSON.parse(localStorage.getItem('zertz-level'));}catch(e){return null;}})();if(!LEVELS[level])level='moyen';
 const I18N={fr:{
- sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
+ sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
  haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
@@ -406,7 +406,7 @@ const I18N={fr:{
  <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>`
 },en:{
- sub:"peer to peer",create:"Create a game",nick:"Your nickname",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
+ sub:"peer to peer",create:"Create a game",nick:"Your nickname",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
  haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
@@ -861,7 +861,8 @@ $('undoBtn').onclick=()=>{if(role==='test'){testUndo();return;}if(role!=='ai')re
 $('hintBtn').onclick=()=>{if(role!=='ai'||busy)return;const r=replay(view.size,view.moves,view.result);if(!isMyTurn(r))return;const n=view.moves.length;busy='hint';renderGame();
   ask(r.st,HINT,res=>{if(busy!=='hint')return;busy='';if(view.moves.length===n&&res&&res.move){hintMv=res.move;if(res.move.t===0)ui.color=res.move.c;}renderGame();});};
 for(const id of ['aLevel','gLevel'])$(id).addEventListener('change',e=>{level=e.target.value;LS.set('zertz-level',level);$('aLevel').value=level;$('gLevel').value=level;});
-$('aiForm').addEventListener('submit',e=>{e.preventDefault();startAI(+$('aSize').value,$('aFirst').value==='me'?0:1);});
+const aiFirst=()=>{const v=$('aFirst').value;return v==='me'?0:v==='ai'?1:Math.random()<.5?0:1;};   // seat of the player
+$('aiForm').addEventListener('submit',e=>{e.preventDefault();startAI(+$('aSize').value,aiFirst());});
 
 // ---------- invitation codes ----------
 function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
@@ -875,7 +876,7 @@ document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b
 $('hName').value=nickGet();$('jName').value=nickGet();
 $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
   const nm=$('hName').value.trim()||t('p1');nickSet(nm);
-  const first=$('cFirst').value==='me'?'host':'guest',size=+$('cSize').value;
+  const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(Math.random()<.5?'host':'guest'),size=+$('cSize').value;
   const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set('zertz-tc',tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
   const names=first==='host'?[nm,'']:['',nm];
   const th=[null,null];th[first==='host'?0:1]=hh(MYID);

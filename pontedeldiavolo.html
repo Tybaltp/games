@@ -175,7 +175,7 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
       </div>
       <form class="form" id="createForm" hidden>
         <label for="cName"><span data-i18n="nick">Your nickname</span><input id="cName" class="txt" maxlength="24" autocomplete="nickname"></label>
-        <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="me" selected data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option><option value="rnd" data-i18n="rnd">Random</option></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
@@ -355,7 +355,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}c
 const nickGet=()=>{let v=null;try{v=JSON.parse(localStorage.getItem('games-name'));}catch(e){}return v||store.get('pdd-nick','')||'';},nickSet=v=>{try{localStorage.setItem('games-name',JSON.stringify(v));}catch(e){}store.set('pdd-nick',v);};
 const findEdge=(a,b)=>BR[a].find(e=>e.b===b);
 const I18N={fr:{
- sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",me:"Moi",opp:"Mon adversaire",rnd:"Au hasard",
+ sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",me:"Moi",opp:"Mon adversaire",rnd:"Aléatoire",
  tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",

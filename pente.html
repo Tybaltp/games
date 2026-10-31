@@ -239,13 +239,13 @@ legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
    </div>
    <div class="opts" id="createOpts" hidden>
     <label class="field" for="cName"><span data-i18n="nick"></span><input id="cName" maxlength="24" autocomplete="nickname"></label>
-    <label class="field" for="cFirst"><span data-i18n="firstPlayer"></span><select id="cFirst"><option value="me" data-i18n="me"></option><option value="opp" data-i18n="myOpponent"></option><option value="rnd" data-i18n="random"></option></select></label>
+    <label class="field" for="cFirst"><span data-i18n="firstPlayer"></span><select id="cFirst"><option value="rnd" selected data-i18n="random"></option><option value="me" data-i18n="me"></option><option value="opp" data-i18n="myOpponent"></option></select></label>
     <label class="field" for="cTc"><span data-i18n="timeControl"></span><select id="cTc"></select></label>
     <button class="btn primary" id="cGo" data-i18n="create"></button>
    </div>
    <div class="opts" id="aiOpts" hidden>
     <label class="field" for="hLevel"><span data-i18n="level"></span><select id="hLevel"></select></label>
-    <label class="field" for="aiFirst"><span data-i18n="opener"></span><select id="aiFirst"><option value="me" data-i18n="me"></option><option value="ai" data-i18n="computerCap"></option></select></label>
+    <label class="field" for="aiFirst"><span data-i18n="opener"></span><select id="aiFirst"><option value="rnd" selected data-i18n="random"></option><option value="me" data-i18n="me"></option><option value="ai" data-i18n="computerCap"></option></select></label>
     <button class="btn primary" id="goAI" data-i18n="play"></button>
    </div>
    <div class="opts" id="testOpts" hidden>
@@ -535,7 +535,7 @@ fr:{
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_confirme:"Confirmé",lv_fort:"Fort",lv_expert:"Expert",
  opener:"Qui pose l'ouverture Swap2 ?",me:"Moi",computerCap:"L'ordinateur",computer:"L'ordinateur",play:"Jouer",
  yourName:"Votre nom",timeControl:"Pendule",tc_none:"Sans pendule",firstPlayer:"Premier joueur (pose l'ouverture Swap2)",
- myOpponent:"Mon adversaire",random:"Au hasard",create:"Créer la partie",joinTitle:"Rejoindre une partie",code:"Code de la partie",
+ myOpponent:"Mon adversaire",random:"Aléatoire",create:"Créer la partie",joinTitle:"Rejoindre une partie",code:"Code de la partie",
  join:"Jouer",watch:"Observer",rules:"Règles",
  r1:"Aligner 5 pierres ou plus gagne.",
  r2:"Encadrer exactement deux pierres adverses (X O O X) les capture. Se poser entre deux pierres adverses est sans risque.",
@@ -780,7 +780,7 @@ function ask(msg,cb){if(!worker)makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worke
 function stateKey(){return S?S.game+':'+S.phase+':'+S.log.length+':'+(S.result?1:0):'';}
 
 function startAI(){leaveCurrent();mode='ai';mySeat='H';code=null;
- const first=$('aiFirst').value==='me'?'H':'G';
+ const fv=$('aiFirst').value,first=fv==='me'?'H':fv==='ai'?'G':(Math.random()<.5?'H':'G');
  S=newState(null,first,{H:'',G:''},null,1,null);S.phase='open';S.turnStart=Date.now();
  hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';showGame();aiStep();}
 function aiStep(){if(mode!=='ai'||!S||S.result||busy)return;if(turnSeat(S)!=='G')return;
