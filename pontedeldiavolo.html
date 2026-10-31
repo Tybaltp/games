@@ -1,203 +1,111 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ponte del Diavolo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=1">
 <style>
-/* Layout: lagoon board on the left, game column on the right; stacked below 820px */
+/* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
-  --bg:#e6ebe8; --panel:#f5f6f2; --ink:#1d2729; --muted:#5a6869; --line:rgba(29,39,41,.14);
-  --water:#7da19e; --water-deep:#6a908d; --grid:rgba(255,255,255,.22); --coord:#4d6362;
-  --stone:#f1ebde; --stone-edge:#9c8f74;
-  --trach:#454b52; --trach-edge:#1c1f23;
-  --oak:#c89c5f; --oak-edge:#8a6532; --walnut:#5e3b22; --walnut-edge:#2e1c10;
-  --accent:#a8761c; --accent-soft:rgba(168,118,28,.18); --accent-ink:#fff; --hint:rgba(255,255,255,.55);
+  --bg:#e6ebe8;--panel:#f5f6f2;--ink:#1d2729;--muted:#5a6869;--line:rgba(29,39,41,.14);
+  --water:#7da19e;--water-deep:#6a908d;--grid:rgba(255,255,255,.22);--coord:#4d6362;
+  --stone:#f1ebde;--stone-edge:#9c8f74;
+  --trach:#454b52;--trach-edge:#1c1f23;
+  --oak:#c89c5f;--oak-edge:#8a6532;--walnut:#5e3b22;--walnut-edge:#2e1c10;
+  --accent:#a8761c;--accent-soft:rgba(168,118,28,.18);--accent-ink:#fff;--hint:rgba(255,255,255,.55);
   --danger:#b3412e;
-  --font-display:'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif;
-  --font-body:'Karla', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --s0:var(--stone);--s0e:var(--stone-edge);--s1:var(--trach);--s1e:var(--trach-edge);
+  --f-display:'Bodoni Moda',Didot,'Bodoni 72',Georgia,serif;
+  --f-body:'Karla',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --board-ar:1/1;                /* viewBox of the board (872×872; 820×820 without the coordinates) */
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#121819; --panel:#1a2224; --ink:#e3e8e6; --muted:#97a6a6; --line:rgba(227,232,230,.13);
-  --water:#2c4b4c; --water-deep:#243f40; --grid:rgba(255,255,255,.07); --coord:#8fa9a8;
-  --stone:#e4dccb; --stone-edge:#8f8370; --trach:#3b4148; --trach-edge:#0c0e10;
-  --oak:#c49553; --oak-edge:#7d5a2a; --walnut:#6b4428; --walnut-edge:#2a1a0e;
-  --accent:#e0a94a; --accent-soft:rgba(224,169,74,.2); --accent-ink:#2a1c00; --hint:rgba(255,255,255,.35);
-  --danger:#ef7b65; color-scheme:dark }}
+html.nocoords{--board-ar:1/1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121819;--panel:#1a2224;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
+  --water:#2c4b4c;--water-deep:#243f40;--grid:rgba(255,255,255,.07);--coord:#8fa9a8;
+  --stone:#e4dccb;--stone-edge:#8f8370;--trach:#3b4148;--trach-edge:#0c0e10;
+  --oak:#c49553;--oak-edge:#7d5a2a;--walnut:#6b4428;--walnut-edge:#2a1a0e;
+  --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;--hint:rgba(255,255,255,.35);
+  --danger:#ef7b65;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#121819; --panel:#1a2224; --ink:#e3e8e6; --muted:#97a6a6; --line:rgba(227,232,230,.13);
-  --water:#2c4b4c; --water-deep:#243f40; --grid:rgba(255,255,255,.07); --coord:#8fa9a8;
-  --stone:#e4dccb; --stone-edge:#8f8370; --trach:#3b4148; --trach-edge:#0c0e10;
-  --oak:#c49553; --oak-edge:#7d5a2a; --walnut:#6b4428; --walnut-edge:#2a1a0e;
-  --accent:#e0a94a; --accent-soft:rgba(224,169,74,.2); --accent-ink:#2a1c00; --hint:rgba(255,255,255,.35);
-  --danger:#ef7b65; color-scheme:dark }
-
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
-[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
-.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-h1{font-family:var(--font-display);font-weight:700;font-size:32px;line-height:1;margin:0;letter-spacing:-.01em}
+  --bg:#121819;--panel:#1a2224;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
+  --water:#2c4b4c;--water-deep:#243f40;--grid:rgba(255,255,255,.07);--coord:#8fa9a8;
+  --stone:#e4dccb;--stone-edge:#8f8370;--trach:#3b4148;--trach-edge:#0c0e10;
+  --oak:#c49553;--oak-edge:#7d5a2a;--walnut:#6b4428;--walnut-edge:#2a1a0e;
+  --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;--hint:rgba(255,255,255,.35);
+  --danger:#ef7b65;color-scheme:dark}
+h1{font-weight:700;letter-spacing:-.01em}
 h1 em{font-style:italic;font-weight:500;color:var(--accent)}
-h1 a.crumb{font-family:var(--font-body);color:var(--muted);font-weight:600;font-size:15px;letter-spacing:0;text-decoration:none}
-h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
-h1 .sep{font-family:var(--font-body);margin:0 .3em;font-weight:400;color:var(--muted);font-size:15px}
-h1 a.gname{color:inherit;text-decoration:none}
-h1 .sub{font-family:var(--font-body);color:var(--muted);font-weight:500;font-size:15px;margin-left:.5em;letter-spacing:0}
-@media (max-width:520px){header{flex-wrap:nowrap;align-items:center}h1{font-size:25px;white-space:nowrap}h1 .sub{display:none}}
-select,button{font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;cursor:pointer}
-button:hover:not(:disabled),select:hover{border-color:var(--muted)}
-button:disabled{opacity:.45;cursor:default}
-button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.seg button{border:0;border-radius:0;padding:6px 10px;font-size:13px;font-weight:700;color:var(--muted)}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.status{font-weight:500;padding:10px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);min-height:calc(2.9em + 22px);display:flex;align-items:center}
-.status.err{border-color:var(--danger);color:var(--danger)}
-.view{display:flex;flex-direction:column;gap:16px}
-/* home */
-.home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
-.home button.big{padding:14px;font-size:17px}
-.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:13.5px;cursor:pointer}
-.linkish{color:var(--ink)}
-.picks{display:flex;flex-direction:column;gap:8px}
-.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
-.pick b{font-size:15.5px;color:var(--ink)}.pick span{font-size:13px;color:var(--muted);font-weight:400}
-.joinLine{margin:0;text-align:center;font-size:14px;color:var(--muted)}
-.inv-only{display:none}
-#landing.invited .home > :not(#joinCard){display:none}
-#landing.invited .inv-only{display:block}#landing.invited .noinv{display:none}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.card h2{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
-.home .card.primary-card{border-color:var(--ink);padding:16px 18px;gap:10px}
-.home .card.primary-card h2{color:var(--ink);font-size:17px;text-transform:none;letter-spacing:0;font-family:var(--font-display)}
-.home details .card{margin-top:10px}
-.form{display:flex;flex-direction:column;gap:10px}
-.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
-.txt{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
-#jCode{text-transform:uppercase;letter-spacing:.1em}#jCode::placeholder{text-transform:none;letter-spacing:normal}
-.hint{font-size:13px;color:var(--muted);margin:0}
-.lerr{color:var(--danger);font-weight:700}
-details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
-details summary{cursor:pointer;font-weight:700}
-details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
-details li{margin:.25em 0}
-/* game */
-main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
-@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
-.boardwrap{display:flex;flex-direction:column;gap:8px;min-width:0}
-svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0 auto;touch-action:manipulation;user-select:none}
-.nav{display:flex;align-items:center;justify-content:center;gap:6px}
-.nav button{padding:6px 10px;min-width:40px;font-size:15px;line-height:1}
-.nav span{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);min-width:13ch;text-align:center}
-.log div.nav{cursor:pointer}.log div.nav:hover b{text-decoration:underline}
-.log div.cur{background:var(--accent-soft);border-radius:3px}.log div.cur b{color:var(--accent)}
-.notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:8px;font-weight:500;font-size:14px;text-align:center;border:1px solid transparent}
-.notice.on{background:var(--panel);border-color:var(--line)}
-.notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
-.notice.err{border-color:var(--danger);color:var(--danger)}
-.players{display:flex;justify-content:space-between;gap:8px}
-.players.side-only{flex-direction:column}
-.player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}
-.player.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
-.player .who{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px;color:var(--muted);min-width:0}
-.player .who span:last-child{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.player.active .who{color:var(--ink)}
-.player .free{font-weight:400;font-style:italic}
-.player .clock{font-family:var(--font-display);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
-.player .clock.low{color:var(--danger)}
+/* the lagoon is its own frame (drawn in the SVG), on every layout */
+.board,html.ingame:not(.wide) .board{background:none;border:0;padding:0;--bp:0px;border-radius:10px}
+@media (orientation:landscape) and (max-height:500px){.board{--bp:0px;padding:0}}
+/* players' cards: the colour played (square swatch, dashed while unknown), points, islands, bridges */
+.dot.pl,.dot.pd,.dot.pq{width:14px;height:14px;border-radius:3px}
+.dot.pl{background:var(--stone);border:1.5px solid var(--stone-edge)}
+.dot.pd{background:var(--trach);border:1.5px solid var(--trach-edge)}
+.dot.pq{background:none;border:1.5px dashed var(--muted)}
+.player .clock{font-family:var(--f-display);font-weight:700}
 .player .tally{display:flex;gap:8px;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
 .player .tally span::before{content:attr(title) ' ';color:var(--muted);font-weight:400}
-.player .tally span{font-weight:700}
-.player .ready{color:var(--accent);font-weight:700;font-size:12px}
-.player button{margin-top:4px;align-self:flex-start;padding:6px 10px}
-.sw{width:14px;height:14px;border-radius:3px;flex:none}
-.sw.l{background:var(--stone);border:1.5px solid var(--stone-edge)}
-.sw.d{background:var(--trach);border:1.5px solid var(--trach-edge)}
-.sw.q{border:1.5px dashed var(--muted)}
-.side{display:flex;flex-direction:column;gap:12px;min-width:0}
-.side details{padding:8px 12px}.side details summary{font-size:14px;color:var(--muted)}
-.side details > *:not(summary){margin-top:8px}
-.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
-.side details.prominent summary{color:var(--ink);font-size:16px}
-.side details.prominent .link input{font-size:15px;padding:9px 10px}
-.link{display:flex;gap:6px}
-.link input{flex:1;min-width:0;font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
-#codeC{font-family:var(--font-display);font-weight:700;letter-spacing:.12em}
-.confirm{display:flex;gap:8px;flex-wrap:wrap}
-.confirm button{flex:1}
-.toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
-.toggle input{width:18px;height:18px;accent-color:var(--accent)}
-.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
-.log{display:flex;flex-direction:column;gap:2px;font-size:13px;max-height:220px;overflow:auto;font-variant-numeric:tabular-nums}
-.log div{display:grid;grid-template-columns:2.2em 1fr;gap:6px;color:var(--muted)}
-.log div b{font-weight:500;color:var(--ink);overflow-wrap:anywhere}
+.player .tally span{font-weight:700;color:var(--ink)}
+ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);font-size:.74rem;line-height:1.3}
 .scale{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;font-variant-numeric:tabular-nums}
 .scale span{border:1px solid var(--line);border-radius:3px;padding:1px 6px;font-size:12px}
 .hit{fill:transparent;cursor:default}
 .hit.legal,.hit.own{cursor:pointer}
 .tgt{fill:none;stroke:var(--accent);stroke-width:4}
-@media (prefers-reduced-motion:no-preference){ .tgt{animation:pulse 1.1s ease-in-out infinite} }
-@keyframes pulse{50%{stroke-opacity:.35}}
-.modal{position:fixed;inset:0;z-index:20;background:rgba(10,16,17,.55);display:flex;align-items:center;justify-content:center;padding:16px}
-.dlg{background:var(--panel);color:var(--ink);border-radius:8px;padding:22px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
-.dlg h2{font-family:var(--font-display);font-size:24px;margin:0;line-height:1.1}
-.dlg p{margin:0;color:var(--muted);font-size:14px}
+@media (prefers-reduced-motion:no-preference){.tgt{animation:pddpulse 1.1s ease-in-out infinite}}
+@keyframes pddpulse{50%{stroke-opacity:.35}}
 </style>
-</head>
-<body>
-<div class="modal" id="namedlg" hidden>
-  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="namettl">
-    <h2 id="namettl" data-i18n="nameTtl">What's your name?</h2>
-    <p data-i18n="nameTxt">This is the name the other players will see at the table.</p>
-    <input type="text" class="txt" id="nick" maxlength="24" autocomplete="nickname">
-    <p class="hint lerr" id="nameerr" hidden data-i18n="nameErr">Please enter a name.</p>
-    <div class="confirm"><button class="primary" id="b-nameok" data-i18n="cont">Continue</button><button id="b-namecancel" data-i18n="cancel">Cancel</button></div>
-  </div>
-</div>
+</head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html">Ponte <em>del</em> Diavolo</a><span class="sub" data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
-<div class="status" id="status" aria-live="polite"></div>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html"><b id="ttl" style="font-weight:inherit">Ponte <em>del</em> Diavolo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
 
-<section class="view" id="landing">
+<section class="view" id="setup">
   <div class="home">
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
-        <button type="button" class="pick" data-pick="local"><b data-i18n="m_local">On this device</b><span data-i18n="m_localTxt">Both sides on the same screen, to try the game or play face to face.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
-        <label for="cName"><span data-i18n="nick">Your nickname</span><input id="cName" class="txt" maxlength="24" autocomplete="nickname"></label>
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
-      <form class="form" id="testForm" hidden><button class="primary" type="submit" data-i18n="localBtn">Start the game</button></form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
     </div>
+    <p class="hint err" id="joinErr"></p>
     <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
     <div class="card primary-card" id="joinCard" hidden>
       <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
       <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
       <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
       <form class="form" id="joinForm">
-        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="7" placeholder="K7M2QX" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
-        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" class="txt" maxlength="24" autocomplete="nickname"></label>
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
       </form>
       <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
       <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
     </div>
-    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="inProgressTxt"></p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
     <details><summary data-i18n="more">Other options</summary>
-      <div class="card"><h2 data-i18n="resume">Resume a game</h2><div class="form"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PONTE1.…" style="resize:vertical;font-size:12.5px"></textarea></label>
-        <div class="confirm" id="rSeats"></div><button type="button" id="rGo" data-i18n="load">Load</button></div>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PONTE2.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
         <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
     </details>
   </div>
@@ -206,13 +114,15 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
 <section class="view" id="game" hidden>
 <main>
   <div class="boardwrap">
-    <div class="players" id="playersTop"></div>
-    <svg id="board" viewBox="0 0 872 872" role="img" aria-label="Ponte del Diavolo board"></svg>
-    <div class="nav" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
-    <div class="notice" id="notice" aria-live="polite"></div>
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="board" viewBox="0 0 872 872" role="img" aria-label="Ponte del Diavolo board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="notice" id="notice"></div>
   </div>
-  <aside class="side">
+  <aside class="side" id="side" tabindex="-1">
     <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
       <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
@@ -221,40 +131,44 @@ svg#board{width:100%;max-width:min(100%,80vh);height:auto;display:block;margin:0
         <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
       </div>
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
-      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in the host's browser. If the host drops out, the other player takes over after a few seconds; the clocks stop while it is the absent player's turn.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
     </details>
-    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm" id="startBtns"></div></div>
-    <div class="card" id="pieCard" hidden><h2 data-i18n="pieTtl">Your choice</h2><div class="confirm"><button type="button" class="primary" id="b-light" data-i18n="takeLight">Take Light</button><button type="button" id="b-dark" data-i18n="playDark">Play Dark</button></div></div>
-    <div class="card" id="moveCard" hidden><h2 data-i18n="yourMove">Your move</h2><p class="hint" id="pendingTxt"></p><div class="confirm" id="moveBtns"></div></div>
-    <div class="card" id="endCard" hidden><p class="hint" id="endTxt" hidden></p><div class="confirm" id="endBtns"></div></div>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
     <div class="card" id="myCard" hidden>
-      <div class="confirm" id="passBox" hidden><button type="button" id="b-pass" data-i18n="pass">Pass</button></div>
       <label class="toggle" for="hints"><input type="checkbox" id="hints" checked> <span data-i18n="hints">Show playable squares</span></label>
-      <label class="toggle" for="confirm"><input type="checkbox" id="confirm"> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
-      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
-      <div class="confirm" id="undoBox" hidden><button type="button" id="b-undo" data-i18n="undo">Undo previous move</button></div>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
     </div>
     <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
-      <p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div>
+      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
-    <details><summary data-i18n="moves">Moves</summary><div class="log" id="log"></div></details>
+    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
+    </div>
   </aside>
 </main>
+<div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="common/core.js?v=1"></script>
 <script>
+// ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
 /*ENGINE*/
 const N=10, NN=100;
-const R=i=>(i/N)|0, C=i=>i%N;
+const RW=i=>(i/N)|0, CL=i=>i%N;
 const inb=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
 const NB4=[],NB8=[],BR=[];
 for(let i=0;i<NN;i++){
-  const r=R(i),c=C(i); NB4.push([]);NB8.push([]);BR.push([]);
+  const r=RW(i),c=CL(i); NB4.push([]);NB8.push([]);BR.push([]);
   for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) if(inb(r+dr,c+dc)) NB4[i].push((r+dr)*N+c+dc);
   for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++) if((dr||dc)&&inb(r+dr,c+dc)) NB8[i].push((r+dr)*N+c+dc);
   const offs=[[0,2],[2,0],[2,2],[2,-2],[1,2],[2,1],[1,-2],[2,-1]];
@@ -295,7 +209,7 @@ function canPlace(st,p,c){
 }
 function orient(ax,ay,bx,by,cx,cy){const v=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax);return v>0?1:v<0?-1:0;}
 function crosses(a,b,c,d){
-  const ax=R(a),ay=C(a),bx=R(b),by=C(b),cx=R(c),cy=C(c),dx=R(d),dy=C(d);
+  const ax=RW(a),ay=CL(a),bx=RW(b),by=CL(b),cx=RW(c),cy=CL(c),dx=RW(d),dy=CL(d);
   return orient(ax,ay,bx,by,cx,cy)*orient(ax,ay,bx,by,dx,dy)<0 && orient(cx,cy,dx,dy,ax,ay)*orient(cx,cy,dx,dy,bx,by)<0;
 }
 function canBridge(st,p,a,e){
@@ -342,59 +256,16 @@ function hasMove(st,p){
 }
 function canPass(st,p){for(let c=0;c<NN;c++) if(canPlace(st,p,c)) return false; return true;}
 /*END*/
-/* ---------- shared ---------- */
-const LET='ABCDEFGHIJ';
-const lab=i=>LET[C(i)]+(N-R(i));
-const CS=80, M=36, TIME=20*60*1000, INC=10*1000, DEF_TC={base:TIME,inc:INC};
-const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
-const svg=document.getElementById('board');
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
-// Nickname shared by all the games (games-name, JSON), with Ponte's former key as fallback
-const nickGet=()=>{let v=null;try{v=JSON.parse(localStorage.getItem('games-name'));}catch(e){}return v||store.get('pdd-nick','')||'';},nickSet=v=>{try{localStorage.setItem('games-name',JSON.stringify(v));}catch(e){}store.set('pdd-nick',v);};
-const findEdge=(a,b)=>BR[a].find(e=>e.b===b);
-const I18N={fr:{
- sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",me:"Moi",opp:"Mon adversaire",rnd:"Aléatoire",
- tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
- join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
- haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",undo:"Annuler le coup précédent",
- inProgress:"Partie en cours",inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",
- more:"Autres options",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
- resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
- nameTtl:"Quel est votre pseudo ?",nameTxt:"C'est le nom que les autres joueurs verront à la table.",nameErr:"Saisissez un pseudo.",cont:"Continuer",cancel:"Annuler",
- invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
- fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
- hostNote:"La partie tourne dans le navigateur de l'hôte. S'il décroche, l'autre joueur prend le relais après quelques secondes ; les pendules s'arrêtent quand c'est au tour du joueur absent.",
- connected:"{n} connecté(s)",
- start:"Départ",startBtn:"Démarrer la partie",waitingOpp:"En attente de l'adversaire…",leaveSeat:"Quitter la place",ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",
- pieTtl:"Votre choix",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",
- rematch:"Rejouer",offerSent:"Proposition envoyée.",offerFrom:"{n} propose une nouvelle partie, couleurs inversées.",offerRefused:"{n} a refusé.",accept:"Accepter",decline:"Refuser",withdraw:"Annuler",
- lg_rematch:"Nouvelle partie : {n} ouvre.",
- leaveQ:"Une partie est en cours. La quitter ?",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}",home:"Accueil",
- yourMove:"Votre coup",confirmMv:"Confirmer le coup",endTurn:"Finir le tour",newGame:"Nouvelle partie",
- pass:"Passer",passEnd:"Passer et finir",hints:"Montrer les cases jouables",needConfirm:"Confirmer chaque coup avant l'envoi",sounds:"Sons",
- resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
- rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",moves:"Coups",
- you:"vous",freeSeat:"Place libre",sit:"S'asseoir ici",readyB:"Prêt",notReady:"Pas encore prêt",pA:"Joueur A",pB:"Joueur B",
- pts:"pts",isl:"îles",brg:"ponts",light:"Clair",dark:"Foncé",
- mv_pass:"passe",mv_bridge:"pont",noMoves:"Aucun coup pour l'instant.",
- lg_start:"Partie lancée : {n} ouvre.",lg_takeL:"{n} prend les clairs.",lg_dark:"{n} joue les foncés.",lg_pass:"passe",lg_forced:"aucun coup possible, passe",
- lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",lg_time:"{n} a dépassé son temps.",lg_resign:"{n} abandonne.",
-st_open:"Ouverture de la table…",st_conn:"Connexion à la table…",
- st_canSit:"Prenez une place libre pour jouer, ou restez pour observer.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
- st_waitClick:"En attente que {n} clique Démarrer la partie.",st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitPlayers:"En attente des joueurs.",
- st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
- st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
- r_tie:"Égalité parfaite, {w} à {l}{tb}.",r_wins:"{n} gagne, {w} à {l}{tb}.",r_time:"{n} gagne : {l} a dépassé son temps.",r_resign:"{n} gagne : {l} a abandonné.",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
- e_name:"Saisissez votre pseudo pour créer une partie.",e_nameJoin:"Saisissez votre pseudo pour jouer.",e_code:"Saisissez le code de 6 caractères reçu.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",badResume:"Ce code de reprise n'est pas valide.",iam:"Je suis {n}",
- noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
- pe_unavail:"Aucune partie ouverte avec ce code. Vérifiez le code, et que l'hôte a toujours la page ouverte.",pe_net:"Le service de mise en relation est injoignable. Vérifiez votre connexion ; certains réseaux bloquent ce type de jeu.",
- pe_browser:"Ce navigateur ne peut pas jouer en ligne. Essayez un Chrome, Firefox ou Safari récent.",pe_other:"La connexion a échoué. Réessayez.",
- e_hostGone:"Hôte injoignable : vous hébergez maintenant la partie, sous le même code.",e_lost:"Connexion à l'hôte perdue : reconnexion…",
- e_notConn:"Pas de connexion à l'hôte.",st_waitHost:"Coup envoyé, en attente de l'hôte…",e_rejected:"Coup refusé par l'hôte : la position avait changé. Rejouez.",e_notSent:"Le coup n'a pas été envoyé. Réessayez.",e_noResp:"L'hôte ne répond pas. Le coup n'est peut-être pas arrivé.",
+// Ponte strings, merged over the shared ones (core.js)
+const PD_I18N={fr:{
+ title:"Ponte del Diavolo",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
+ m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
+ hints:"Montrer les cases jouables",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",
+ pts:"pts",isl:"îles",brg:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
+ lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
+ st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
+ pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",
+ w_score:"{w} à {l}{tb}",w_tie:"égalité parfaite, {w} à {l}{tb}",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
  rules:`<summary>Règles en bref</summary><ul>
  <li>À votre tour, posez <b>deux tuiles</b> de votre couleur, ou <b>un pont</b>.</li>
  <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
@@ -408,46 +279,14 @@ st_open:"Ouverture de la table…",st_conn:"Connexion à la table…",
  <li>Départage : le plus d'îles, puis le plus de ponts.</li>
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête quand c'est au tour d'un joueur déconnecté.</li></ul>`
 },en:{
- sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"First player (places the two opening light tiles)",me:"Me",opp:"My opponent",rnd:"Random",
- tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
- join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
- haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",undo:"Undo previous move",
- inProgress:"Game in progress",inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",
- more:"Other options",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
- resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
- nameTtl:"What's your name?",nameTxt:"This is the name the other players will see at the table.",nameErr:"Please enter a name.",cont:"Continue",cancel:"Cancel",
- invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
- fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
- hostNote:"The game runs in the host's browser. If the host drops out, the other player takes over after a few seconds; the clocks stop while it is the absent player's turn.",
- connected:"{n} connected",
- start:"Start",startBtn:"Start the game",waitingOpp:"Waiting for your opponent…",leaveSeat:"Leave seat",ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",
- pieTtl:"Your choice",takeLight:"Take Light",playDark:"Play Dark",
- rematch:"Rematch",offerSent:"Offer sent.",offerFrom:"{n} offers a new game, colours swapped.",offerRefused:"{n} declined.",accept:"Accept",decline:"Decline",withdraw:"Withdraw",
- lg_rematch:"New game: {n} opens.",
- leaveQ:"A game is in progress. Leave it?",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}",home:"Home",
- yourMove:"Your move",confirmMv:"Confirm move",endTurn:"End turn",newGame:"New game",
- pass:"Pass",passEnd:"Pass and end",hints:"Show playable squares",needConfirm:"Confirm each move before sending",sounds:"Sounds",
- resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
- rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",moves:"Moves",
- you:"you",freeSeat:"Free seat",sit:"Sit here",readyB:"Ready",notReady:"Not ready yet",pA:"Player A",pB:"Player B",
- pts:"pts",isl:"isl.",brg:"br.",light:"Light",dark:"Dark",
- mv_pass:"pass",mv_bridge:"bridge",noMoves:"No moves yet.",
- lg_start:"Game started: {n} opens.",lg_takeL:"{n} takes Light.",lg_dark:"{n} plays Dark.",lg_pass:"pass",lg_forced:"no legal move, pass",
- lg_lastTurn:"Light passed: Dark plays one last turn.",lg_time:"{n} ran out of time.",lg_resign:"{n} resigns.",
-st_open:"Opening the table…",st_conn:"Connecting to the table…",
- st_canSit:"Take a free seat to play, or stay and watch.",st_waitOpp:"Waiting for your opponent: send them the game code.",
- st_waitClick:"Waiting for {n} to click Start the game.",st_waitBoth:"Waiting for both players to start.",st_waitPlayers:"Waiting for players.",
- st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
- st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
- r_tie:"A perfect tie, {w} to {l}{tb}.",r_wins:"{n} wins, {w} to {l}{tb}.",r_time:"{n} wins: {l} ran out of time.",r_resign:"{n} wins: {l} resigned.",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
- e_name:"Enter your nickname to create a game.",e_nameJoin:"Enter your nickname to play.",e_code:"Enter the 6-character code you received.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",badResume:"This resume code is not valid.",iam:"I am {n}",
- noPeer:"The connection library could not load: check your Internet access, then reload the page.",
- pe_unavail:"No open game with this code. Check the code, and that the host still has the page open.",pe_net:"The matchmaking service can't be reached. Check your internet connection; some networks block this kind of game.",
- pe_browser:"This browser can't play online. Try a recent Chrome, Firefox or Safari.",pe_other:"The connection failed. Try again.",
- e_hostGone:"The host is unreachable: you now host the game, under the same code.",e_lost:"Lost the connection to the host: reconnecting…",
- e_notConn:"Not connected to the host.",st_waitHost:"Move sent, waiting for the host…",e_rejected:"Move refused by the host: the position had changed. Play again.",e_notSent:"The move wasn't sent. Try again.",e_noResp:"The host isn't responding. The move may not have arrived.",
+ title:"Ponte del Diavolo",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
+ m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
+ hints:"Show playable squares",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",
+ pts:"pts",isl:"isl.",brg:"br.",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
+ lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",
+ st_opening:"Place the two opening light tiles.",st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
+ pend_pass:"Pass: Dark will play one last turn.",pend_passEnd:"Pass and end the game.",
+ w_score:"{w} to {l}{tb}",w_tie:"a perfect tie, {w} to {l}{tb}",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
  rules:`<summary>Rules in brief</summary><ul>
  <li>On your turn, place <b>two tiles</b> of your colour, or <b>one bridge</b>.</li>
  <li><b>Island</b>: exactly 4 orthogonally connected tiles. Fewer than 4: a <b>sandbank</b>. Never more than 4.</li>
@@ -461,804 +300,211 @@ st_open:"Opening the table…",st_conn:"Connecting to the table…",
  <li>Tie-break: most islands, then most bridges.</li>
  <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while it is a disconnected player's turn.</li></ul>`
 }};
-let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
-if(!I18N[lang])lang='en';
-function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
-const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
-function applyStatic(){document.documentElement.lang=lang;
-  document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
-  document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
-  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
-  $('rules').innerHTML=t('rules');$('nick').placeholder=t('nick');
-  const sel=$('cTc'),cur=sel.value||store.get('pdd-tc','20+10');
-  sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}
-  applyStatic();refreshHome();if(!$('game').hidden)renderAll();else status(homeMsg.k?t(homeMsg.k):'',homeMsg.err);});
-const NAME=p=>t(p===1?'light':'dark');
-function moveText(m){ if(!m) return t('mv_pass'); if(m.type==='t') return m.cells.map(lab).join(' + '); return t('mv_bridge')+' '+lab(m.a)+'–'+lab(m.e?m.e.b:m.b); }
-function fmt(ms){ ms=Math.max(0,ms); const s=Math.ceil(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
-const tcOf=d=>d&&d.tc!==undefined?d.tc:DEF_TC;   // games saved before the clock could be chosen: 20+10
-let confirmMoves = store.get('pdd-confirm','0')==='1';
 
-/* ---------- move input ---------- */
-// hover: square under the pointer, or first tap on the square that completes the move (shown in transparency)
-const newInput=()=>({draft:[],bridge:null,sel:null,awaiting:null,oneLeft:false,hover:-1});
-let inp=newInput();
+// ---------- game state and moves ----------
+// The position is the engine's state plus phase ('opening': seat 0 places two light tiles · 'pie': seat 1 takes Light
+// or plays Dark · 'play' · 'over'), colorA (colour of seat 0 once chosen: 1 light, 2 dark), toMove (colour to move),
+// finalTurn (Light has passed: Dark's last turn) and turn (seat to move, for the shared code).
+// Move codes: 't12.34' two tiles (placement order; 't12' a single tile when no square is left for a second one),
+// 'b12-34' a bridge (smaller square first), 'x' pass, 'L' / 'D' the colour choice (seat 1 takes Light / plays Dark).
+// A player with no move at all passes automatically: replay applies it after the move before (noted in its log entry).
+const LET='ABCDEFGHIJ',lab=i=>LET[CL(i)]+(N-RW(i));
+const CS=80,M=36,SZ=CS*N+2*M;
+const findEdge=(a,b)=>BR[a].find(e=>e.b===b);
+const NAME=c=>t(c===1?'light':'dark');
+const colorOf=(s,seat)=>s.colorA?(seat===0?s.colorA:3-s.colorA):(seat===0?1:null);
+const seatOf=(s,c)=>c===s.colorA?0:1;
+const mover=s=>s.phase==='opening'?1:s.toMove;
+function initSt(){return Object.assign(newState(),{phase:'opening',colorA:null,toMove:1,finalTurn:false,turn:0});}
+function cloneSt(s){return Object.assign(cloneState(s),{phase:s.phase,colorA:s.colorA,toMove:s.toMove,finalTurn:s.finalTurn,turn:s.turn});}
+function parse(code){code=String(code);if(code==='x'||code==='L'||code==='D')return {t:code};
+  let m=/^t(\d{1,2})(?:\.(\d{1,2}))?$/.exec(code);if(m){const cells=[+m[1]];if(m[2]!==undefined)cells.push(+m[2]);return cells[0]===cells[1]?null:{t:'t',cells};}
+  m=/^b(\d{1,2})-(\d{1,2})$/.exec(code);return m?{t:'b',a:Math.min(+m[1],+m[2]),b:Math.max(+m[1],+m[2])}:null;}
+const enc=m=>m.t==='t'?'t'+m.cells.join('.'):m.t==='b'?'b'+Math.min(m.a,m.b)+'-'+Math.max(m.a,m.b):m.t;
+const describe=m=>m.t==='t'?m.cells.map(lab).join(' + '):m.t==='b'?t('mv_bridge')+' '+lab(m.a)+'–'+lab(m.b):t(m.t==='x'?'lg_pass':m.t==='L'?'lg_takeL':'lg_dark');
+// the side to move passes (n is changed): the game ends after Dark's pass or in the final turn; Light's pass gives Dark a last turn
+function passOn(n){if(n.toMove===2||n.finalTurn){n.phase='over';return false;}n.finalTurn=true;n.toMove=2;n.turn=seatOf(n,2);return true;}
+// one move from s: {st,e} (e: the log entry {p seat,col,m,notes}) or null if it is not legal
+function step(s,m){if(!m)return null;const n=cloneSt(s),e={p:s.turn,col:null,m,notes:[]};
+  if(s.phase==='opening'){if(m.t!=='t'||m.cells.length!==2)return null;
+    for(const c of m.cells){if(!canPlace(n,1,c))return null;n.cells[c]=1;}
+    n.phase='pie';n.turn=1;e.col=1;return {st:n,e};}
+  if(s.phase==='pie'){if(m.t!=='L'&&m.t!=='D')return null;n.colorA=m.t==='L'?2:1;n.phase='play';n.toMove=2;n.turn=seatOf(n,2);return {st:n,e};}
+  if(s.phase!=='play')return null;
+  const p=s.toMove;e.col=p;
+  if(m.t==='t'){for(const c of m.cells){if(c>=NN||!canPlace(n,p,c))return null;n.cells[c]=p;}if(m.cells.length===1&&legalCells(n,p).length)return null;}
+  else if(m.t==='b'){const ed=findEdge(m.a,m.b);if(!ed||!canBridge(n,p,m.a,ed))return null;applyBridge(n,m.a,ed,p);}
+  else if(m.t==='x'){if(!canPass(s,p))return null;if(passOn(n))e.notes.push({k:'lg_lastTurn'});}
+  else return null;
+  if(m.t!=='x'){if(s.finalTurn)n.phase='over';else{n.toMove=3-p;n.turn=seatOf(n,n.toMove);}}
+  while(n.phase==='play'&&!hasMove(n,n.toMove)){e.notes.push({k:'lg_forced',c:n.toMove});if(passOn(n))e.notes.push({k:'lg_lastTurn'});}
+  return {st:n,e};}
+function tieNote(a,b){return a.pts===b.pts?(a.islands!==b.islands?t('tb_isl'):a.bridges!==b.bridges?t('tb_brg'):''):'';}
+function compare(a,b){return a.pts!==b.pts?Math.sign(a.pts-b.pts):a.islands!==b.islands?Math.sign(a.islands-b.islands):Math.sign(a.bridges-b.bridges);}
+// end of the game on the board: points, then islands, then bridges (the text is the reason the shared code shows)
+function result(st){const a=score(st,colorOf(st,0)),b=score(st,colorOf(st,1)),c=compare(a,b),tb=tieNote(a,b),[w,l]=c>=0?[a,b]:[b,a];
+  return c===0?{w:-1,why:t('w_tie',{w:w.pts,l:l.pts,tb})}:{w:c>0?0:1,why:t('w_score',{w:w.pts,l:l.pts,tb})};}
+function pdReplay(rules,moves){let st=initSt();const log=[];let last=null,over=null;
+  for(const code of moves){const r=step(st,parse(code));if(!r){over={w:-1,why:'w_bad'};break;}
+    st=r.st;log.push(r.e);last={p:r.e.col,m:r.e.m.t==='t'||r.e.m.t==='b'?r.e.m:null};
+    if(st.phase==='over'){over=result(st);break;}}
+  return {st,log,last,over};}
 
-function ctx(){
-  const d=net.data; if(!d||!net.st) return {st:net.st||newState(),active:false};
-  const seat=mySeat(d);
-  if(!seat||net.sending||d.paused||d.turnSeat!==seat) return {st:net.st,active:false};
-  if(d.phase==='opening') return {st:net.st,color:1,opening:true,active:true};
-  if(d.phase==='play') return {st:net.st,color:colorOfSeat(d,seat),opening:false,active:true};
-  return {st:net.st,active:false};
-}
-// a move is being prepared: a tile placed, an own tile selected for a bridge, or a move waiting for confirmation
-const preparing=()=>!!(inp.awaiting||inp.draft.length||inp.bridge||inp.sel!==null);
-function onCell(i){
-  const c=ctx(); if(!c.active) return;
-  const st=c.st, p=c.color;
+// ---------- move preparation ----------
+// ui: draft (tiles placed, in order), sel (own tile chosen for a bridge), bridge ({a,b} awaiting confirmation), pending
+// (the complete move: the shared Reset + Confirm), hover (square under the mouse: the tile or bridge shown in
+// transparency), oneLeft (a single tile placed and no square left for a second one)
+const newUi=()=>({draft:[],sel:null,bridge:null,pending:null,hover:-1,oneLeft:false});
+const preparing=()=>!!(ui.draft.length||ui.sel!==null||ui.bridge||ui.pending);
+function cancelPrep(){if(!preparing())return;resetUi();renderGame();}
+// the position with the move being prepared on it
+function work(st){const w=cloneSt(st),p=mover(st);for(const x of ui.draft)w.cells[x]=p;
+  if(ui.bridge){const e=findEdge(ui.bridge.a,ui.bridge.b);if(e&&canBridge(w,p,ui.bridge.a,e))applyBridge(w,ui.bridge.a,e,p);}return w;}
+const liveSt=()=>{if(!view||navAt!==null)return null;const r=replay(view,view.moves,view.result);
+  return isMyTurn(r)&&(r.st.phase==='opening'||r.st.phase==='play')?r:null;};
+function onCell(i){const r=liveSt();if(!r)return;const st=r.st,op=st.phase==='opening',p=mover(st);
   // a tile of the move being prepared (even at the confirm step): remove it and the tile placed after it
-  if(inp.draft.includes(i)){ const k=inp.draft.indexOf(i); for(const x of inp.draft.slice(k)) st.cells[x]=0;
-    inp.draft=inp.draft.slice(0,k); inp.awaiting=null; inp.hover=-1;
-    inp.oneLeft=!c.opening&&inp.draft.length===1&&legalCells(st,p).length===0; return renderAll(); }
-  // an end of the bridge waiting for confirmation: back to its first tile just selected
-  if(inp.bridge&&(i===inp.bridge.a||i===inp.bridge.e.b)){ const a=inp.bridge.a; undoBridge(st);
-    inp.bridge=null; inp.awaiting=null; inp.sel=a; inp.hover=-1; return renderAll(); }
-  if(inp.awaiting) return;
-  if(st.cells[i]===p && !c.opening){
-    if(inp.draft.length) return;
-    if(inp.sel!==null && inp.sel!==i){
-      const e=findEdge(inp.sel,i);
-      if(e&&canBridge(st,p,inp.sel,e)){ if(inp.hover!==i){ inp.hover=i; return renderAll(); }
-        const m={type:'b',a:inp.sel,e}; applyBridge(st,inp.sel,e,p); inp.bridge=m; inp.sel=null; inp.hover=-1; return finishInput(m); }
-    }
-    if(st.bridged[i]){ inp.sel=null; inp.hover=-1; return renderAll(); }
-    inp.sel = inp.sel===i?null:i; inp.hover=-1; return renderAll();
-  }
-  if(inp.sel!==null){ inp.sel=null; inp.hover=-1; return renderAll(); }
-  if(!canPlace(st,p,i)) return;
-  if(inp.draft.length===1&&inp.hover!==i){ inp.hover=i; return renderAll(); }
-  st.cells[i]=p; inp.draft.push(i); inp.hover=-1;
-  if(inp.draft.length===2) return finishInput({type:'t',cells:inp.draft.slice()});
-  inp.oneLeft = !c.opening && legalCells(st,p).length===0;
-  renderAll();
-}
-// With a mouse, hovering shows the tile or bridge, so one click plays it; on a touch screen the first tap shows it.
-function hoverCell(i){
-  const c=ctx(); if(!c.active||inp.awaiting){ if(inp.hover>=0){inp.hover=-1;renderBoard();} return; }
-  const st=c.st, p=c.color; let ok=false;
-  if(i>=0){ if(inp.sel!==null){ const e=findEdge(inp.sel,i); ok=!!(e&&canBridge(st,p,inp.sel,e)); }
-    else ok=inp.draft.length<2&&!inp.draft.includes(i)&&canPlace(st,p,i); }
-  const nv=ok?i:-1; if(nv!==inp.hover){ inp.hover=nv; renderBoard(); }
-}
-function finishInput(m){ if(confirmMoves){ inp.awaiting=m; return renderAll(); } commitInput(m); }
-function commitInput(m){ netCommit(m); }
-function cancelInput(){
-  const st=ctx().st;
-  if(st){ for(const x of inp.draft) st.cells[x]=0; if(inp.bridge) undoBridge(st); }
-  inp=newInput(); renderAll();
-}
+  if(ui.draft.includes(i)){ui.draft=ui.draft.slice(0,ui.draft.indexOf(i));ui.pending=null;ui.hover=-1;
+    ui.oneLeft=!op&&ui.draft.length===1&&legalCells(work(st),p).length===0;renderGame();return;}
+  // an end of the bridge awaiting confirmation: back to its first tile just selected
+  if(ui.bridge&&(i===ui.bridge.a||i===ui.bridge.b)){ui.sel=ui.bridge.a;ui.bridge=null;ui.pending=null;ui.hover=-1;renderGame();return;}
+  if(ui.pending)return;
+  const w=work(st);
+  if(w.cells[i]===p&&!op){
+    if(ui.draft.length)return;
+    if(ui.sel!==null&&ui.sel!==i){const e=findEdge(ui.sel,i);
+      if(e&&canBridge(w,p,ui.sel,e)){ui.bridge={a:ui.sel,b:i};ui.pending={t:'b',a:ui.sel,b:i};ui.sel=null;ui.hover=-1;renderGame();return;}}
+    ui.sel=w.bridged[i]||ui.sel===i?null:i;ui.hover=-1;renderGame();return;}
+  if(ui.sel!==null){ui.sel=null;ui.hover=-1;renderGame();return;}
+  if(!canPlace(w,p,i))return;
+  ui.draft.push(i);ui.hover=-1;
+  if(ui.draft.length===2){ui.pending={t:'t',cells:ui.draft.slice()};ui.oneLeft=false;}
+  else ui.oneLeft=!op&&legalCells(work(st),p).length===0;
+  renderGame();}
+// With a mouse, hovering shows the tile or the bridge a click would add
+function hoverCell(i){const r=liveSt();
+  if(!r||ui.pending){if(ui.hover>=0){ui.hover=-1;if(view)renderGame();}return;}
+  const w=work(r.st),p=mover(r.st);let ok=false;
+  if(i>=0){if(ui.sel!==null){const e=findEdge(ui.sel,i);ok=!!(e&&canBridge(w,p,ui.sel,e));}
+    else ok=ui.draft.length<2&&!ui.draft.includes(i)&&canPlace(w,p,i);}
+  const nv=ok?i:-1;if(nv!==ui.hover){ui.hover=nv;pdBoard({r,d:r,mine:true});}}
+function endOne(){if(ui.draft.length===1&&ui.oneLeft){ui.pending={t:'t',cells:ui.draft.slice()};renderGame();}}
+function doPass(){const r=liveSt();if(r&&r.st.phase==='play'&&canPass(r.st,r.st.toMove)&&!preparing()){ui.pending={t:'x'};renderGame();}}
+const svg=$('board');
+svg.addEventListener('click',ev=>{const g=ev.target.closest('[data-i]');if(g)onCell(+g.dataset.i);});
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  svg.addEventListener('pointermove',ev=>{if(ev.pointerType==='touch')return;const g=ev.target.closest('[data-i]');hoverCell(g?+g.dataset.i:-1);});
+  svg.addEventListener('pointerleave',()=>hoverCell(-1));}
 
-/* ---------- online mode (peer-to-peer) ---------- */
-function pickTabId(key,seed){const R=()=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(16)))s+=a[b%a.length];return s;};
-  try{const L=localStorage,S1=sessionStorage;let id=S1.getItem(key+'-tab');
-    if(!id){let ids=[];try{ids=JSON.parse(L.getItem(key+'-tabs')||'[]')||[];}catch(e){}if(!ids.length&&seed)ids=[seed];const now=Date.now();
-      id=ids.slice().reverse().find(x=>now-(+L.getItem(key+'-alive-'+x)||0)>5000);
-      if(!id){id=R();ids.push(id);}L.setItem(key+'-tabs',JSON.stringify(ids.filter((x,k)=>ids.indexOf(x)===k).slice(-10)));S1.setItem(key+'-tab',id);}
-    const beat=()=>{try{L.setItem(key+'-alive-'+id,String(Date.now()));}catch(e){}};beat();setInterval(beat,1500);return id;}catch(e){return R();}}
-
-const PREFIX='ponte-diavolo-v1-';
-const net={ready:true,peer:null,host:false,conns:new Set(),conn:null,code:null,doc:null,
-  gid:null,data:null,gone:false,st:null,obsKey:null,obsAt:0,sending:false,err:'',flagKey:null,autoKey:null,sendTimer:null,
-  myId:pickTabId('pdd',null)};
-const ACTIVE=['opening','pie','play'];
-const mySeat=d=>net.test?(d?net.testSeat:null):d?.seats?.A?.id===net.myId?'A':d?.seats?.B?.id===net.myId?'B':null;
-const colorOfSeat=(d,seat)=>{const ca=d.colorA||1; return seat==='A'?ca:3-ca;};
-const seatOfColor=(d,color)=>{const ca=d.colorA||1; return ca===color?'A':'B';};
-const nickOf=(d,seat)=>d?.seats?.[seat]?.nick||t(seat==='A'?'pA':'pB');
-const jclone=o=>o===undefined?null:JSON.parse(JSON.stringify(o));
-const merge=(a,b)=>{for(const k in b){ const v=b[k]; if(v&&typeof v==='object'&&!Array.isArray(v)&&a[k]&&typeof a[k]==='object'&&!Array.isArray(a[k])) merge(a[k],v); else a[k]=jclone(v);} return a;};
-function stFromDoc(d){
-  const st=newState(); (d.cells||[]).forEach((v,i)=>st.cells[i]=v);
-  for(const B of d.bridges||[]){ const e=findEdge(B.a,B.b); if(e) applyBridge(st,B.a,e,B.o); }
-  return st;
-}
-function clockNow(d,seat){
-  const P=net.pending; if(P&&!net.host&&d===net.data){ if(P.clk&&P.clk.seat===seat) return P.clk.base-(Date.now()-P.clk.t0); return d.clock?.[seat]??tcOf(d)?.base??0; }
-  let tm=d.clock?.[seat]??tcOf(d)?.base??0;
-  if(tcOf(d)&&d.turnSeat===seat && ACTIVE.includes(d.phase) && !d.paused) tm-=Date.now()-net.obsAt;
-  return tm;
-}
-function newCode(){ const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<6;i++) s+=A[Math.floor(Math.random()*A.length)]; return s; }
-function peerError(e){
-  const ty=e?.type;
-  if(ty==='peer-unavailable') return 'pe_unavail';
-  if(ty==='network'||ty==='server-error'||ty==='socket-error'||ty==='socket-closed') return 'pe_net';
-  if(ty==='browser-incompatible') return 'pe_browser';
-  return 'pe_other';
-}
-function closeNet(){
-  try{ net.peer?.destroy(); }catch(e){}
-  clearTimeout(net.retryT); clearTimeout(net.connT); clearTimeout(net.sendTimer);
-  Object.assign(net,{peer:null,host:false,conns:new Set(),conn:null,code:null,doc:null,gid:null,data:null,st:null,gone:false,sending:false,obsKey:null,lastMove:null,sitSent:false,
-    lostSince:0,lost:false,retryT:null,connT:null,err:'',pending:null,hostDoc:null,seenAt:0,test:false,testSeat:null,testHist:[]});
-  inp=newInput(); navAt=null;
-}
-const saveKey=c=>'pdd-game-'+String(c).toUpperCase();
-function savedDoc(c){ try{ const d=JSON.parse(store.get(saveKey(c),'null')); return d&&d.code===String(c).toUpperCase()?d:null; }catch(e){ return null; } }
-// The game is stored at each state by both players: a refresh shows the position at once, and the guest can take over hosting.
-function persist(){
-  const d=net.data; if(!d||!d.code||!mySeat(d)) return;
-  const c=jclone(d); if(ACTIVE.includes(c.phase)&&c.turnSeat&&!c.paused&&tcOf(c)) c.clock[c.turnSeat]=Math.max(0,clockNow(d,c.turnSeat));
-  c.paused=ACTIVE.includes(c.phase); store.set(saveKey(d.code),JSON.stringify(c));
-  store.set('pdd-last',JSON.stringify({code:d.code,host:!!net.host}));
-}
-function applyDoc(d){
-  if((d.game||1)!==net.gameNo){ net.gameNo=d.game||1; navAt=null; }
-  net.data=d; net.gone=false; net.sending=false; clearTimeout(net.sendTimer);
-  const key=d.moveNo+'/'+(d.epoch||0);
-  if(key!==net.obsKey){ if(d.moveNo!==net.lastMove){ net.lastMove=d.moveNo; inp=newInput(); } net.obsKey=key; net.obsAt=Date.now(); }
-  net.st=stFromDoc(d);
-  const seat=mySeat(d), col=seat&&d.colorA?colorOfSeat(d,seat):1;
-  for(const x of inp.draft) if(!net.st.cells[x]) net.st.cells[x]=col;
-  if(inp.bridge && canBridge(net.st,col,inp.bridge.a,inp.bridge.e)) applyBridge(net.st,inp.bridge.a,inp.bridge.e,col); else inp.bridge=null;
-  persist(); renderAll(); autoActions();
-  if(net.wantSeat&&!net.host){
-    if(seat) net.wantSeat=false;
-    else{
-      const free=['A','B'].find(k=>(!d.seats?.[k]&&d.phase==='waiting')||(d.seats?.[k]&&!d.seats[k].id))||null;
-      if(free){ if(!net.sitSent){ net.sitSent=true; takeSeat(free); } }
-      else{
-        const c=net.code; net.wantSeat=false; closeNet();
-        showLanding('t_refused',true);
-        $('jCode').value=c||''; $('joinCard').hidden=!c;
-      }
-    }
-  }
-}
-function presentIds(){ const s=new Set([net.myId]); for(const c of net.conns) if(c.open&&c.pid) s.add(c.pid); return s; }
-// The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
-function syncPause(){
-  const d=net.doc; if(!ACTIVE.includes(d.phase)){ d.paused=false; return; }
-  const ids=presentIds(), absent=k=>!(d.seats[k]&&d.seats[k].id&&ids.has(d.seats[k].id));
-  const want=!!d.turnSeat&&absent(d.turnSeat);
-  if(want&&!d.paused){
-    const p=net.data, same=p&&p.moveNo===d.moveNo&&(p.epoch||0)===(d.epoch||0)&&!p.paused;
-    if(d.turnSeat&&same&&tcOf(d)) d.clock[d.turnSeat]=Math.max(0,d.clock[d.turnSeat]-(Date.now()-net.obsAt));
-    d.paused=true; d.epoch=(d.epoch||0)+1;
-  } else if(!want&&d.paused){ d.paused=false; d.epoch=(d.epoch||0)+1; }
-  if(!['A','B'].some(absent)&&net.err==='e_hostGone') net.err='';
-}
-function broadcast(){
-  if(net.host&&net.doc) syncPause();
-  const d=jclone(net.doc); d.watchers=net.conns.size+1;
-  for(const c of net.conns) if(c.open) try{ c.send({t:'state',d}); }catch(e){}
-  applyDoc(d);
-}
-function hostApply(msg,fromId,conn){
-  if(!net.host||!net.doc) return;
-  if(msg.t==='patch'){ const pt=msg.p||{}, d=net.doc;
-    if(typeof pt.moveNo==='number'&&pt.moveNo!==(d.moveNo|0)+1){
-      const dup=pt.moveNo===(d.moveNo|0)&&JSON.stringify(pt.log)===JSON.stringify(d.log);
-      if(!dup&&conn) try{ conn.send({t:'nack'}); }catch(e){}
-      broadcast(); return; }
-    merge(net.doc,pt); broadcast(); }
-  else if(msg.t==='sit'){
-    const d=net.doc, seat=msg.seat, nick=String(msg.nick||'').slice(0,24), so=d.seats[seat], reserved=!!(so&&!so.id);
-    if((d.phase!=='waiting'&&!reserved)||(so&&so.id)||mySeatFor(d,msg.id)||!nick) { broadcast(); return; }
-    d.seats[seat]={id:msg.id,nick,ready:reserved?!!so.ready:false};
-    broadcast();
-  }
-  else if(msg.t==='ready'){
-    const d=net.doc; if(d.phase!=='waiting'||!d.seats.A||!d.seats.B){ broadcast(); return; }
-    const seat=d.seats.A.id===msg.id?'A':d.seats.B.id===msg.id?'B':null; if(!seat){ broadcast(); return; }
-    d.seats[seat].ready=true;
-    if(d.seats.A.ready&&d.seats.B.ready){ const b=tcOf(d)?tcOf(d).base:0; Object.assign(d,{phase:'opening',turnSeat:'A',moveNo:d.moveNo+1,clock:{A:b,B:b}});
-      d.log.push({p:0,k:'lg_start',v:{n:nickOf(d,'A')}}); }
-    broadcast();
-  }
-  // new game after the end: one player offers, the other accepts or declines; the offerer may withdraw
-  else if(msg.t==='offer'||msg.t==='offerCancel'||msg.t==='offerReply'){
-    const d=net.doc, seat=d.seats.A?.id===msg.id?'A':d.seats.B?.id===msg.id?'B':null;
-    if(!seat||d.phase!=='over'){ broadcast(); return; }
-    if(msg.t==='offer'){ d.offer={by:seat}; d.refusal=null; }
-    else if(msg.t==='offerCancel'){ if(d.offer&&d.offer.by===seat) d.offer=null; }
-    else if(d.offer&&d.offer.by!==seat){
-      if(msg.accept) rematch(d); else { d.offer=null; d.refusal={by:seat}; }
-    }
-    broadcast();
-  }
-  else if(msg.t==='leave'){
-    const d=net.doc; if(d.phase!=='waiting'){ broadcast(); return; }
-    for(const k of ['A','B']) if(d.seats[k]?.id===msg.id) d.seats[k]=null;
-    for(const k of ['A','B']) if(d.seats[k]) d.seats[k].ready=false;
-    broadcast();
-  }
-}
-// Same code, same connections, same two players. Roles swap: the player who placed the opening light tiles
-// now picks the colour, and the other one opens. Same time control, clocks back to the start; the game starts at once.
-function rematch(d){
-  const b=tcOf(d)?tcOf(d).base:0, A=d.seats.B, B=d.seats.A;
-  Object.assign(d,{seats:{A:{...A,ready:true},B:{...B,ready:true}},colorA:null,phase:'opening',cells:Array(NN).fill(0),bridges:[],toMove:1,finalTurn:false,
-    last:null,clock:{A:b,B:b},turnSeat:'A',moveNo:d.moveNo+1,epoch:(d.epoch||0)+1,paused:false,result:null,offer:null,refusal:null,game:(d.game||1)+1});
-  d.log=[{p:0,k:'lg_rematch',v:{n:A.nick}}];
-}
-function hostMsg(conn,m){
-  if(m.t==='hello'){
-    conn.pid=String(m.id||'');
-    const o=m.d, d=net.doc;
-    if(o&&typeof o==='object'&&o.code===d.code&&mySeatFor(d,conn.pid)&&(o.moveNo|0)>(d.moveNo|0)&&Array.isArray(o.cells)){
-      const w=d.watchers; net.doc=o; o.seats=d.seats; o.paused=true; o.epoch=Math.max(o.epoch||0,d.epoch||0)+1; o.watchers=w;
-    }
-    broadcast(); return;
-  }
-  hostApply(m,null,conn);
-}
-const mySeatFor=(d,id)=>!!id&&(d.seats?.A?.id===id||d.seats?.B?.id===id);
-function freshDoc(code,seat,tc){
-  const b=tc?tc.base:0;
-  const doc={code,name:'',seats:{A:null,B:null},colorA:null,phase:'waiting',cells:Array(NN).fill(0),bridges:[],toMove:1,finalTurn:false,
-    log:[],last:null,tc,clock:{A:b,B:b},turnSeat:null,moveNo:0,epoch:0,paused:false,result:null};
-  doc.seats[seat]={id:net.myId,nick:currentNick(),ready:false}; return doc;
-}
-function hostGame(code,doc,fresh){
-  if(typeof Peer==='undefined') return showLanding('noPeer',true);
-  closeNet(); net.sending=true; net.gid=code; net.code=code; renderAll();
-  const peer=new Peer(PREFIX+code); net.peer=peer;
-  peer.on('open',()=>{ if(net.peer!==peer) return;
-    net.host=true; net.sending=false; net.doc=doc; doc.code=code; setHash('host-'+code.toLowerCase()); broadcast(); });
-  peer.on('connection',conn=>{
-    if(net.peer!==peer){ try{ conn.close(); }catch(e){} return; }
-    conn.on('open',()=>{ conn.seen=Date.now(); net.conns.add(conn); if(net.doc) broadcast(); });
-    conn.on('data',m=>{ conn.seen=Date.now(); if(m&&typeof m==='object'&&net.peer===peer) hostMsg(conn,m); });
-    conn.on('close',()=>{ net.conns.delete(conn); if(net.doc&&net.peer===peer) broadcast(); });
-    conn.on('error',()=>{ net.conns.delete(conn); });
-  });
-  peer.on('disconnected',()=>{ try{ if(!peer.destroyed) peer.reconnect(); }catch(e){} });
-  peer.on('error',e=>{ if(net.peer!==peer) return;
-    if(e?.type==='unavailable-id'){
-      if(fresh){ if(doc.moveNo===0&&doc.phase==='waiting'){ const c=newCode(); return hostGame(c,doc,true); } }
-      net.wantSeat=false; return joinGame(code,doc);
-    }
-    if(!net.host){ closeNet(); showLanding(peerError(e),true); }
-  });
-}
-function createGame(mySeatPick,tc){ hostGame(newCode(),freshDoc('',mySeatPick,tc),true); }
-function becomeHost(){
-  const code=net.code, d=net.data; if(!code||!d) return;
-  if(net.pending){ store.del(pendKey(code)); net.pending=null; }   // the pending move is already in net.data: the new host applies it
-  if(ACTIVE.includes(d.phase)&&!d.paused){ if(d.turnSeat&&tcOf(d)) d.clock[d.turnSeat]=Math.max(0,clockNow(d,d.turnSeat)); d.paused=true; }
-  hostGame(code,d,false); net.err='e_hostGone';
-}
-function joinGame(code,keep){
-  if(typeof Peer==='undefined') return showLanding('noPeer',true);
-  const want=net.wantSeat; keep=keep||savedDoc(code); closeNet(); net.wantSeat=want; net.gid=code; net.code=code;
-  if(keep&&mySeat(keep)){ net.data=keep; net.st=stFromDoc(keep); net.lost=true; net.lostSince=Date.now(); net.obsAt=Date.now(); setHash('join-'+code.toLowerCase());
-    const sp=loadPending(code); if(sp&&sp.msg&&sp.base){ net.pending={msg:sp.msg,base:sp.base,at:Date.now(),last:0,clk:null}; net.hostDoc=sp.base; net.sending=true; } }
-  renderAll();
-  const peer=new Peer(); net.peer=peer;
-  peer.on('open',()=>{ if(net.peer===peer) connectHost(); });
-  peer.on('disconnected',()=>{ try{ if(!peer.destroyed) peer.reconnect(); }catch(e){} });
-  peer.on('error',e=>{ if(net.peer!==peer) return;
-    if(!net.data){ closeNet(); showLanding(peerError(e),true); return; }
-    lost();
-  });
-}
-function connectHost(){
-  const peer=net.peer; if(!peer||!peer.open||net.host) return;
-  try{ net.conn?.close(); }catch(e){}
-  const conn=peer.connect(PREFIX+net.code,{reliable:true}); net.conn=conn; clearTimeout(net.connT);
-  net.connT=setTimeout(()=>{ if(net.conn===conn&&!conn.open) lost(); },7000);
-  conn.on('open',()=>{ clearTimeout(net.connT); net.seenAt=Date.now(); const base=net.pending?net.pending.base:net.data;
-    conn.send({t:'hello',id:net.myId,d:base&&mySeat(base)?base:null}); });
-  conn.on('data',m=>{ if(net.conn!==conn) return; net.seenAt=Date.now(); if(!m) return;
-    if(m.t==='state'){ net.lostSince=0; net.lost=false; if(net.err==='e_lost') net.err=''; net.hostDoc=m.d; gotState(m.d); }
-    else if(m.t==='nack'&&net.pending){ clearPending(); if(net.hostDoc) applyDoc(net.hostDoc); net.err='e_rejected'; renderAll(); } });
-  conn.on('close',()=>{ if(net.conn===conn&&!net.host) lost(); });
-}
-function lost(){
-  if(net.host) return;
-  net.lostSince=net.lostSince||Date.now(); net.sending=!!net.pending;
-  const d=net.data, seat=mySeat(d);
-  // the clocks stop only on the absent player's turn: here the host is the absent one
-  if(d&&ACTIVE.includes(d.phase)&&!d.paused&&d.turnSeat&&d.turnSeat!==seat){ if(tcOf(d)) d.clock[d.turnSeat]=Math.max(0,clockNow(d,d.turnSeat)); d.paused=true; net.obsAt=Date.now(); }
-  if(!net.lost){ net.lost=true; net.err='e_lost'; renderAll(); }
-  if(net.retryT) return;
-  net.retryT=setTimeout(()=>{ net.retryT=null; if(net.host) return;
-    if(net.data&&mySeat(net.data)&&Date.now()-net.lostSince>8000) return becomeHost();
-    const p=net.peer; if(p&&p.open) connectHost(); else { if(p&&!p.destroyed){ try{ p.reconnect(); }catch(e){} } lost(); }
-  },3500);
-}
-// A move sent by the guest is shown at once and stays shown ("pending") until the host confirms it;
-// it is sent again every ~3 s, kept in localStorage, and only undone if the host refuses it.
-const pendKey=c=>'pdd-pending-'+String(c).toUpperCase();
-function loadPending(c){ try{ return JSON.parse(store.get(pendKey(c),'null')); }catch(e){ return null; } }
-function clearPending(){ if(net.code) store.del(pendKey(net.code)); net.pending=null; net.sending=false; }
-function showPending(){ const P=net.pending; if(!P) return; const d=merge(jclone(P.base),P.msg.p); net.data=d; net.st=stFromDoc(d); net.sending=true; persist(); renderAll(); }
-function startPending(msg){
-  const d=net.data, seat=mySeat(d), clk=seat?{seat,base:clockNow(d,seat),t0:Date.now()}:null;
-  net.pending={msg,base:jclone(net.hostDoc||d),at:Date.now(),last:Date.now(),clk}; net.err='';
-  store.set(pendKey(net.code),JSON.stringify({msg,base:net.pending.base}));
-  net.obsAt=Date.now(); showPending();
-  try{ net.conn.send(msg); }catch(e){}
-}
-function gotState(d){
-  const P=net.pending; if(!P) return applyDoc(d);
-  const pm=P.msg.p.moveNo|0;
-  if((d.moveNo|0)>=pm){ const mine=(d.moveNo|0)>pm||JSON.stringify(d.log)===JSON.stringify(P.msg.p.log); clearPending(); applyDoc(d); if(!mine){ net.err='e_rejected'; renderAll(); } return; }
-  P.base=jclone(d); store.set(pendKey(net.code),JSON.stringify({msg:P.msg,base:P.base})); showPending();
-}
-setInterval(()=>{ const P=net.pending; if(!P||net.host) return; const now=Date.now();
-  if(net.conn?.open&&now-P.last>3000){ P.last=now; try{ net.conn.send(P.msg); }catch(e){} }
-  if(!P.shown&&now-P.at>1500){ P.shown=true; renderAll(); } },500);
-// Heartbeat: host and guests exchange a small message every ~2 s; after ~9 s of silence the connection counts as lost.
-setInterval(()=>{ const now=Date.now();
-  if(net.host&&net.peer){ const d=net.doc;
-    for(const c of [...net.conns]){ if(!c.open) continue; try{ c.send({t:'ping'}); }catch(e){}
-      if(d&&c.pid&&mySeatFor(d,c.pid)&&now-(c.seen||now)>9000){ net.conns.delete(c); try{ c.close(); }catch(e){} broadcast(); } } }
-  else if(net.conn?.open){ try{ net.conn.send({t:'ping'}); }catch(e){}
-    if(now-(net.seenAt||now)>9000){ const c=net.conn; net.seenAt=now; net.conn=null; try{ c.close(); }catch(e){} lost(); } }
-},2000);
-function send(msg){
-  if(net.test){ testPlay(msg); return; }
-  if(net.host){ hostApply(msg); return; }
-  if(!net.conn?.open&&!(msg.t==='patch'&&net.data)){ net.err='e_notConn'; return renderAll(); }
-  if(msg.t==='patch'&&net.data){ startPending(msg); return; }
-  net.sending=true; net.err=''; renderAll();
-  try{ net.conn.send(msg); }catch(e){ net.sending=false; net.err='e_notSent'; renderAll(); return; }
-  clearTimeout(net.sendTimer);
-  net.sendTimer=setTimeout(()=>{ if(net.sending){ net.sending=false; net.err='e_noResp'; inp=newInput(); if(net.data) net.st=stFromDoc(net.data); renderAll(); } },8000);
-}
-function netWrite(patch){ send({t:'patch',p:patch}); }
-function autoActions(){
-  const d=net.data; if(!d||d.phase!=='play'||d.paused) return;
-  const seat=mySeat(d); if(!seat||d.turnSeat!==seat||net.sending) return;
-  if(net.autoKey===d.moveNo) return;
-  if(!hasMove(net.st,colorOfSeat(d,seat))){ net.autoKey=d.moveNo; netPass(true); }
-}
-const serMove=m=>m.type==='t'?{type:'t',cells:m.cells.slice()}:{type:'b',a:m.a,b:m.e?m.e.b:m.b};
-const plusInc=(d,left)=>tcOf(d)?left+tcOf(d).inc:left;
-function netCommit(m){
-  const d=net.data, seat=mySeat(d); if(!d||!seat) return;
-  if(d.paused) return;
-  const left=clockNow(d,seat);
-  if(tcOf(d)&&left<=0){ inp=newInput(); return netFlag(seat); }
-  const st=stFromDoc(d), p=d.phase==='opening'?1:colorOfSeat(d,seat);
-  applyMove(st, m.type==='b'?{type:'b',a:m.a,e:m.e}:m, p);
-  const patch={cells:Array.from(st.cells),bridges:st.bridges.map(B=>({a:B.a,b:B.b,o:B.o})),
-    last:{p,m:serMove(m)},clock:{...d.clock,[seat]:plusInc(d,left)},moveNo:d.moveNo+1};
-  if(d.phase==='opening'){ patch.phase='pie'; patch.turnSeat='B'; patch.log=d.log.concat([{p:1,m:serMove(m)}]); }
-  else{
-    patch.log=d.log.concat([{p,m:serMove(m)}]);
-    if(d.finalTurn){ patch.phase='over'; patch.result={kind:'score'}; patch.turnSeat=null; }
-    else { patch.toMove=3-d.toMove; patch.turnSeat=seatOfColor(d,3-d.toMove); }
-  }
-  inp=newInput(); netWrite(patch);
-}
-function netPie(takeLight){
-  const d=net.data; if(mySeat(d)!=='B'||d.phase!=='pie') return;
-  if(d.paused) return;
-  const left=clockNow(d,'B'); if(tcOf(d)&&left<=0) return netFlag('B');
-  const colorA=takeLight?2:1;
-  netWrite({colorA,phase:'play',toMove:2,turnSeat:colorA===2?'A':'B',clock:{...d.clock,B:plusInc(d,left)},moveNo:d.moveNo+1,
-    log:d.log.concat([{p:0,k:takeLight?'lg_takeL':'lg_dark',v:{n:nickOf(d,'B')}}])});
-}
-function netPass(forced){
-  const d=net.data, seat=mySeat(d); if(!d||!seat||d.phase!=='play'||d.turnSeat!==seat) return;
-  const p=colorOfSeat(d,seat);
-  if(!forced&&(inp.draft.length||inp.bridge||!canPass(net.st,p))) return;
-  if(d.paused) return;
-  const left=clockNow(d,seat); if(tcOf(d)&&left<=0) return netFlag(seat);
-  let log=d.log.concat([{p,k:forced?'lg_forced':'lg_pass'}]);
-  const patch={last:{p,m:null},clock:{...d.clock,[seat]:plusInc(d,left)},moveNo:d.moveNo+1};
-  if(p===2||d.finalTurn){ Object.assign(patch,{phase:'over',result:{kind:'score'},turnSeat:null}); }
-  else { patch.finalTurn=true; patch.toMove=2; patch.turnSeat=seatOfColor(d,2); log=log.concat([{p:0,k:'lg_lastTurn'}]); }
-  patch.log=log; inp=newInput(); netWrite(patch);
-}
-function netFlag(seat){
-  const d=net.data; if(!d||!ACTIVE.includes(d.phase)||d.paused||!tcOf(d)) return;
-  net.flagKey=d.moveNo;
-  netWrite({phase:'over',result:{kind:'time',loserSeat:seat},turnSeat:null,clock:{...d.clock,[seat]:0},moveNo:d.moveNo+1,
-    log:d.log.concat([{p:0,k:'lg_time',v:{n:nickOf(d,seat)}}])});
-}
-function netResign(){
-  const d=net.data, seat=mySeat(d); if(!d||!seat||!ACTIVE.includes(d.phase)) return;
-  const clock={...d.clock}; if(d.turnSeat&&tcOf(d)) clock[d.turnSeat]=clockNow(d,d.turnSeat);
-  netWrite({phase:'over',result:{kind:'resign',loserSeat:seat},turnSeat:null,clock,moveNo:d.moveNo+1,
-    log:d.log.concat([{p:0,k:'lg_resign',v:{n:nickOf(d,seat)}}])});
-}
-function currentNick(){ return (nickGet()||'').trim().slice(0,24); }
-let nameThen=null;
-function askName(then){
-  nameThen=then; $('nick').value=currentNick(); $('nameerr').hidden=true; $('namedlg').hidden=false;
-  setTimeout(()=>{ $('nick').focus(); $('nick').select(); },0);
-}
-function nameOk(){
-  const v=($('nick').value||'').trim().slice(0,24);
-  if(!v){ $('nameerr').hidden=false; $('nick').focus(); return; }
-  nickSet(v); $('namedlg').hidden=true;
-  const f=nameThen; nameThen=null; renderAll(); if(f) f();
-}
-function nameCancel(){ $('namedlg').hidden=true; nameThen=null; }
-function takeSeat(seat){
-  const nick=currentNick();
-  if(!nick) return askName(()=>takeSeat(seat));
-  send({t:'sit',seat,nick,id:net.myId});
-}
-function startReady(){ send({t:'ready',id:net.myId}); }
-function leaveSeat(){
-  const d=net.data, seat=mySeat(d); if(!d||!seat||d.phase!=='waiting') return;
-  send({t:'leave',id:net.myId});
-}
-window.addEventListener('beforeunload',e=>{ if(!net.test&&net.host&&net.data&&ACTIVE.includes(net.data.phase)){ e.preventDefault(); e.returnValue=''; } });
-
-/* ---------- sounds ---------- */
-let audioCtx=null,lastMine=false;
-document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
-let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('pdd-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
-function sndSave(){try{localStorage.setItem('pdd-sound',JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}
-function sndBind(){const c=$('sndOn'),r=$('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
-  c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
-  r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
-function tone(f,dur,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t0=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+.01);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g).connect(audioCtx.destination);o.start(t0);o.stop(t0+dur+.02);}catch(e){}}
-let cdSec=null;
-function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
-  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
-  cdSec=s;}
-
-setInterval(()=>{
-  const d=net.data; if(!d||!ACTIVE.includes(d.phase)) return;
-  if((net.tick=(net.tick||0)+1)%20===0) persist();
-  if(!tcOf(d)) return;
-  for(const s of ['A','B']){ const el=$('clk-'+s); if(el){ const tm=clockNow(d,s); el.textContent=fmt(tm); el.classList.toggle('low',tm<60000); } }
-  const tm=clockNow(d,d.turnSeat), seat=mySeat(d);
-  countdown(!!seat&&seat===d.turnSeat&&!d.paused,tm);
-  if(seat && !net.sending && net.flagKey!==d.moveNo && (seat===d.turnSeat ? tm<=0 : tm<-3000)) netFlag(d.turnSeat);
-},250);
-
-/* ---------- board rendering ---------- */
-// The real position is drawn from the game state; the tiles or bridge being prepared appear in transparency.
-function renderBoard(){
-  const nv=navView(), c=nv?{st:nv.st,active:false}:ctx(), st=c.st, d=net.data, real=nv?nv.st:(d?stFromDoc(d):newState()), out=[];
-  const last = nv?nv.last:d?.last;
-  const X=k=>M+k*CS, Y=r=>M+r*CS;
-  out.push(`<rect x="0" y="0" width="872" height="872" rx="10" fill="var(--water-deep)"/>`);
+// ---------- drawing ----------
+// real: the position shown; a: null, or the move being prepared ({w: real with it, p: colour, opening}) shown in transparency
+function drawBoard(real,last,a){
+  const st=a?a.w:real,active=!!a,out=[];
+  const X=k=>M+k*CS,Y=r=>M+r*CS;
+  // without the coordinates, the frame shrinks to a thin rim and the lagoon grows
+  const v0=coordsOn?0:M-10,vs=coordsOn?SZ:CS*N+20;svg.setAttribute('viewBox',`${v0} ${v0} ${vs} ${vs}`);
+  out.push(`<rect x="${v0}" y="${v0}" width="${vs}" height="${vs}" rx="10" fill="var(--water-deep)"/>`);
   out.push(`<rect x="${M}" y="${M}" width="${CS*N}" height="${CS*N}" fill="var(--water)"/>`);
-  for(let k=1;k<N;k++){ out.push(`<line x1="${X(k)}" y1="${M}" x2="${X(k)}" y2="${M+CS*N}" stroke="var(--grid)" stroke-width="1.5"/>`);
-    out.push(`<line x1="${M}" y1="${Y(k)}" x2="${M+CS*N}" y2="${Y(k)}" stroke="var(--grid)" stroke-width="1.5"/>`); }
+  for(let k=1;k<N;k++){out.push(`<line x1="${X(k)}" y1="${M}" x2="${X(k)}" y2="${M+CS*N}" stroke="var(--grid)" stroke-width="1.5"/>`);
+    out.push(`<line x1="${M}" y1="${Y(k)}" x2="${M+CS*N}" y2="${Y(k)}" stroke="var(--grid)" stroke-width="1.5"/>`);}
   const tx=(x,y,s)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="15" fill="var(--coord)" font-family="Karla,sans-serif">${s}</text>`;
-  for(let k=0;k<N;k++){
-    out.push(tx(X(k)+CS/2,24,LET[k]), tx(X(k)+CS/2,M+CS*N+25,LET[k]), tx(18,Y(k)+CS/2+5,N-k), tx(M+CS*N+18,Y(k)+CS/2+5,N-k));
-  }
+  if(coordsOn)for(let k=0;k<N;k++)out.push(tx(X(k)+CS/2,24,LET[k]),tx(X(k)+CS/2,M+CS*N+25,LET[k]),tx(18,Y(k)+CS/2+5,N-k),tx(M+CS*N+18,Y(k)+CS/2+5,N-k));
   const g=5;
   // flat tiles: a thin outline (the same shape, slightly larger) under a plain fill
   const shapes=(p,inf,fill)=>{
-    for(let i=0;i<NN;i++){ if(real.cells[i]!==p) continue; const r=R(i),cc=C(i);
+    for(let i=0;i<NN;i++){if(real.cells[i]!==p)continue;const r=RW(i),cc=CL(i);
       out.push(`<rect x="${X(cc)+g-inf}" y="${Y(r)+g-inf}" width="${CS-2*g+2*inf}" height="${CS-2*g+2*inf}" rx="5" fill="${fill}"/>`);
-      if(cc<N-1&&real.cells[i+1]===p) out.push(`<rect x="${X(cc)+CS-g-1}" y="${Y(r)+g-inf}" width="${2*g+2}" height="${CS-2*g+2*inf}" fill="${fill}"/>`);
-      if(r<N-1&&real.cells[i+N]===p) out.push(`<rect x="${X(cc)+g-inf}" y="${Y(r)+CS-g-1}" width="${CS-2*g+2*inf}" height="${2*g+2}" fill="${fill}"/>`);
-      if(cc<N-1&&r<N-1&&real.cells[i+1]===p&&real.cells[i+N]===p&&real.cells[i+N+1]===p) out.push(`<rect x="${X(cc)+CS-g-1}" y="${Y(r)+CS-g-1}" width="${2*g+2}" height="${2*g+2}" fill="${fill}"/>`);
-    }
-  };
-  shapes(1,1.5,'var(--stone-edge)'); shapes(1,0,'var(--stone)');
-  shapes(2,1.5,'var(--trach-edge)'); shapes(2,0,'var(--trach)');
-  for(const p of [1,2]){ const {groups}=analyze(real,p);
-    for(const gr of groups) if(gr.length===4){
-      const cx=gr.reduce((s,i)=>s+X(C(i))+CS/2,0)/4, cy=gr.reduce((s,i)=>s+Y(R(i))+CS/2,0)/4;
-      out.push(`<path d="M${cx} ${cy-9} L${cx+9} ${cy} L${cx} ${cy+9} L${cx-9} ${cy} Z" fill="var(--accent)" opacity=".9"/>`);
-    }}
-  const ctr=i=>[X(C(i))+CS/2,Y(R(i))+CS/2];
-  const lastB = last&&last.m&&last.m.type==='b'?last.m:null;
-  const bridge=(a,b,o,op)=>{ const [x1,y1]=ctr(a),[x2,y2]=ctr(b);
+      if(cc<N-1&&real.cells[i+1]===p)out.push(`<rect x="${X(cc)+CS-g-1}" y="${Y(r)+g-inf}" width="${2*g+2}" height="${CS-2*g+2*inf}" fill="${fill}"/>`);
+      if(r<N-1&&real.cells[i+N]===p)out.push(`<rect x="${X(cc)+g-inf}" y="${Y(r)+CS-g-1}" width="${CS-2*g+2*inf}" height="${2*g+2}" fill="${fill}"/>`);
+      if(cc<N-1&&r<N-1&&real.cells[i+1]===p&&real.cells[i+N]===p&&real.cells[i+N+1]===p)out.push(`<rect x="${X(cc)+CS-g-1}" y="${Y(r)+CS-g-1}" width="${2*g+2}" height="${2*g+2}" fill="${fill}"/>`);}};
+  shapes(1,1.5,'var(--stone-edge)');shapes(1,0,'var(--stone)');
+  shapes(2,1.5,'var(--trach-edge)');shapes(2,0,'var(--trach)');
+  for(const p of [1,2]){const {groups}=analyze(real,p);
+    for(const gr of groups)if(gr.length===4){
+      const cx=gr.reduce((s,i)=>s+X(CL(i))+CS/2,0)/4,cy=gr.reduce((s,i)=>s+Y(RW(i))+CS/2,0)/4;
+      out.push(`<path d="M${cx} ${cy-9} L${cx+9} ${cy} L${cx} ${cy+9} L${cx-9} ${cy} Z" fill="var(--accent)" opacity=".9"/>`);}}
+  const ctr=i=>[X(CL(i))+CS/2,Y(RW(i))+CS/2];
+  const lastB=last&&last.m&&last.m.t==='b'?last.m:null;
+  const bridge=(a,b,o,op)=>{const [x1,y1]=ctr(a),[x2,y2]=ctr(b);
     out.push(`<g opacity="${op||1}"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${o===1?'var(--oak-edge)':'var(--walnut-edge)'}" stroke-width="20" stroke-linecap="round"/>`+
-      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${o===1?'var(--oak)':'var(--walnut)'}" stroke-width="16" stroke-linecap="round"/></g>`); };
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${o===1?'var(--oak)':'var(--walnut)'}" stroke-width="16" stroke-linecap="round"/></g>`);};
   for(const B of real.bridges){
-    const isLast = lastB && lastB.a===B.a && (lastB.e?lastB.e.b:lastB.b)===B.b;
-    if(isLast){ const [x1,y1]=ctr(B.a),[x2,y2]=ctr(B.b); out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="28" stroke-linecap="round" opacity=".55"/>`); }
-    bridge(B.a,B.b,B.o);
-  }
-  if(last&&last.m&&last.m.type==='t'){
-    for(const i of last.m.cells) if(real.cells[i]) out.push(`<circle cx="${X(C(i))+CS-16}" cy="${Y(R(i))+16}" r="6" fill="var(--accent)"/>`);
-  }
-  // preview: tiles of the move being prepared, the square under the pointer / first tap, the bridge being prepared
-  const col=c.color||(d&&mySeat(d)&&d.colorA?colorOfSeat(d,mySeat(d)):1);
-  const ghostTile=i=>{ out.push(`<rect x="${X(C(i))+g}" y="${Y(R(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity=".5"/>`,
-    `<rect x="${X(C(i))+g+2}" y="${Y(R(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`); };
-  const ghostBridge=(a,b)=>{ const [x1,y1]=ctr(a),[x2,y2]=ctr(b); bridge(a,b,col,.5);
-    out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 6"/>`); };
-  for(const i of inp.draft) ghostTile(i);
-  if(inp.bridge) ghostBridge(inp.bridge.a,inp.bridge.e.b);
-  if(c.active&&!inp.awaiting&&inp.hover>=0){ if(inp.sel!==null) ghostBridge(inp.sel,inp.hover); else ghostTile(inp.hover); }
+    if(lastB&&Math.min(B.a,B.b)===lastB.a&&Math.max(B.a,B.b)===lastB.b){const [x1,y1]=ctr(B.a),[x2,y2]=ctr(B.b);out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="28" stroke-linecap="round" opacity=".55"/>`);}
+    bridge(B.a,B.b,B.o);}
+  if(last&&last.m&&last.m.t==='t')for(const i of last.m.cells)if(real.cells[i])out.push(`<circle cx="${X(CL(i))+CS-16}" cy="${Y(RW(i))+16}" r="6" fill="var(--accent)"/>`);
+  // preview: tiles of the move being prepared, the square under the pointer, the bridge being prepared
+  const col=a?a.p:1;
+  const ghostTile=i=>{out.push(`<rect x="${X(CL(i))+g}" y="${Y(RW(i))+g}" width="${CS-2*g}" height="${CS-2*g}" rx="5" fill="${col===1?'var(--stone)':'var(--trach)'}" opacity=".5"/>`,
+    `<rect x="${X(CL(i))+g+2}" y="${Y(RW(i))+g+2}" width="${CS-2*g-4}" height="${CS-2*g-4}" rx="4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>`);};
+  const ghostBridge=(a,b)=>{const [x1,y1]=ctr(a),[x2,y2]=ctr(b);bridge(a,b,col,.5);
+    out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 6"/>`);};
+  if(active){for(const i of ui.draft)ghostTile(i);
+    if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b);
+    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null)ghostBridge(ui.sel,ui.hover);else ghostTile(ui.hover);}}
   const tgts=new Set();
-  if(c.active&&inp.sel!==null){
-    const i=inp.sel; out.push(`<rect x="${X(C(i))+2}" y="${Y(R(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
-    for(const e of BR[i]) if(canBridge(st,c.color,i,e)){ tgts.add(e.b);
-      out.push(`<rect class="tgt" x="${X(C(e.b))+3}" y="${Y(R(e.b))+3}" width="${CS-6}" height="${CS-6}" rx="7"/>`); }
-  }
-  const canInput = c.active && !inp.awaiting && inp.sel===null && inp.draft.length<2;
-  const legal = canInput ? new Set(legalCells(st,c.color)) : new Set();
-  if($('hints').checked) for(const i of legal) if(i!==inp.hover) out.push(`<circle cx="${X(C(i))+CS/2}" cy="${Y(R(i))+CS/2}" r="4.5" fill="var(--hint)"/>`);
-  for(let i=0;i<NN;i++){
-    let cls='hit';
-    if(legal.has(i)) cls+=' legal';
-    else if(c.active&&(inp.draft.includes(i)||(inp.bridge&&(i===inp.bridge.a||i===inp.bridge.e.b))||(!inp.awaiting&&!c.opening&&st.cells[i]===c.color&&(!st.bridged[i]||tgts.has(i))))) cls+=' own';
-    out.push(`<rect class="${cls}" data-i="${i}" x="${X(C(i))}" y="${Y(R(i))}" width="${CS}" height="${CS}" rx="6"><title>${lab(i)}</title></rect>`);
-  }
-  svg.innerHTML=out.join('');
-}
+  if(active&&ui.sel!==null){
+    const i=ui.sel;out.push(`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
+    for(const e of BR[i])if(canBridge(st,a.p,i,e)){tgts.add(e.b);
+      out.push(`<rect class="tgt" x="${X(CL(e.b))+3}" y="${Y(RW(e.b))+3}" width="${CS-6}" height="${CS-6}" rx="7"/>`);}}
+  const canInput=active&&!ui.pending&&ui.sel===null&&ui.draft.length<2;
+  const legal=canInput?new Set(legalCells(st,a.p)):new Set();
+  if($('hints').checked)for(const i of legal)if(i!==ui.hover)out.push(`<circle cx="${X(CL(i))+CS/2}" cy="${Y(RW(i))+CS/2}" r="4.5" fill="var(--hint)"/>`);
+  for(let i=0;i<NN;i++){let cls='hit';
+    if(legal.has(i))cls+=' legal';
+    else if(active&&(ui.draft.includes(i)||(ui.bridge&&(i===ui.bridge.a||i===ui.bridge.b))||(!ui.pending&&!a.opening&&st.cells[i]===a.p&&(!st.bridged[i]||tgts.has(i)))))cls+=' own';
+    out.push(`<rect class="${cls}" data-i="${i}" x="${X(CL(i))}" y="${Y(RW(i))}" width="${CS}" height="${CS}" rx="6"><title>${lab(i)}</title></rect>`);}
+  svg.innerHTML=out.join('');}
 
-/* ---------- panel rendering ---------- */
-function tieNote(a,b){ return a.pts===b.pts ? (a.islands!==b.islands?t('tb_isl'): a.bridges!==b.bridges?t('tb_brg'):'') : ''; }
-function compare(a,b){ return a.pts!==b.pts?Math.sign(a.pts-b.pts):a.islands!==b.islands?Math.sign(a.islands-b.islands):Math.sign(a.bridges-b.bridges); }
-function renderLog(entries,d){
-  const can=navAllowed(d), cur=can?(navAt??navMoves(d).length):-1;
-  let n=0; $('log').innerHTML = entries.length ? entries.map(e=>{
-    const txt=e.text!==undefined?e.text:e.k?t(e.k,e.v):moveText(e.m);
-    if(e.p===0) return `<div><span></span><b>${esc(txt)}</b></div>`; n++; return `<div data-k="${n}" class="${can?'nav':''}${n===cur?' cur':''}"><span>${n}.</span><b>${NAME(e.p)} — ${esc(txt)}</b></div>`;}).join('') : `<div><span></span>${esc(t('noMoves'))}</div>`;
-  if(can) $('log').querySelectorAll('[data-k]').forEach(el=>el.onclick=()=>goNav(+el.dataset.k));
-  const sel=navAt!==null&&$('log').querySelector('.cur'); if(sel) sel.scrollIntoView({block:'nearest'}); else $('log').scrollTop=1e6;
-}
-/* ---------- navigation in the game ---------- */
-// navAt: null = live; k = position after the first k moves of the move list. Allowed for everyone once the game is over,
-// and for spectators during the game; never for a player while the game is on. Clocks keep showing the real time.
-let navAt=null;
-const navMoves=d=>(d?.log||[]).filter(e=>e.p!==0);
-function navAllowed(d){ return !!d&&d.phase!=='waiting'&&(d.phase==='over'||!mySeat(d))&&navMoves(d).every(e=>e.m!==undefined||e.k); }
-function posAt(d,k){ const st=newState(); let last=null;
-  for(const e of navMoves(d).slice(0,k)){ if(e.m){ const m=e.m.type==='b'?{type:'b',a:e.m.a,e:findEdge(e.m.a,e.m.b)}:e.m; if(m.type==='t'||m.e) applyMove(st,m,e.p); } last={p:e.p,m:e.m||null}; }
-  return {st,last}; }
-function navView(){ const d=net.data; if(navAt===null) return null; if(!navAllowed(d)){ navAt=null; return null; } return posAt(d,navAt); }
-function goNav(k){ const d=net.data; if(!navAllowed(d)) return; const n=navMoves(d).length; navAt=k>=n?null:Math.max(0,k); inp=newInput(); renderAll(); }
-function renderNav(d){ const can=navAllowed(d); $('nav').hidden=!can; if(!can) return;
-  const n=navMoves(d).length, k=navAt??n; $('navPos').textContent=t('nav_pos',{k,n});
-  $('navFirst').disabled=$('navPrev').disabled=k<=0; $('navNext').disabled=$('navLast').disabled=navAt===null; }
-$('navFirst').onclick=()=>goNav(0);
-$('navPrev').onclick=()=>goNav((navAt??navMoves(net.data).length)-1);
-$('navNext').onclick=()=>goNav((navAt??navMoves(net.data).length)+1);
-$('navLast').onclick=()=>goNav(Infinity);
-document.addEventListener('keydown',e=>{ if($('game').hidden||!navAllowed(net.data)||e.altKey||e.ctrlKey||e.metaKey) return;
-  const tg=e.target; if(tg&&(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName)||tg.isContentEditable)) return;
-  const n=navMoves(net.data).length, k=navAt??n;
-  if(e.key==='ArrowLeft') goNav(k-1); else if(e.key==='ArrowRight') goNav(k+1); else if(e.key==='Home') goNav(0); else if(e.key==='End') goNav(Infinity); else return;
-  e.preventDefault(); });
-// Escape: cancel the move being prepared
-document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||$('game').hidden||!$('namedlg').hidden||!preparing()) return; e.preventDefault(); cancelInput(); });
-// Exceptional messages only, on the reserved line under the board
-function notice(txt,cls){ const n=$('notice'); n.className='notice'+(txt?' on'+(cls?' '+cls:''):''); n.textContent=txt||''; }
-function renderPlayers(d,real){
-  const wide=window.matchMedia('(min-width:821px)').matches; $('playersTop').hidden=wide; $('playersSide').hidden=!wide;
-  $('playersTop').innerHTML=''; $('playersSide').innerHTML='';
-  if(!d) return;
-  const seat=mySeat(d), canSit=d.phase==='waiting'&&!seat&&(!d.seats?.A||!d.seats?.B), tc=tcOf(d);
-  (wide?$('playersSide'):$('playersTop')).innerHTML=['A','B'].map(k=>{
-    const so=d.seats?.[k], col=d.colorA?colorOfSeat(d,k):(k==='A'?1:null), sc=(col&&score(real,col))||{pts:0,islands:0,bridges:0};
-    const turn=ACTIVE.includes(d.phase)&&d.turnSeat===k, tm=clockNow(d,k);
-    return `<div class="player${turn?' active':''}"><div class="who"><span class="sw ${col?(col===1?'l':'d'):'q'}"></span><span class="${so?'':'free'}">${so?esc(so.nick)+(so.id===net.myId&&!net.test?' ('+esc(t('you'))+')':''):esc(t('freeSeat'))}</span></div>
-      <div class="clock${tm<60000&&ACTIVE.includes(d.phase)?' low':''}" id="clk-${k}" ${tc?'':'hidden'}>${fmt(tm)}</div>
-      <div class="tally"><span title="${esc(t('pts'))}">${sc.pts}</span><span title="${esc(t('isl'))}">${sc.islands}</span><span title="${esc(t('brg'))}">${sc.bridges}</span></div>
-      ${so&&d.phase==='waiting'&&d.seats.A&&d.seats.B?`<div class="${so.ready?'ready':'hint'}">${esc(t(so.ready?'readyB':'notReady'))}</div>`:''}
-      ${!so&&canSit?`<button class="primary" data-sit="${k}" ${net.sending?'disabled':''}>${esc(t('sit'))}</button>`:''}</div>`;
-  }).join('');
-  document.querySelectorAll('[data-sit]').forEach(b=>b.onclick=()=>takeSeat(b.dataset.sit));
-}
-function renderPanel(){
-  const d=net.data, inGame=!!net.gid, seat=mySeat(d), nv=navView(), real=nv?nv.st:(d?stFromDoc(d):newState());
-  const myTurn = !!(d&&seat && d.turnSeat===seat && !net.sending && !d.paused);
-  if(myTurn&&ACTIVE.includes(d.phase)&&!lastMine&&d.moveNo>1) tone(660,.18,.05); lastMine=myTurn&&ACTIVE.includes(d?.phase);
-  renderPlayers(d,real);
-  // message line
-  if(!d) notice(t(net.host||!net.conn?'st_open':'st_conn'));
-  else if(d.phase==='over'){
-    const r=d.result||{kind:'score'};
-    if(r.kind==='score'){
-      const sA=score(real,colorOfSeat(d,'A')), sB=score(real,colorOfSeat(d,'B')), res=compare(sA,sB), [w,l]=res>=0?[sA,sB]:[sB,sA];
-      notice(res===0?t('r_tie',{w:w.pts,l:l.pts,tb:tieNote(sA,sB)}):t('r_wins',{n:nickOf(d,res>0?'A':'B'),w:w.pts,l:l.pts,tb:tieNote(sA,sB)}),'win');
-    }else{ const winner=r.loserSeat==='A'?'B':'A'; notice(t(r.kind==='time'?'r_time':'r_resign',{n:nickOf(d,winner),l:nickOf(d,r.loserSeat)}),'win'); }
-  }
-  else if(net.err) notice(t(net.err),'err');
-  else if(net.pending&&Date.now()-net.pending.at>1500) notice(t('st_waitHost'));
-  else if(d.paused&&ACTIVE.includes(d.phase)) notice(net.host?t('st_pausedHost',{n:nickOf(d,d.turnSeat)}):seat?t('st_pausedGuest'):t('st_pausedWatch'));
-  else if(d.phase==='waiting'){
-    const both=d.seats?.A&&d.seats?.B, canSit=!seat&&!both;
-    if(canSit) notice(t('st_canSit'));
-    else if(seat&&!both) notice(t('st_waitOpp'));
-    else if(seat&&d.seats[seat].ready) notice(t('st_waitClick',{n:nickOf(d,seat==='A'?'B':'A')}));
-    else if(!seat) notice(t('st_waitBoth'));
-    else notice('');
-  }
-  else if(d.phase==='pie'&&seat==='B'&&myTurn) notice(t('st_pie'),'turn');
-  else if(d.phase==='play'&&myTurn&&inp.oneLeft) notice(t('st_oneLeft'),'turn');
-  else if(d.phase==='play'&&myTurn&&d.finalTurn) notice(t('st_lastTurn'),'turn');
-  else notice('');
-  // invite: open, first and framed until the game starts
-  { const ib=$('inviteBox'), waiting=!d||d.phase==='waiting'; ib.hidden=!(inGame&&net.code&&(net.host||d));
-    if(!ib.hidden) fillCodes(net.code,!net.host,d);
-    if(waiting!==ib.classList.contains('prominent')){ ib.classList.toggle('prominent',waiting); ib.open=waiting; }
-    // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib); }
-  // start
-  const showStart=!!(d&&seat&&d.phase==='waiting'); $('startCard').hidden=!showStart;
-  if(showStart){ const both=d.seats.A&&d.seats.B, o=seat==='A'?'B':'A', rd=!!d.seats[seat].ready;
-    $('startTxt').textContent=both?(d.seats[o].ready?t('ready',{n:nickOf(d,o)}):'')+(tcOf(d)?t('clocksStart'):''):'';
-    $('startTxt').hidden=!$('startTxt').textContent;
-    $('startBtns').innerHTML=(both?`<button type="button" class="primary" id="b-ready" ${rd?'disabled':''}>${esc(t(rd?'waitingOpp':'startBtn'))}</button>`:'')+`<button type="button" id="b-leave">${esc(t('leaveSeat'))}</button>`;
-    const br=$('b-ready'); if(br) br.onclick=startReady; $('b-leave').onclick=leaveSeat; }
-  $('pieCard').hidden=!(d&&d.phase==='pie'&&seat==='B'&&myTurn);
-  // move being prepared: Confirm, End turn when they apply, Cancel throughout the preparation
-  const inMove=myTurn&&(d.phase==='opening'||d.phase==='play')&&preparing();
-  $('moveCard').hidden=!inMove;
-  if(inMove){ $('pendingTxt').textContent=inp.awaiting?moveText(inp.awaiting):''; $('pendingTxt').hidden=!inp.awaiting;
-    $('moveBtns').innerHTML=inp.awaiting?`<button type="button" class="primary" id="b-ok">${esc(t('confirmMv'))}</button><button type="button" id="b-cancel">${esc(t('cancel'))}</button>`
-      :(inp.oneLeft?`<button type="button" class="primary" id="b-one">${esc(t('endTurn'))}</button>`:'')+`<button type="button" id="b-cancel">${esc(t('cancel'))}</button>`;
-    const on=(id,f)=>{const el=$(id); if(el) el.onclick=f;};
-    on('b-ok',()=>{ const m=inp.awaiting; inp.awaiting=null; commitInput(m); }); on('b-cancel',cancelInput); on('b-one',()=>finishInput({type:'t',cells:inp.draft.slice()})); }
-  $('endCard').hidden=!(inGame&&d&&d.phase==='over'); if(!$('endCard').hidden) renderEnd(d,seat);
-  const live=!!(d&&seat&&ACTIVE.includes(d.phase));
-  $('myCard').hidden=!(live||(net.test&&d)); $('undoBox').hidden=!net.test||preparing();   // only on a neutral board
-  if(net.test){ $('b-undo').disabled=!net.testHist.length; if(!live){ $('passBox').hidden=$('resignBox').hidden=$('resignAsk').hidden=true; } }
-  if(live){ const canP=d.phase==='play'&&myTurn&&!inp.awaiting&&!inp.draft.length&&!inp.bridge&&canPass(net.st,colorOfSeat(d,seat));
-    $('passBox').hidden=!canP; $('b-pass').textContent=t(colorOfSeat(d,seat)===2||d.finalTurn?'passEnd':'pass');
-    if($('resignAsk').hidden) $('resignBox').hidden=false; }
-  $('rcBoxD').hidden=!(d&&inGame&&seat&&!net.test&&d.phase!=='waiting');
-  renderLog(d&&inGame?(d.log||[]):[],d);
-  renderNav(d);
-}
-function renderAll(){ renderBoard(); renderPanel(); }
+// ---------- the board, the action bar and the panel (hooks) ----------
+function pdBoard({r,d,mine}){const live=navAt===null&&mine&&(r.st.phase==='opening'||r.st.phase==='play');
+  drawBoard(d.st,d.last,live?{w:work(r.st),p:mover(r.st),opening:r.st.phase==='opening'}:null);return {};}
+// My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
+function pdTurnStatus({r,undoB,RST}){const st=r.st,p=mover(st);
+  if(st.phase==='pie'){status(t('st_pie'),'turn',[undoB,{label:t('takeLight'),primary:true,on:()=>send({t:'L'})},{label:t('playDark'),on:()=>send({t:'D'})}]);return;}
+  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?t('st_oneLeft'):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),primary:true,on:endOne}:null]);return;}
+  const msg=st.phase==='opening'?t('st_opening'):st.finalTurn?t(solo()?'lg_lastTurn':'st_lastTurn'):solo()?t('st_turn',{n:seatName(st.turn)}):t('st_yourTurn');
+  const canP=st.phase==='play'&&canPass(st,p);
+  status(msg,'turn',[undoB,canP?{label:t(p===2||st.finalTurn?'passEnd':'pass'),on:doPass}:null]);}
+// A pass awaiting confirmation says what it does
+const pdPendText=(mv,st)=>mv.t==='x'?[t(st.toMove===2||st.finalTurn?'pend_passEnd':'pend_pass'),t('confirmMv')]:[t('pend_mv',{m:describe(mv)}),t('confirmMv')];
+// Players' cards: the colour played (unknown for seat 1 until the choice), points, islands and bridges
+function pdCard(el,p,d){const st=d.st,col=colorOf(st,p),dot=el.querySelector('.dot');if(dot)dot.className='dot '+(col===1?'pl':col===2?'pd':'pq');
+  const sc=col?score(st,col):{pts:0,islands:0,bridges:0},ty=document.createElement('div');ty.className='tally';
+  ty.innerHTML=`<span title="${t('pts')}">${sc.pts}</span><span title="${t('isl')}">${sc.islands}</span><span title="${t('brg')}">${sc.bridges}</span>`;el.appendChild(ty);}
+const pdLogText=e=>(e.col?NAME(e.col)+' — ':'')+describe(e.m);
+const pdLogDesc=e=>e.notes.map(x=>x.k==='lg_forced'?t('lg_forced',{c:NAME(x.c)}):t(x.k)).join(' ');
 
-/* ---------- end of game: new game offer, home ---------- */
-function oppReachable(d,seat){ const id=d.seats?.[seat==='A'?'B':'A']?.id; if(!id) return false;
-  return net.host?presentIds().has(id):!!(net.conn&&net.conn.open&&!net.lost); }
-function renderEnd(d,seat){
-  const o=seat==='A'?'B':'A', off=d.offer, b=(id,k,cls,dis)=>`<button type="button" id="${id}"${cls?` class="${cls}"`:''}${dis?' disabled':''}>${esc(t(k))}</button>`;
-  let txt='', btns='';
-  if(seat){
-    if(off&&off.by===seat){ txt=t('offerSent'); btns=b('offerCancel','withdraw'); }
-    else if(off){ txt=t('offerFrom',{n:nickOf(d,o)}); btns=b('offerYes','accept','primary')+b('offerNo','decline'); }
-    else { if(d.refusal&&d.refusal.by===o) txt=t('offerRefused',{n:nickOf(d,o)}); btns=b('newGame','rematch','primary',!net.test&&(net.sending||!oppReachable(d,seat))); }
-  }
-  btns+=b('homeBtn','home');
-  $('endTxt').textContent=txt; $('endTxt').hidden=!txt; $('endBtns').innerHTML=btns;
-  const on=(id,f)=>{const el=$(id); if(el) el.onclick=f;};
-  on('newGame',()=>net.test?startTest():send({t:'offer',id:net.myId})); on('offerCancel',()=>send({t:'offerCancel',id:net.myId}));
-  on('offerYes',()=>send({t:'offerReply',id:net.myId,accept:true})); on('offerNo',()=>send({t:'offerReply',id:net.myId,accept:false}));
-  on('homeBtn',()=>{ closeNet(); showLanding(); });
-}
-/* ---------- invitation ---------- */
-function fillCodes(code,guest,d){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
-  $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
-  if(web){$('codeP').value=base+'#join-'+code.toLowerCase();$('codeW').value=base+'#watch-'+code.toLowerCase();}
-  $('watchInfo').textContent=d?t('connected',{n:d.watchers||1}):'';}
-function copyField(el,btn,label){
-  const done=()=>{ btn.textContent=t('copied'); setTimeout(()=>{ btn.textContent=t(label||'copy'); },1500); };
-  const sel=()=>{ el.focus(); el.select(); };
-  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(el.value).then(done,sel); else sel();
-}
-document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyField($(b.dataset.copy),b));
+// ---------- the interface with common/core.js ----------
+const GAME={id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
+  rules:()=>({}),form:()=>({}),
+  replay:pdReplay,
+  legal:(st,code)=>{const m=parse(code);return m&&step(st,m)?enc(m):null;},
+  enc:m=>{resetUi();return enc(m);},   // called by the shared send(): the move leaves, the preparation is dropped
+  describe,newUi,preparing,cancel:cancelPrep,
+  board:pdBoard,turnStatus:pdTurnStatus,pendText:pdPendText,
+  hintable:()=>false,   // no computer opponent, so no hint
+  playerCard:pdCard,logText:pdLogText,logDesc:pdLogDesc,
+  applyStatic:()=>{$('ttl').innerHTML='Ponte <em>del</em> Diavolo';},
+  home:()=>drawBoard(initSt(),null,null)};
+// « Show playable squares », kept on this device
+$('hints').checked=LS.get(K('hints'),true)!==false;
+$('hints').addEventListener('change',()=>{LS.set(K('hints'),$('hints').checked);if(view)renderGame();});
 
-/* ---------- events ---------- */
-svg.addEventListener('click',ev=>{ const tg=ev.target.closest('[data-i]'); if(tg) onCell(+tg.dataset.i); });
-if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
-  svg.addEventListener('pointermove',ev=>{ if(ev.pointerType==='touch') return; const tg=ev.target.closest('[data-i]'); hoverCell(tg?+tg.dataset.i:-1); });
-  svg.addEventListener('pointerleave',()=>hoverCell(-1)); }
-window.addEventListener('resize',()=>{ if(!$('game').hidden) renderPanel(); });
-$('hints').addEventListener('change',renderBoard);
-$('confirm').checked=confirmMoves;
-$('confirm').addEventListener('change',()=>{ confirmMoves=$('confirm').checked; store.set('pdd-confirm',confirmMoves?'1':'0'); });
-$('b-nameok').onclick=nameOk; $('b-namecancel').onclick=nameCancel;
-$('nick').addEventListener('keydown',e=>{ if(e.key==='Enter') nameOk(); if(e.key==='Escape') nameCancel(); });
-$('namedlg').addEventListener('click',e=>{ if(e.target===$('namedlg')) nameCancel(); });
-$('b-light').onclick=()=>netPie(true); $('b-dark').onclick=()=>netPie(false);
-$('b-pass').onclick=()=>netPass(false);
-$('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
-$('resignNo').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;};
-$('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;netResign();};
-
-/* ---------- test game ---------- */
-// The tester plays both sides on this device: no network, kept only in this browser; the local document plays the host's part.
-// Both seats carry this tab's id, and mySeat() returns the side to move.
-const TK='pdd-test';   // the game on this device, kept across a reload
-function startTest(){
-  closeNet(); net.wantSeat=false; net.test=true; net.gid='TEST'; net.testSeat='A'; net.testHist=[]; setHash('test');
-  const me=net.myId;
-  net.doc={code:'',name:'',seats:{A:{id:me,nick:t('pA'),ready:true},B:{id:me,nick:t('pB'),ready:true}},colorA:null,phase:'opening',
-    cells:Array(NN).fill(0),bridges:[],toMove:1,finalTurn:false,log:[{p:0,k:'lg_start',v:{n:t('pA')}}],last:null,tc:null,clock:{A:0,B:0},
-    turnSeat:'A',moveNo:1,epoch:0,paused:false,result:null,watchers:1};
-  $('resignBox').hidden=false; $('resignAsk').hidden=true; showGame(); testTurn();
-}
-function testTurn(){ try{localStorage.setItem(TK,JSON.stringify({doc:net.doc,hist:net.testHist}));}catch(e){} const d=net.doc; if(d.turnSeat) net.testSeat=d.turnSeat; inp=newInput(); broadcast(); }
-function testPlay(msg){ if(!net.test||!net.doc||msg.t!=='patch') return;
-  const lg=msg.p.log, forced=!!(lg&&lg.length>net.doc.log.length&&lg.slice(net.doc.log.length).some(e=>e.k==='lg_forced'));
-  net.testHist.push({doc:jclone(net.doc),forced}); merge(net.doc,msg.p); testTurn(); }
-// Undo the last move; a forced pass is undone together with the move before it.
-function testUndo(){ if(!net.test||!net.testHist.length) return; let h;
-  do{ h=net.testHist.pop(); }while(h.forced&&net.testHist.length);
-  net.doc=h.doc; net.autoKey=null; net.flagKey=null; navAt=null; $('resignBox').hidden=false; $('resignAsk').hidden=true; testTurn(); }
-$('b-undo').onclick=testUndo;
-$('testForm').addEventListener('submit',e=>{ e.preventDefault(); startTest(); });
-
-/* ---------- landing ---------- */
-let homeMsg={k:'',err:false};
-function status(txt,err){ const s=$('status'); s.className='status'+(err?' err':''); s.textContent=txt; if($('game').hidden) s.hidden=!txt; }   // home: only for a message
-function showGame(){ $('landing').hidden=true; $('status').hidden=true; $('game').hidden=false; renderAll(); }
-// Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
-function liveGame(){const d=net.data;return !!net.gid&&!!d&&!!mySeat(d)&&d.phase!=='waiting'&&d.phase!=='over';}
-$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
-$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;closeNet();showLanding();};
-function showLanding(k,err){
-  $('game').hidden=true; $('landing').hidden=false; homeMsg={k:k||'',err:!!err}; status(k?t(k):'',err); refreshHome();
-  invited(false); homeStep(''); $('joinCard').hidden=!(err&&$('jCode').value);   // after a failed join, the code stays at hand
-  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
-}
-function setHash(h){ try{ history.replaceState(null,'','#'+h); }catch(e){} }
-const cleanCode=v=>String(v||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-function lastGame(){ try{ const l=JSON.parse(store.get('pdd-last','null')); const d=l&&savedDoc(l.code); return d&&mySeat(d)&&d.phase!=='over'?{...l,d}:null; }catch(e){ return null; } }
-function refreshHome(){ const l=lastGame(); $('resumeCard').hidden=!l; if(l) $('inProgressTxt').textContent=t(l.host?'inProgressTxt':'inProgressGuest'); }
-function homeErr(k,el){ homeMsg={k,err:true}; status(t(k),true); if(el) el.focus(); }
-function createClick(){
-  const nm=$('cName').value.trim().slice(0,24);
-  if(!nm) return homeErr('e_name',$('cName'));
-  nickSet(nm);
-  const f=$('cFirst').value, seat=f==='me'?'A':f==='opp'?'B':(Math.random()<.5?'A':'B');
-  const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0]; store.set('pdd-tc',tcx.id); const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
-  showGame(); createGame(seat,tc);
-}
-function joinClick(asWatch){
-  const c=cleanCode($('jCode').value);
-  if(c.length!==6) return homeErr('e_code',$('jCode'));
-  const nm=$('jName').value.trim().slice(0,24);
-  if(!asWatch&&!nm) return homeErr('e_nameJoin',$('jName'));
-  if(nm) nickSet(nm);
-  setHash((asWatch?'watch-':'join-')+c.toLowerCase());
-  net.wantSeat=!asWatch; showGame(); joinGame(c);
-}
-function exportCode(){ const d=net.data; const c=jclone(d);
-  if(ACTIVE.includes(c.phase)&&c.turnSeat&&!c.paused&&tcOf(c)) c.clock[c.turnSeat]=Math.max(0,clockNow(d,c.turnSeat));
-  if(c.tc===undefined) c.tc=DEF_TC;
-  for(const k of ['A','B']) c.seats[k]=c.seats[k]?{nick:c.seats[k].nick}:null;
-  delete c.watchers; c.paused=false; return 'PONTE1.'+btoa(unescape(encodeURIComponent(JSON.stringify(c)))); }
-function importCode(s){ s=String(s||'').replace(/\s+/g,''); if(s.indexOf('PONTE1.')!==0) throw 0;
-  const d=JSON.parse(decodeURIComponent(escape(atob(s.slice(7))))); if(!d||!Array.isArray(d.cells)||d.cells.length!==NN||!d.clock||!d.seats) throw 0; return d; }
-$('rcCopy').onclick=()=>{ if(!net.data) return; const el=$('rcTxt'); el.value=exportCode(); $('rcBox').hidden=false; copyField(el,$('rcCopy'),'rcCopy'); };
-$('rGo').onclick=()=>{ let d; try{ d=importCode($('rIn').value); }catch(e){ homeErr('badResume'); $('rSeats').innerHTML=''; return; }
-  const box=$('rSeats');
-  box.innerHTML=['A','B'].map(k=>`<button class="primary" data-rseat="${k}">${esc(t('iam',{n:nickOf(d,k)}))}</button>`).join('');
-  box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(b.dataset.rseat,d)); };
-function resumeAs(seat,d){
-  const o=seat==='A'?'B':'A', nick=currentNick()||nickOf(d,seat); if(!currentNick()) nickSet(nick);
-  d.seats[seat]={id:net.myId,nick:nickOf(d,seat),ready:true}; d.seats[o]={id:null,nick:nickOf(d,o),ready:true};
-  d.paused=ACTIVE.includes(d.phase); d.epoch=(d.epoch||0)+1; showGame(); hostGame(newCode(),d,false);
-}
-$('resumeBtn').onclick=()=>{ const l=lastGame(); if(!l) return refreshHome(); showGame();
-  if(l.host) hostGame(l.code,l.d,false); else { net.wantSeat=false; joinGame(l.code); } };
-$('createForm').addEventListener('submit',e=>{ e.preventDefault(); createClick(); });
-$('joinForm').addEventListener('submit',e=>{ e.preventDefault(); joinClick(false); });
-$('jWatch').onclick=()=>joinClick(true);
-// Home: "Create a game", then the opponent (link, this device), then that choice's options
-let homeK='';
-function homeStep(k){ homeK=k; $('newBtn').hidden=k!==''; $('newHead').hidden=k===''; $('newPick').hidden=k!=='pick';
-  $('createForm').hidden=k!=='link'; $('testForm').hidden=k!=='local';
-  const h=$('newTitle'); h.dataset.i18n=k==='pick'||k===''?'pickOpp':'m_'+k; h.textContent=t(h.dataset.i18n); }
-$('newBtn').onclick=()=>homeStep('pick');
-$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
-document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
-$('joinOpen').onclick=()=>{ $('joinCard').hidden=false; $('jCode').focus(); };
-// An invitation link opens straight on the name to play under (the saved nickname by default)
-function invited(on){ $('landing').classList.toggle('invited',on); $('joinCard').hidden=!on; if(on){ const n=$('jName'); n.value=currentNick(); n.focus(); n.select(); } }
-$('invOther').onclick=()=>{ invited(false); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} $('jCode').value=''; homeMsg={k:'',err:false}; status(''); };
-applyStatic(); sndBind();
-(function boot(){
-  const nm=currentNick(); $('cName').value=nm; $('jName').value=nm;
-  if(location.hash==='#test'){ let sv=null; try{sv=JSON.parse(localStorage.getItem(TK));}catch(e){} startTest();
-    if(sv&&sv.doc){ net.doc=sv.doc; net.testHist=sv.hist||[]; for(const k of ['A','B'])if(net.doc.seats[k])net.doc.seats[k].id=net.myId; testTurn(); } return; }
-  const m=/^#(join|watch|host)-([a-z0-9]{6})$/i.exec(location.hash);
-  if(!m) return showLanding();
-  status('');
-  if(m[1].toLowerCase()==='host'){ const c=m[2].toUpperCase(), d=savedDoc(c); showGame(); if(d&&mySeat(d)) hostGame(c,d,false); else { net.wantSeat=true; joinGame(c); } return; }
-  $('jCode').value=m[2].toUpperCase();
-  if(m[1].toLowerCase()==='join'){ invited(true); return; }
-  joinClick(m[1].toLowerCase()==='watch');
-})();
+// ---------- games saved by the former version of this page ----------
+// Its free-play game ('pdd-test', {doc,hist}) and its resume codes (PONTE1.) held the whole board document; they are
+// turned into the moves list. Link games in progress under the former version cannot be resumed (other protocol).
+function oldGame(d){if(!d||!Array.isArray(d.log))return null;const moves=[];
+  for(const e of d.log){if(e.m&&e.m.type==='t')moves.push('t'+e.m.cells.join('.'));else if(e.m&&e.m.type==='b')moves.push(enc({t:'b',a:e.m.a,b:e.m.b}));
+    else if(e.k==='lg_takeL')moves.push('L');else if(e.k==='lg_dark')moves.push('D');else if(e.k==='lg_pass')moves.push('x');}
+  const r=pdReplay({},moves);if(r.over&&r.over.why==='w_bad')return null;
+  const res=d.result&&(d.result.kind==='time'||d.result.kind==='resign')?{winner:d.result.loserSeat==='A'?1:0,reason:d.result.kind}:null,S=d.seats||{};
+  return {size:GAME.size,tc:d.tc===undefined?{base:20*60e3,inc:10e3}:d.tc,first:'host',names:[S.A&&S.A.nick||'',S.B&&S.B.nick||''],moves,
+    clock:[d.clock&&d.clock.A||0,d.clock&&d.clock.B||0],result:res,started:d.phase!=='waiting'};}
+try{const sv=LS.get(K('test'),null);if(sv&&sv.doc&&!Array.isArray(sv.moves)){const g=oldGame(sv.doc);
+    if(g)LS.set(K('test'),{...g,tc:null,first:'me',clock:[0,0],running:false,elapsed:0,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:0});else LS.del(K('test'));}
+  if(!LS.get('games-name','')){const v=localStorage.getItem('pdd-nick');if(v)LS.set('games-name',v);}}catch(e){}
+{const coreImport=importCode;importCode=function(s){const x=String(s||'').replace(/\s+/g,'');if(x.indexOf('PONTE1.')!==0)return coreImport(s);
+  const g=oldGame(JSON.parse(decodeURIComponent(escape(atob(x.slice(7))))));if(!g)throw 0;return g;};}
+coreStart();
 </script>
-</body>
-</html>
+</body></html>

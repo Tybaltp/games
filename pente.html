@@ -1,320 +1,168 @@
 <!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pente</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=1">
 <style>
-/* Plateau à gauche, feuille de partie à droite ; tout s'empile sur téléphone */
+/* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
- --bg:#E7EAE5; --surface:#F5F6F2; --ink:#1B211F; --muted:#5B6660; --rule:#CBD2CB;
- --accent:#9C2E3A; --accent-ink:#FFFFFF; --ok:#2F7D4F; --warn:#A86A12; --bad:#B3261E;
- --ring-b:transparent; --ring-w:rgba(0,0,0,.55);
- --f-display:"Gloock", Georgia, "Times New Roman", serif;
- --f-ui:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
- color-scheme:light;
+  --bg:#E7EAE5;--panel:#F5F6F2;--ink:#1B211F;--muted:#5B6660;--line:#CBD2CB;
+  --accent:#9C2E3A;--accent-ink:#FFFFFF;--danger:#B3261E;
+  --ring-b:transparent;--ring-w:rgba(0,0,0,.55);
+  --f-display:"Gloock",Georgia,"Times New Roman",serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:ui-monospace,Menlo,Consolas,monospace;
+  /* the board is square, with or without the coordinates (without them the margins are tighter and the board grows) */
+  --board-ar:1/1;color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
- --bg:#141917; --surface:#1C2320; --ink:#E5EAE6; --muted:#98A39D; --rule:#2D3632;
- --accent:#E1737D; --accent-ink:#1A0C0E; --ok:#6CC08E; --warn:#E0A84A; --bad:#F2867D;
- --ring-b:rgba(255,255,255,.6); --ring-w:transparent; color-scheme:dark}}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45}
-[hidden]{display:none!important}
-.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.topbar{max-width:1200px;margin:0 auto;padding-block:12px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:7px;overflow:hidden}
-.seg button{font:inherit;font-size:12.5px;font-weight:700;letter-spacing:.04em;padding:5px 10px;border:0;background:var(--surface);color:var(--muted);cursor:pointer}
-.seg button+button{border-left:1px solid var(--rule)}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.small{font:inherit;font-size:13px;font-weight:600;padding:5px 10px;border-radius:7px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
-.small.armed{border-color:var(--bad);color:var(--bad)}
-.app{max-width:1200px;margin:0 auto;padding-block:12px 32px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start}
-.board-col{min-width:0}
-.board-wrap{width:100%;max-width:min(100%,calc(100vh - 80px));margin:0 auto;aspect-ratio:1;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
-canvas{display:block;width:100%;height:100%;touch-action:manipulation}
-.side{display:flex;flex-direction:column;gap:16px;min-width:0}
-h1{font-family:var(--f-display);font-weight:400;font-size:42px;line-height:1;margin:0}
-.head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.net{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;color:var(--muted)}
-.net i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
-.net.ok i{background:var(--ok)}.net.warn i{background:var(--warn)}.net.bad i{background:var(--bad)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tag{font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--rule);border-radius:999px;color:var(--muted)}
-.status{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:14px 16px}
-.status .main{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px}
-.status.mine{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.status .sub{color:var(--muted);font-size:13.5px;margin-top:4px;min-height:1.2em}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none;display:none}
-.thinking .dot{display:block;animation:pulse 1s ease-in-out infinite}
-@keyframes pulse{50%{opacity:.25}}
-.players{display:grid}
-.player{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--rule)}
-.player:last-child{border-bottom:0}
-.pstone{width:20px;height:20px;border-radius:50%;flex:none}
-.pstone.b{background:#1c1f1e;border:1px solid #000;box-shadow:0 0 0 1px var(--ring-b)}
-.pstone.w{background:#f7f6f1;border:1px solid rgba(0,0,0,.6)}
-.pstone.u{border:1.5px dashed var(--muted)}
-.pname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pname small{font-weight:400;color:var(--muted)}
-.slots{display:flex;gap:3px;margin-top:4px}
-.slot{width:20px;height:12px;border-radius:7px;border:1px dashed var(--rule);display:flex;align-items:center;justify-content:center;gap:1px}
-.slot.on{border-style:solid;border-color:var(--muted)}
-.mini{width:6px;height:6px;border-radius:50%;display:inline-block;flex:none}
+html.nocoords{--board-ar:1/1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141917;--panel:#1C2320;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
+  --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141917;--panel:#1C2320;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
+  --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark}
+h1{font-weight:400;letter-spacing:0}
+.lede{color:var(--muted);margin:0;font-size:.95rem}
+/* the wooden board, edge to edge in its frame, on every screen */
+.board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:#D3AE76;border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
+.board .pt{cursor:pointer}
+/* stones: the seat's colour on the players' cards (unknown until the Swap2 choice), in the bar's choice buttons */
+.dot.pst{width:16px;height:16px;border-radius:50%}
+.pst.b{background:#1c1f1e;border:1px solid #000;box-shadow:0 0 0 1px var(--ring-b)}
+.pst.w{background:#f7f6f1;border:1px solid rgba(0,0,0,.6)}
+.pst.u{background:none;border:1.5px dashed var(--muted)}
+.player .cnt{display:flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.mini{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .mini.b{background:#151716;box-shadow:0 0 0 1px var(--ring-b)}.mini.w{background:#f4f3ee;box-shadow:0 0 0 1px var(--ring-w)}
-.clock{font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--rule);min-width:84px;text-align:center;color:var(--muted)}
-.clock.run{color:var(--ink);border-color:var(--ink)}
-.clock.low{color:var(--bad);border-color:var(--bad)}
-.actions{display:flex;flex-direction:column;gap:8px}
-.actions:empty{display:none}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.row>.btn{flex:1 1 0;justify-content:center}
-.btn{font:inherit;font-weight:600;font-size:14px;padding:10px 14px;border-radius:7px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px}
-.btn:hover:not(:disabled){border-color:var(--muted)}
-.btn:focus-visible,.small:focus-visible,.seg button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn:disabled{opacity:.45;cursor:default}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);justify-content:center}
-.btn.danger{color:var(--bad)}
-.btn small{display:block;font-weight:400;font-size:12.5px;opacity:.8}
-.btn.suggested{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.btn.suggested::after{content:attr(data-sugg);margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.controls .btn{padding:8px 12px;font-size:13.5px}
-.level{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);margin-left:auto}
-select{font:inherit;font-size:14px;padding:7px 8px;border-radius:6px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
-.opt{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
-.opt input{width:16px;height:16px;accent-color:var(--accent)}
-h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
-.block{border-top:1px solid var(--rule);padding-top:12px}
-.review{display:grid;gap:8px}
-.review .row .btn{padding:6px 0;font-size:20px;line-height:1}
-.review p{margin:0;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.invite{display:grid;gap:10px}
-.link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
-.link label{grid-column:1/-1;font-size:13px;font-weight:600}
-.link input{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0;width:100%}
-.link .btn{padding:7px 10px;font-size:13px}
-.note{font-size:13px;color:var(--muted);margin:0}
-.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;letter-spacing:.12em;font-weight:700}
-.log{max-height:200px;overflow:auto}
-.log ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px 10px;font-variant-numeric:tabular-nums;font-size:13px}
-.log li{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.log .n{color:var(--muted);width:22px;text-align:right}
-.log .x{color:var(--accent);font-weight:700}
-.log .cur{font-weight:700;color:var(--accent)}
-.log .empty{grid-column:1/-1;color:var(--muted)}
-details.rules{font-size:13px;color:var(--muted)}
-details.rules summary{cursor:pointer;font-weight:600;color:var(--ink)}
-details.rules ul{margin:8px 0 0;padding-left:18px;display:grid;gap:3px}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px)}
-.toast.on{opacity:1}
-/* accueil */
-.landing{max-width:900px;margin:0 auto;padding-block:20px 40px;display:grid;gap:24px}
-.landing h1{font-size:64px}
-.lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
-.cards{max-width:440px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.opts,.picks{display:flex;flex-direction:column;gap:14px}.picks{gap:8px}
-.btn.big{padding:14px;font-size:16px}
-.newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.newHead .back,.linkish{font:inherit;background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:13.5px;cursor:pointer}
-.linkish{color:var(--ink);font-weight:600}
-.pick{flex-direction:column;align-items:flex-start;gap:2px}
-.pick b{font-size:15px}.pick span{font-size:12.5px;color:var(--muted);font-weight:400}
-.joinLine{margin:0;text-align:center;font-size:14px;color:var(--muted)}
-.cards>.err:empty{display:none}
-.inv-only{display:none}
-#home.invited .cards>:not(#joinCard){display:none}
-#home.invited .cards>#lErr:not(:empty){display:block}
-#home.invited .inv-only{display:block}#home.invited .noinv{display:none}
-.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
-.card h2{margin:0;font-size:13px}
-.card h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.card hr{border:0;border-top:1px solid var(--rule);margin:2px 0;width:100%}
-.field{display:grid;gap:4px;font-size:13.5px;font-weight:600}
-.field textarea{font:inherit;font-weight:400;font-size:12.5px;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;resize:vertical}
-.field input,.field select{font:inherit;font-weight:400;font-size:15px;padding:9px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);width:100%}
-fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 16px}
-legend{font-size:13.5px;font-weight:600;margin-bottom:6px;padding:0}
-.radio{display:flex;align-items:center;gap:7px;font-size:14px;cursor:pointer}
-.radio input{accent-color:var(--accent)}
-.err{color:var(--bad);font-weight:600;margin:0;min-height:1.2em}
-@media (max-width:860px){.app{grid-template-columns:minmax(0,1fr);gap:18px}.board-wrap{max-width:100%}h1{font-size:34px}.log ol{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.card.primary-card{border-color:var(--ink)}
-.cards>details.card{display:block}
-.cards>details.card>summary{cursor:pointer;font-weight:600}
-.cards>details.card>.inner{display:flex;flex-direction:column;gap:14px;margin-top:14px}
-@media (max-width:759px){.landing h1{font-size:48px}}
-@media (max-width:480px){.log ol{grid-template-columns:repeat(3,minmax(0,1fr))}.level{margin-left:0}}
-/* ---- jeu : plateau, joueurs et commandes ; le reste replié ---- */
-.grow{flex:1}
-.topbar{padding-block:8px 0}
-.brand{font-family:var(--f-display);font-size:30px;line-height:1;margin:0;font-weight:400}
-.brand a{color:inherit;text-decoration:none}.brand a:hover{color:var(--accent)}
-.brand .crumb{font-family:system-ui,sans-serif;font-size:15px;font-weight:600;color:var(--muted)}
-.brand .sep{font-family:system-ui,sans-serif;font-size:15px;color:var(--muted);margin:0 .3em}
-.app{padding-block:8px 12px;align-items:start;grid-template-columns:minmax(0,1fr) 320px}
-.board-col{--bw:min(100%,calc(100vh - 110px));--bw:min(100%,calc(100svh - 110px));display:flex;flex-direction:column;gap:8px;min-width:0}
-.board-col>*{width:100%;max-width:var(--bw);margin:0 auto}
-.board-wrap{max-width:var(--bw)}
-.nav{display:flex;align-items:center;gap:6px}
-.nav .btn{flex:0 0 auto;justify-content:center;padding:6px 12px;font-size:15px;line-height:1}
-.navpos{margin-left:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap;min-width:13ch;text-align:right}
-.notice{min-height:2.6em;display:flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:8px;font-weight:600;font-size:14px;text-align:center;border:1px solid transparent}
-.notice.on{background:var(--surface);border-color:var(--rule)}
-.notice.turn{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.notice.think::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:8px;flex:none;animation:pulse 1s ease-in-out infinite}
-.side{position:sticky;top:8px;max-height:calc(100vh - 60px);max-height:calc(100svh - 60px);overflow:auto;gap:12px;padding:2px}
-.players{display:grid;gap:8px}
-.players.top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-.player{display:grid;grid-template-columns:20px minmax(0,1fr) auto;grid-template-areas:"st nm ck" "st cn ck";align-items:center;gap:2px 8px;padding:8px 10px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;opacity:.72}
-.player .pstone{grid-area:st}.player .pname{grid-area:nm;min-width:0}.player .clock{grid-area:ck}
-.player .cnt{grid-area:cn;display:flex;align-items:center;gap:5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
-.player .cnt .mini{width:9px;height:9px}
-.mini.u{border:1px dashed var(--muted);box-sizing:border-box}
-.player.turn{opacity:1;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.player .pname{font-size:16px;font-weight:700}
-.player .clock{font-size:22px;font-weight:700;min-width:76px;padding:3px 8px}
-.player .clock.run{color:var(--ink);border-color:var(--ink);background:var(--bg)}
-.cmd{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
-.cmd .actions{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px}
-.cmd .actions>#aHome,.cmd .actions>.note{flex-basis:100%}
-.cmd .actions:empty{display:none}
-.cmd .actions>.row{display:contents}
-.cmd .actions>*{flex:1 1 0;min-width:0}
-.cmd .actions .btn{justify-content:center;padding:9px 6px;font-size:13.5px;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cmd .actions .btn small{display:none}
-.cmd .actions .note{align-self:center;margin:0}
-.cmd .controls .level{margin-left:auto}
-.opts{display:flex;flex-direction:column;gap:8px}
-.opt.snd{cursor:default}
-.opt.snd input[type=range]{flex:1;min-width:60px;width:auto;height:auto;accent-color:var(--accent)}
-#aiInfo{min-height:1.2em}
-.side details.blk{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--muted)}
-.side details.blk>summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
-.side details.blk>*:not(summary){margin-top:8px}
-.side details.prominent{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--ink)}
-.side details.prominent>summary{color:var(--ink);font-size:15px}
-.review{border-top:0;padding-top:0}
-.slot{width:20px;height:12px}.mini{width:6px;height:6px}
-@media (max-width:860px){
- .app{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding-block:6px 24px}
- .board-col{--bw:min(100%,max(240px,calc(100svh - 230px)))}
- .side{position:static;max-height:none;overflow:visible}
- .player{grid-template-columns:16px minmax(0,1fr);grid-template-areas:"st nm" "ck ck" "cn cn";gap:4px 6px;padding:6px 8px}
- .player .pstone{width:16px;height:16px}
- .player .pname{font-size:15px}
- .player .clock{justify-self:start;font-size:19px;min-width:62px;padding:2px 6px}
- .slots{margin-top:3px;gap:2px}.slot{width:15px;height:10px}.mini{width:5px;height:5px}
-}
-@media (prefers-reduced-motion:reduce){.toast{transition:none}.thinking .dot{animation:none}}
+.mini.u{border:1px dashed var(--muted)}
+.notice button .pst{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}
+/* Swap2 choice: up to five commands (Black, White, +2 stones, then Undo / Hint), on two rows if needed */
+.notice.choose .btns{flex-wrap:wrap;justify-content:center;row-gap:4px}
+.notice.choose button{padding:4px 9px}
+@media (max-width:560px){.notice.choose{gap:3px}.notice.choose .msg{-webkit-line-clamp:1;line-clamp:1}}
+@media (orientation:landscape) and (max-height:500px){.notice.choose .msg{-webkit-line-clamp:1;line-clamp:1}}
 </style>
-</head>
-<body>
-<div class="topbar gutter">
- <span class="brand" id="brand"><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html">Pente</a></span>
- <span class="net" id="net" hidden><i></i><span id="netTxt"></span></span>
- <span class="grow"></span>
- <button class="small" id="homeBtn" hidden></button>
- <div class="seg" role="group" aria-label="Langue / Language"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div>
-</div>
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html"><b id="ttl" style="font-weight:inherit">Pente</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
 
-<main class="landing gutter" id="home">
- <header>
-  <h1>Pente</h1>
-  <p class="lede" data-i18n="lede"></p>
- </header>
- <div class="cards">
-  <section class="card primary-card" id="newCard">
-   <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp"></h2><button type="button" class="back" id="newBack" data-i18n="back"></button></div>
-   <button class="btn primary big" type="button" id="newBtn" data-i18n="createT"></button>
-   <div class="picks" id="newPick" hidden>
-    <button type="button" class="btn pick" data-pick="link"><b data-i18n="m_link"></b><span data-i18n="m_linkTxt"></span></button>
-    <button type="button" class="btn pick" data-pick="ai"><b data-i18n="m_ai"></b><span data-i18n="m_aiTxt"></span></button>
-    <button type="button" class="btn pick" data-pick="local"><b data-i18n="m_local"></b><span data-i18n="m_localTxt"></span></button>
-   </div>
-   <div class="opts" id="createOpts" hidden>
-    <label class="field" for="cName"><span data-i18n="nick"></span><input id="cName" maxlength="24" autocomplete="nickname"></label>
-    <label class="field" for="cFirst"><span data-i18n="firstPlayer"></span><select id="cFirst"><option value="rnd" selected data-i18n="random"></option><option value="me" data-i18n="me"></option><option value="opp" data-i18n="myOpponent"></option></select></label>
-    <label class="field" for="cTc"><span data-i18n="timeControl"></span><select id="cTc"></select></label>
-    <button class="btn primary" id="cGo" data-i18n="create"></button>
-   </div>
-   <div class="opts" id="aiOpts" hidden>
-    <label class="field" for="hLevel"><span data-i18n="level"></span><select id="hLevel"></select></label>
-    <label class="field" for="aiFirst"><span data-i18n="opener"></span><select id="aiFirst"><option value="rnd" selected data-i18n="random"></option><option value="me" data-i18n="me"></option><option value="ai" data-i18n="computerCap"></option></select></label>
-    <button class="btn primary" id="goAI" data-i18n="play"></button>
-   </div>
-   <div class="opts" id="testOpts" hidden>
-    <button class="btn primary" id="tGo" data-i18n="localBtn"></button>
-   </div>
-  </section>
-  <p class="err" id="lErr"></p>
-  <p class="joinLine noinv"><span data-i18n="haveCode"></span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen"></button></p>
-  <section class="card primary-card" id="joinCard" hidden>
-   <h2 class="noinv" data-i18n="joinT"></h2>
-   <h2 class="inv-only" data-i18n="invitedT"></h2>
-   <p class="note inv-only" data-i18n="invitedTxt"></p>
-   <label class="field noinv" for="jCode"><span data-i18n="code"></span><input id="jCode" maxlength="12" autocomplete="off" placeholder="k7m2qp"></label>
-   <label class="field" for="jName"><span data-i18n="nick"></span><input id="jName" maxlength="24" autocomplete="nickname"></label>
-   <div class="row"><button class="btn primary" id="jPlay" data-i18n="join"></button><button class="btn" id="jWatch" data-i18n="watch"></button></div>
-   <p class="note noinv" data-i18n="linkHint"></p>
-   <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther"></button></p>
-  </section>
-  <section class="card" id="resumeCard" hidden>
-   <h2 data-i18n="inProgress"></h2>
-   <p class="note" id="resumeTxt"></p>
-   <button class="btn primary" id="resumeBtn" data-i18n="resumeBtn"></button>
-  </section>
-  <details class="card">
-   <summary data-i18n="more"></summary>
-   <div class="inner">
-    <h3 data-i18n="resumeTitle"></h3>
-    <label class="field" for="rIn"><span data-i18n="resumeCode"></span><textarea id="rIn" rows="3" spellcheck="false" autocomplete="off" placeholder="PENTE1.…"></textarea></label>
-    <div class="row" id="rSeats"></div>
-    <button class="btn" id="rGo" data-i18n="load"></button>
-    <p class="note" data-i18n="resumeNote"></p>
-   </div>
-  </details>
- </div>
- <details class="rules"><summary data-i18n="rules"></summary><ul class="rulesList"></ul></details>
+<section class="view" id="setup">
+  <div class="home">
+    <p class="lede noinv" data-i18n="lede"></p>
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
+      <div class="picks" id="newPick" hidden>
+        <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Six levels, to practise.</span></button>
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
+      </div>
+      <form class="form" id="createForm" hidden>
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <label for="cFirst"><span data-i18n="firstIs">First player (places the Swap2 opening)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label for="aFirst"><span data-i18n="opener">Who places the Swap2 opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <div class="card primary-card" id="joinCard" hidden>
+      <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
+      <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
+      <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
+      <form class="form" id="joinForm">
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+      </form>
+      <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
+    </div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <details><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PENTE1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    </details>
+    <details id="rulesHome" class="noinv"></details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="0 0 660 660" role="img" aria-label="Pente board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="notice" id="notice"></div>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
+      <p class="hint" id="watchInfo"></p>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before playing it</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+    </div>
+    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
+      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
 </main>
-
-<div class="app gutter" id="game" hidden>
- <div class="board-col">
-  <section class="players top" id="playersTop"></section>
-  <div class="board-wrap"><canvas id="cv"></canvas></div>
-  <div class="nav" id="nav" hidden><button class="btn" id="nv0">⏮</button><button class="btn" id="nvP">◀</button><button class="btn" id="nvN">▶</button><button class="btn" id="nvE">⏭</button><span class="navpos" id="navPos"></span></div>
-  <div class="notice" id="notice" aria-live="polite"></div>
- </div>
- <aside class="side">
-  <section class="players" id="playersSide"></section>
-  <details class="blk" id="inviteBox" hidden><summary data-i18n="invite"></summary><div class="invite" id="invite"></div></details>
-  <section class="block review" id="review" hidden></section>
-  <section class="cmd" id="cmd">
-   <div class="actions" id="swapRow"></div>
-   <div class="actions" id="actions"></div>
-   <div class="controls" id="aiControls">
-    <button class="btn" id="bUndo" data-i18n="undo"></button>
-    <button class="btn" id="bHint" data-i18n="hint"></button>
-    <label class="level" for="gLevel"><span data-i18n="level"></span><select id="gLevel"></select></label>
-    <p class="note" id="aiInfo" style="flex-basis:100%"></p>
-   </div>
-   <div class="opts">
-    <label class="opt" for="optConfirm" id="optWrap"><input type="checkbox" id="optConfirm"> <span data-i18n="confirmOpt"></span></label>
-    <div class="opt snd"><label class="opt" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds"></span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Volume"></div>
-   </div>
-   <div class="actions" id="resignBox"></div>
-  </section>
-  <details class="blk" id="resumeBlk" hidden><summary data-i18n="resumeCodeT"></summary><p class="note" data-i18n="resumeLast"></p><button class="btn" id="rcCopy" data-i18n="copyResume"></button><div class="link"><input id="rcTxt" readonly hidden aria-label="Resume code"></div></details>
-  <details class="blk"><summary data-i18n="moves"></summary><div class="log"><ol id="log"></ol></div></details>
-  <details class="blk"><summary data-i18n="rulesBrief"></summary><ul class="rulesList"></ul></details>
- </aside>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
 </div>
-<div class="toast" id="toast" role="status"></div>
+<!-- The computer opponent (Pente's search, unchanged): run in a worker by common/core.js (GAME.aiSrc), or on the page
+     when no worker can be made. aiSearch(pos,opt) at the end answers for every phase of the game, Swap2 included. -->
 <script type="text/plain" id="engine-src">
 "use strict";
 const N=15,NN=225;
@@ -505,185 +353,35 @@ function suggestPlace(arr,c,ms){loadBoard(arr,[0,0,0]);let any=false;for(let i=0
  const per=Math.max(60,(ms/cand.length)|0);let best=cand[0],bs=INF,bsc=0;
  for(const j of cand){setCell(j,c);const r=think(2,per);setCell(j,0);const v=Math.abs(r.score);if(v<bs){bs=v;best=j;bsc=r.score;}}
  return {move:best,score:bsc};}
-
-if(typeof WorkerGlobalScope!=='undefined'){
- self.onmessage=function(e){const m=e.data;
-  if(m.type==='place'){const r=suggestPlace(m.board,m.c,m.ms);self.postMessage({id:m.id,move:r.move,score:r.score});return;}
-  if(m.type==='propose'){const r=propose(m.ms);self.postMessage({id:m.id,stones:r.stones,score:r.score});return;}
-  loadBoard(m.board,m.caps);const r=think(m.c,m.ms,m.opt);self.postMessage({id:m.id,move:r.move,score:r.score,depth:r.depth});};
-}
+// ===== the interface with common/core.js: one answer per phase =====
+// pos = {phase, B (225 cells: 0 empty, 1 black, 2 white), caps [0,black pairs,white pairs], toMove}; opt = a level (ms, maxDepth,
+// noise, ext, k), plus hint:true for a suggestion. The move is in the page's move form (see the page's enc()).
+function aiSearch(p,o){o=o||{};const ms=o.ms||700;
+ // the Swap2 opening: the most balanced of a few random openings
+ if(p.phase==='open'){const r=propose(o.hint?Math.max(1500,ms):1500);return {move:{t:'o',s:r.stones.map(x=>x.i)},score:r.score,depth:1};}
+ loadBoard(p.B,p.caps);
+ // the colour choice, judged with White to move: White if White is not worse, Black otherwise; a suggestion close to
+ // the balance adds 2 stones (each placed to keep the balance) and leaves the hard choice to the opponent
+ if(p.phase==='choose'||p.phase==='choose1'){const r=think(2,ms,Object.assign({},o,{noise:0})),s=r.score;
+  if(o.hint&&p.phase==='choose'&&Math.abs(s)<=250){const b=suggestPlace(p.B,1,ms/2).move,B2=Array.from(p.B);B2[b]=1;const w=suggestPlace(B2,2,ms/2).move;
+   return {move:{t:'a',s:[b,w]},score:s,depth:r.depth};}
+  return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
+ const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="common/core.js?v=1"></script>
 <script>
-(function(){
-"use strict";
-const N=15,NN=N*N,LET="ABCDEFGHJKLMNOP",DIRS=[[1,0],[0,1],[1,1],[1,-1]],WIN=10000000;
-const $=id=>document.getElementById(id);
-const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
-// Nickname shared by all the games (games-name, JSON), with Pente's former key as fallback
-const nickGet=()=>{let v=null;try{v=JSON.parse(localStorage.getItem('games-name'));}catch(e){}return v||store.get('pente-name')||'';},nickSet=v=>{try{localStorage.setItem('games-name',JSON.stringify(v));}catch(e){}store.set('pente-name',v);};
+// ===== Pente on the shared code (common/core.js) =====
+// Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
+// (st.color[seat]: 0 not yet, 1 black, 2 white); White makes the first move after the choice.
+// Move codes (one per action, so that a game is its list of codes, replayed by peReplay):
+//   'o<b>.<w>.<b>'  the opening: black, white, black stones (cell indices 0-224, row by row from the top-left corner)
+//   'B' / 'W'       take Black / take White (the second player after the opening, or the first after 2 more stones)
+//   'a<b>.<w>'      the second player adds 1 black and 1 white stone and leaves the colour choice to the first
+//   'm<i>'          a stone of the colour to move, once the colours are chosen
+const N=15,NN=N*N,LET="ABCDEFGHJKLMNOP",DIRS=[[1,0],[0,1],[1,1],[1,-1]],PWIN=10000000;
 const coord=i=>LET[i%N]+(N-((i/N)|0));
-const other=s=>s==='H'?'G':'H';
-const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function rid(n){const a="abcdefghjkmnpqrstuvwxyz23456789";let s="";const r=new Uint32Array(n);crypto.getRandomValues(r);for(let k=0;k<n;k++)s+=a[r[k]%a.length];return s;}
-
-/* ================= langues ================= */
-const I18N={
-fr:{
- lede:"Le jeu de Pente sur un plateau 15×15 : ouverture Swap2, cinq paires capturées gagnent, les lignes de six et plus gagnent.",
- vsHuman:"Contre un joueur",level:"Niveau",
- lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_confirme:"Confirmé",lv_fort:"Fort",lv_expert:"Expert",
- opener:"Qui pose l'ouverture Swap2 ?",me:"Moi",computerCap:"L'ordinateur",computer:"L'ordinateur",play:"Jouer",
- yourName:"Votre nom",timeControl:"Pendule",tc_none:"Sans pendule",firstPlayer:"Premier joueur (pose l'ouverture Swap2)",
- myOpponent:"Mon adversaire",random:"Aléatoire",create:"Créer la partie",joinTitle:"Rejoindre une partie",code:"Code de la partie",
- join:"Jouer",watch:"Observer",rules:"Règles",
- r1:"Aligner 5 pierres ou plus gagne.",
- r2:"Encadrer exactement deux pierres adverses (X O O X) les capture. Se poser entre deux pierres adverses est sans risque.",
- r3:"Cinq paires capturées gagnent.",
- r4:"Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.",
- r5:"Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.",
- home:"Accueil",leaveQ:"Une partie est en cours. La quitter ?",you:"vous",youCap:"Vous",hostDefault:"Hôte",guestDefault:"Invité",
- black:"Noir",white:"Blanc",firstP:"premier joueur",secondP:"second joueur",waiting:"En attente…",
- captured:"{n} paires capturées sur 5",confirmOpt:"Confirmer chaque coup avant de le jouer",
- confirm1:"Valider le coup",confirmN:"Valider les pierres",
- takeBlack:"Prendre Noir",takeBlackSub:"Blanc joue le prochain coup.",takeWhite:"Prendre Blanc",takeWhiteSub:"Vous jouez le prochain coup.",
- add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",suggested:"Suggéré",
- resign:"Abandonner",resignConfirm:"Confirmer l'abandon",keepPlaying:"Continuer",
- newGame:"Nouvelle partie",rematch:"Rejouer",of_sent:"Proposition envoyée.",of_withdraw:"Annuler",of_incoming:"{n} propose une nouvelle partie, couleurs inversées.",of_accept:"Accepter",of_decline:"Refuser",of_declined:"{n} a refusé.",
- undo:"Annuler le coup précédent",hint:"Suggestion",
- invite:"Inviter",linkOpp:"Lien pour l'adversaire",linkWatch:"Lien pour les observateurs",gameCode:"Code à envoyer",copy:"Copier",
- copied:"Lien copié.",copySel:"Sélectionné : copiez avec Ctrl+C / Cmd+C.",
- inviteNote:"L'autre joueur ouvre cette page, saisit le code dans « Rejoindre une partie » et clique sur Jouer. Il peut aussi utiliser le lien.",
- obs0:"Aucun observateur.",obs1:"1 observateur connecté.",obsN:"{n} observateurs connectés.",
- watching:"Vous observez",gameT:"Partie",codeLine:"Code {code}",
- moves:"Coups",noStones:"Aucune pierre posée.",
- review:"Revoir la partie",rvEnter:"Mode révision",rvNone:"Un joueur peut lancer la révision.",rvYouCtrl:"Vous avez la main : cliquez pour jouer une variante.",rvCtrlBy:"{name} a la main.",rvAlt:"variante : {n} coup(s)",rvBack:"Revenir à la partie",rvGive:"Donner la main à {name}",rvExit:"Quitter la révision",reviewStart:"Position de départ",reviewPos:"Après le coup {k} sur {n}",
- first:"Début",prev:"Coup précédent",next:"Coup suivant",last:"Fin",
- youWin:"Vous gagnez",youLose:"Vous perdez",xWins:"{name} gagne",draw:"Partie nulle",winBy:"{color} gagne par {reason}.",boardFull:"Plateau plein.",
- res_resign:"abandon",res_time:"dépassement du temps",res_five:"cinq alignées",res_line:"une ligne de {n}",res_caps:"cinq paires capturées",
- st_waitHost:"En attente de l'adversaire",st_waitHostSub:"Envoyez-lui le code ci-dessous.",st_wait:"En attente du second joueur",
- st_openMine:"Posez l'ouverture",st_openMineSub:"2 noires et 1 blanche, dans l'ordre noire, blanche, noire ({n}/3).",
- st_openOther:"{name} pose l'ouverture",st_openOtherSub:"Les pierres apparaîtront quand elles seront envoyées.",
- st_openAI:"L'ordinateur prépare une ouverture équilibrée…",
- st_add2:"Ajoutez 1 noire puis 1 blanche",st_add2Sub:"{n}/2. {name} choisira ensuite sa couleur.",
- st_choose:"À vous de choisir",st_chooseSub:"Prendre Noir, prendre Blanc, ou ajouter 2 pierres.",
- st_chooseOther:"{name} choisit",st_chooseOtherSub:"Noir, Blanc, ou 2 pierres de plus.",
- st_choose1:"Choisissez votre couleur",st_choose1Sub:"{name} a ajouté une noire et une blanche.",st_choose1Other:"{name} choisit sa couleur",
- st_play:"À vous de jouer ({color})",st_sending:"Envoi…",st_tentative:"Coup en {c} : validez pour le jouer.",st_placeConfirm:"Posez une pierre, puis validez.",st_direct:"Le coup est joué dès le clic.",
- st_thinking:"{name} réfléchit",st_thinkingSub:"{name} joue {color}.",st_aiThinking:"L'ordinateur réfléchit…",st_hintBusy:"Recherche d'une suggestion…",
- st_connecting:"Connexion à la partie…",
- ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",
- ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",
- ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",
- ai_tookWhite:"L'ordinateur prend Blanc.",ai_tookBlack:"L'ordinateur prend Noir : vous avez Blanc.",
- hint_place:"Suggestion : pierre {col} en {c}, pour garder la position équilibrée.",hint_move:"Suggestion : {c}.",
- hint_white:"Suggestion : prendre Blanc et jouer {c}.",hint_black:"Suggestion : prendre Noir, la position favorise les noires.",
- hint_add:"Position proche de l'équilibre : ajouter 2 pierres laisse le choix délicat. Les deux couleurs restent jouables.",
- colw_1:"noire",colw_2:"blanche",undone:"Coup annulé.",
- n_connecting:"Connexion…",n_opening:"Ouverture de la partie…",n_online:"En ligne",n_connected:"Connecté",n_reconnect:"Reconnexion au serveur…",
- n_busy:"Code encore occupé, nouvel essai…",n_unreach:"Serveur de connexion injoignable",n_hostNF:"Hôte introuvable, nouvel essai…",n_lost:"Connexion perdue, nouvel essai…",n_nolib:"Bibliothèque de connexion non chargée",
- t_nolib:"Impossible de charger PeerJS : vérifiez la connexion Internet.",t_oppLeft:"Adversaire déconnecté.",t_joined:"{name} a rejoint la partie.",
- st_bothHere:"Les deux joueurs sont là",st_bothHereSub:"Cliquez sur « Commencer la partie ».",st_waitStart:"En attente de {name}",st_waitStartSub:"Il doit cliquer sur « Commencer la partie ».",st_waitBoth:"En attente du départ des deux joueurs",
- startGame:"Commencer la partie",waitingOpp:"En attente de l'adversaire…",e_started:"La partie a déjà commencé.",e_noOpp:"L'adversaire n'a pas encore rejoint la partie.",e_paused:"Partie en pause : les deux joueurs doivent être connectés.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez encore l'observer : cliquez sur Observer.",st_paused:"Partie en pause",st_pausedHost:"{name} déconnecté · pendules arrêtées",st_pausedGuest:"Reconnexion… · pendules arrêtées",st_pausedWatch:"Joueur déconnecté · pendules arrêtées",
- t_takeover:"L'hôte est injoignable : vous hébergez maintenant la partie.",t_back:"{name} est de retour.",t_oppPause:"Adversaire déconnecté : les pendules sont arrêtées.",sounds:"Sons",volume:"Volume",
- resumeTitle:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",resumeNote:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",iAm:"Je suis {name}",e_badResume:"Ce code de reprise n'est pas valide.",
- resumeCodeT:"Code de reprise",resumeLast:"En dernier recours, si la connexion ne peut pas être rétablie : l'un ou l'autre joueur colle ce code dans « Reprendre une partie » sur la page d'accueil.",copyResume:"Copier le code de reprise",resumeCopied:"Code de reprise copié.",
- t_seatsTaken:"Les deux places sont prises : vous observez la partie.",t_noConn:"Pas de connexion avec l'hôte.",st_waitHost:"Coup envoyé, en attente de l'hôte…",st_rejected:"Coup refusé par l'hôte : la position a changé. Rejouez.",t_allPlaced:"Toutes les pierres sont posées : validez ou retirez-en une.",
- e_over:"La partie est terminée.",e_notStarted:"La partie n'a pas commencé.",e_notTurn:"Ce n'est pas votre tour.",e_badOpen:"Ouverture invalide.",e_badChoice:"Choix invalide.",e_badMove:"Coup invalide.",
- e_code:"Saisissez le code reçu (6 caractères).",e_nogame:"Cette partie n'existe pas sur cet appareil.",
- tag_swap:"Swap2",tag_pairs:"5 paires",tag_long:"6+ gagne",tag_noclock:"sans pendule",tag_ai:"niveau {lv}",
- createT:"Créer une partie",joinT:"Rejoindre une partie avec un code",nick:"Votre pseudo",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",more:"Autres options",
- pickOpp:"Contre qui\u00a0?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Six niveaux, pour s'entraîner.",m_local:"Sur cet appareil",m_localTxt:"Les deux camps sur le même écran, pour essayer le jeu ou jouer face à face.",localBtn:"Commencer la partie",
- haveCode:"Vous avez reçu un code\u00a0?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",p1:"Joueur 1",p2:"Joueur 2",
- inProgress:"Partie en cours",inProgressHost:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",rulesBrief:"Règles en bref",
- n_waitHost:"En attente de votre adversaire : envoyez-lui le code de la partie.",n_wait:"En attente du second joueur.",n_bothHere:"Les deux joueurs sont là : cliquez sur « Commencer la partie ».",
- n_waitStart:"En attente que {name} clique sur « Commencer la partie ».",n_waitBoth:"En attente du départ des deux joueurs.",
- n_pausedHost:"{name} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",n_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",n_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
- n_open:"Posez l'ouverture : noire, blanche, noire ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",n_add2:"Ajoutez 1 noire puis 1 blanche ({n}/2) ; {name} choisira sa couleur.",
- n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",guestCode:"Code de la partie",cancelMv:"Annuler",
- nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",nav_pos:"Coup {k} / {n}"
-},
-en:{
- lede:"Pente on a 15×15 board: Swap2 opening, five captured pairs win, lines of six or more win.",
- vsHuman:"Against a player",level:"Level",
- lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_confirme:"Advanced",lv_fort:"Strong",lv_expert:"Expert",
- opener:"Who places the Swap2 opening?",me:"Me",computerCap:"The computer",computer:"The computer",play:"Play",
- yourName:"Your name",timeControl:"Clock",tc_none:"No clock",firstPlayer:"First player (places the Swap2 opening)",
- myOpponent:"My opponent",random:"Random",create:"Create game",joinTitle:"Join a game",code:"Game code",
- join:"Play",watch:"Watch",rules:"Rules",
- r1:"Five or more stones in a row wins.",
- r2:"Bracketing exactly two opposing stones (X O O X) captures them. Playing into a bracketed position is safe.",
- r3:"Capturing five pairs wins.",
- r4:"Swap2: the first player places 2 black stones and 1 white. The second player takes Black, takes White, or adds 1 black and 1 white and lets the first player choose. White moves next.",
- r5:"Fischer clock: base time for each player, increment added after every action. Running out of time loses the game.",
- home:"Home",leaveQ:"A game is in progress. Leave it?",you:"you",youCap:"You",hostDefault:"Host",guestDefault:"Guest",
- black:"Black",white:"White",firstP:"first player",secondP:"second player",waiting:"Waiting…",
- captured:"{n} of 5 pairs captured",confirmOpt:"Confirm each move before playing it",
- confirm1:"Confirm move",confirmN:"Confirm stones",
- takeBlack:"Take Black",takeBlackSub:"White plays the next move.",takeWhite:"Take White",takeWhiteSub:"You play the next move.",
- add2:"Add 2 stones",add2Sub:"1 black, then 1 white; {name} then chooses.",suggested:"Suggested",
- resign:"Resign",resignConfirm:"Confirm resignation",keepPlaying:"Keep playing",
- newGame:"New game",rematch:"Rematch",of_sent:"Offer sent.",of_withdraw:"Withdraw",of_incoming:"{n} offers a new game, colours swapped.",of_accept:"Accept",of_decline:"Decline",of_declined:"{n} declined.",
- undo:"Undo previous move",hint:"Hint",
- invite:"Invite",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",gameCode:"Code to send",copy:"Copy",
- copied:"Link copied.",copySel:"Selected: copy with Ctrl+C / Cmd+C.",
- inviteNote:"The other player opens this page, enters the code under “Join a game” and clicks Play. The link works too.",
- obs0:"No spectators.",obs1:"1 spectator connected.",obsN:"{n} spectators connected.",
- watching:"Watching",gameT:"Game",codeLine:"Code {code}",
- moves:"Moves",noStones:"No stones yet.",
- review:"Review the game",rvEnter:"Review mode",rvNone:"A player can start the review.",rvYouCtrl:"You have control: click to play a variation.",rvCtrlBy:"{name} has control.",rvAlt:"variation: {n} move(s)",rvBack:"Back to the game",rvGive:"Give control to {name}",rvExit:"Leave review",reviewStart:"Starting position",reviewPos:"After move {k} of {n}",
- first:"Start",prev:"Previous move",next:"Next move",last:"End",
- youWin:"You win",youLose:"You lose",xWins:"{name} wins",draw:"Draw",winBy:"{color} wins by {reason}.",boardFull:"Board full.",
- res_resign:"resignation",res_time:"time",res_five:"five in a row",res_line:"a line of {n}",res_caps:"capturing five pairs",
- st_waitHost:"Waiting for your opponent",st_waitHostSub:"Send them the code below.",st_wait:"Waiting for the second player",
- st_openMine:"Place the opening",st_openMineSub:"2 black and 1 white, in the order black, white, black ({n}/3).",
- st_openOther:"{name} is placing the opening",st_openOtherSub:"The stones will appear once they are sent.",
- st_openAI:"The computer is preparing a balanced opening…",
- st_add2:"Add 1 black, then 1 white",st_add2Sub:"{n}/2. {name} will then choose a color.",
- st_choose:"Your choice",st_chooseSub:"Take Black, take White, or add 2 stones.",
- st_chooseOther:"{name} is choosing",st_chooseOtherSub:"Black, White, or 2 more stones.",
- st_choose1:"Choose your color",st_choose1Sub:"{name} added a black and a white stone.",st_choose1Other:"{name} is choosing a color",
- st_play:"Your move ({color})",st_sending:"Sending…",st_tentative:"Move at {c}: confirm to play it.",st_placeConfirm:"Place a stone, then confirm.",st_direct:"Your move is played as soon as you click.",
- st_thinking:"{name} is thinking",st_thinkingSub:"{name} plays {color}.",st_aiThinking:"The computer is thinking…",st_hintBusy:"Looking for a hint…",
- st_connecting:"Connecting to the game…",
- ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",
- ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",
- ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",
- ai_tookWhite:"The computer takes White.",ai_tookBlack:"The computer takes Black: you have White.",
- hint_place:"Hint: {col} stone at {c}, to keep the position balanced.",hint_move:"Hint: {c}.",
- hint_white:"Hint: take White and play {c}.",hint_black:"Hint: take Black, the position favors Black.",
- hint_add:"Close to balanced: adding 2 stones hands over a hard choice. Both colors are playable.",
- colw_1:"black",colw_2:"white",undone:"Move undone.",
- n_connecting:"Connecting…",n_opening:"Opening the game…",n_online:"Online",n_connected:"Connected",n_reconnect:"Reconnecting to the server…",
- n_busy:"Code still in use, retrying…",n_unreach:"Connection server unreachable",n_hostNF:"Host not found, retrying…",n_lost:"Connection lost, retrying…",n_nolib:"Connection library not loaded",
- t_nolib:"Could not load PeerJS: check your Internet connection.",t_oppLeft:"Opponent disconnected.",t_joined:"{name} joined the game.",
- st_bothHere:"Both players are here",st_bothHereSub:"Click “Start the game”.",st_waitStart:"Waiting for {name}",st_waitStartSub:"They need to click “Start the game”.",st_waitBoth:"Waiting for both players to start",
- startGame:"Start the game",waitingOpp:"Waiting for your opponent…",e_started:"The game has already started.",e_noOpp:"Your opponent has not joined yet.",e_paused:"The game is paused until both players are connected.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",st_paused:"Game paused",st_pausedHost:"{name} disconnected · clocks stopped",st_pausedGuest:"Reconnecting… · clocks stopped",st_pausedWatch:"Player disconnected · clocks stopped",
- t_takeover:"The host is unreachable: you now host the game.",t_back:"{name} is back.",t_oppPause:"Opponent disconnected: the clocks are stopped.",sounds:"Sounds",volume:"Volume",
- resumeTitle:"Resume a game",resumeCode:"Resume code",load:"Load",resumeNote:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",iAm:"I am {name}",e_badResume:"This resume code is not valid.",
- resumeCodeT:"Resume code",resumeLast:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",copyResume:"Copy the resume code",resumeCopied:"Resume code copied.",
- t_seatsTaken:"Both seats are taken: you are watching the game.",t_noConn:"No connection to the host.",st_waitHost:"Move sent, waiting for the host…",st_rejected:"Move rejected by the host: the position has changed. Play again.",t_allPlaced:"All stones are placed: confirm, or remove one.",
- e_over:"The game is over.",e_notStarted:"The game has not started.",e_notTurn:"It is not your turn.",e_badOpen:"Invalid opening.",e_badChoice:"Invalid choice.",e_badMove:"Invalid move.",
- e_code:"Enter the code you received (6 characters).",e_nogame:"This game does not exist on this device.",
- tag_swap:"Swap2",tag_pairs:"5 pairs",tag_long:"6+ wins",tag_noclock:"no clock",tag_ai:"level {lv}",
- createT:"Create a game",joinT:"Join a game with a code",nick:"Your nickname",linkHint:"With an invitation link, the page connects on its own.",more:"Other options",
- pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Six levels, to practise.",m_local:"On this device",m_localTxt:"Both sides on the same screen, to try the game or play face to face.",localBtn:"Start the game",
- haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",p1:"Player 1",p2:"Player 2",
- inProgress:"Game in progress",inProgressHost:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game as a guest.",resumeBtn:"Resume game",rulesBrief:"Rules in brief",
- n_waitHost:"Waiting for your opponent: send them the game code.",n_wait:"Waiting for the second player.",n_bothHere:"Both players are here: click “Start the game”.",
- n_waitStart:"Waiting for {name} to click “Start the game”.",n_waitBoth:"Waiting for both players to start.",
- n_pausedHost:"{name} is unreachable. The clocks are stopped until they are back.",n_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",n_pausedWatch:"A player is disconnected. The clocks are stopped.",
- n_open:"Place the opening: black, white, black ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",n_add2:"Add 1 black, then 1 white ({n}/2); {name} then chooses a color.",
- n_choose1:"{name} added a black and a white stone: choose your color.",guestCode:"Game code",cancelMv:"Cancel",
- nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",nav_pos:"Move {k} / {n}"
-}};
-const jget=k=>{try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}};
-let lang=jget('games-lang')||jget('volo-lang')||store.get('pente-lang');if(lang!=='fr'&&lang!=='en')lang=(navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en';
-function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.fr[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
-
-/* ================= options ================= */
+// Levels of the computer opponent: options of the engine's search (time, depth, random choice among near-best moves,
+// forced-line extension, moves read per node); hints always at the strongest level
 const LEVELS={
  debutant:{maxDepth:2,noise:2500,ext:false,k:6,ms:500},
  facile:{maxDepth:2,noise:800,ext:false,k:8,ms:500},
@@ -691,22 +389,66 @@ const LEVELS={
  confirme:{maxDepth:4,noise:120,ext:false,k:10,ms:900},
  fort:{ms:700},
  expert:{ms:2500}};
-const HINT=LEVELS.expert;
-const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
-const tcLabel=id=>id==='none'?t('tc_none'):id.replace('+',' min + ')+' s';
-let level=store.get('pente-level');if(!LEVELS[level])level='moyen';
-let tcChoice=store.get('pente-tc');if(!TCS.some(x=>x.id===tcChoice))tcChoice='20+10';
-let confirmOn=store.get('pente-confirm')!=='0';
-function pickTabId(key,seed){const R=()=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(16)))s+=a[b%a.length];return s;};
-  try{const L=localStorage,S1=sessionStorage;let id=S1.getItem(key+'-tab');
-    if(!id){let ids=[];try{ids=JSON.parse(L.getItem(key+'-tabs')||'[]')||[];}catch(e){}if(!ids.length&&seed)ids=[seed];const now=Date.now();
-      id=ids.slice().reverse().find(x=>now-(+L.getItem(key+'-alive-'+x)||0)>5000);
-      if(!id){id=R();ids.push(id);}L.setItem(key+'-tabs',JSON.stringify(ids.filter((x,k)=>ids.indexOf(x)===k).slice(-10)));S1.setItem(key+'-tab',id);}
-    const beat=()=>{try{L.setItem(key+'-alive-'+id,String(Date.now()));}catch(e){}};beat();setInterval(beat,1500);return id;}catch(e){return R();}}
-function hh(t){let h=2166136261;t=String(t||'');for(let k=0;k<t.length;k++){h^=t.charCodeAt(k);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
-const token=pickTabId('pente',store.get('pente-token'));
+const HINT={...LEVELS.expert,hint:true};
 
-/* ================= règles ================= */
+
+// Pente strings, merged over the shared ones (core.js)
+const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n});
+const PE_I18N={fr:{
+ title:"Pente",lede:"Le jeu de Pente sur un plateau 15×15 : ouverture Swap2, cinq paires capturées gagnent, les lignes de six et plus gagnent.",
+ lv_facile:"Facile",lv_confirme:"Confirmé",lv_expert:"Expert",m_aiTxt:"Six niveaux, pour s'entraîner.",
+ firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup avant de le jouer",
+ black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
+ n_open:"Posez l'ouverture : noire, blanche, noire ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
+ n_add2:"Ajoutez 1 noire puis 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : noire, blanche, noire ({n}/3).",n_add2N:"{who} ajoute 1 noire puis 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
+ st_play:"À vous de jouer ({color}).",st_openOther:"{name} pose l'ouverture.",st_chooseOther:"{name} choisit : Noir, Blanc, ou 2 pierres de plus.",
+ st_choose1Other:"{name} choisit sa couleur.",st_turnC:"Au tour de {name} ({color}).",
+ st_tentative:"Coup en {c} : validez pour le jouer.",pend_stones:"Pierres : {m}. Validez pour les jouer.",confirm1:"Valider le coup",confirmN:"Valider les pierres",
+ bBlack:"Noir",bWhite:"Blanc",bAdd:"+2 pierres",takeBlack:"Prendre Noir",takeBlackSub:"Blanc joue le prochain coup.",takeWhite:"Prendre Blanc",takeWhiteSub:"Le prendre, c'est jouer le prochain coup.",
+ add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",
+ d_open:"noire {a}, blanche {b}, noire {c}",d_add:"2 pierres de plus, noire {a} et blanche {b}",d_B:"prendre Noir",d_W:"prendre Blanc",d_Wn:"prendre Blanc, puis jouer {c}",
+ l_B:"prend Noir",l_W:"prend Blanc",
+ w_five:"cinq alignées",w_caps:"cinq paires capturées",w_full:"plateau plein",
+ ai_tookWhite:"L'ordinateur prend Blanc.",ai_tookBlack:"L'ordinateur prend Noir.",boardLbl:"Plateau de Pente 15 par 15",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li>Aligner 5 pierres ou plus gagne.</li>
+ <li>Encadrer exactement deux pierres adverses (X O O X) les capture. Se poser entre deux pierres adverses est sans risque.</li>
+ <li>Cinq paires capturées gagnent.</li>
+ <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
+ <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
+ <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire). Cliquer une pierre provisoire la retire, avec celles posées après elle. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Valider ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+},en:{
+ title:"Pente",lede:"Pente on a 15×15 board: Swap2 opening, five captured pairs win, lines of six or more win.",
+ lv_facile:"Easy",lv_confirme:"Advanced",lv_expert:"Expert",m_aiTxt:"Six levels, to practise.",
+ firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move before playing it",
+ black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
+ n_open:"Place the opening: black, white, black ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",
+ n_add2:"Add 1 black, then 1 white ({n}/2); {name} then chooses a colour.",n_openN:"{name} places the opening: black, white, black ({n}/3).",n_add2N:"{who} adds 1 black, then 1 white ({n}/2); {name} then chooses a colour.",n_choose1:"{name} added a black and a white stone: choose your colour.",
+ st_play:"Your move ({color}).",st_openOther:"{name} is placing the opening.",st_chooseOther:"{name} is choosing: Black, White, or 2 more stones.",
+ st_choose1Other:"{name} is choosing a colour.",st_turnC:"{name} to move ({color}).",
+ st_tentative:"Move at {c}: confirm to play it.",pend_stones:"Stones: {m}. Confirm to play them.",confirm1:"Confirm move",confirmN:"Confirm stones",
+ bBlack:"Black",bWhite:"White",bAdd:"+2 stones",takeBlack:"Take Black",takeBlackSub:"White plays the next move.",takeWhite:"Take White",takeWhiteSub:"Taking it means playing the next move.",
+ add2:"Add 2 stones",add2Sub:"1 black, then 1 white; {name} then chooses.",
+ d_open:"black {a}, white {b}, black {c}",d_add:"2 more stones, black {a} and white {b}",d_B:"take Black",d_W:"take White",d_Wn:"take White, then play {c}",
+ l_B:"takes Black",l_W:"takes White",
+ w_five:"five in a row",w_caps:"five captured pairs",w_full:"board full",
+ ai_tookWhite:"The computer takes White.",ai_tookBlack:"The computer takes Black.",boardLbl:"15 by 15 Pente board",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li>Five or more stones in a row wins.</li>
+ <li>Bracketing exactly two opposing stones (X O O X) captures them. Playing into a bracketed position is safe.</li>
+ <li>Capturing five pairs wins.</li>
+ <li>Swap2: the first player places 2 black stones and 1 white. The second player takes Black, takes White, or adds 1 black and 1 white and lets the first player choose. White moves next.</li>
+ <li>Fischer clock: base time for each player, increment added after every action. Running out of time loses the game.</li>
+ <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; on a touch screen, a first tap places it provisionally). Clicking a provisional stone removes it, with the stones placed after it. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, six levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+}};
+for(let n=6;n<=9;n++){const l=LINES(n);PE_I18N.fr['w_line'+n]=l.fr;PE_I18N.en['w_line'+n]=l.en;}
+const CN=c=>c===1?t('black'):c===2?t('white'):'';
+
+// ---------- rules ----------
 function capture(B,i,c){const o=3-c,x=i%N,y=(i/N)|0,cap=[];B[i]=c;
  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const x3=x+3*dx,y3=y+3*dy;if(x3<0||x3>=N||y3<0||y3>=N)continue;
   const s=dy*N+dx;if(B[i+s]===o&&B[i+2*s]===o&&B[i+3*s]===c){B[i+s]=0;B[i+2*s]=0;cap.push(i+s,i+2*s);}}
@@ -715,554 +457,224 @@ function lineAt(B,i,c){const x=i%N,y=(i/N)|0;
  for(const [dx,dy] of DIRS){const cells=[i];for(const s of [1,-1]){let nx=x+dx*s,ny=y+dy*s;while(nx>=0&&nx<N&&ny>=0&&ny<N&&B[ny*N+nx]===c){cells.push(ny*N+nx);nx+=dx*s;ny+=dy*s;}}
   if(cells.length>=5)return cells.sort((a,b)=>a-b);}
  return null;}
-function newState(code,first,names,th,game,tc){return {v:2,code,game:game||1,phase:'wait',first,names,color:{H:0,G:0},B:new Array(NN).fill(0),caps:[0,0,0],toMove:2,log:[],lastCap:[],
- tc:tc||null,clocks:{H:tc?tc.base:0,G:tc?tc.base:0},turnStart:0,result:null,th:th||{H:null,G:null},ready:{H:false,G:false},ver:0,paused:false};}
-function turnSeat(s){if(!s||s.result||s.phase==='wait')return null;
- if(s.phase==='open'||s.phase==='choose1')return s.first;
- if(s.phase==='choose')return other(s.first);
- return s.color.H===s.toMove?'H':'G';}
-function act(s,seat,a,now){
- if(s.result)return 'e_over';
- if(a.t==='start'){if(s.phase!=='wait')return 'e_started';if(!(s.th&&s.th.H&&s.th.G))return 'e_noOpp';
-  s.ready=s.ready||{};s.ready[seat]=true;if(s.ready.H&&s.ready.G){s.phase='open';s.turnStart=now;}return null;}
- const ts=turnSeat(s);
- if(a.t==='resign'){if(!ts)return 'e_notStarted';if(s.tc)s.clocks[ts]=Math.max(0,s.clocks[ts]-(s.paused?0:now-s.turnStart));s.turnStart=now;s.result={winner:other(seat),code:'resign'};return null;}
- if(s.paused)return 'e_paused';
- if(seat!==ts)return 'e_notTurn';
- let left=0;
- if(s.tc){left=s.clocks[seat]-(now-s.turnStart);if(left<=0){s.clocks[seat]=0;s.turnStart=now;s.result={winner:other(seat),code:'time'};return null;}}
- const ok=arr=>Array.isArray(arr)&&arr.every((i,k)=>Number.isInteger(i)&&i>=0&&i<NN&&!s.B[i]&&arr.indexOf(i)===k);
- const put=(i,c)=>{s.B[i]=c;s.log.push({c,i,cap:0,o:1});};
- if(s.phase==='open'){
-  if(a.t!=='open'||!ok(a.stones)||a.stones.length!==3)return 'e_badOpen';
-  a.stones.forEach((i,k)=>put(i,[1,2,1][k]));s.lastCap=[];s.phase='choose';}
- else if(s.phase==='choose'){
-  if(a.t==='pick'&&(a.color===1||a.color===2)){s.color[seat]=a.color;s.color[other(seat)]=3-a.color;s.phase='play';s.toMove=2;}
-  else if(a.t==='add2'&&ok(a.stones)&&a.stones.length===2){put(a.stones[0],1);put(a.stones[1],2);s.phase='choose1';}
-  else return 'e_badChoice';}
- else if(s.phase==='choose1'){
-  if(a.t!=='pick'||!(a.color===1||a.color===2))return 'e_badChoice';
-  s.color[seat]=a.color;s.color[other(seat)]=3-a.color;s.phase='play';s.toMove=2;}
- else if(s.phase==='play'){
-  if(a.t!=='move'||!ok([a.i]))return 'e_badMove';
-  const c=s.toMove,cap=capture(s.B,a.i,c);s.caps[c]+=cap.length/2;s.lastCap=cap;s.log.push({c,i:a.i,cap:cap.length/2});
-  const line=lineAt(s.B,a.i,c);
-  if(line)s.result={winner:seat,code:line.length>5?'line':'five',n:line.length,line};
-  else if(s.caps[c]>=5)s.result={winner:seat,code:'caps'};
-  else if(s.B.every(v=>v))s.result={winner:null,code:'full'};
-  else s.toMove=3-c;}
- if(s.tc)s.clocks[seat]=left+(s.result?0:s.tc.inc);
- s.turnStart=now;
- return null;}
-function replay(log,k){const B=new Array(NN).fill(0),caps=[0,0,0];let lastCap=[];
- for(let j=0;j<k;j++){const e=log[j];if(e.o){B[e.i]=e.c;lastCap=[];}else{const cap=capture(B,e.i,e.c);caps[e.c]+=cap.length/2;lastCap=cap;}}
- return {B,caps,lastCap,last:k>0?log[k-1].i:-1};}
+// position: B (cells), caps [0,black,white] (pairs taken by each colour), phase 'open'|'choose'|'choose1'|'play',
+// color [seat 0, seat 1], toMove (colour, once chosen), turn (seat to act), last (stones of the last action),
+// lastCap (cells captured by it), line (winning line) and win {w,why} when the moves end the game
+const newSt=()=>({B:new Array(NN).fill(0),caps:[0,0,0],phase:'open',color:[0,0],toMove:2,turn:0,last:[],lastCap:[],line:null,win:null});
+const cloneSt=s=>({...s,B:s.B.slice(),caps:s.caps.slice(),color:s.color.slice(),last:s.last.slice(),lastCap:s.lastCap.slice()});
+const cell=v=>{const i=+v;return Number.isInteger(i)&&i>=0&&i<NN?i:-1;};
+function dec(code){code=String(code||'');let m;
+  if((m=/^o(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(code)))return {t:'o',s:[cell(m[1]),cell(m[2]),cell(m[3])]};
+  if((m=/^a(\d{1,3})\.(\d{1,3})$/.exec(code)))return {t:'a',s:[cell(m[1]),cell(m[2])]};
+  if(code==='B'||code==='W')return {t:code};
+  if((m=/^m(\d{1,3})$/.exec(code)))return {t:'m',i:cell(m[1])};
+  return null;}
+const enc=mv=>mv.t==='o'||mv.t==='a'?mv.t+mv.s.join('.'):mv.t==='m'?'m'+mv.i:mv.t;
+// Applies one action to st (in place); false if it is not legal now
+function applyMv(st,mv){const free=a=>a.every((i,k)=>i>=0&&!st.B[i]&&a.indexOf(i)===k);
+  const pick=(seat,c)=>{st.color[seat]=c;st.color[1-seat]=3-c;st.phase='play';st.toMove=2;st.turn=st.color[0]===2?0:1;st.last=[];st.lastCap=[];};
+  if(st.phase==='open'){if(mv.t!=='o'||!free(mv.s))return false;mv.s.forEach((i,k)=>{st.B[i]=[1,2,1][k];});st.last=mv.s.slice();st.lastCap=[];st.phase='choose';st.turn=1;return true;}
+  if(st.phase==='choose'){if(mv.t==='B'||mv.t==='W'){pick(1,mv.t==='B'?1:2);return true;}
+    if(mv.t!=='a'||!free(mv.s))return false;st.B[mv.s[0]]=1;st.B[mv.s[1]]=2;st.last=mv.s.slice();st.lastCap=[];st.phase='choose1';st.turn=0;return true;}
+  if(st.phase==='choose1'){if(mv.t!=='B'&&mv.t!=='W')return false;pick(0,mv.t==='B'?1:2);return true;}
+  if(mv.t!=='m'||!free([mv.i]))return false;
+  const c=st.toMove,seat=st.turn,cap=capture(st.B,mv.i,c);st.caps[c]+=cap.length/2;st.last=[mv.i];st.lastCap=cap;
+  const line=lineAt(st.B,mv.i,c);
+  if(line){st.line=line;st.win={w:seat,why:line.length>5?'w_line'+Math.min(9,line.length):'w_five'};}
+  else if(st.caps[c]>=5)st.win={w:seat,why:'w_caps'};
+  else if(st.B.every(v=>v))st.win={w:-1,why:'w_full'};
+  else{st.toMove=3-c;st.turn=1-seat;}
+  return true;}
+// rules: none (a single rule set); replay() in core memoises and adds the result. The log keeps the move and its
+// colour (its text is written at display time, in the current language).
+function peReplay(rules,moves){const st=newSt(),log=[];let over=null;
+  for(const code of moves){const p=st.turn,mv=dec(code),ph=st.phase;if(!mv||!applyMv(st,mv)){over={w:-1,why:'w_bad'};break;}
+    log.push({p,mv,ph,c:mv.t==='m'?st.B[mv.i]:0,cap:st.lastCap.length/2});
+    if(st.win){over=st.win;break;}}
+  return {st,log,last:null,over};}
+const legalCode=(st,code)=>{const mv=dec(code);return mv&&applyMv(cloneSt(st),mv)?enc(mv):null;};
+const stonesTxt=(s,cols)=>s.map((i,k)=>t('colw_'+cols[k])+' '+coord(i)).join(', ');
+function describe(mv){if(mv.t==='o')return t('d_open',{a:coord(mv.s[0]),b:coord(mv.s[1]),c:coord(mv.s[2])});
+  if(mv.t==='a')return t('d_add',{a:coord(mv.s[0]),b:coord(mv.s[1])});
+  if(mv.t==='B')return t('d_B');if(mv.t==='W')return mv.next>=0?t('d_Wn',{c:coord(mv.next)}):t('d_W');
+  return coord(mv.i);}
+const ST=c=>c===1?'●':'○';
+function logTxt(e){const m=e.mv;if(m.t==='o')return ST(1)+coord(m.s[0])+' '+ST(2)+coord(m.s[1])+' '+ST(1)+coord(m.s[2]);
+  if(m.t==='a')return '+ '+ST(1)+coord(m.s[0])+' '+ST(2)+coord(m.s[1]);
+  if(m.t==='B'||m.t==='W')return t(m.t==='B'?'l_B':'l_W');
+  return ST(e.c)+coord(m.i)+(e.cap?' ×'+e.cap:'');}
 
-/* ================= état ================= */
-let mode=null,mySeat=null,S=null,code=null,peer=null,conn=null,oppConn=null,pending=false,lostSince=0,connT=null,refused=false;
-const conns=new Set();
-let recvAt=0,recvEl=0,obsCount=0,tent=[],localMode='',resignArm=false,lastTurnMine=false,retryT=null,navAt=null,homeArm=false,homeArmT=null;
-// Guest move sent but not yet confirmed: shown at once, resent every 3 s, kept across reloads.
-// {a, id, host: host state before the move (JSON), el: time used on the turn, clk: my clock at sending, t0, at, sent, shown}
-let pendingAct=null,lastSeen=0,rejectedAt=0,hbTick=0,pendingBackup=null;   // pendingBackup: kept until a take-over succeeds
-let busy='',hint=-1,hintOpt='',hintMsg=null,aiInfo=null,hist=[],timers=[];
+// ---------- game view ----------
+// ui: tent (provisional stones, in order), add2 (the Swap2 « +2 stones » choice is engaged), pending (complete move
+// awaiting confirmation), hover (cell under the mouse)
+function newUi(){return {tent:[],add2:false,pending:null,hover:-1};}
+// The colours of the stones to place now on st, or null: the opening (black, white, black), the 2 more stones
+// (black, white), or one stone of the colour to move
+function placing(st){if(!st)return null;if(st.phase==='open')return [1,2,1];if(st.phase==='choose')return ui.add2?[1,2]:null;if(st.phase==='play')return [st.toMove];return null;}
+const makeMv=(st,s)=>st.phase==='open'?{t:'o',s:s.slice()}:st.phase==='choose'?{t:'a',s:s.slice()}:{t:'m',i:s[0]};
+const confirmOn=()=>$('needConfirm').checked;
+let shown=null;   // what the board shows: {d (position), ms (position to act on), mine, cols (stones to place)}
+function peBoard({r,d,mine,ms}){const live=navAt===null,cols=mine&&live?placing(ms):null;
+  // a complete move refused by the host (or sent and taken back) waits again for Confirm
+  if(cols&&!ui.pending&&ui.tent.length===cols.length&&ui.tent.every(i=>!ms.B[i]))ui.pending=makeMv(ms,ui.tent);
+  shown={d,ms,mine:mine&&live,cols};drawBoard();return {};}
+// The bar for my turn, nothing pending (a complete move awaiting confirmation is core's): the opening, the Swap2 choice
+// (Black / White / +2 stones, then Undo / Hint), the 2 more stones, a move
+function peTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.turn);
+  if(st.phase==='open'){status(S?t('n_openN',{name:me,n:ui.tent.length}):t('n_open',{n:ui.tent.length}),'turn',prep?[RST]:idle);return;}
+  if(st.phase==='choose'&&ui.add2){status(S?t('n_add2N',{who:me,n:ui.tent.length,name:seatName(0)}):t('n_add2',{n:ui.tent.length,name:seatName(0)}),'turn',[RST]);return;}
+  if(st.phase==='choose'||st.phase==='choose1'){
+    const B={id:'bBlack',label:t('bBlack'),on:()=>pick('B')},W={id:'bWhite',label:t('bWhite'),on:()=>pick('W')},
+      A=st.phase==='choose'?{id:'bAdd',label:t('bAdd'),on:()=>{if(busy==='hint')stopAI();hintMv=null;ui.add2=true;ui.tent=[];ui.pending=null;renderGame();}}:null;
+    const msg=st.phase==='choose'?(S?t('st_chooseOther',{name:me}):t('n_choose')):(S?t('st_choose1Other',{name:me}):t('n_choose1',{name:seatName(1)}));
+    status(msg,'turn choose',[B,W,A,...idle]);
+    // the long description in the tooltip, a stone before the colour
+    const tip=(id,txt,c)=>{const e=$(id);if(!e)return;e.title=txt;e.setAttribute('aria-label',txt);if(c&&e.insertBefore){const s=document.createElement('span');s.className='pst '+c;e.insertBefore(s,e.firstChild);}};
+    tip('bBlack',t('takeBlack')+' — '+t('takeBlackSub'),'b');tip('bWhite',t('takeWhite')+' — '+t('takeWhiteSub'),'w');
+    if(A)tip('bAdd',t('add2')+' — '+t('add2Sub',{name:seatName(0)}),'');
+    return;}
+  status(S?t('st_turnC',{name:me,color:CN(st.toMove)}):t('st_play',{color:CN(st.toMove)}),'turn',prep?[RST]:idle);}
+// The opponent's turn: who places the opening, who chooses; a move: the colour to play
+function peWaitStatus({r}){const st=r.st,n=seatName(st.turn);
+  status(st.phase==='open'?t('st_openOther',{name:n}):st.phase==='choose'?t('st_chooseOther',{name:n}):st.phase==='choose1'?t('st_choose1Other',{name:n}):t('st_turnC',{name:n,color:CN(st.toMove)}));return true;}
+function pick(c){if(busy==='hint')stopAI();hintMv=null;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const st=meSt(r);
+  if(st.phase!=='choose'&&st.phase!=='choose1')return;send({t:c});}
+// Players' cards (built by core): the seat's colour instead of the seat dot, the pairs it captured
+function playerCard(el,p,d){const st=d.st,col=st.color[p],dot=el.querySelector&&el.querySelector('.dot');
+  if(dot){dot.className='dot pst '+(col===1?'b':col===2?'w':'u');dot.title=col?CN(col):'';}
+  const n=col?st.caps[col]:0,x=document.createElement('div');x.className='cnt';x.title=t('captured',{n});
+  x.innerHTML=`<span class="mini ${col?(col===1?'w':'b'):'u'}"></span>${n}/5`;el.appendChild(x);}
 
-function toast(m){const e=$('toast');e.textContent=m;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600);}
-let netState=['warn','n_connecting'];
-function setNet(k,key){netState=[k,key];$('net').className='net '+k;$('netTxt').textContent=t(key);}
+// ---------- input ----------
+const prepared=()=>ui.tent.length>0||ui.add2||!!ui.pending;
+// Reset: drop the whole prepared move (stones and the +2 choice), back to the plain board of the current position
+function cancelPrep(){ui.tent=[];ui.add2=false;ui.pending=null;ui.hover=-1;renderGame();}
+// A click on an intersection: places the next provisional stone (a single stone moves to the new place); on a
+// provisional stone, removes it and the stones placed after it (with « Confirm each move » off, a click on the last one
+// plays the move). Complete: the move waits for Confirm, or is played at once (confirmation off, not on a touch screen).
+function onCell(i,touch){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  if(busy==='hint')stopAI();if(hintMv)hintMv=null;
+  const st=meSt(r),cols=placing(st);if(!cols){renderGame();return;}
+  const k=ui.tent.indexOf(i);
+  if(k>=0){if(!confirmOn()&&ui.tent.length===cols.length&&k===ui.tent.length-1){commit(st,cols);return;}ui.tent=ui.tent.slice(0,k);ui.pending=null;renderGame();return;}
+  if(st.B[i]){renderGame();return;}
+  if(ui.tent.length<cols.length)ui.tent.push(i);else if(cols.length===1)ui.tent=[i];else{renderGame();return;}
+  if(ui.tent.length===cols.length){if(!confirmOn()&&!touch){commit(st,cols);return;}ui.pending=makeMv(st,ui.tent);}else ui.pending=null;
+  renderGame();}
+function commit(st,cols){if(ui.tent.length!==cols.length)return;const mv=makeMv(st,ui.tent);ui.tent=[];ui.add2=false;ui.pending=null;send(mv);}
+$('needConfirm').checked=(()=>{try{return localStorage.getItem('pente-confirm')!=='0';}catch(e){return true;}})();
+$('needConfirm').onchange=e=>{try{localStorage.setItem('pente-confirm',e.target.checked?'1':'0');}catch(x){}
+  // switched off with a complete move waiting: it is played
+  if(!e.target.checked&&ui.pending&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;ui.tent=[];ui.add2=false;ui.pending=null;send(mv);}}};
+let lastPT='mouse';
+$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
+$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
+// With a mouse, hovering shows the stone to place in transparency (only that layer is redrawn)
+function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
 
-/* ================= moteur (worker) ================= */
-let worker=null,reqId=0,cbs={};
-function makeWorker(){worker=new Worker(URL.createObjectURL(new Blob([$('engine-src').textContent],{type:'text/javascript'})));
- worker.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data);};}
-function resetWorker(){if(worker)worker.terminate();cbs={};worker=null;busy='';}
-function ask(msg,cb){if(!worker)makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
-function stateKey(){return S?S.game+':'+S.phase+':'+S.log.length+':'+(S.result?1:0):'';}
+// ---------- computer opponent ----------
+// The engine (script engine-src) runs in core's worker; without a worker it is built once on the page
+let pageAI=null;
+const aiSrc=()=>$('engine-src').textContent;
+const aiPos=st=>({phase:st.phase,B:st.B.slice(),caps:st.caps.slice(),toMove:st.toMove});
+function aiSearchPage(st,opt){if(!pageAI)pageAI=new Function(aiSrc()+'\nreturn aiSearch;')();return pageAI(aiPos(st),opt);}
+function evalInfo(r){const m=r.move;if(m.t==='o'||m.t==='a')return null;if(m.t==='W')return {k:'ai_tookWhite'};if(m.t==='B')return {k:'ai_tookBlack'};
+  const s=r.score;if(!r.depth)return {k:'ai_forced'};
+  if(s>PWIN-1000)return {k:'ai_win'};if(s<-(PWIN-1000))return {k:'ai_lost'};
+  return {k:Math.abs(s)<250?'ai_eq':s>0?(s>2500?'ai_much':'ai_better'):(s<-2500?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
-function startAI(){leaveCurrent();mode='ai';mySeat='H';code=null;
- const fv=$('aiFirst').value,first=fv==='me'?'H':fv==='ai'?'G':(Math.random()<.5?'H':'G');
- S=newState(null,first,{H:'',G:''},null,1,null);S.phase='open';S.turnStart=Date.now();
- hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';setHash('ai');showGame();aiStep();}
-const AK='pente-ai';   // the game against the computer, kept across a reload
-function aiStep(){if(mode!=='ai'||!S||S.result||busy)return;if(turnSeat(S)!=='G')return;
- const L=LEVELS[level],key=stateKey();busy='ai';
- const done=(a,info)=>{busy='';if(mode!=='ai'||stateKey()!==key){render();return;}aiInfo=info;act(S,'G',a,Date.now());render();aiStep();};
- if(S.phase==='open')ask({type:'propose',ms:1500},r=>done({t:'open',stones:r.stones.map(x=>x.i)},null));
- else if(S.phase==='choose'||S.phase==='choose1')ask({type:'move',board:S.B.slice(),caps:S.caps.slice(),c:2,ms:L.ms,opt:Object.assign({},L,{noise:0})},r=>done({t:'pick',color:r.score>=0?2:1},{k:r.score>=0?'ai_tookWhite':'ai_tookBlack'}));
- else ask({type:'move',board:S.B.slice(),caps:S.caps.slice(),c:S.toMove,ms:L.ms,opt:L},r=>done({t:'move',i:r.move},evalInfo(r)));
- render();}
-function evalInfo(r){const s=r.score;if(!r.depth)return {k:'ai_forced'};
- if(s>WIN-1000)return {k:'ai_win'};if(s<-(WIN-1000))return {k:'ai_lost'};
- const k=Math.abs(s)<250?'ai_eq':s>0?(s>2500?'ai_much':'ai_better'):(s<-2500?'ai_muchWorse':'ai_worse');return {k,d:r.depth};}
-function clearHint(){hint=-1;hintOpt='';hintMsg=null;}
-function canHint(){if(mode!=='ai'||busy||!S||S.result||turnSeat(S)!=='H')return false;
- const p=placing();if(p)return tent.length<p.colors.length||p.colors.length===1;
- return S.phase==='choose'||S.phase==='choose1';}
-function doHint(){if(!canHint())return;const key=stateKey();busy='hint';render();
- const fin=()=>{busy='';};
- const p=placing();
- if(p&&S.phase==='play'){ask({type:'move',board:S.B.slice(),caps:S.caps.slice(),c:S.toMove,ms:HINT.ms,opt:HINT},r=>{fin();if(stateKey()!==key)return render();hint=r.move;hintMsg={k:'hint_move',c:coord(r.move)};render();});return;}
- if(p){const board=S.B.slice();tent.forEach((i,k)=>board[i]=p.colors[k]);const col=p.colors[tent.length];
-  ask({type:'place',board,c:col,ms:HINT.ms},r=>{fin();if(stateKey()!==key)return render();hint=r.move;hintMsg={k:'hint_place',col,c:coord(r.move)};render();});return;}
- ask({type:'move',board:S.B.slice(),caps:S.caps.slice(),c:2,ms:HINT.ms,opt:HINT},r=>{fin();if(stateKey()!==key)return render();const s=r.score;
-  if(S.phase==='choose'&&Math.abs(s)<=250){hintOpt='aX';hint=-1;hintMsg={k:'hint_add'};}
-  else if(s>=0){hintOpt='aW';hint=r.move;hintMsg={k:'hint_white',c:coord(r.move)};}
-  else{hintOpt='aB';hint=-1;hintMsg={k:'hint_black'};}
-  render();});}
-function undo(){if(preparing())return;if(mode==='test'){testUndo();return;}if(mode!=='ai'||!hist.length)return;resetWorker();S=JSON.parse(hist.pop());tent=[];localMode='';clearHint();aiInfo=null;navAt=null;resignArm=false;toast(t('undone'));render();aiStep();}
-// Test game: the tester plays both sides on this device; the commands follow the side to move.
-const TK='pente-test';   // the game on this device, kept across a reload
-const testSave=()=>{try{localStorage.setItem(TK,JSON.stringify({S,hist}));}catch(e){}};
-function startTest(){leaveCurrent();mode='test';code=null;
- S=newState(null,'H',{H:'',G:''},null,1,null);S.phase='open';S.turnStart=Date.now();mySeat='H';
- hist=[];navAt=null;tent=[];localMode='';setHash('test');testSave();showGame();}
-function testTurn(){testSave();if(!S.result)mySeat=turnSeat(S)||mySeat;tent=[];localMode='';navAt=null;resignArm=false;render();}
-function testUndo(){if(!hist.length)return;S=JSON.parse(hist.pop());testTurn();toast(t('undone'));}
-function newAIGame(){const f=other(S.first);resetWorker();S=newState(null,f,{H:'',G:''},null,(S.game||1)+1,null);S.phase='open';S.turnStart=Date.now();hist=[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';resignArm=false;render();aiStep();}
-
-/* ================= réseau : hôte ================= */
-function peerOpts(){const q=new URLSearchParams(location.search).get('peer');if(!q)return {debug:0};const [host,port]=q.split(':');return {host,port:+port||9000,path:'/',secure:false,debug:0};}
-const PID=c=>'pente15-'+c;
-function peerReady(){if(typeof window.Peer==='function')return true;setNet('bad','n_nolib');toast(t('t_nolib'));return false;}
-function pub(){const p=Object.assign({},S);delete p.gtoken;delete p.savedAt;return p;}
-const hasGuest=()=>!!(S&&S.th&&S.th.H&&S.th.G);
-const isReady=seat=>!!(S&&S.ready&&S.ready[seat]);
-const seatOf=()=>S&&S.th?(['H','G'].find(k=>S.th[k]===hh(token))||null):null;
-function freeze(at){const ts=turnSeat(S);if(!S||!ts||S.paused)return;
- if(S.tc){const left=at?S.clocks[ts]-(at-S.turnStart):mode==='host'?S.clocks[ts]-(Date.now()-S.turnStart):remaining(ts);S.clocks[ts]=Math.max(0,left);}
- S.turnStart=Date.now();S.paused=true;}
-// The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
-function syncPause(){const ts=turnSeat(S),live=!!(oppConn&&oppConn.open);
- if(!ts){S.paused=false;return;}
- if(!live&&ts!==mySeat)freeze();else if(S.paused){S.paused=false;S.turnStart=Date.now();}}
-function save(){if(mode==='host')store.set('pente-host-'+code,JSON.stringify(S));}
-function changed(bump){if(mode!=='host'){render();return;}
- if(bump)S.ver=(S.ver||0)+1;syncPause();S.savedAt=Date.now();save();obsCount=[...conns].filter(c=>c.open&&!c.seat).length;
- const el=Date.now()-S.turnStart,p=pub();
- for(const c of conns)if(c.open){try{c.send({k:'state',s:p,el,you:c.seat||null,obs:obsCount});}catch(e){}}
- render();}
-function startHost(){if(!peerReady())return;setNet('warn','n_opening');
- const pr=new Peer(PID(code),peerOpts());peer=pr;
- pr.on('open',()=>{if(pr===peer){setNet('ok','n_online');pendingBackup=null;}});
- pr.on('connection',c=>{if(pr!==peer){try{c.close();}catch(_){}return;}c.seen=performance.now();c.on('data',d=>onHostData(c,d));
-  c.on('close',()=>{conns.delete(c);if(pr!==peer)return;if(c===oppConn){oppConn=null;toast(t('t_oppLeft'));}if(mode==='host')changed();});c.on('error',()=>{});});
- pr.on('disconnected',()=>{if(pr!==peer)return;setNet('warn','n_reconnect');setTimeout(()=>{try{if(!pr.destroyed)pr.reconnect();}catch(e){}},1500);});
- pr.on('error',e=>{if(pr!==peer)return;
-  if(e.type==='unavailable-id'){try{pr.destroy();}catch(_){}
-   if(mySeat){becomeClient();}else{setNet('warn','n_busy');timers.push(setTimeout(()=>{if(mode==='host'&&peer===pr)startHost();},4000));}}
-  else if(['network','server-error','socket-error','socket-closed'].includes(e.type))setNet('bad','n_unreach');});}
-function hostTimers(){
- timers.push(setInterval(()=>{if(mode!=='host'||!S||!S.tc||S.paused)return;const ts=turnSeat(S);if(ts&&S.clocks[ts]-(Date.now()-S.turnStart)<=0){S.clocks[ts]=0;S.turnStart=Date.now();S.result={winner:other(ts),code:'time'};changed(true);}},250));
- timers.push(setInterval(()=>{if(mode==='host'&&S&&turnSeat(S))changed();},15000));
- // heartbeat: a ping to everyone every 2 s; a guest silent for 9 s is treated as gone
- timers.push(setInterval(()=>{if(mode!=='host')return;for(const c of conns)if(c.open){try{c.send({k:'ping'});}catch(_){}}
-  if(oppConn&&oppConn.seen&&performance.now()-oppConn.seen>9000){const c=oppConn;oppConn=null;conns.delete(c);try{c.close();}catch(_){}toast(t('t_oppLeft'));changed();}},2000));}
-function becomeClient(){freeze();timers.forEach(x=>{clearInterval(x);clearTimeout(x);});timers=[];
- mode='guest';oppConn=null;conns.clear();lostSince=Date.now();recvEl=0;recvAt=performance.now();
- // the take-over failed (the host is still there): the move becomes pending again, to be sent to it
- if(pendingBackup){const q=pendingBackup,now=performance.now();pendingBackup=null;S=JSON.parse(q.host);pendingAct={...q,clk:Math.max(0,q.clk-(now-q.t0)),t0:now,at:now-2000,sent:0};const st=withPending(S);if(st){S=st;pending=true;}else pendingAct=null;savePending();}setHash('join-'+code);setNet('warn','n_connecting');render();startGuest();}
-function applyPendingAsHost(){if(!pendingAct)return false;const q=pendingAct;pendingAct=null;pending=false;pendingBackup=q;
- S=JSON.parse(q.host);S.paused=false;S.turnStart=Date.now()-(q.el||0);const err=act(S,mySeat,q.a,Date.now());
- if(err){S=JSON.parse(q.host);return false;}if(q.id)S.lastAct={id:q.id,seat:mySeat};return true;}
-function becomeHost(){store.del('pente-guest');clearTimeout(retryT);retryT=null;clearTimeout(connT);const old=peer;conn=null;peer=null;try{old&&old.destroy();}catch(_){}
- if(!applyPendingAsHost())freeze();mode='host';setHash('host-'+code);toast(t('t_takeover'));changed();startHost();hostTimers();}
-function onHostData(c,d){if(!d||typeof d!=='object'||mode!=='host')return;c.seen=performance.now();if(d.k==='ping')return;
- if(d.k==='hello'){c.seat=null;
-  if(d.role==='play'&&typeof d.token==='string'){const th=hh(d.token);
-   let seat=['H','G'].find(k=>S.th[k]===th)||null;
-   if(!seat){const free=['H','G'].find(k=>!S.th[k]&&k!==mySeat);if(free)seat=free;}
-   if(seat&&seat!==mySeat){
-    if(oppConn&&oppConn!==c){try{oppConn.close();}catch(_){}}
-    const back=!!S.th[seat];S.th[seat]=th;c.seat=seat;oppConn=c;if(d.name)S.names[seat]=String(d.name).slice(0,24);
-    const s2=d.s;if(s2&&typeof s2==='object'&&s2.code===S.code&&Array.isArray(s2.B)&&((s2.game||1)>(S.game||1)||((s2.game||1)===(S.game||1)&&(s2.ver||0)>(S.ver||0)))){
-     const th0=S.th;S=s2;S.th=th0;S.paused=true;S.turnStart=Date.now();}
-    toast(t(back?'t_back':'t_joined',{name:S.names[seat]||t('guestDefault')}));}
-   else{try{c.send({k:'refused',m:'t_refused'});}catch(_){}setTimeout(()=>{try{c.close();}catch(_){}},800);return;}}
-  conns.add(c);changed();return;}
- if(d.k==='rv'&&c.seat&&c===oppConn&&d.a){rvApply(c.seat,d.a);changed();return;}
- if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a&&OFFERS.includes(d.a.t)){offerAct(c.seat,d.a);changed(true);return;}
- if(d.k==='act'&&c.seat&&c.seat!==mySeat&&c===oppConn&&d.a){
-  if(d.id&&S.lastAct&&S.lastAct.id===d.id){changed();return;}   // resent move already applied: send the state again
-  const err=act(S,c.seat,d.a,Date.now());if(!err&&d.id)S.lastAct={id:d.id,seat:c.seat};if(err){try{c.send({k:'err',m:err});}catch(_){}}changed(!err);}}
-// New game offered by either player once the game is over: accepted, it starts at once under the same code,
-// colours swapped (the player who did not place the Swap2 opening places it), same clock, clocks reset.
-const OFFERS=['offer','withdraw','accept','decline'];
-function offerAct(seat,a){if(!S||!S.result||!seat)return;const o=S.offer;
- if(a.t==='offer'){if(!(oppConn&&oppConn.open))return;S.offer={by:seat,st:'open'};}
- else if(a.t==='withdraw'){if(o&&o.by===seat&&o.st==='open')S.offer=null;}
- else if(a.t==='decline'){if(o&&o.by!==seat&&o.st==='open')o.st='declined';}
- else if(a.t==='accept'){if(!(o&&o.by!==seat&&o.st==='open'))return;
-  const v=(S.ver||0)+1;S=newState(code,other(S.first),S.names,S.th,(S.game||1)+1,S.tc);S.ver=v;S.ready={H:true,G:true};S.phase='open';S.turnStart=Date.now();
-  tent=[];localMode='';navAt=null;resignArm=false;}}
-
-/* ================= réseau : invité / observateur ================= */
-function startGuest(){if(!peerReady())return;setNet('warn','n_connecting');
- const pr=new Peer(peerOpts());peer=pr;
- pr.on('open',connect);
- pr.on('disconnected',()=>{if(pr!==peer)return;setTimeout(()=>{try{if(!pr.destroyed)pr.reconnect();}catch(e){}},1500);});
- pr.on('error',e=>{if(pr!==peer)return;
-  if(e.type==='peer-unavailable'){lostSince=lostSince||Date.now();setNet('bad','n_hostNF');scheduleRetry();}
-  else if(['network','server-error','socket-error','socket-closed'].includes(e.type)){setNet('bad','n_unreach');scheduleRetry();}});}
-function scheduleRetry(){if(refused||retryT||mode==='host')return;retryT=setTimeout(()=>{retryT=null;if(mode==='guest'&&mySeat&&S&&lostSince&&Date.now()-lostSince>8000){becomeHost();return;}if(!peer||peer.destroyed||(mode!=='guest'&&mode!=='watch'))return;if(peer.open)connect();else{try{peer.reconnect();}catch(e){}}},3500);}
-function connect(){if(conn){try{conn.close();}catch(_){}}
- const c=peer.connect(PID(code),{reliable:true});conn=c;clearTimeout(connT);
- connT=setTimeout(()=>{if(conn===c&&!c.open){lostSince=lostSince||Date.now();scheduleRetry();}},7000);
- c.on('open',()=>{clearTimeout(connT);lastSeen=performance.now();setNet('ok','n_connected');c.send({k:'hello',role:mode==='guest'?'play':'watch',token,name:nickGet()||'',s:S&&mySeat?(pendingAct?JSON.parse(pendingAct.host):pub()):null});
-  if(pendingAct)pendingAct.sent=0;});
- c.on('data',d=>{if(c===conn)onGuestData(d);});
- c.on('close',()=>guestLost(c));
- c.on('error',()=>{});}
-function guestLost(c){if(c!==conn||!mode||refused||mode==='host')return;setNet('bad','n_lost');pending=!!pendingAct;lostSince=lostSince||Date.now();
- if(S&&!pendingAct&&turnSeat(S)&&turnSeat(S)!==mySeat)freeze();scheduleRetry();render();}
-// the guest's view: the host state with the pending move applied on top (null if it no longer applies)
-function withPending(base){const st=JSON.parse(JSON.stringify(base));st.paused=false;st.turnStart=Date.now()-(recvEl+(performance.now()-recvAt));
- return act(st,mySeat,pendingAct.a,Date.now())?null:st;}
-function pendingRec(){return pendingAct?{a:pendingAct.a,id:pendingAct.id,host:pendingAct.host,el:pendingAct.el,clk:Math.max(0,pendingAct.clk-(performance.now()-pendingAct.t0))}:null;}
-function savePending(){const g=jget('pente-guest');if(g&&g.code===code){g.pending=pendingRec();store.set('pente-guest',JSON.stringify(g));}}
-// heartbeat (guest and spectator): ping every 2 s; 9 s without any message from the host = connection lost.
-// Pending move: resent every 3 s; the waiting message appears after 1.5 s.
-setInterval(()=>{if(mode!=='guest'&&mode!=='watch')return;const now=performance.now();
- if(conn&&conn.open){if(++hbTick%2===0){try{conn.send({k:'ping'});}catch(_){}}
-  if(lastSeen&&now-lastSeen>9000){const c=conn;lastSeen=0;try{c.close();}catch(_){}guestLost(c);return;}}
- if(pendingAct&&mode==='guest'){if(conn&&conn.open&&now-pendingAct.sent>3000){pendingAct.sent=now;try{conn.send({k:'act',a:pendingAct.a,id:pendingAct.id});}catch(_){}}
-  if(!pendingAct.shown&&now-pendingAct.at>1500){pendingAct.shown=true;render();}}
- if(rejectedAt&&now-rejectedAt>6000){rejectedAt=0;render();}},1000);
-function onGuestData(d){if(!d||typeof d!=='object')return;lastSeen=performance.now();
- if(mode==='host'||d.k==='ping')return;
- if(d.k==='state'){lostSince=0;const pg=S&&S.game,pp=S&&S.phase;S=d.s;recvEl=d.el||0;recvAt=performance.now();mySeat=d.you;obsCount=d.obs||0;
-  if(pendingAct){if(S.lastAct&&S.lastAct.id===pendingAct.id)pendingAct=null;   // confirmed
-   else{pendingAct.host=JSON.stringify(S);const st=withPending(S);if(st)S=st;else{pendingAct=null;rejectedAt=performance.now();}}}
-  pending=!!pendingAct;
-  if(pg!==S.game||pp!==S.phase){tent=[];localMode='';}
-  if(pg!==S.game)navAt=null;   // a spectator who is browsing is not pulled back by new moves
-  if(mode==='guest'&&mySeat){if(S.result&&!pendingAct)store.del('pente-guest');else{const s2=pendingAct?JSON.parse(pendingAct.host):JSON.parse(JSON.stringify(pub())),t2=turnSeat(s2);if(t2&&s2.tc&&!s2.paused)s2.clocks[t2]=Math.max(0,s2.clocks[t2]-recvEl);s2.paused=!!t2;
-   store.set('pente-guest',JSON.stringify({code,seat:mySeat,S:s2,savedAt:Date.now(),pending:pendingRec()}));}}
-  render();}
- else if(d.k==='err'){if(pendingAct){S=JSON.parse(pendingAct.host);pendingAct=null;rejectedAt=performance.now();savePending();}pending=false;toast(t(d.m));render();}
- else if(d.k==='note'){toast(t(d.m));}
- else if(d.k==='refused'){refused=true;const c=code;leaveCurrent();setHash('');$('game').hidden=true;$('home').hidden=false;$('jCode').value=c;$('joinCard').hidden=false;$('lErr').textContent=t(d.m);render();}}
-
-/* ================= actions du joueur ================= */
-function sendAct(a){resignArm=false;
- if(OFFERS.includes(a.t)&&mode==='host'){offerAct(mySeat,a);changed(true);return;}
- if(mode==='test'){if(OFFERS.includes(a.t))return;hist.push(JSON.stringify(S));const err=act(S,mySeat,a,Date.now());if(err){hist.pop();toast(t(err));}testTurn();return;}
- if(mode==='ai'){hist.push(JSON.stringify(S));const err=act(S,'H',a,Date.now());if(err){hist.pop();toast(t(err));}clearHint();aiInfo=null;render();aiStep();}
- else if(mode==='host'){const err=act(S,mySeat,a,Date.now());if(err)toast(t(err));changed(!err);}
- else if(mode==='guest'&&mySeat&&!OFFERS.includes(a.t)&&a.t!=='start'&&S&&!pendingAct){
-  // shown at once; the host confirms it (or refuses it) — resent until then, even after a reconnection
-  const now=performance.now(),host=JSON.stringify(S);
-  pendingAct={a,id:rid(8),host,el:recvEl+(now-recvAt),clk:remaining(mySeat),t0:now,at:now,sent:now};
-  const st=withPending(S);if(!st){pendingAct=null;toast(t('e_badMove'));return;}
-  S=st;pending=true;rejectedAt=0;savePending();if(conn&&conn.open){try{conn.send({k:'act',a,id:pendingAct.id});}catch(_){}}render();}
- else if(conn&&conn.open){pending=true;conn.send({k:'act',a});render();}
- else toast(t('t_noConn'));}
-function placing(){if(!S||!mySeat||pending||S.result||S.paused||navAt!==null)return null;if(turnSeat(S)!==mySeat)return null;
- if(S.phase==='open')return {colors:[1,2,1],make:st=>({t:'open',stones:st})};
- if(S.phase==='choose'&&localMode==='add2')return {colors:[1,2],make:st=>({t:'add2',stones:st})};
- if(S.phase==='play')return {colors:[S.toMove],make:st=>({t:'move',i:st[0]})};
- return null;}
-// a move is being prepared: provisional stones, or the "+2 stones" choice of Swap2
-function preparing(){return tent.length>0||localMode!=='';}
-// Cancel: drop the whole prepared move (stones and the +2 choice), back to the neutral board
-function cancelPrep(){if(!preparing())return;tent=[];localMode='';clearHint();render();}
-// a click on a provisional stone removes it and the stones placed after it
-function onCell(i,touch){const p=placing();if(!p||busy==='hint')return;const k=tent.indexOf(i);
- if(k>=0){if(!confirmOn&&tent.length===p.colors.length&&k===tent.length-1){commit();return;}tent=tent.slice(0,k);clearHint();render();return;}
- if(S.B[i])return;
- if(tent.length<p.colors.length)tent.push(i);else if(p.colors.length===1)tent=[i];else{toast(t('t_allPlaced'));return;}
- if(i===hint||p.colors.length>1)clearHint();
- if(!confirmOn&&!touch&&tent.length===p.colors.length){commit();return;}
- render();}
-function commit(){const p=placing();if(!p||tent.length!==p.colors.length)return;const a=p.make(tent.slice());tent=[];localMode='';sendAct(a);}
-
-/* ================= horloges ================= */
-function remaining(seat){if(!S||!S.tc)return 0;
- if(pendingAct&&mode==='guest')return seat===mySeat?Math.max(0,pendingAct.clk-(performance.now()-pendingAct.t0)):S.clocks[seat];
- const ts=turnSeat(S);const base=S.clocks[seat];if(seat!==ts||S.paused)return base;
- const el=mode==='host'?Date.now()-S.turnStart:recvEl+(performance.now()-recvAt);return Math.max(0,base-el);}
-function fmt(ms){const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
-function tickClocks(){if(!S||!S.tc)return;const ts=pendingAct&&mode==='guest'?mySeat:turnSeat(S);
- for(const seat of ['H','G']){const e=$('clk-'+seat);if(!e)continue;const r=remaining(seat);e.textContent=fmt(r);e.classList.toggle('run',seat===ts&&!S.paused);e.classList.toggle('low',r<30000&&!!ts);}
- countdown(!!ts&&ts===mySeat&&!S.result&&!S.paused,remaining(mySeat||'H'));}
-setInterval(tickClocks,200);
-
-/* ================= rendu ================= */
-let audioCtx=null;
-let sndOn=true,sndVol=50;try{const o=JSON.parse(localStorage.getItem('pente-sound')||'{}');if(typeof o.on==='boolean')sndOn=o.on;if(typeof o.vol==='number')sndVol=o.vol;}catch(e){}
-function sndSave(){try{localStorage.setItem('pente-sound',JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}
-function sndBind(){const c=$('sndOn'),r=$('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
- c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
- r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
-function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t0=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+.01);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g).connect(audioCtx.destination);o.start(t0);o.stop(t0+d+.02);}catch(e){}}
-let cdSec=null;
-function countdown(myRunning,ms){if(!myRunning||!S||!S.tc){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
- if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
- cdSec=s;}
-function beep(){tone(660,.18,.05);}
-document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
-const CN=c=>c===1?t('black'):c===2?t('white'):'';
-function nameOf(seat){if(mode==='test')return t(seat==='H'?'p1':'p2');if(mode==='ai')return seat==='G'?t('computer'):t('youCap');return (S&&S.names[seat])||t(seat==='H'?'hostDefault':'guestDefault');}
-const isMe=seat=>seat===mySeat;
-
-function applyStatic(){document.documentElement.lang=lang;
- document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
- document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
- for(const sel of [$('hLevel'),$('gLevel')]){sel.innerHTML=Object.keys(LEVELS).map(k=>`<option value="${k}">${t('lv_'+k)}</option>`).join('');sel.value=level;}
- $('cTc').innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===tcChoice?'selected':''}>${esc(tcLabel(x.id))}</option>`).join('');
- document.querySelectorAll('.rulesList').forEach(u=>u.innerHTML=['r1','r2','r3','r4','r5'].map(k=>`<li>${esc(t(k))}</li>`).join(''));
- $('cName').placeholder=t('nick');$('jName').placeholder=t('nick');$('cv').setAttribute('aria-label',lang==='fr'?'Plateau de Pente 15 par 15':'15 by 15 Pente board');
- setNet(netState[0],netState[1]);$('net').hidden=true;render();}
-$('cTc').onchange=()=>{tcChoice=$('cTc').value;store.set('pente-tc',tcChoice);};
-
-function noticeSet(txt,cls){const n=$('notice');n.className='notice'+(txt?' on':'')+(cls?' '+cls:'');n.textContent=txt||'';}
-function render(){
- try{if(mode==='ai')localStorage.setItem(AK,JSON.stringify({S,hist}));else if(mode==='test')localStorage.setItem(TK,JSON.stringify({S,hist}));}catch(e){}
- $('homeBtn').hidden=true;$('homeBtn').textContent=homeArm?t('leaveQ'):t('home');$('homeBtn').classList.toggle('armed',homeArm);
- if(!mode){draw();return;}
- const wide=window.matchMedia('(min-width:861px)').matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
- if(!S){noticeSet(t('st_connecting'));$('playersTop').innerHTML='';$('playersSide').innerHTML='';$('cmd').hidden=true;$('inviteBox').hidden=true;$('review').hidden=true;$('resumeBlk').hidden=true;$('log').innerHTML='';draw();return;}
- const ts=turnSeat(S),mine=!!ts&&ts===mySeat&&!S.paused,p=placing();
- if(mode!=='ai'&&mode!=='test'){if(mine&&!lastTurnMine&&S.log.length)beep();document.title=(mine?(lang==='fr'?'● À vous · ':'● Your move · '):'')+'Pente';}
- lastTurnMine=mine;
- const first=S.first,second=other(first);
-
- // message: only the exceptional ones, on the line reserved under the board
- let msg='',cls='';
- if(S.result){const r=S.result,w=r.winner;
-  msg=(w?(isMe(w)&&mode!=='test'?t('youWin'):(mySeat&&mode!=='test'?t('youLose'):t('xWins',{name:nameOf(w)}))):t('draw'))+' — '+(w?t('winBy',{color:CN(S.color[w])||nameOf(w),reason:t('res_'+r.code,{n:r.n})}):t('boardFull'));cls='win';}
- else if(S.phase==='wait'){if(!hasGuest())msg=mode==='host'?t('n_waitHost'):t('n_wait');
-  else if(mySeat)msg=isReady(mySeat)?t('n_waitStart',{name:nameOf(other(mySeat))}):t('n_bothHere');else msg=t('n_waitBoth');}
- else if(S.paused)msg=mode==='host'?t('n_pausedHost',{name:nameOf(other(mySeat))}):(mySeat?t('n_pausedGuest'):t('n_pausedWatch'));
- else if(rejectedAt&&mode==='guest'){msg=t('st_rejected');cls='turn';}
- else if(pendingAct&&mode==='guest'&&performance.now()-pendingAct.at>1500){msg=t('st_waitHost');cls='think';}
- else if(busy==='hint'){msg=t('st_hintBusy');cls='think';}
- else if(mode==='ai'&&ts==='G'){msg=S.phase==='open'?t('st_openAI'):t('st_aiThinking');cls='think';}
- else if(mine&&S.phase==='open'){msg=t('n_open',{n:tent.length});cls='turn';}
- else if(mine&&S.phase==='choose'){msg=localMode==='add2'?t('n_add2',{n:tent.length,name:nameOf(first)}):t('n_choose');cls='turn';}
- else if(mine&&S.phase==='choose1'){msg=t('n_choose1',{name:nameOf(second)});cls='turn';}
- noticeSet(msg,cls);
-
- // players: colour dot, nickname, clock, captured pairs; the player to move is framed
- const view=viewState();
- const box=wide?$('playersSide'):$('playersTop');(wide?$('playersTop'):$('playersSide')).innerHTML='';
- box.innerHTML=[first,second].map(seat=>{const col=S.color[seat];const n=col?view.caps[col]:0;const oc=col===1?'w':'b';
-  const nm=(S.phase==='wait'&&!(S.th&&S.th[seat]))?t('waiting'):nameOf(seat)+(isMe(seat)&&mode!=='ai'&&mode!=='test'?' ('+t('you')+')':'')+(S.phase==='wait'&&hasGuest()&&isReady(seat)?' ✓':'');
-  return `<div class="player${ts===seat&&!S.paused?' turn':''}"><span class="pstone ${col===1?'b':col===2?'w':'u'}"></span><div class="pname">${esc(nm)}</div>${S.tc?`<div class="clock" id="clk-${seat}">${fmt(remaining(seat))}</div>`:''}<div class="cnt" title="${esc(t('captured',{n}))}"><span class="mini ${col?oc:'u'}"></span>${n}/5</div></div>`;}).join('');
- tickClocks();
-
- // commands, in one card
- $('cmd').hidden=!(mySeat||mode==='ai'||S.result);
- let h='',sw='',rs='';
- if(p&&busy!=='hint'){const need=p.colors.length;
-  if(tent.length&&confirmOn)h+=`<button class="btn primary" id="aOk" ${tent.length===need?'':'disabled'}>${t(need===1?'confirm1':'confirmN')}</button>`;
-  if(preparing())h+=`<button class="btn" id="aClr">${t('cancelMv')}</button>`;}
- else if(mine&&!pending&&(S.phase==='choose'||S.phase==='choose1')&&busy!=='hint'){
-  sw+=`<button class="btn" id="aB" title="${esc(t('takeBlack')+' — '+t('takeBlackSub'))}"><span class="pstone b"></span><span>${t('black')}</span></button>`+
-     `<button class="btn" id="aW" title="${esc(t('takeWhite')+' — '+t('takeWhiteSub'))}"><span class="pstone w"></span><span>${t('white')}</span></button>`;
-  if(S.phase==='choose')sw+=`<button class="btn" id="aX" title="${esc(t('add2')+' — '+t('add2Sub',{name:nameOf(first)}))}"><span>${lang==='fr'?'+2 pierres':'+2 stones'}</span></button>`;}
- if(S.result){
-  if(mode==='ai')h+=`<button class="btn primary" id="aNew">${t('rematch')}</button>`;
-  else if(mode==='test')h+=`<button class="btn primary" id="aTest">${t('newGame')}</button>`;
-  else if(mySeat){const o=S.offer,opp=nameOf(other(mySeat)),reach=mode==='host'?!!(oppConn&&oppConn.open):!!(conn&&conn.open);
-   if(o&&o.st==='open'&&o.by===mySeat)h+=`<p class="note">${t('of_sent')}</p><button class="btn" id="aOfW">${t('of_withdraw')}</button>`;
-   else if(o&&o.st==='open')h+=`<p class="note">${esc(t('of_incoming',{n:opp}))}</p><button class="btn primary" id="aOfA" ${reach?'':'disabled'}>${t('of_accept')}</button><button class="btn" id="aOfD">${t('of_decline')}</button>`;
-   else{if(o&&o.st==='declined'&&o.by===mySeat)h+=`<p class="note">${esc(t('of_declined',{n:opp}))}</p>`;
-    h+=`<button class="btn primary" id="aOf" ${reach?'':'disabled'}>${t('rematch')}</button>`;}}
-  h+=`<button class="btn" id="aHome" style="justify-content:center">${t('home')}</button>`;}
- else if(mySeat&&S.phase==='wait'&&hasGuest())h+=isReady(mySeat)?`<button class="btn primary" disabled>${t('waitingOpp')}</button>`:`<button class="btn primary" id="aStart">${t('startGame')}</button>`;
- if(mySeat&&!S.result&&S.phase!=='wait')rs=resignArm?`<div class="row"><button class="btn danger" id="aRes2">${t('resignConfirm')}</button><button class="btn" id="aRes0">${t('keepPlaying')}</button></div>`:`<button class="btn danger" id="aRes">${t('resign')}</button>`;
- $('actions').innerHTML=h;$('swapRow').innerHTML=sw;$('resignBox').innerHTML=rs;
- document.querySelectorAll('#actions button,#swapRow button,#resignBox button').forEach(b=>{if(!b.title)b.title=b.textContent.trim();});
- const on=(id,f)=>{const e=$(id);if(e)e.onclick=f;};
- on('aOk',commit);on('aClr',cancelPrep);
- on('aB',()=>sendAct({t:'pick',color:1}));on('aW',()=>sendAct({t:'pick',color:2}));on('aX',()=>{localMode='add2';tent=[];clearHint();render();});
- on('aRes',()=>{resignArm=true;render();});on('aRes0',()=>{resignArm=false;render();});on('aRes2',()=>sendAct({t:'resign'}));
- on('aStart',()=>sendAct({t:'start'}));on('aHome',goHome);on('aNew',newAIGame);on('aTest',startTest);
- on('aOf',()=>sendAct({t:'offer'}));on('aOfW',()=>sendAct({t:'withdraw'}));on('aOfA',()=>sendAct({t:'accept'}));on('aOfD',()=>sendAct({t:'decline'}));
- if(hintOpt){const e=$(hintOpt);if(e){e.classList.add('suggested');e.dataset.sugg=t('suggested');}}
- $('aiControls').hidden=mode!=='ai'&&mode!=='test';$('bHint').hidden=$('aiInfo').hidden=$('gLevel').parentNode.hidden=mode==='test';
- $('bUndo').hidden=preparing();
- if(mode==='test')$('bUndo').disabled=!hist.length;
- if(mode==='ai'){$('bUndo').disabled=!hist.length;$('bHint').disabled=!canHint();
-  $('aiInfo').textContent=hintMsg?t(hintMsg.k,{c:hintMsg.c,col:t('colw_'+hintMsg.col)}):aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';}
- $('optWrap').hidden=!mySeat;$('optConfirm').checked=confirmOn;$('resumeBlk').hidden=!(mySeat&&mode!=='ai'&&mode!=='test'&&S.phase!=='wait');
-
- // navigation: for everyone once the game is over, for spectators at any time; never for a player during the game
- const N=S.log.length,nOK=navAllowed();if(!nOK)navAt=null;else if(navAt!==null)navAt=Math.max(0,Math.min(N,navAt));
- $('review').hidden=true;$('nav').hidden=!nOK;
- if(nOK){const k=navAt===null?N:navAt;$('navPos').textContent=t('nav_pos',{k,n:N});
-  $('nv0').disabled=$('nvP').disabled=k===0;$('nvN').disabled=k>=N;$('nvE').disabled=navAt===null;
-  [['nv0','nav_first'],['nvP','nav_prev'],['nvN','nav_next'],['nvE','nav_last']].forEach(([id,key])=>{$(id).title=t(key);$(id).setAttribute('aria-label',t(key));});}
-
- // invite: open, first and framed until the game has started; the guest sees the code and the spectators link
- const ib=$('inviteBox'),inv=$('invite'),showInv=mode==='host'||(mode==='guest'&&!!mySeat);ib.hidden=!showInv;
- if(showInv){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
-  let x=`<div><span class="note">${t(mode==='host'?'gameCode':'guestCode')}</span><div class="row"><span class="code">${esc(code)}</span><button class="btn" data-copytext="${esc(code)}" style="flex:0 0 auto;padding:6px 10px;font-size:13px">${t('copy')}</button></div></div>`;
-  if(mode==='host')x+=`<p class="note">${esc(t('inviteNote'))}</p>`;
-  if(web){if(mode==='host')x+=linkRow('lkJoin',t('linkOpp'),base+'#join-'+code);x+=linkRow('lkWatch',t('linkWatch'),base+'#watch-'+code);}
-  x+=`<p class="note">${obsCount===0?t('obs0'):obsCount===1?t('obs1'):t('obsN',{n:obsCount})}</p>`;
-  if(inv.dataset.k!==x){inv.innerHTML=x;inv.dataset.k=x;
-   inv.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyInput($(b.dataset.copy)));
-   inv.querySelectorAll('[data-copytext]').forEach(b=>b.onclick=()=>copyText(b.dataset.copytext));}
-  const waiting=!hasGuest()||S.phase==='wait';if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
-    // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('resumeBlk'))$('resumeBlk').before(ib);}
-
- // moves
- const cur=navAt===null?S.log.length:navAt;
- $('log').innerHTML=S.log.length?S.log.map((m,k)=>`<li${nOK?` data-k="${k+1}" style="cursor:pointer"`:''}><span class="n">${k+1}</span><span class="mini ${m.c===1?'b':'w'}"></span><span class="${nOK&&k+1===cur?'cur':''}">${coord(m.i)}</span>${m.cap?` <span class="x">×${m.cap}</span>`:''}</li>`).join(''):`<li class="empty">${t('noStones')}</li>`;
- if(nOK)$('log').querySelectorAll('[data-k]').forEach(li=>li.onclick=()=>navTo(+li.dataset.k));
- const lg=document.querySelector('.log');if(navAt===null)lg.scrollTop=lg.scrollHeight;
- draw();}
-window.addEventListener('resize',()=>{if(mode)render();});
-function rvView(){const R=S.rv,base=replay(S.log,R.k),B=base.B,caps=base.caps;let lastCap=base.lastCap,last=base.last;
- let next=1;if(R.k>0){const e=S.log[R.k-1];next=e.o&&(R.k===S.log.length||!S.log[R.k].o)?2:3-e.c;}
- for(const m of R.alt){const cap=capture(B,m.i,m.c);caps[m.c]+=cap.length/2;lastCap=cap;last=m.i;next=3-m.c;}
- return {B,caps,lastCap,last,next};}
-function rvApply(seat,a){if(!S||!S.result||!S.log.length||!a)return;const n=S.log.length,R=S.rv;
- if(a.op==='enter'){if(!(R&&R.on))S.rv={on:true,ctrl:seat,k:n,alt:[]};return;}
- if(!R||!R.on||R.ctrl!==seat)return;
- if(a.op==='nav'){R.k=Math.max(0,Math.min(n,a.k|0));R.alt=[];}
- else if(a.op==='step'){R.k=Math.max(0,Math.min(n,R.k+(a.d|0)));R.alt=[];}
- else if(a.op==='back')R.alt=[];
- else if(a.op==='alt'){const i=a.i;if(!Number.isInteger(i)||i<0||i>=NN)return;const V=rvView();if(V.B[i])return;R.alt.push({i,c:V.next});}
- else if(a.op==='give'){if(mode!=='ai')R.ctrl=other(seat);}
- else if(a.op==='exit')S.rv=null;}
-function viewState(){if(navAt!==null)return replay(S.log,navAt);return {B:S.B,caps:S.caps,lastCap:S.lastCap||[],last:S.log.length?S.log[S.log.length-1].i:-1};}
-function linkRow(id,label,url){return `<div class="link"><label for="${id}">${esc(label)}</label><input id="${id}" readonly value="${esc(url)}"><button class="btn" data-copy="${id}">${t('copy')}</button></div>`;}
-function copyInput(inp){const v=inp.value;if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(()=>toast(t('copied')),()=>{inp.select();toast(t('copySel'));});else{inp.select();toast(t('copySel'));}}
-function copyText(v){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(()=>toast(v),()=>toast(v));else toast(v);}
-
-/* ================= plateau ================= */
-const cv=$('cv'),ctx=cv.getContext('2d');let hover=-1;
-function geom(){const s=cv.clientWidth;const cell=s/(N-1+2.5);return {s,cell,pad:cell*1.25};}
+// ---------- drawing ----------
+// The board in SVG units: 40 per cell, 1.25 cell of margin all round (the coordinates in the bottom and left margins);
+// without the coordinates the margins shrink to 0.75 cell.
+const NS='http://www.w3.org/2000/svg',CELL=40,PAD=CELL*1.25,SZ=CELL*(N-1+2.5),MK='#C42B3A',SR=CELL*.47;
+const P=k=>PAD+k*CELL,PX=i=>P(i%N),PY=i=>P((i/N)|0);
+function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // Flat stones, go-diagram style: plain fill, thin outline
-function stone(x,y,r,c,a){ctx.save();ctx.globalAlpha=a;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=c===1?'#1c1f1e':'#f7f6f1';ctx.fill();
- ctx.lineWidth=Math.max(1,r*.07);ctx.strokeStyle=c===1?'#000':'rgba(0,0,0,.65)';ctx.stroke();ctx.restore();}
-function ghost(x,y,r,c,mk){stone(x,y,r,c,.5);ctx.save();ctx.strokeStyle=mk;ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(x,y,r*1.08,0,7);ctx.stroke();ctx.restore();}
-function draw(){const {s,cell,pad}=geom();if(!s)return;const dpr=window.devicePixelRatio||1,px=Math.round(s*dpr);
- if(cv.width!==px){cv.width=px;cv.height=px;}ctx.setTransform(dpr,0,0,dpr,0,0);
- const P=k=>pad+k*cell,R=v=>Math.round(v)+.5;
- ctx.fillStyle='#D3AE76';ctx.fillRect(0,0,s,s);
- ctx.strokeStyle='rgba(58,40,20,.75)';ctx.lineWidth=1;ctx.beginPath();
- for(let k=0;k<N;k++){const q=R(P(k));ctx.moveTo(R(P(0)),q);ctx.lineTo(R(P(N-1)),q);ctx.moveTo(q,R(P(0)));ctx.lineTo(q,R(P(N-1)));}
- ctx.stroke();ctx.lineWidth=1.6;ctx.strokeRect(R(P(0)),R(P(0)),Math.round(P(N-1))-Math.round(P(0)),Math.round(P(N-1))-Math.round(P(0)));
- ctx.fillStyle='rgba(58,40,20,.85)';
- for(const a of [3,7,11])for(const b of [3,7,11]){ctx.beginPath();ctx.arc(P(a),P(b),Math.max(2,cell*.11),0,7);ctx.fill();}
- ctx.strokeStyle='rgba(58,40,20,.7)';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(P(7),P(7),cell*.28,0,7);ctx.stroke();
- ctx.fillStyle='rgba(58,40,20,.7)';ctx.font=`600 ${Math.max(8,cell*.36)}px Figtree, system-ui, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
- for(let k=0;k<N;k++){ctx.fillText(LET[k],P(k),s-pad*.45);ctx.fillText(String(N-k),pad*.45,P(k));}
- if(!S||!mode)return;
- const r=cell*.47,MK='#C42B3A',V=viewState();
- for(let i=0;i<NN;i++)if(V.B[i])stone(P(i%N),P((i/N)|0),r,V.B[i],1);
- for(const i of V.lastCap){if(V.B[i])continue;const x=P(i%N),y=P((i/N)|0),d=cell*.18;ctx.strokeStyle=MK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-d,y-d);ctx.lineTo(x+d,y+d);ctx.moveTo(x+d,y-d);ctx.lineTo(x-d,y+d);ctx.stroke();}
- if(V.last>=0&&V.B[V.last]){ctx.fillStyle=MK;ctx.beginPath();ctx.arc(P(V.last%N),P((V.last/N)|0),r*.24,0,7);ctx.fill();}
- const p=placing();
- if(p){tent.forEach((i,k)=>{const x=P(i%N),y=P((i/N)|0);ghost(x,y,r,p.colors[k],MK);
-   if(p.colors.length>1){ctx.fillStyle=p.colors[k]===1?'#fff':'#222';ctx.font=`700 ${cell*.42}px Figtree, system-ui, sans-serif`;ctx.fillText(String(k+1),x,y+1);}});
-  if(hint>=0&&!S.B[hint]&&tent.indexOf(hint)<0){ctx.save();ctx.strokeStyle=MK;ctx.lineWidth=2;ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(P(hint%N),P((hint/N)|0),r*.85,0,7);ctx.stroke();ctx.restore();}
-  const hc=tent.length<p.colors.length?p.colors[tent.length]:(p.colors.length===1?p.colors[0]:0);
-  if(hover>=0&&hc&&!S.B[hover]&&tent.indexOf(hover)<0&&busy!=='hint')ghost(P(hover%N),P((hover/N)|0),r,hc,MK);}
- else if(hint>=0&&!S.B[hint]){ctx.save();ctx.strokeStyle=MK;ctx.lineWidth=2;ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(P(hint%N),P((hint/N)|0),r*.85,0,7);ctx.stroke();ctx.restore();}
- if(S.result&&S.result.line&&navAt===null){const L=S.result.line,a=L[0],b=L[L.length-1];ctx.save();ctx.strokeStyle=MK;ctx.globalAlpha=.85;ctx.lineWidth=Math.max(3,cell*.16);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P(a%N),P((a/N)|0));ctx.lineTo(P(b%N),P((b/N)|0));ctx.stroke();ctx.restore();}}
-function cellAt(e){const {cell,pad}=geom();const rc=cv.getBoundingClientRect();const x=Math.round((e.clientX-rc.left-pad)/cell),y=Math.round((e.clientY-rc.top-pad)/cell);
- if(x<0||x>=N||y<0||y>=N)return -1;return y*N+x;}
-let lastPT='mouse';cv.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
-cv.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const i=cellAt(e);if(i!==hover){hover=i;draw();}cv.style.cursor=placing()?'pointer':'default';});
-cv.addEventListener('pointerleave',()=>{hover=-1;draw();});
-cv.addEventListener('click',e=>{const i=cellAt(e);if(i>=0)onCell(i,lastPT==='touch');lastPT='mouse';});
-new ResizeObserver(()=>draw()).observe(cv);
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
-function navAllowed(){return !!S&&(!!S.result||mode==='watch');}
-function navTo(k){if(!navAllowed())return;navAt=k===null?null:Math.max(0,Math.min(S.log.length,k));render();}
-const navStep=d=>{const N=S.log.length,k=navAt===null?N:navAt;navTo(k+d);};
-$('nv0').onclick=()=>navTo(0);$('nvP').onclick=()=>navStep(-1);$('nvN').onclick=()=>navStep(1);$('nvE').onclick=()=>navTo(null);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S&&preparing()&&!/INPUT|SELECT|TEXTAREA/.test((document.activeElement||{}).tagName||'')){e.preventDefault();cancelPrep();}});
-document.addEventListener('keydown',e=>{if(!navAllowed()||/INPUT|SELECT|TEXTAREA/.test((document.activeElement||{}).tagName||''))return;
- if(e.key==='ArrowLeft'){navStep(-1);e.preventDefault();}else if(e.key==='ArrowRight'){navStep(1);e.preventDefault();}
- else if(e.key==='Home'){navTo(0);e.preventDefault();}else if(e.key==='End'){navTo(null);e.preventDefault();}});
+function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===1?'#1c1f1e':'#f7f6f1',stroke:c===1?'#000':'rgba(0,0,0,.65)','stroke-width':Math.max(1,SR*.07)},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
+function ghost(g,i,c,num){stone(g,i,c,.5);el('circle',{cx:PX(i),cy:PY(i),r:SR*1.08,fill:'none',stroke:MK,'stroke-width':2,'stroke-dasharray':'4 3'},g);
+  if(num){const tx=el('text',{x:PX(i),y:PY(i)+1,'text-anchor':'middle','dominant-baseline':'middle','font-family':'Figtree, system-ui, sans-serif','font-weight':700,'font-size':CELL*.42,fill:c===1?'#fff':'#222','pointer-events':'none'},g);tx.textContent=String(num);}}
+function hintRing(g,i){el('circle',{cx:PX(i),cy:PY(i),r:SR*.85,fill:'none',stroke:MK,'stroke-width':2,'stroke-dasharray':'2 3'},g);}
+function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
+  const m=coordsOn?PAD:CELL*.75,x0=PAD-m,w=SZ-2*(PAD-m);
+  svg.setAttribute('viewBox',`${x0} ${x0} ${w} ${w}`);
+  el('rect',{x:x0,y:x0,width:w,height:w,fill:'#D3AE76'},svg);
+  let d='';for(let k=0;k<N;k++){d+=`M${P(0)} ${P(k)}H${P(N-1)}M${P(k)} ${P(0)}V${P(N-1)}`;}
+  el('path',{d,stroke:'rgba(58,40,20,.75)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
+  el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'rgba(58,40,20,.75)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
+  for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'rgba(58,40,20,.85)'},svg);
+  el('circle',{cx:P(7),cy:P(7),r:CELL*.28,fill:'none',stroke:'rgba(58,40,20,.7)','stroke-width':1.2,'vector-effect':'non-scaling-stroke'},svg);
+  // coordinates (core: coordsOn): letters under the board, numbers on its left
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Figtree, system-ui, sans-serif','font-weight':600,'font-size':CELL*.36,fill:'rgba(58,40,20,.7)'},svg);e.textContent=s;};
+    for(let k=0;k<N;k++){lab(P(k),SZ-PAD*.45,LET[k]);lab(PAD*.45,P(k),String(N-k));}}
+  const sh=shown;
+  if(sh&&view){const st=sh.d.st,g=el('g',{},svg);
+    for(let i=0;i<NN;i++)if(st.B[i])stone(g,i,st.B[i]);
+    // the last action: a dot on its stones, a cross on the stones it captured
+    for(const i of st.lastCap){if(st.B[i])continue;const x=PX(i),y=PY(i),q=CELL*.18;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:MK,'stroke-width':2,fill:'none'},g);}
+    for(const i of st.last)if(st.B[i])el('circle',{cx:PX(i),cy:PY(i),r:SR*.24,fill:MK},g);
+    // a suggestion shown is drawn like provisional stones; « take White, then play X » rings X
+    if(sh.mine&&hintOn()){const h=hintMv,ms=sh.ms;
+      if(h.t==='o')h.s.forEach((i,k)=>ghost(g,i,[1,2,1][k],k+1));else if(h.t==='a')h.s.forEach((i,k)=>ghost(g,i,[1,2][k],k+1));
+      else if(h.t==='m')ghost(g,h.i,ms.toMove);else if(h.t==='W'&&h.next>=0)hintRing(g,h.next);}
+    else if(sh.mine&&sh.cols)ui.tent.forEach((i,k)=>ghost(g,i,sh.cols[k],sh.cols.length>1?k+1:0));
+    if(st.line){const L=st.line,a=L[0],b=L[L.length-1];el('line',{x1:PX(a),y1:PY(a),x2:PX(b),y2:PY(b),stroke:MK,opacity:.85,'stroke-width':Math.max(3,CELL*.16),'stroke-linecap':'round'},g);}}
+  el('g',{id:'hov','pointer-events':'none'},svg);
+  // the intersections, for the clicks
+  const hit=el('g',{fill:'transparent'},svg),live=!!(sh&&sh.mine&&sh.cols);
+  for(let i=0;i<NN;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(live&&!sh.ms.B[i])e.setAttribute('class','pt');}
+  drawHover();}
+// The stone to place, under the mouse
+function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
+  if(!sh||!sh.mine||!sh.cols||i<0||hintOn()||busy==='hint'||sending)return;if(sh.ms.B[i]||ui.tent.indexOf(i)>=0)return;
+  const c=ui.tent.length<sh.cols.length?sh.cols[ui.tent.length]:sh.cols.length===1?sh.cols[0]:0;if(c)ghost(g,i,c,0);}
 
-/* ================= navigation ================= */
-function setHash(h){try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){location.hash=h;}}
-function showGame(){$('home').hidden=true;$('game').hidden=false;render();}
-function leaveCurrent(){timers.forEach(x=>{clearInterval(x);clearTimeout(x);});timers=[];clearTimeout(retryT);retryT=null;clearTimeout(connT);lostSince=0;
- for(const c of conns){try{c.close();}catch(_){}}conns.clear();oppConn=null;
- if(conn){try{conn.close();}catch(_){}}conn=null;if(peer){try{peer.destroy();}catch(_){}}peer=null;
- resetWorker();mode=null;S=null;mySeat=null;pending=false;pendingAct=null;lastSeen=0;rejectedAt=0;tent=[];localMode='';navAt=null;resignArm=false;clearHint();aiInfo=null;hist=[];}
-function goHome(){if(mode==='host'&&code)store.del('pente-host-'+code);if(mode==='guest')store.del('pente-guest');leaveCurrent();setHash('');homeArm=false;document.title='Pente';$('game').hidden=true;$('home').hidden=false;$('lErr').textContent='';invited(false);refreshResume();render();}
-// "Resume game" on the home page, for the host as for the guest
-function lastHosted(){let best=null;try{for(let k=0;k<localStorage.length;k++){const key=localStorage.key(k);if(!key||key.indexOf('pente-host-')!==0)continue;
-  let g=null;try{g=JSON.parse(localStorage.getItem(key));}catch(e){}if(!g||g.result||!g.code)continue;if(!best||(g.savedAt||0)>(best.savedAt||0))best=g;}}catch(e){}return best;}
-function refreshResume(){const h=lastHosted(),g=jget('pente-guest'),gOk=g&&g.code&&g.S&&!g.S.result;
- $('resumeCard').hidden=!(h||gOk);if(h){$('resumeTxt').textContent=t('inProgressHost');$('resumeBtn').dataset.k='host-'+h.code;}else if(gOk){$('resumeTxt').textContent=t('inProgressGuest');$('resumeBtn').dataset.k='join-'+g.code;}}
-$('resumeBtn').onclick=()=>{const k=$('resumeBtn').dataset.k||'';if(k.indexOf('host-')===0){bootHost(k.slice(5));return;}if(k.indexOf('join-')===0){$('jCode').value=k.slice(5);join(false);}};
-// Header breadcrumb: games -> the index; game name -> Pente's start page; confirm before leaving a game in progress
-const liveGame=()=>!!(S&&!S.result&&S.phase!=='wait'&&mySeat&&!$('game').hidden);
-$('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
-$('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;goHome();};
-$('homeBtn').onclick=()=>{const live=S&&!S.result&&S.phase!=='wait'&&mySeat;
- if(live&&!homeArm){homeArm=true;render();clearTimeout(homeArmT);homeArmT=setTimeout(()=>{homeArm=false;render();},4000);return;}
- goHome();};
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store.set('pente-lang',lang);store.set('games-lang',JSON.stringify(lang));store.set('volo-lang',JSON.stringify(lang));applyStatic();refreshResume();});
-$('optConfirm').addEventListener('change',e=>{confirmOn=e.target.checked;store.set('pente-confirm',confirmOn?'1':'0');if(!confirmOn&&tent.length){const p=placing();if(p&&tent.length===p.colors.length){commit();return;}}render();});
-for(const sel of ['hLevel','gLevel'])$(sel).addEventListener('change',e=>{level=e.target.value;store.set('pente-level',level);$('hLevel').value=level;$('gLevel').value=level;render();});
-$('bUndo').onclick=undo;$('bHint').onclick=doHint;
-$('goAI').onclick=startAI;$('tGo').onclick=startTest;
-// Home: "Create a game", then the opponent (link, computer, this device), then that choice's options
-let homeK='';
-function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
- $('createOpts').hidden=k!=='link';$('aiOpts').hidden=k!=='ai';$('testOpts').hidden=k!=='local';
- const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
-$('newBtn').onclick=()=>homeStep('pick');
-$('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
-document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
-$('joinOpen').onclick=()=>{$('joinCard').hidden=false;$('jCode').focus();};
-// An invitation link opens straight on the name to play under (the saved nickname by default)
-function invited(on){$('home').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
-$('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';$('lErr').textContent='';};
-const savedName=nickGet()||'';$('cName').value=savedName;$('jName').value=savedName;
-function cleanCode(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');}
-$('cGo').onclick=()=>{const nm=$('cName').value.trim().slice(0,24);if(nm)nickSet(nm);
- const f=$('cFirst').value;const fs=f==='me'?'H':f==='opp'?'G':(Math.random()<.5?'H':'G');
- const tc=TCS.find(x=>x.id===tcChoice);leaveCurrent();
- code=rid(6);mode='host';mySeat='H';S=newState(code,fs,{H:nm||t('hostDefault'),G:''},{H:hh(token),G:null},1,tc.base?tc:null);save();setHash('host-'+code);showGame();startHost();hostTimers();};
-function join(asWatch){const c=cleanCode($('jCode').value);if(c.length<4){$('lErr').textContent=t('e_code');return;}
- const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);
- leaveCurrent();refused=false;code=c;mode=asWatch?'watch':'guest';setHash((asWatch?'watch-':'join-')+code);$('home').hidden=true;$('game').hidden=false;
- S=null;
- // last position seen as a guest: shown at once, and used to take over if the host does not come back
- const sv=jget('pente-guest');if(!asWatch&&sv&&sv.code===c&&sv.S&&(!sv.S.result||sv.pending)){S=sv.S;mySeat=sv.seat;lostSince=Date.now();recvEl=0;recvAt=performance.now();
-  if(sv.pending){const now=performance.now();pendingAct={...sv.pending,t0:now,at:now-2000,sent:0};const st=withPending(S);if(st){S=st;pending=true;}else pendingAct=null;}}
- render();startGuest();}
-$('jPlay').onclick=()=>join(false);$('jWatch').onclick=()=>join(true);
-/* ================= code de reprise ================= */
-function exportCode(){const p=JSON.parse(JSON.stringify(pub()));const ts=turnSeat(S);if(ts&&S.tc&&!S.paused)p.clocks[ts]=remaining(ts);
- delete p.th;p.paused=false;p.ready={H:false,G:false};p.ver=0;return 'PENTE1.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
-function importCode(v){v=String(v||'').replace(/\s+/g,'');if(v.indexOf('PENTE1.')!==0)throw 0;
- const p=JSON.parse(decodeURIComponent(escape(atob(v.slice(7)))));if(!p||!Array.isArray(p.B)||p.B.length!==NN||!p.clocks||!p.names)throw 0;return p;}
-$('rcCopy').onclick=()=>{if(!S)return;const inp=$('rcTxt');inp.value=exportCode();inp.hidden=false;
- if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(inp.value).then(()=>toast(t('resumeCopied')),()=>{inp.select();toast(t('copySel'));});else{inp.select();toast(t('copySel'));}};
-$('rGo').onclick=()=>{let p;try{p=importCode($('rIn').value);}catch(e){$('lErr').textContent=t('e_badResume');$('rSeats').innerHTML='';return;}
- $('lErr').textContent='';const box=$('rSeats');
- box.innerHTML=['H','G'].map(k=>`<button class="btn primary" data-seat="${k}" style="justify-content:center">${esc(t('iAm',{name:p.names[k]||t(k==='H'?'hostDefault':'guestDefault')}))}</button>`).join('');
- box.querySelectorAll('[data-seat]').forEach(b=>b.onclick=()=>resumeAs(b.dataset.seat,p));};
-function resumeAs(seat,p){if(!peerReady())return;leaveCurrent();code=rid(6);mode='host';S=p;S.code=code;S.th={H:null,G:null};S.th[seat]=hh(token);S.ver=0;S.turnStart=Date.now();S.paused=!!turnSeat(S);
- if(!S.ready)S.ready={H:false,G:false};mySeat=seat;save();setHash('host-'+code);showGame();startHost();hostTimers();}
-sndBind();
-applyStatic();
-function bootHost(c){const raw=store.get('pente-host-'+c);if(!raw){$('lErr').textContent=t('e_nogame');return false;}
- let g;try{g=JSON.parse(raw);}catch(e){return false;}leaveCurrent();S=g;code=c;mode='host';setHash('host-'+c);
- if(!S.th){S.th={H:hh(token),G:S.gtoken?hh(S.gtoken):null};delete S.gtoken;}if(!S.ready)S.ready={H:true,G:true};
- mySeat=seatOf()||'H';freeze(S.savedAt||S.turnStart);showGame();startHost();hostTimers();changed();return true;}
-refreshResume();
-(function boot(){if(location.hash==='#ai'){let sv=null;try{sv=JSON.parse(localStorage.getItem(AK));}catch(e){}
-  if(sv&&sv.S){leaveCurrent();mode='ai';mySeat='H';code=null;S=sv.S;hist=sv.hist||[];aiInfo=null;clearHint();navAt=null;tent=[];localMode='';setHash('ai');showGame();aiStep();return;}setHash('');}
- if(location.hash==='#test'){let sv=null;try{sv=JSON.parse(localStorage.getItem(TK));}catch(e){}startTest();if(sv&&sv.S){S=sv.S;hist=sv.hist||[];testTurn();}return;}const m=/^#(host|join|watch)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
- if(m[1]==='host'){bootHost(m[2]);return;}
- $('jCode').value=m[2];
- if(m[1]==='join'){invited(true);return;}
- join(m[1]==='watch');})();
-})();
+// ---------- former saves ----------
+// Former storage of this page: plain strings where the shared code reads JSON, and the games against the computer and
+// in free play kept as the old state ({S,hist}); they are converted once, here, before the shared code reads them.
+(function migrate(){const raw=k=>{try{return localStorage.getItem(k);}catch(e){return null;}},put=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+  for(const k of ['pente-level','pente-tc','pente-name']){const v=raw(k);if(v!==null){try{JSON.parse(v);}catch(e){put(k,JSON.stringify(v));}}}
+  const jp=k=>{try{return JSON.parse(raw(k));}catch(e){return null;}};
+  const ai=jp('pente-ai');if(ai&&ai.S&&!ai.view){const g=fromOld(ai.S);if(g){const s=ai.S.first==='H'?0:1;
+    put('pente-ai',JSON.stringify({view:{size:N,tc:null,names:s===0?['me','ai']:['ai','me'],first:s===0?'me':'ai',moves:g.moves,clock:[0,0],running:false,elapsed:0,result:g.result,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:0},mySeat:s}));}
+    else{try{localStorage.removeItem('pente-ai');}catch(e){}}}
+  const ts=jp('pente-test');if(ts&&ts.S&&!ts.moves){const g=fromOld(ts.S);
+    if(g)put('pente-test',JSON.stringify({size:N,tc:null,names:['',''],first:'me',moves:g.moves,clock:[0,0],running:false,elapsed:0,result:g.result,guestOn:true,watchers:0,started:true,ready:[true,true],paused:false,recvAt:0}));
+    else{try{localStorage.removeItem('pente-test');}catch(e){}}}})();
+// A game of the former page (its state S: first 'H'|'G', color {H,G}, log [{c,i,cap,o}] where o marks the opening stones,
+// result) as move codes, seat 0 being S.first; null if it does not replay.
+function fromOld(S){try{const f=S.first,o=f==='H'?'G':'H',L=S.log||[],op=L.filter(e=>e.o),mv=[];
+  if(op.length>=3){mv.push('o'+op.slice(0,3).map(e=>e.i).join('.'));
+    if(op.length>=5){mv.push('a'+op[3].i+'.'+op[4].i);if(S.color&&S.color[f])mv.push(S.color[f]===1?'B':'W');}
+    else if(S.color&&S.color[o])mv.push(S.color[o]===1?'B':'W');
+    for(const e of L)if(!e.o)mv.push('m'+e.i);}
+  const rs=S.result&&(S.result.code==='resign'||S.result.code==='time')?{winner:S.result.winner===f?0:1,reason:S.result.code}:null;
+  if(peReplay({},mv).over&&peReplay({},mv).over.why==='w_bad')return null;
+  return {moves:mv,result:rs,first:f,names:S.names?[S.names[f]||'',S.names[o]||'']:['',''],clock:S.clocks?[S.clocks[f]||0,S.clocks[o]||0]:[0,0],tc:S.tc||null,started:S.phase!=='wait'};}catch(e){return null;}}
+// A resume code of the former page (PENTE1. + the old state): rewritten in the shared format before the shared code reads it
+function oldCode(v){v=String(v||'').replace(/\s+/g,'');if(v.indexOf('PENTE1.')!==0)return null;let p;try{p=JSON.parse(decodeURIComponent(escape(atob(v.slice(7)))));}catch(e){return null;}
+  if(!p||!Array.isArray(p.B)||Array.isArray(p.moves))return null;const g=fromOld(p);if(!g)return null;
+  const q={size:N,tc:g.tc,first:g.first==='H'?'host':'guest',names:g.names,moves:g.moves,clock:g.clock,result:g.result,started:g.started};
+  return 'PENTE1.'+btoa(unescape(encodeURIComponent(JSON.stringify(q))));}
+$('rForm').addEventListener('submit',()=>{const c=oldCode($('rIn').value);if(c)$('rIn').value=c;});   // before core's own handler
+
+// ---------- the interface with common/core.js ----------
+const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
+  rules:()=>({}),form:()=>({}),
+  replay:peReplay,
+  legal:(st,code)=>legalCode(st,code),
+  enc,describe:mv=>describe(mv),newUi,preparing:prepared,cancel:cancelPrep,
+  board:peBoard,turnStatus:peTurnStatus,waitStatus:peWaitStatus,
+  pendText:mv=>mv.t==='m'?[t('st_tentative',{c:coord(mv.i)}),t('confirm1')]:[t('pend_stones',{m:stonesTxt(mv.s,mv.t==='o'?[1,2,1]:[1,2])}),t('confirmN')],
+  playerCard,
+  logText:e=>logTxt(e),
+  applyStatic:()=>{$('rulesHome').innerHTML=t('rules');},
+  home:()=>{shown=null;drawBoard();},
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc,aiPos,aiSearch:aiSearchPage,
+  evalInfo:res=>evalInfo(res)};
+coreStart();
 </script>
-</body>
-</html>
+</body></html>
