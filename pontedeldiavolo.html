@@ -379,11 +379,13 @@ function onCell(i){const r=liveSt();if(!r)return;const st=r.st,op=st.phase==='op
   renderGame();}
 // With a mouse, hovering shows the tile or the bridge a click would add
 function hoverCell(i){const r=liveSt();
-  if(!r||ui.pending){if(ui.hover>=0){ui.hover=-1;if(view)renderGame();}return;}
+  if(!r||ui.pending){if(ui.hover>=0||ui.hoverOwn>=0){ui.hover=ui.hoverOwn=-1;if(view)renderGame();}return;}
   const w=work(r.st),p=mover(r.st);let ok=false;
   if(i>=0){if(ui.sel!==null){const e=findEdge(ui.sel,i);ok=!!(e&&canBridge(w,p,ui.sel,e));}
     else ok=ui.draft.length<2&&!ui.draft.includes(i)&&canPlace(w,p,i);}
-  const nv=ok?i:-1;if(nv!==ui.hover){ui.hover=nv;pdBoard({r,d:r,mine:true});}}
+  // one of my squares a bridge can start from: its possible bridges are shown
+  const own=i>=0&&!ok&&ui.sel===null&&!ui.draft.length&&r.st.phase==='play'&&w.cells[i]===p&&!w.bridged[i]&&BR[i].some(e=>canBridge(w,p,i,e))?i:-1;
+  const nv=ok?i:-1;if(nv!==ui.hover||own!==(ui.hoverOwn??-1)){ui.hover=nv;ui.hoverOwn=own;pdBoard({r,d:r,mine:true});}}
 function endOne(){if(ui.draft.length===1&&ui.oneLeft){ui.pending={t:'t',cells:ui.draft.slice()};renderGame();}}
 function doPass(){const r=liveSt();if(r&&r.st.phase==='play'&&canPass(r.st,r.st.toMove)&&!preparing()){ui.pending={t:'x'};renderGame();}}
 const svg=$('board');
@@ -435,7 +437,9 @@ function drawBoard(real,last,a){
   const ghostBridge=(a,b,op)=>bridge(a,b,col,op||.6);
   if(active){for(const i of ui.draft)ghostTile(i);
     if(ui.bridge)ghostBridge(ui.bridge.a,ui.bridge.b);
-    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null)ghostBridge(ui.sel,ui.hover);else ghostTile(ui.hover);}}
+    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null){ghostBridge(ui.sel,ui.hover,1);const h=ui.hover;out.push(`<rect x="${X(CL(h))+2}" y="${Y(RW(h))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);}else ghostTile(ui.hover);}
+    // hovering one of my squares: the bridges possible from it, in transparency
+    if(!ui.pending&&ui.sel===null&&!ui.draft.length&&ui.hoverOwn>=0){const h=ui.hoverOwn;for(const e of BR[h])if(canBridge(st,a.p,h,e))ghostBridge(h,e.b,.3);}}
   const tgts=new Set();
   if(active&&ui.sel!==null){
     const i=ui.sel;out.push(`<rect x="${X(CL(i))+2}" y="${Y(RW(i))+2}" width="${CS-4}" height="${CS-4}" rx="7" fill="none" stroke="var(--accent)" stroke-width="5"/>`);
