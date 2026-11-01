@@ -289,7 +289,8 @@ function lineThrough(a,b){ // cells strictly between a and b if they are on a co
 const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
 // The landing point clicked for a flight: where the leading bird lands (in file, the front bird; side by side, the first
 // bird of the line). Always a free point, and a different one for each flight of the same line.
-function landAt(m){if(m.cells.length>1&&m.d===lineThrough(m.cells[0],m.cells[1]).d)return E.dest(m,m.cells[m.cells.length-1]);return E.dest(m,m.cells[0]);}
+const leadOf=m=>m.cells.length>1&&m.d===lineThrough(m.cells[0],m.cells[1]).d?m.cells[m.cells.length-1]:m.cells[0];
+function landAt(m){return E.dest(m,leadOf(m));}
 // The provisional birds of a prepared move: the bird added, or where the flying birds land
 const provCells=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>E.dest(m,c)):[];
 let curLegal=[];   // legal moves of the position drawn (for the hover)
@@ -445,7 +446,9 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // a provisional flight: the same, all dashed
   if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
   // a selected line: one frame around it
-  if(ui.sel.length>1&&opt.interactive){const A=ends(ui.sel);el('path',{d:stadium(A[0],A[1]),fill:'none',stroke:'var(--accent)','stroke-width':3.5,'pointer-events':'none'},svg);}
+  // and a dot on its leading bird, the one whose landing points are shown (the first bird; for the hovered flight, its own)
+  if(ui.sel.length>1&&opt.interactive){const A=ends(ui.sel);el('path',{d:stadium(A[0],A[1]),fill:'none',stroke:'var(--accent)','stroke-width':3.5,'pointer-events':'none'},svg);
+    const ld=pv&&pv.hover&&pv.hover.t==='f'?leadOf(pv.hover):ui.sel[0];el('circle',{cx:X(ld),cy:Y(ld),r:6,fill:'var(--accent)',stroke:LASTDOT,'stroke-width':1.5,'pointer-events':'none'},svg);}
   if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
 // Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
 const FR=24;
