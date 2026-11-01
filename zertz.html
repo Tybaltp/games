@@ -472,35 +472,33 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
   const pmv=pv&&pv.mv,land=pmv?pmv.t===1?pmv.path[pmv.path.length-1]:pmv.at:-1,from=pmv&&pmv.t===1?pmv.path[0]:-1;
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'ring','data-i':i},svg);
     if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1.2,'stroke-dasharray':'3 5',opacity:wasRm?.9:.55},g);g.style.cursor='default';continue;}
-    const fade=pv&&pv.gone.includes(i);   // ring that the previewed move removes: shown in transparency
+    // Hover and prepared move share one drawing (the hover: no frame on the arriving marble, a dotted path): the rings
+    // removed and the marbles taken in a dashed red frame, the marble that leaves and the one that arrives translucent
+    const fade=pv&&pv.gone.includes(i),prep=pv&&(pv.prov||pv.atProv);
     el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.88:1},g);
     el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
     if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)',{class:'pulse'});const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
     if(targets.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
-    // marbles that the previewed move lifts (jumped, isolated) or moves away (the jumping one): in transparency
-    // (a capture prepared but not sent: the marbles it takes stay opaque, in a dashed red frame)
-    const capP=pv&&pv.prov&&pmv.t===1,c=st[M+i],lift=pv&&(pv.taken.includes(i)&&!capP||i===from);
-    if(c)marble(g,x,y,c-1,lift?.88:0);
+    const c=st[M+i];
+    if(c)marble(g,x,y,c-1,i===from?.88:0);
     if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
     if(pv){
-      if(fade&&pv.prov)fr(g,x,y,'var(--danger)',DASH);
-      if(c&&pv.taken.includes(i)&&(pv.prov||pv.provTaken&&pv.provTaken.includes(i)))fr(g,x,y,'var(--danger)',DASH);
-      if(land===i){const col=pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,solid=pv.prov||pmv.t===0&&pv.atProv;
-        // a capture prepared: the moved marble stays translucent, in a solid frame joined by the solid path
-        if(capP){marble(g,x,y,col,.88);fr(g,x,y,'var(--accent)');}else{marble(g,x,y,col,solid?0:.88);if(solid)fr(g,x,y,'var(--accent)',DASH);}}}
+      if(fade||c&&pv.taken.includes(i))fr(g,x,y,'var(--danger)',DASH);
+      if(land===i){marble(g,x,y,pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,.88);if(prep)fr(g,x,y,'var(--accent)');}}
     if(starters.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
     // the jumping marble picked (path not started yet): the element to click again to drop it
     if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
   const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};
-  // a solid line from the starting ring to the frame of the landing marble (the last capture, a capture prepared)
-  const capLine=Q=>{const P=Q.map(i=>[X(i),Y(i)]),a=P[P.length-2],b=P[P.length-1],L=Math.hypot(b[0]-a[0],b[1]-a[1]);
-    P[P.length-1]=[b[0]-(b[0]-a[0])/L*27,b[1]-(b[1]-a[1])/L*27];
-    el('polyline',{points:P.map(p=>p.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},svg);};
+  // a line from the starting ring to the landing marble: solid up to its frame (the last capture, a capture prepared),
+  // dotted up to the marble's edge (a capture hovered)
+  const capLine=(Q,dot)=>{const P=Q.map(i=>[X(i),Y(i)]),a=P[P.length-2],b=P[P.length-1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),k=dot?22:27;
+    P[P.length-1]=[b[0]-(b[0]-a[0])/L*k,b[1]-(b[1]-a[1])/L*k];
+    el('polyline',Object.assign({points:P.map(p=>p.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},dot?{'stroke-dasharray':'1 6'}:{}),svg);};
   // the last capture: that line, and a red cross on each marble taken (the middle of each jump)
   if(lm&&lm.t===1&&lm.path.length>1){capLine(lm.path);
     for(let k=1;k<lm.path.length;k++){const x=(X(lm.path[k-1])+X(lm.path[k]))/2,y=(Y(lm.path[k-1])+Y(lm.path[k]))/2,d=7;
       el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round','pointer-events':'none'},svg);}}
-  if(pv&&pv.mv.t===1){if(pv.prov&&pv.mv.path.length>1)capLine(pv.mv.path);else path(pv.mv.path,'4 6');}else if(ui.path)path(ui.path);}
+  if(pv&&pv.mv.t===1){if(pv.mv.path.length>1)capLine(pv.mv.path,!(pv.prov||pv.atProv));}else if(ui.path)path(ui.path);}
 
 // ---------- the interface with common/core.js ----------
 const GAME={id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
