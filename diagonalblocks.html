@@ -9,9 +9,9 @@
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
-  --bg:#f0efeb;--panel:#ffffff;--ink:#22231f;--muted:#64655e;--line:#d9d7cf;
-  --boardbg:#e2dfd6;--cell:#f7f6f2;--gridl:#d3cfc4;--start:#a29d91;--coord:#8a877d;
-  --k0:#16917f;--k0e:#0b4f45;--k1:#c43f72;--k1e:#6f173b;
+  --bg:#f2efe7;--panel:#ffffff;--ink:#22231f;--muted:#64655e;--line:#d9d7cf;
+  --boardbg:#e5ddcc;--cell:#f8f4ea;--gridl:#dad1bf;--start:#a3967f;--coord:#8a877d;
+  --k0:#12806f;--k0e:#07463d;--k1:#b73a67;--k1e:#641334;
   --s0:var(--k0);--s0e:var(--k0e);--s1:var(--k1);--s1e:var(--k1e);   /* players' swatches: by colour (dbDecorate) */
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;--illegal:#ff2b2b;
   --board-ar:1/1;                /* viewBox of the board (604×604; 566×566 without the coordinates) */
@@ -20,11 +20,11 @@ html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#131614;--panel:#1b1f1d;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
   --boardbg:#0f1211;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
-  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;--illegal:#ff2b2b;color-scheme:dark}}
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;--illegal:#ff2b2b;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}}
 :root[data-theme="dark"]{
   --bg:#131614;--panel:#1b1f1d;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
   --boardbg:#0f1211;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
-  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;--illegal:#ff2b2b;color-scheme:dark}
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;--illegal:#ff2b2b;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}
 h1 span{white-space:nowrap}
 .board{background:var(--boardbg);border:0;border-radius:14px}
 html.ingame:not(.wide) .board{background:var(--boardbg);border-radius:10px}
