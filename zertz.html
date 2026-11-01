@@ -473,14 +473,14 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'ring','data-i':i},svg);
     if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1.2,'stroke-dasharray':'3 5',opacity:wasRm?.9:.55},g);g.style.cursor='default';continue;}
     const fade=pv&&pv.gone.includes(i);   // ring that the previewed move removes: shown in transparency
-    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.35:1},g);
+    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.88:1},g);
     el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
     if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)',{class:'pulse'});const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
     if(targets.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
     // marbles that the previewed move lifts (jumped, isolated) or moves away (the jumping one): in transparency
     // (a capture prepared but not sent: the marbles it takes stay opaque, in a dashed red frame)
     const capP=pv&&pv.prov&&pmv.t===1,c=st[M+i],lift=pv&&(pv.taken.includes(i)&&!capP||i===from);
-    if(c)marble(g,x,y,c-1,lift?.35:0);
+    if(c)marble(g,x,y,c-1,lift?.88:0);
     if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
     if(pv){
       if(fade&&pv.prov)fr(g,x,y,'var(--danger)',DASH);
