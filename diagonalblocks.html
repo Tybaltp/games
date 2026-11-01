@@ -58,6 +58,11 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
    opponent's sticks to the top of it, mine to the bottom */
 .pwrap{flex:none;display:flex;flex-direction:column}#oppWrap{justify-content:flex-start}#myWrap{justify-content:flex-end}
 #myBlock .notice{border:0;background:none;padding:2px 0 0;border-radius:0}
+/* phones: the bar is a single row, the buttons only when there are some (the message alone otherwise, on one line), so
+   that the reserves get the room */
+html.ingame:not(.wide) .notice{height:38px!important;min-height:0!important;flex-direction:row!important;align-items:center!important;padding-block:2px}
+html.ingame:not(.wide) .notice.has-btns .msg{display:none}html.ingame:not(.wide) .notice .msg{-webkit-line-clamp:1;line-clamp:1}
+html.ingame:not(.wide) .notice .btns{flex-wrap:nowrap!important;width:100%}html.ingame:not(.wide) .notice .btns button{flex:1 1 auto}
 html.ingame.wide .pblock{--cell:9px}html.ingame.wide .pblock .tray{width:100%}
 /* wide screens (not landscape phones): a wider side column, so that the pieces are not dwarfed by the board */
 @media (min-width:821px){html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) clamp(320px,36vw,520px)}html.ingame.wide .pblock{--cell:clamp(10px,1.1vw,15px)}}
@@ -343,7 +348,7 @@ function dbBoard({r,d,mine}){
   const marks=mine&&!ui.pending&&!hint&&!r.over?liveCorners(r.st,myC):null;
   // the last move's frame goes as soon as a move is being prepared
   drawBoard(d.st,navAt===null&&(preparing()||hint)?null:d.last,pv,marks,marks?myC:-1,hov);
-  const o=swapInfo(r);renderTrays(d.st,mine&&!ui.pending&&!o.ask);
+  const o=swapInfo(r);renderTrays(d.st,mine&&(!ui.pending||ui.pending.t==='p')&&!o.ask);
   return o;}
 // My turn, nothing pending. The swap question: Swap or Keep the pink pieces (and Undo last move in free play) ·
 // nothing picked: the message and Undo last move (free play) · a piece picked: Reset, Rotate, Flip
@@ -405,8 +410,9 @@ function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',
   for(const k of ORDER){const p=E.P[k];if(st.used[c]>>k&1)continue;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
     const o=sel&&ui.cur?ui.cur:oriOf(c,k),n=sideOf(k);b.className='slot'+(sel?' sel':'');b.style.setProperty('--n',n);
     b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live;b.appendChild(miniSvg(o,c,n,n));
-    if(live)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);}}
-// The cell size of both reserves, the largest (16 px at most) that leaves the board its room: phones, at least 60 % of the
+    // a piece placed but not confirmed is taken off the board when another one (or none) is picked
+    if(live)b.onclick=()=>{ui.pending=null;ui.hover=-1;selectPiece(k===ui.piece?-1:k);};box.appendChild(b);}}
+// The cell size of both reserves, the largest (16 px at most) that leaves the board its room: phones, at least 50 % of the
 // height under the header (less when the width limits the board anyway); wide screens, a full reserve in 3 rows at most.
 // Phones: each block's wrapper keeps the height the block has with a full reserve, so the board never changes size.
 function holdHeights(w){const pairs=[['oppWrap','oppBlock','oppTray'],['myWrap','myBlock','myTray']].map(([a,b,c])=>[$(a),$(b),$(c)]);
@@ -417,7 +423,7 @@ function holdHeights(w){const pairs=[['oppWrap','oppBlock','oppTray'],['myWrap',
   if(w){for(;cell>6;cell-=.5)if(pairs.every(([,,T])=>fullTray(T,cell).rows<=3))break;}
   else{const bw=document.querySelector('.boardwrap'),ba=bw.querySelector('.boardarea'),A=bw.clientHeight,gap=parseFloat(getComputedStyle(bw).rowGap)||8;
     const vis=[...bw.children].filter(e=>!e.hidden&&e.offsetHeight+e.offsetWidth>0&&e!==ba),sep=solo()?$('notice').offsetHeight:0;
-    const room=A-Math.min(.6*A,ba.clientWidth)-gap*vis.length-sep;
+    const room=A-Math.min(.5*A,ba.clientWidth)-gap*vis.length-sep;
     for(;cell>5;cell-=.5)if(pairs.reduce((s,[,B,T])=>s+blockH(B,T,cell),0)<=room)break;}
   for(const [W_,B,T] of pairs){if(B.style.getPropertyValue('--cell')!==cell+'px')B.style.setProperty('--cell',cell+'px');
     W_.style.minHeight=w?'':blockH(B,T,cell)+'px';}}
