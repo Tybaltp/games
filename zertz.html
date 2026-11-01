@@ -10,8 +10,8 @@
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
   --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
-  --plate:#2a4852;--plate-edge:#1f3840;--ring:#cfd8db;--ring-hole:#2a4852;--ghost:#6d8a93;
-  --m0:#f7f9fa;--m0e:#8e999d;--m1:#8f999d;--m1e:#556063;--m2:#22272a;--m2e:#000000;
+  --plate:#2a4852;--plate-edge:#1f3840;--ring:#dfe5e7;--ring-hole:#2a4852;--ghost:#6d8a93;
+  --m0:#f7f9fa;--m0e:#5f6b70;--m1:#6f7a7f;--m1e:#3c4549;--m2:#22272a;--m2e:#000000;
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
   /* viewBox of the board: 48 rings 500×595 (500×565 without the coordinates), 37 rings 440×526 (440×496) */
   --board-ar:500/595;
@@ -21,11 +21,11 @@ html.b37{--board-ar:440/526}
 html.b37.nocoords{--board-ar:440/496}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --plate:#1c3640;--plate-edge:#132a32;--ring:#b9c6ca;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --plate:#1c3640;--plate-edge:#132a32;--ring:#b9c6ca;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
 /* the plate under the rings, on every screen (the light rings need it) */
 .board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 40%,var(--plate),var(--plate-edge));border-color:var(--plate-edge)}
