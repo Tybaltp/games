@@ -447,7 +447,8 @@ function flightMark(svg,from,to,dashed){const da=dashed?{'stroke-dasharray':'5 4
   const A=ends(from),B=ends(to),ca=[(A[0][0]+A[1][0])/2,(A[0][1]+A[1][1])/2],cb=[(B[0][0]+B[1][0])/2,(B[0][1]+B[1][1])/2];
   el('path',{d:stadium(A[0],A[1]),'stroke-dasharray':'5 4'},g);el('path',Object.assign({d:stadium(B[0],B[1])},da),g);
   const D=Math.hypot(cb[0]-ca[0],cb[1]-ca[1]);if(D<1e-6)return;const u=[(cb[0]-ca[0])/D,(cb[1]-ca[1])/D];
-  let s=0,e=D;if(dSS(A,B)>2*FR){s=exitAt(ca,u,A);e=D-exitAt(cb,[-u[0],-u[1]],B);}
+  // apart: outline to outline, unless the gap is too short to read (then centre to centre, as when they touch)
+  let s=0,e=D;if(dSS(A,B)>2*FR){const s1=exitAt(ca,u,A),e1=D-exitAt(cb,[-u[0],-u[1]],B);if(e1-s1>=16){s=s1;e=e1;}}
   if(e>s)el('line',Object.assign({x1:ca[0]+u[0]*s,y1:ca[1]+u[1]*s,x2:ca[0]+u[0]*e,y2:ca[1]+u[1]*e,'stroke-linecap':dashed?'butt':'round'},da),g);}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
