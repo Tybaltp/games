@@ -346,6 +346,9 @@ function regionBtns(st){if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.
 // The board alone (the hover changes nothing in the action bar)
 function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);voBoard({r,d:r,mine:isMyTurn(r)});}
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
+// A click anywhere else (off the points, off the board) drops the selected bird or line; the commands keep it
+document.addEventListener('click',e=>{if(!view||!ui.sel.length||ui.pending||ui.basemv)return;
+  if(e.target.closest('[data-i],button,a,input,select,label,#notice,dialog'))return;ui.sel=[];ui.hist=[];ui.hover=-1;renderGame();});
 // With a mouse: the bird to add, or the flight to the point hovered, in transparency (legal targets only); any of my
 // birds hovered (able to fly or not) is ringed; during the region choice, an opponent's bird hovered fades the birds
 // of the other regions
