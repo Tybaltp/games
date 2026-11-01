@@ -7,7 +7,7 @@ Règles générales ; chaque jeu les applique selon son contexte.
 2. **Provisoire** (cliqué, pas encore joué) : pièce opaque, cadre en pointillés.
 3. **Dernier coup** : cadre plein ou point de marquage (comme Pente), à juger jeu par jeu ; disparaît dès qu'on prépare un coup.
 4. **Cadres** tracés à l'intérieur de la case. (Le cadre commun à deux éléments voisins reste propre à Ponte.)
-5. **Superposition** élégante, adaptée au contexte du jeu.
+5. **Superposition** élégante, adaptée au contexte du jeu. Jamais deux anneaux différents superposés sur une même pièce : l'anneau de sélection remplace le pointillé d'une pièce déjà bougée.
 
 ## B. Préparation d'un coup
 6. Mise en évidence minimale mais efficace, selon le contexte.
