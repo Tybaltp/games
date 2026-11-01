@@ -38,27 +38,29 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
 .sw{width:14px;height:14px;border-radius:3px;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
 .sw.c0{background:var(--k0);border:1.5px solid var(--k0e)}
 .sw.c1{background:var(--k1);border:1.5px solid var(--k1e)}
-/* piece reserves. #trayCard: the opponent's pieces (smaller, read only) above the player's own, always in view (placeTray):
-   wide screens in the side panel's fixed top part, under the action bar; phones a strip between the board and the
-   action bar (the board gives up the height) */
+/* players' blocks (placeBlocks): #oppBlock (the opponent: card and pieces left) and #myBlock (the player: card, pieces
+   left, action bar); phones above and under the board, wide screens at the top of the side panel. Both reserves use the
+   same slot size; only mine can be picked from. */
+.pblock{flex:none;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:flex;flex-direction:column;gap:6px;opacity:.85}
+.pblock.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.pblock .prow{display:flex;gap:8px;align-items:flex-start;min-width:0}
+.pblock .pinfo{flex:0 0 104px;min-width:0}
+.pblock .player .tally{flex-direction:column;gap:0}   /* cells and pieces on two lines */
+.pblock .player{border:0;background:none;box-shadow:none;padding:0;opacity:1}
+.pblock .tray{flex:1;min-width:0;grid-template-columns:repeat(auto-fill,30px);gap:2px;justify-content:start}
+.pblock .slot{padding:2px}
+#myBlock .notice{border:0;background:none;padding:2px 0 0;border-radius:0}
+html.ingame.wide .pblock .prow{flex-direction:column;gap:4px}
+html.ingame.wide .pblock .pinfo{flex:none;width:100%}
+html.ingame.wide .pblock .tray{width:100%;grid-template-columns:repeat(auto-fill,32px)}
+html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:4px}
 .slot{padding:3px;border:1.5px solid transparent;border-radius:7px;background:transparent;line-height:0}
 .slot svg{width:100%;height:auto;display:block}
 .tray.live .slot:not(.used){cursor:pointer}
 .tray.live .slot:not(.used):hover{border-color:var(--line)}
 .slot.sel{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 14%,transparent)}
-.slot.used svg{opacity:.14}
 .slot:disabled{opacity:1}
-#trayCard{flex:none;gap:6px;padding:8px 10px}
-#myTray{grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:3px}
-#oppTray{grid-template-columns:repeat(auto-fill,minmax(28px,1fr));gap:2px}#oppTray .slot{padding:1px}
-#trayCard h2{font-size:.8rem;font-weight:600;color:var(--muted);margin:0}
-html.ingame:not(.wide) #trayCard{padding:0;background:none;border:0;gap:0}
-html.ingame:not(.wide) #trayCard h2{display:none}
-html.ingame:not(.wide) #myTray{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:2px}
-html.ingame:not(.wide) #myTray .slot{padding:2px}
-html.ingame:not(.wide) #oppTray{grid-template-columns:repeat(auto-fill,minmax(29px,1fr));gap:1px;padding-bottom:4px;margin-bottom:4px;border-bottom:1px solid var(--line)}
-@media (orientation:landscape) and (max-height:500px){#trayCard{padding:5px 8px;gap:3px}#myTray{grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:2px}#myTray .slot{padding:2px}#oppTray{grid-template-columns:repeat(auto-fill,minmax(24px,1fr))}}
 </style>
 </head><body>
 <div class="wrap">
@@ -122,11 +124,12 @@ html.ingame:not(.wide) #oppTray{grid-template-columns:repeat(auto-fill,minmax(29
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="pblock" id="oppBlock" hidden><div class="prow"><div class="pinfo"></div><div class="tray" id="oppTray"></div></div></div>
     <div class="boardarea"><div class="board"><svg id="svg" viewBox="-22 -22 604 604" role="img" aria-label="Diagonal Blocks board"></svg></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
-    <!-- both reserves, always in view (the opponent's pieces left are part of the strategy): here on phones (between the
-         board and the action bar); on wide screens moved into the side panel under the action bar (placeTray) -->
-    <div class="card" id="trayCard" hidden><h2 id="oppT"></h2><div class="tray" id="oppTray"></div><h2 id="myT"></h2><div class="tray" id="myTray" data-i18n-t="trayHint"></div></div>
+    <!-- the players' blocks (placeBlocks): the opponent's above the board, mine under it (its card, its pieces left,
+         then the action bar); on wide screens both at the top of the side panel, the opponent's first -->
+    <div class="pblock" id="myBlock" hidden><div class="prow"><div class="pinfo"></div><div class="tray" id="myTray" data-i18n-t="trayHint"></div></div></div>
     <div class="notice" id="notice"></div>
   </div>
   <aside class="side" id="side" tabindex="-1">
@@ -243,7 +246,7 @@ function DBEngine(){
 }
 // Diagonal Blocks strings, merged over the shared ones (core.js)
 const DB_I18N={fr:{
- title:"Diagonal Blocks Duo",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",leftN:"{k} restantes",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
+ title:"Diagonal Blocks Duo",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : couvrir le plus de cases possible. Chaque joueur a sa couleur et 21 pièces de 1 à 5 carrés (89 carrés en tout). On peut tourner et retourner les pièces.</li>
  <li><b>Plateau</b> : 14 × 14, chaque coin amputé de 3 cases (184 cases). Deux cases de départ, en gris foncé.</li>
  <li><b>Première pièce</b> : elle couvre la case de départ de votre couleur (celle du premier joueur en haut à gauche).</li>
@@ -256,7 +259,7 @@ const DB_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
- title:"Diagonal Blocks Duo",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",rm_ask:"{n} offers a new game, first player swapped.",firstIs:"Who plays first",placeHint:"Place the piece on the board.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",leftN:"{k} left",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
+ title:"Diagonal Blocks Duo",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",rm_ask:"{n} offers a new game, first player swapped.",firstIs:"Who plays first",placeHint:"Place the piece on the board.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: cover as many cells as you can. Each player has a colour and 21 pieces of 1 to 5 squares (89 squares in all). Pieces may be rotated and flipped.</li>
  <li><b>Board</b>: 14 × 14 with 3 cells cut from each corner (184 cells). Two start cells, in dark grey.</li>
  <li><b>First piece</b>: it covers your colour's start cell (the first player's is top left).</li>
@@ -332,7 +335,7 @@ function dbBoard({r,d,mine}){
   const marks=mine&&!ui.pending&&!hint&&!r.over?liveCorners(r.st,myC):null;
   // the last move's frame goes as soon as a move is being prepared
   drawBoard(d.st,navAt===null&&(preparing()||hint)?null:d.last,pv,marks,marks?myC:-1);
-  const o=swapInfo(r);placeTray();renderTrays(d.st,mine&&!ui.pending&&!o.ask);
+  const o=swapInfo(r);renderTrays(d.st,mine&&!ui.pending&&!o.ask);
   return o;}
 // My turn, nothing pending. The swap question: Swap or Keep the pink pieces (and Undo last move in free play) ·
 // nothing picked: the message and Undo last move (free play) · a piece picked: Reset, Rotate, Flip
@@ -351,7 +354,9 @@ function dbWaitStatus({r}){const o=swapInfo(r);
 // After core's renderGame: the players' cards get the colour each seat plays (it changes with the swap), the cells covered
 // and the pieces left; the move list gets each move's colour.
 const coreRender=renderGame;
-renderGame=function(){coreRender();if(view&&!$('game').hidden)dbDecorate();};
+renderGame=function(){coreRender();if(view&&!$('game').hidden){dbDecorate();placeBlocks();}};
+// core's layoutMode puts the action bar back under the board or in the side panel: here it stays in my block
+const coreLayout=layoutMode;layoutMode=function(){coreLayout();placeBlocks();};
 function dbDecorate(){const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt),pad=n=>String(n).padStart(2,' ');
   const host=$(isWide()?'playersSide':'playersTop');
   for(const p of [0,1]){const el=host.children[p];if(!el)continue;const c=E.colorOf(d.st,p),dot=el.querySelector('.dot');if(dot)dot.className='dot sw c'+c;
@@ -370,24 +375,28 @@ function miniSvg(o,c,vw,vh){const w=1+Math.max(...o.map(x=>x[1])),h=1+Math.max(.
   const g=el('g',{transform:`translate(${(vw-w)/2} ${(vh-h)/2})`},s);
   for(const [r,q] of o)el('rect',{x:q,y:r,width:1,height:1,fill:`var(--k${c})`,stroke:`var(--k${c}e)`,'stroke-width':.08},g);return s;}
 let trayKey='';
-// The picked piece is drawn in its current orientation (R / F turn it in its slot)
+// Pieces left only (a used piece leaves the reserve); the picked piece is drawn in its current orientation (R / F turn it)
 function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
-  E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1),sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';b.className='slot'+(used?' used':'')+(sel?' sel':'');
+  E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1);if(used)return;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';b.className='slot'+(sel?' sel':'');
     b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(sel&&ui.cur?ui.cur:p.wide,c,5,3));
     if(live&&!used)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);});}
-function renderTrays(st,live){const pl=mySeat>=0;
-  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,live,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):'',view.names.join('|')].join(';');
+// The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine »
+const seatsShown=r=>{const bot=mySeat>=0?mySeat:r.st.turn;return {top:1-bot,bot};};
+function renderTrays(st,live){const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
+  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
   if(key===trayKey)return;trayKey=key;
-  // both reserves: a player's opponent above (read only), the player below; a spectator, the first player above
-  $('trayCard').hidden=false;
-  const top=pl?1-mySeat:0,bot=pl?mySeat:1,ct=E.colorOf(st,top),cb=E.colorOf(st,bot);
-  $('oppT').textContent=t('piecesOf',{n:plain(top)})+' · '+t('leftN',{k:E.left(st,ct)});
-  $('myT').textContent=(pl?t('myPieces'):t('piecesOf',{n:plain(bot)}))+' · '+t('leftN',{k:E.left(st,cb)});
-  fillTray($('oppTray'),st,ct,false);fillTray($('myTray'),st,cb,pl&&live);}
-// The tray follows the action bar: wide screens, under it in the side panel's fixed top part; otherwise just above it,
-// under the board
-function placeTray(){const tc=$('trayCard'),n=$('notice');if(!tc||!n)return;
-  if(isWide()){if(tc.previousElementSibling!==n)n.after(tc);}else if(tc.nextElementSibling!==n)n.before(tc);}
+  fillTray($('oppTray'),st,E.colorOf(st,top),false);fillTray($('myTray'),st,E.colorOf(st,bot),mySeat>=0&&live);}
+// After core's render: the players' cards go into the blocks (opponent above, player below), the action bar into mine;
+// phones: the opponent's block above the board, mine under it; wide screens: both at the top of the side panel
+function placeBlocks(){if(!view||$('game').hidden)return;const ob=$('oppBlock'),mb=$('myBlock'),n=$('notice'),w=isWide();
+  if(!ob||!mb||!n||!ob.querySelector||!ob.querySelector('.pinfo'))return;   // (the test harness's minimal DOM)
+  const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
+  for(const [b,p] of [[ob,top],[mb,bot]]){const slot=b.querySelector('.pinfo'),c=$('pl'+p);if(c&&c.parentNode!==slot){slot.textContent='';slot.appendChild(c);}
+    b.classList.toggle('active',!!(c&&c.classList.contains('active')));b.hidden=false;}
+  $('playersTop').hidden=true;$('playersSide').hidden=true;
+  if(w){const ps=$('playersSide');if(ps.nextElementSibling!==ob)ps.after(ob);if(ob.nextElementSibling!==mb)ob.after(mb);}
+  else{const ba=document.querySelector('.boardwrap .boardarea'),nv=$('nav');if(!ba||!nv)return;if(ba.previousElementSibling!==ob)ba.before(ob);if(nv.nextElementSibling!==mb)nv.after(mb);}
+  if(n.parentNode!==mb)mb.appendChild(n);}
 function centreOf(o){let sr=0,sc=0;for(const [r,q] of o){sr+=r;sc+=q;}sr/=o.length;sc/=o.length;let best=0,bd=1e9;
   o.forEach(([r,q],j)=>{const dd=(r-sr)**2+(q-sc)**2;if(dd<bd-1e-9){bd=dd;best=j;}});return best;}
 function selectPiece(k,silent){if(!silent&&(hintMv||busy==='hint')){if(busy==='hint')stopAI();hintMv=null;}ui.piece=k;ui.cur=k>=0?E.P[k].wide.map(x=>x.slice()):null;ui.ctr=k>=0?centreOf(ui.cur):0;if(!silent)renderGame();}
@@ -660,6 +669,6 @@ const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
   applyStatic(){memoKey='';navKey=null;trayKey='';},
   home:()=>drawBoard(E.init(),null,null,null,-1)};
 coreStart();
-if(mqWide.addEventListener)mqWide.addEventListener('change',placeTray);else mqWide.addListener(placeTray);
+if(mqWide.addEventListener)mqWide.addEventListener('change',placeBlocks);else mqWide.addListener(placeBlocks);
 </script>
 </body></html>
