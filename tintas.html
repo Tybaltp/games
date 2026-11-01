@@ -60,14 +60,20 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
         <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="firstIs">Who plays first</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who plays first</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
@@ -131,6 +137,10 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
       <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
@@ -152,6 +162,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 </section>
 </div>
 <script src="common/core.js?v=5"></script>
+<script src="common/ai.js?v=1"></script>
 <script>
 function TintasEngine(){
   // 49 flat-top hexagons in 9 columns, doubled coordinates (col, r): vertical neighbour at r±2, diagonals at (col±1, r±1).
@@ -204,7 +215,6 @@ const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
  title:"Tintas",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
- m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
  cb:"Daltonien",needConfirm:"Confirmer chaque coup avant l'envoi",
@@ -223,7 +233,6 @@ const TI_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
  title:"Tintas",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
- m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
  cb:"Colorblind",needConfirm:"Confirm each move before sending",
@@ -282,6 +291,7 @@ function tiBoard({r,d,mine,ms}){
   const opts=mine&&!ui.pending?ct.opts:[];
   const hv=opts.includes(ui.hover)?ui.hover:-1;
   if(navAt!==null)drawBoard(d.st,{last:d.last});
+  else if(mine&&hintOn())drawBoard(r.st,{pend:hintMv});   // the computer's suggestion, shown like a turn awaiting confirmation
   else drawBoard(r.st,{last:mine&&ui.seq.length?null:r.last,pend:mine?ui.seq.concat(hv>=0?[hv]:[]):[],targets:opts,many:mine&&ct.x.n===0&&ct.x.kind!=='line'});
   return ct;}
 // Nothing taken yet: the kind of turn, with Undo last move where the game allows it · pieces taken: Reset + End turn
@@ -300,6 +310,7 @@ function endTurn(){if(!view)return;const r=replay(view,view.moves,view.result);i
 // A click on a piece already taken this turn: the last one is put back; an earlier one (or any, once the turn awaits confirmation)
 // brings the turn back to the moment it was taken, with the choices offered then.
 function clickCell(i,direct){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;renderGame();}   // a click drops the suggestion
   const k=ui.seq.indexOf(i);
   if(k>=0){ui.seq=ui.seq.slice(0,!ui.pending&&k===ui.seq.length-1?k:k+1);ui.pending=null;ui.hover=-1;renderGame();return;}
   if(ui.pending)return;
@@ -313,7 +324,7 @@ const HOVER=!!(window.matchMedia&&window.matchMedia('(hover:hover)').matches);
 let lastPtr='mouse';
 $('svg').addEventListener('pointerdown',e=>{lastPtr=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i,HOVER&&lastPtr==='mouse');});
-function hoverCell(i){if(!view||ui.pending)return;if(i===ui.hover)return;
+function hoverCell(i){if(!view||ui.pending||hintOn())return;if(i===ui.hover)return;
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const ct=curTurn(r.st);
   const nv=ct&&ct.opts.includes(i)?i:-1;if(nv===ui.hover)return;ui.hover=nv;renderGame();}
 if(HOVER){
@@ -375,6 +386,111 @@ function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
   if(st.pawn>=0){pawn(pcs,X(st.pawn),Y(st.pawn));if(last&&!pend.length)el('circle',{cx:X(st.pawn),cy:Y(st.pawn),r:22,fill:'none',stroke:'var(--accent)','stroke-width':3},pcs);}
   if(pend.length){const z=pend[pend.length-1];pawn(pcs,X(z),Y(z),.55);el('circle',{cx:X(z),cy:Y(z),r:25,fill:'none',stroke:'var(--hl)','stroke-width':2.5,'stroke-dasharray':'4 4'},pcs);}}
 
+// ---------- computer opponent ----------
+// AISearch (the game-independent search) is in common/ai.js; aiSrc() puts TintasEngine and TintasAI in the worker.
+/*AI*/
+function TintasAI(E){
+'use strict';
+// ----- a fast copy of the rules: the whole position in one Int8Array (same results as TintasEngine) -----
+// [0..48] colour of each cell (-1 empty) · [49..55] pieces taken by seat 0 per colour · [56..62] seat 1 · [63] pawn
+// (-1 before the first move) · [64] seat to move · [65] winner (-1: game on)
+const N=E.N,K=7,NB=E.NB,CAP=49,PW=63,TM=64,WN=65,LEN=66;
+const RAYS=[];   // RAYS[i*6+d]: the cells from i in direction d, nearest first
+for(let i=0;i<N;i++)for(let d=0;d<6;d++){const a=[];let x=i;for(;;){x=NB[x*6+d];if(x<0)break;a.push(x);}RAYS.push(Int8Array.from(a));}
+function fromPos(P){const S=new Int8Array(LEN);for(let i=0;i<N;i++)S[i]=P.b[i];
+  for(let c=0;c<K;c++){S[CAP+c]=P.cap[0][c];S[CAP+K+c]=P.cap[1][c];}S[PW]=P.pawn;S[TM]=P.turn;S[WN]=-1;outcome(S);return S;}
+// as E.outcome: seven of a colour; else, once every colour is shared, 4 pieces or more in 4 colours or more
+function outcome(S){for(let p=0;p<2;p++)for(let c=0;c<K;c++)if(S[CAP+K*p+c]>=K){S[WN]=p;return;}
+  for(let c=0;c<K;c++)if(!S[CAP+c]||!S[CAP+K+c])return;
+  for(let p=0;p<2;p++){let n=0;for(let c=0;c<K;c++)if(S[CAP+K*p+c]>=4)n++;if(n>=4){S[WN]=p;return;}}}
+function take(S,i,p){const c=S[i];S[i]=-1;S[CAP+K*p+c]++;S[PW]=i;outcome(S);}
+// the pieces in line with the pawn (the first one in each direction) into out; their number
+function targets(S,out){const pw=S[PW];let n=0;if(pw<0)return 0;
+  for(let d=0;d<6;d++){const r=RAYS[pw*6+d];for(let k=0;k<r.length;k++)if(S[r[k]]>=0){out[n++]=r[k];break;}}return n;}
+const left=S=>{let n=N;for(let k=CAP;k<CAP+2*K;k++)n-=S[k];return n;};
+// ----- evaluation, in « majorities » (a colour won = 1) -----
+// V[a*8+b]: a colour where I hold a pieces and the opponent b: 1 (−1) once a (b) reaches 4, else (a−b)/(8−a−b);
+// plus SEV[a] while the opponent has none of it (all seven are still possible), minus SEV[b] while I have none
+let EV={sev:[0,0,0,.1,.3,.6,2,0],mb:[0,0,.2,.6,2.5,3,3,3],tempo:0};
+let V=new Float64Array(64);
+function mkV(){V=new Float64Array(64);for(let a=0;a<8;a++)for(let b=0;a+b<8;b++){let v=a>=4?1:b>=4?-1:(a-b)/(8-a-b);
+  if(b===0)v+=EV.sev[a];if(a===0)v-=EV.sev[b];V[a*8+b]=v;}}
+mkV();
+function result(S,p){const m=1000+left(S);return S[WN]===p?m:-m;}
+function evalS(S,p){if(S[WN]>=0)return result(S,p);const q=1-p,mb=EV.mb;let v=0,mw=0,ml=0;
+  for(let c=0;c<K;c++){const a=S[CAP+K*p+c],b=S[CAP+K*q+c];v+=V[a*8+b];if(a>=4)mw++;if(b>=4)ml++;}
+  v+=mb[mw]-mb[ml];if(EV.tempo)v+=S[TM]===p?EV.tempo:-EV.tempo;return v;}
+// what one more piece of colour c is worth to p
+const gain=(S,p,c)=>{const a=S[CAP+K*p+c],b=S[CAP+K*(1-p)+c];return V[(a+1)*8+b]-V[a*8+b];};
+// ----- candidate moves: every distinct whole turn (same pieces taken, same last cell = the same position) -----
+// m: the cells taken in order, packed in one number (cell+1 in base 64, the first one lowest: 7 cells at most) so that
+// a big tree stays small in memory; s: the evaluation of the position after it, for the mover
+const enc=q=>{let m=0;for(let k=q.length-1;k>=0;k--)m=m*64+q[k]+1;return m;};
+const dec=m=>{const q=[];while(m>0){q.push(m%64-1);m=Math.floor(m/64);}return q;};
+function play(S,m){const T=S.slice(),p=S[TM];while(m>0){take(T,m%64-1,p);m=Math.floor(m/64);}T[TM]=1-p;return T;}
+const TG=new Int8Array(6),GB=new Int8Array(LEN);
+// w: keep the best w only (the searches pass cellsIn below the root; none: all)
+function gen(S,w){const p=S[TM],out=[];if(S[WN]>=0)return out;
+  const n=targets(S,TG);
+  if(!n){for(let i=0;i<N;i++)if(S[i]>=0){GB.set(S);take(GB,i,p);GB[TM]=1-p;out.push({m:i+1,s:evalS(GB,p)});}}
+  else{const seen=new Set(),rank=new Int8Array(N),tg=TG.slice(0,n);
+    for(const x of tg){const c=S[x];let k=0;for(let i=0;i<N;i++)if(S[i]===c)rank[i]=k++;
+      const T=S.slice();take(T,x,p);dfs(T,p,c,1<<rank[x],x+1,64,out,seen,rank);}}
+  out.sort((a,b)=>b.s-a.s);if(w&&out.length>w)out.length=w;return out;}
+// T: after the captures packed in m (the next one is worth f), all of colour c (mask: which of its pieces, by rank)
+function dfs(T,p,c,mask,m,f,out,seen,rank){const key=mask*64+T[PW];if(seen.has(key))return;seen.add(key);
+  T[TM]=1-p;out.push({m,s:evalS(T,p)});if(T[WN]>=0)return;
+  const pw=T[PW];for(let d=0;d<6;d++){const r=RAYS[pw*6+d];
+    for(let k=0;k<r.length;k++){const x=r[k];if(T[x]<0)continue;
+      if(T[x]===c){const U=T.slice();take(U,x,p);dfs(U,p,c,mask|1<<rank[x],m+(x+1)*f,f*64,out,seen,rank);}break;}}}
+// ----- playout (MCTS): o.cut turns at most (0: to the end) -----
+// A turn: in line, the colour of the best target by gain (+ noise o.nz; a random one with probability o.rand), then
+// more of it while some is in line, stopping early with probability o.stop; a jump: the best of o.jk random pieces.
+const PT=new Int8Array(6);
+function playout(S,o){const cut=o.cut||0,rnd=o.rand||0,nz=o.nz===undefined?.15:o.nz,stp=o.stop||0,jk=o.jk||6;let t=0;
+  while(S[WN]<0&&(!cut||t<cut)){t++;const p=S[TM];let n=targets(S,PT);
+    if(!n){let best=-1,bs=-1e9;
+      for(let k=0,seen=0;k<60&&seen<jk;k++){const i=(Math.random()*N)|0;if(S[i]<0)continue;seen++;const s=gain(S,p,S[i])+Math.random()*nz;if(s>bs){bs=s;best=i;}}
+      if(best<0)for(let i=0;i<N;i++)if(S[i]>=0){best=i;break;}
+      if(best<0)break;take(S,best,p);}
+    else{let x=PT[0];
+      if(Math.random()<rnd)x=PT[(Math.random()*n)|0];
+      else{let bs=-1e9;for(let k=0;k<n;k++){const s=gain(S,p,S[PT[k]])+Math.random()*nz;if(s>bs){bs=s;x=PT[k];}}}
+      const c=S[x];take(S,x,p);
+      while(S[WN]<0){let m=0;n=targets(S,PT);for(let k=0;k<n;k++)if(S[PT[k]]===c)PT[m++]=PT[k];
+        if(!m||(stp&&Math.random()<stp))break;take(S,PT[(Math.random()*m)|0],p);}}
+    S[TM]=1-p;}
+  return t;}
+// ----- the searches, on Tintas' interface -----
+const PS=new Int8Array(LEN);
+const KS=AISearch({moves:gen,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,
+  playout,scratch:S=>{PS.set(S);return PS;}});
+function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
+  KS.start(opt.time);const C=gen(S);if(!C.length)return null;let r;
+  if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};else r=KS[opt.algo](S,C,opt);
+  return {move:dec(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:KS.nodes()};}
+return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,K:KS,LEN,
+  setEV:o=>{EV={...EV,...o};mkV();},EV:()=>EV};
+}
+/*AIEND*/
+// Levels: plain parameters for TintasAI().search (tune or add levels here). algo: 'mcts' UCT with short playouts (see
+// common/ai.js) · 'greedy' one ply (a softmax over the turns: pick, temp) and 'beam' work too, but lost to mcts.
+// mcts: sims, playouts (time is only a cap, so the strength does not depend on the machine) · time, the cap (ms) ·
+// cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration · scale, evaluation
+// points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout turns whose colour
+// is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening · temp (default 0),
+// final choice by visits^(1/temp).
+const LEVELS={
+  debutant:{algo:'mcts',sims:300,time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1,temp:.5},
+  moyen:{algo:'mcts',sims:2000,time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1},
+  // MCTS beat the iterative-deepening alpha-beta (beam) 83 % at equal time (~0.4 s), so Fort is MCTS
+  fort:{algo:'mcts',sims:100000,time:2500,cellsIn:16,c:.4,scale:.7,cut:4,rand:1}};
+const HINT=LEVELS.fort;
+const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
+let pageAI=null;   // the search on the page itself, when no worker can be made
+// The computer's opinion: its score is a logit (×scale) of its winning chances, or a sure result
+function tiEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>3)return {k:'ai_win'};if(s<-3)return {k:'ai_lost'};
+  return {k:Math.abs(s)<.15?'ai_eq':s>0?(s>.7?'ai_much':'ai_better'):(s<-.7?'ai_muchWorse':'ai_worse'),d:r.depth};}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   rules:g=>({setup:setupOf(g)}),
@@ -384,11 +500,14 @@ const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   enc:encT,describe:txtOf,newUi,preparing,cancel:cancelPrep,
   board:tiBoard,turnStatus:tiTurnStatus,
   pendText:()=>[t('t_pending'),t('confirmTurn')],
-  hintable:()=>false,                  // no computer: no hints
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc:()=>AISearch.toString()+'\n'+TintasEngine.toString()+'\n'+TintasAI.toString()+'\nconst TA=TintasAI(TintasEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}',
+  aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TintasAI(E)).search(aiPos(st),opt),
+  evalInfo:tiEvalInfo,
   logText:e=>(e.kind==='jump'?t('tag_jump')+' ':'')+colsTxt(e.cols),
   home:()=>drawBoard(E.init(setupOf(null)),{})};
 coreStart();
-// New game on this device: a new random board (core would keep the finished game's)
-$('newGame').onclick=()=>{if(role==='test'){startTest(GAME.form('t'));return;}if(role==='local'){startLocal(GAME.form('f'),view.tc);return;}rmSend('ask');};
+// New game on this device or against the computer: a new random board (core would keep the finished game's)
+$('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,GAME.form('a'));return;}if(role==='test'){startTest(GAME.form('t'));return;}if(role==='local'){startLocal(GAME.form('f'),view.tc);return;}rmSend('ask');};
 </script>
 </body></html>
