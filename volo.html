@@ -405,9 +405,8 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   let rg=null,kk=-1;
   if(prov&&(pv.region||prov.keep>=0)){rg=E.regions(st,1-mySeat);kk=pv.region?(pv.hover>=0&&st[pv.hover]===3-me?rg.lab[pv.hover]:-1):rg.lab[prov.keep];}
   // no marker on the points where a bird can be added: hovering one shows the bird (legal points only)
-  const flyers=new Set(),lands=new Set(),moved=new Set();
+  const flyers=new Set(),lands=new Set();
   if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel))lands.add(landAt(m));}}
-  if(lm&&lm.t==='f')for(const c of lm.cells)moved.add(E.dest(lm,c));
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
     const c=st[i];
     el('circle',{cx:x,cy:y,r:c?19:3.2,fill:c?'transparent':'var(--dot)',stroke:'none'},g);
@@ -419,14 +418,35 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
       if(flyers.has(i))el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
       if(ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
       if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
-      if(lm&&((lm.t==='p'&&lm.at===i)||moved.has(i)))el('circle',{cx:x,cy:y,r:4.5,fill:LASTDOT,'pointer-events':'none'},g);
+      if(lm&&lm.t==='p'&&lm.at===i)el('circle',{cx:x,cy:y,r:4.5,fill:LASTDOT,'pointer-events':'none'},g);
       if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
         const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
   // hovered: the bird to add, or the birds of the flight where they land, in transparency
   if(pv&&pv.hover){const m=pv.hover,gl=el('g',{'pointer-events':'none'},svg);
     for(const z of provCells(m).filter(z=>m.t==='p'||!m.cells.includes(z)))bird(gl,X(z),Y(z),mySeat,.5);}
-  // the last flight: its trajectory, dotted
-  if(lm&&lm.t==='f'){const a=lm.cells[0],b=E.dest(lm,a);el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'2 7','stroke-linecap':'round',opacity:.9,'pointer-events':'none'},svg);}}
+  // the last flight: a dashed outline around the line of birds that left, a solid one around where they landed, and a
+  // stroke between the two (outline to outline when they are apart, centre to centre when they touch or overlap)
+  if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));}
+// Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
+const FR=24;
+function ends(cells){let best=[cells[0],cells[0]],bd=-1;for(const a of cells)for(const b of cells){const d=Math.hypot(X(a)-X(b),Y(a)-Y(b));if(d>bd){bd=d;best=[a,b];}}
+  return best.map(z=>[X(z),Y(z)]);}
+function stadium(p,q){const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy);
+  if(L<1e-6)return `M${p[0]-FR} ${p[1]}a${FR} ${FR} 0 1 0 ${2*FR} 0a${FR} ${FR} 0 1 0 ${-2*FR} 0Z`;
+  const nx=-dy/L*FR,ny=dx/L*FR;
+  return `M${p[0]+nx} ${p[1]+ny}L${q[0]+nx} ${q[1]+ny}A${FR} ${FR} 0 0 0 ${q[0]-nx} ${q[1]-ny}L${p[0]-nx} ${p[1]-ny}A${FR} ${FR} 0 0 0 ${p[0]+nx} ${p[1]+ny}Z`;}
+// distance from point c to segment p–q, and between two segments (they do not cross: parallel or apart)
+function dPS(c,p,q){const dx=q[0]-p[0],dy=q[1]-p[1],L2=dx*dx+dy*dy,t=L2?Math.max(0,Math.min(1,((c[0]-p[0])*dx+(c[1]-p[1])*dy)/L2)):0;
+  return Math.hypot(c[0]-p[0]-t*dx,c[1]-p[1]-t*dy);}
+const dSS=(a,b)=>Math.min(dPS(a[0],b[0],b[1]),dPS(a[1],b[0],b[1]),dPS(b[0],a[0],a[1]),dPS(b[1],a[0],a[1]));
+// from centre c along unit u, the distance to the outline of segment s
+function exitAt(c,u,s){let lo=0,hi=400;for(let j=0;j<30;j++){const m=(lo+hi)/2;if(dPS([c[0]+u[0]*m,c[1]+u[1]*m],s[0],s[1])<FR)lo=m;else hi=m;}return lo;}
+function flightMark(svg,from,to){const g=el('g',{fill:'none',stroke:'var(--accent)','stroke-width':2.4,'pointer-events':'none'},svg);
+  const A=ends(from),B=ends(to),ca=[(A[0][0]+A[1][0])/2,(A[0][1]+A[1][1])/2],cb=[(B[0][0]+B[1][0])/2,(B[0][1]+B[1][1])/2];
+  el('path',{d:stadium(A[0],A[1]),'stroke-dasharray':'5 4'},g);el('path',{d:stadium(B[0],B[1])},g);
+  const D=Math.hypot(cb[0]-ca[0],cb[1]-ca[1]);if(D<1e-6)return;const u=[(cb[0]-ca[0])/D,(cb[1]-ca[1])/D];
+  let s=0,e=D;if(dSS(A,B)>2*FR){s=exitAt(ca,u,A);e=D-exitAt(cb,[-u[0],-u[1]],B);}
+  if(e>s)el('line',{x1:ca[0]+u[0]*s,y1:ca[1]+u[1]*s,x2:ca[0]+u[0]*e,y2:ca[1]+u[1]*e,'stroke-linecap':'round'},g);}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   rules:()=>({}),form:()=>({}),
