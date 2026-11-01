@@ -376,17 +376,22 @@ function miniSvg(o,c,vw,vh){const w=1+Math.max(...o.map(x=>x[1])),h=1+Math.max(.
   const g=el('g',{transform:`translate(${(vw-w)/2} ${(vh-h)/2})`},s);
   for(const [r,q] of o)el('rect',{x:q,y:r,width:1,height:1,fill:`var(--k${c})`,stroke:`var(--k${c}e)`,'stroke-width':.08},g);return s;}
 let trayKey='';
+// The orientation the player last gave each of their pieces (by colour, then piece), kept when another piece is picked
+// and from one move to the next: pieces can be arranged in advance. oriV changes with it (the reserves are redrawn).
+const oris=[{},{}];let oriV=0;
+const oriOf=(c,k)=>c>=0&&oris[c][k]||E.P[k].wide;
+const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result).st,mySeat):-1;
 // Pieces left only (a used piece leaves the reserve); the picked piece is drawn in its current orientation (R / F turn it)
 function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
   E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1);if(used)return;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';b.className='slot'+(sel?' sel':'');
-    b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(sel&&ui.cur?ui.cur:p.wide,c,5,3));
+    b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(sel&&ui.cur?ui.cur:oriOf(c,k),c,5,3));
     if(live&&!used)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);});}
 // The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine ».
 // Both sides on one screen (free play, face to face): the blocks stay put, Player 2 above and Player 1 below, and the
 // pieces are picked in the block of the side to move.
 const seatsShown=r=>{if(solo())return {top:1,bot:0};const bot=mySeat>=0?mySeat:r.st.turn;return {top:1-bot,bot};};
 function renderTrays(st,live){const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
-  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
+  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
   if(key===trayKey)return;trayKey=key;
   fillTray($('oppTray'),st,E.colorOf(st,top),mySeat===top&&live);fillTray($('myTray'),st,E.colorOf(st,bot),mySeat===bot&&live);}
 // After core's render: the players' cards go into the blocks (opponent above, player below), the action bar into mine
@@ -403,8 +408,9 @@ function placeBlocks(){if(!view||$('game').hidden)return;const ob=$('oppBlock'),
   if(solo()){if(mb.nextElementSibling!==n)mb.after(n);}else if(n.parentNode!==mb)mb.appendChild(n);}
 function centreOf(o){let sr=0,sc=0;for(const [r,q] of o){sr+=r;sc+=q;}sr/=o.length;sc/=o.length;let best=0,bd=1e9;
   o.forEach(([r,q],j)=>{const dd=(r-sr)**2+(q-sc)**2;if(dd<bd-1e-9){bd=dd;best=j;}});return best;}
-function selectPiece(k,silent){if(!silent&&(hintMv||busy==='hint')){if(busy==='hint')stopAI();hintMv=null;}ui.piece=k;ui.cur=k>=0?E.P[k].wide.map(x=>x.slice()):null;ui.ctr=k>=0?centreOf(ui.cur):0;if(!silent)renderGame();}
-function turnPiece(how){if(ui.piece<0||ui.pending)return;ui.cur=how==='f'?E.flip(ui.cur):E.rot(ui.cur);ui.ctr=centreOf(ui.cur);renderGame();}
+function selectPiece(k,silent){if(!silent&&(hintMv||busy==='hint')){if(busy==='hint')stopAI();hintMv=null;}ui.piece=k;ui.cur=k>=0?oriOf(myColour(),k).map(x=>x.slice()):null;ui.ctr=k>=0?centreOf(ui.cur):0;if(!silent)renderGame();}
+function turnPiece(how){if(ui.piece<0||ui.pending)return;ui.cur=how==='f'?E.flip(ui.cur):E.rot(ui.cur);ui.ctr=centreOf(ui.cur);
+  const c=myColour();if(c>=0){oris[c][ui.piece]=ui.cur.map(x=>x.slice());oriV++;}renderGame();}
 
 // ---------- input ----------
 // Mouse: hovering shows the placement, a click places it provisionally. Touch: a single tap places it provisionally.
