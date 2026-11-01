@@ -55,6 +55,8 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
 html.ingame.wide .pblock .prow{flex-direction:column;gap:4px}
 html.ingame.wide .pblock .pinfo{flex:none;width:100%}
 html.ingame.wide .pblock{--slot:36px}html.ingame.wide .pblock .tray{width:100%}
+/* wide screens (not landscape phones): a wider side column, so that the pieces are not dwarfed by the board */
+@media (min-width:821px){html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) clamp(320px,36vw,520px)}html.ingame.wide .pblock{--slot:clamp(40px,4.2vw,64px)}}
 html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:4px}
 .slot{padding:3px;border:1.5px solid transparent;border-radius:7px;background:transparent;line-height:0}
