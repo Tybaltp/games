@@ -457,7 +457,7 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500
 const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function marble(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:22,fill:`var(--m${c})`,stroke:`var(--m${c}e)`,'stroke-width':2},g);if(op)e.setAttribute('opacity',op);}
-function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv)last=null;
+function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv&&(pv.prov||pv.atProv))last=null;   // a mere hover keeps the last move's marks
   // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox (--board-ar too)
   svg.setAttribute('viewBox',`${VB[0]} ${VB[1]} ${VB[2]} ${VB[3]+(coordsOn?30:0)}`);
   if(coordsOn)for(const q of COLQ){const t=el('text',{x:60*q-CX,y:BOTTOM,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--ghost)'},svg);t.textContent='abcdefgh'[COLQ.indexOf(q)];}
