@@ -18,26 +18,28 @@
   --f-mono:ui-monospace,Menlo,Consolas,monospace;
   /* the board is square, with or without the coordinates (without them the margins are tighter and the board grows) */
   --board-ar:1/1;color-scheme:light;
+  --pboard:#c49a5e;--pgrid:rgba(58,40,20,.75);--pstar:rgba(58,40,20,.85);   /* board: wood, lines, star points */
+  --pb:#1c1f1e;--pbe:#000;--pw:#f7f6f1;--pwe:rgba(0,0,0,.85);--mk:#C42B3A;   /* stones (fill, rim), marks */
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141917;--panel:#1C2320;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
-  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark}}
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}}
 :root[data-theme="dark"]{
   --bg:#141917;--panel:#1C2320;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
-  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark}
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}
 h1{font-weight:400;letter-spacing:0}
 .lede{color:var(--muted);margin:0;font-size:.95rem}
 /* the wooden board, edge to edge in its frame, on every screen */
-.board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:#D3AE76;border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
+.board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--pboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
 /* stones: the seat's colour on the players' cards (unknown until the Swap2 choice), in the bar's choice buttons */
 .dot.pst{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
 .player .who{padding:2px 0 2px 2px}   /* room for the stone's outer ring, which the name's overflow would cut */
-.pst.b{background:#1c1f1e;border:1px solid #000;box-shadow:0 0 0 1px var(--ring-b)}
-.pst.w{background:#f7f6f1;border:1px solid rgba(0,0,0,.6)}
+.pst.b{background:var(--pb);border:1px solid #000;box-shadow:0 0 0 1px var(--ring-b)}
+.pst.w{background:var(--pw);border:1px solid rgba(0,0,0,.6)}
 .pst.u{background:none;border:1.5px dashed var(--muted)}
 .player .cnt{display:flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
 .mini{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
@@ -603,23 +605,23 @@ function evalInfo(r){const m=r.move;if(m.t==='o'||m.t==='a')return null;if(m.t==
 // ---------- drawing ----------
 // The board in SVG units: 40 per cell, 1.25 cell of margin all round (the coordinates in the bottom and left margins);
 // without the coordinates the margins shrink to 0.75 cell.
-const NS='http://www.w3.org/2000/svg',CELL=40,PAD=CELL*1.25,SZ=CELL*(N-1+2.5),MK='#C42B3A',SR=CELL*.47;
+const NS='http://www.w3.org/2000/svg',CELL=40,PAD=CELL*1.25,SZ=CELL*(N-1+2.5),MK='var(--mk)',SR=CELL*.47;
 const P=k=>PAD+k*CELL,PX=i=>P(i%N),PY=i=>P((i/N)|0);
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // Flat stones, go-diagram style: plain fill, thin outline
-function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===1?'#1c1f1e':'#f7f6f1',stroke:c===1?'#000':'rgba(0,0,0,.65)','stroke-width':Math.max(1,SR*.07)},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
+function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===1?'var(--pb)':'var(--pw)',stroke:c===1?'var(--pbe)':'var(--pwe)','stroke-width':Math.max(1,SR*.07)},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
 // A provisional stone (clicked, not played yet), or a suggested one: opaque, a dashed ring inside it
 function ghost(g,i,c){stone(g,i,c);el('circle',{cx:PX(i),cy:PY(i),r:SR*.74,fill:'none',stroke:MK,'stroke-width':2,'stroke-dasharray':'4 3'},g);}
 function hintRing(g,i){el('circle',{cx:PX(i),cy:PY(i),r:SR*.85,fill:'none',stroke:MK,'stroke-width':2,'stroke-dasharray':'2 3'},g);}
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const m=coordsOn?PAD:CELL*.75,x0=PAD-m,w=SZ-2*(PAD-m);
   svg.setAttribute('viewBox',`${x0} ${x0} ${w} ${w}`);
-  el('rect',{x:x0,y:x0,width:w,height:w,fill:'#D3AE76'},svg);
+  el('rect',{x:x0,y:x0,width:w,height:w,fill:'var(--pboard)'},svg);
   let d='';for(let k=0;k<N;k++){d+=`M${P(0)} ${P(k)}H${P(N-1)}M${P(k)} ${P(0)}V${P(N-1)}`;}
-  el('path',{d,stroke:'rgba(58,40,20,.75)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
-  el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'rgba(58,40,20,.75)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
-  for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'rgba(58,40,20,.85)'},svg);
-  el('circle',{cx:P(7),cy:P(7),r:CELL*.28,fill:'none',stroke:'rgba(58,40,20,.7)','stroke-width':1.2,'vector-effect':'non-scaling-stroke'},svg);
+  el('path',{d,stroke:'var(--pgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
+  el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'var(--pgrid)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
+  for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'var(--pstar)'},svg);
+  el('circle',{cx:P(7),cy:P(7),r:CELL*.28,fill:'none',stroke:'var(--pgrid)','stroke-width':1.2,'vector-effect':'non-scaling-stroke'},svg);
   // coordinates (core: coordsOn): letters under the board, numbers on its left
   if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Figtree, system-ui, sans-serif','font-weight':600,'font-size':CELL*.36,fill:'rgba(58,40,20,.7)'},svg);e.textContent=s;};
     for(let k=0;k<N;k++){lab(P(k),SZ-PAD*.45,LET[k]);lab(PAD*.45,P(k),String(N-k));}}
