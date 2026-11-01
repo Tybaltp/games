@@ -3,7 +3,7 @@
 Règles générales ; chaque jeu les applique selon son contexte.
 
 ## A. États visuels
-1. **Survol** : la pièce ou le coup apparaît en transparence, seulement là où le coup est légal. Pas de cadre au survol (y compris Gygès et Ponte, à corriger).
+1. **Survol** : la pièce ou le coup apparaît en transparence, seulement là où le coup est légal. Pas de cadre au survol (y compris Gygès et Ponte, à corriger). Exception, Diagonal Blocks Duo : la pièce survolée s'affiche dès que les cases sous elle sont vides, même si le coup est illégal ; coup illégal en transparence plus marquée avec un liseré rouge, coup légal un peu plus opaque sans liseré.
 2. **Provisoire** (cliqué, pas encore joué) : pièce opaque, cadre en pointillés.
 3. **Dernier coup** : cadre plein ou point de marquage (comme Pente), à juger jeu par jeu ; disparaît dès qu'on prépare un coup.
 4. **Cadres** tracés à l'intérieur de la case. (Le cadre commun à deux éléments voisins reste propre à Ponte.)
