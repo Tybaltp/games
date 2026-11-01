@@ -404,14 +404,14 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // regions of the opponent's birds: lettered during the choice; the birds of the regions that go are faded
   let rg=null,kk=-1;
   if(prov&&(pv.region||prov.keep>=0)){rg=E.regions(st,1-mySeat);kk=pv.region?(pv.hover>=0&&st[pv.hover]===3-me?rg.lab[pv.hover]:-1):rg.lab[prov.keep];}
-  const flyers=new Set(),places=new Set(),lands=new Set(),moved=new Set();
-  if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel))lands.add(landAt(m));}else if(m.t==='p'&&!ui.sel.length)places.add(m.at);}
+  // no marker on the points where a bird can be added: hovering one shows the bird (legal points only)
+  const flyers=new Set(),lands=new Set(),moved=new Set();
+  if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel))lands.add(landAt(m));}}
   if(lm&&lm.t==='f')for(const c of lm.cells)moved.add(E.dest(lm,c));
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
     const c=st[i];
     el('circle',{cx:x,cy:y,r:c?19:3.2,fill:c?'transparent':'var(--dot)',stroke:'none'},g);
     if(!c)el('circle',{cx:x,cy:y,r:16,fill:'transparent'},g);   // easier to click
-    if(places.has(i))el('circle',{cx:x,cy:y,r:6.5,fill:'none',stroke:'var(--accent)','stroke-width':1.6,opacity:.5},g);
     if(lands.has(i))el('circle',{cx:x,cy:y,r:13,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
     // birds removed by the last move: a small cross on their point
     if(last&&last.removed&&last.removed.includes(i)&&!c){const q=6;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:'var(--danger)','stroke-width':2.4,'stroke-linecap':'round',fill:'none'},g);}
