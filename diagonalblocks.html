@@ -230,12 +230,12 @@ function DBEngine(){
 }
 // Diagonal Blocks strings, merged over the shared ones (core.js)
 const DB_I18N={fr:{
- title:"Diagonal Blocks Duo",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échange possible : posez votre première pièce, ou cliquez Échanger pour prendre la pièce posée et sa couleur.",st_swapWait:"{n} choisit : jouer, ou échanger les couleurs.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
+ title:"Diagonal Blocks Duo",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : couvrir le plus de cases possible. Chaque joueur a sa couleur et 21 pièces de 1 à 5 carrés (89 carrés en tout). On peut tourner et retourner les pièces.</li>
  <li><b>Plateau</b> : 14 × 14, chaque coin amputé de 3 cases (184 cases). Deux cases de départ, en gris foncé.</li>
  <li><b>Première pièce</b> : elle couvre la case de départ de votre couleur (celle du premier joueur en haut à gauche).</li>
  <li><b>Ensuite</b> : chaque pièce touche au moins une de vos pièces par un coin, et aucune par un côté. Contre les pièces adverses, tout contact est permis. Pas de chevauchement.</li>
- <li><b>Échange</b> : juste après la première pièce posée, le second joueur peut jouer normalement ou échanger : il prend cette pièce et sa couleur, et l'autre joueur pose alors sa première pièce avec l'autre couleur.</li>
+ <li><b>Échange</b> : juste après la première pièce posée, le second joueur choisit d'abord, avant de préparer son coup : échanger (il prend cette pièce et sa couleur, et l'autre joueur pose alors sa première pièce avec l'autre couleur) ou garder les pièces roses.</li>
  <li><b>Passe forcée</b> : qui ne peut plus poser passe automatiquement ; l'autre continue. La partie finit quand plus personne ne peut poser.</li>
  <li><b>Score</b> : le nombre de cases couvertes. Le plus grand gagne ; égalité possible.</li>
  <li><b>Jouer</b> : choisissez une pièce dans votre réserve, tournez-la (R) ou retournez-la (F). À la souris, le survol montre en transparence où elle irait (hachurée et cernée de rouge si le coup est interdit) et un clic la pose ; sur téléphone, un toucher la pose. La pièce posée (cadre en pointillés) attend Confirmer ; cliquer dessus la reprend. Les points de couleur signalent vos coins disponibles. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Tourner, Retourner, Échanger, Confirmer ; en partie libre, Annuler le dernier coup.</li>
@@ -243,12 +243,12 @@ const DB_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
- title:"Diagonal Blocks Duo",m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",rm_ask:"{n} offers a new game, first player swapped.",firstIs:"Who plays first",placeHint:"Place the piece on the board.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap available: place your first piece, or click Swap to take the piece on the board and its colour.",st_swapWait:"{n} chooses: play, or swap colours.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
+ title:"Diagonal Blocks Duo",m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",rm_ask:"{n} offers a new game, first player swapped.",firstIs:"Who plays first",placeHint:"Place the piece on the board.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: cover as many cells as you can. Each player has a colour and 21 pieces of 1 to 5 squares (89 squares in all). Pieces may be rotated and flipped.</li>
  <li><b>Board</b>: 14 × 14 with 3 cells cut from each corner (184 cells). Two start cells, in dark grey.</li>
  <li><b>First piece</b>: it covers your colour's start cell (the first player's is top left).</li>
  <li><b>Then</b>: every piece touches at least one of your pieces at a corner, and none along a side. Any contact with the opponent's pieces is allowed. No overlapping.</li>
- <li><b>Swap</b>: right after the first piece is placed, the second player may play normally or swap: they take that piece and its colour, and the other player then places their first piece with the other colour.</li>
+ <li><b>Swap</b>: right after the first piece is placed, the second player first chooses, before preparing a move: swap (they take that piece and its colour, and the other player then places their first piece with the other colour) or keep the pink pieces.</li>
  <li><b>Forced pass</b>: a player who cannot place passes automatically; the other plays on. The game ends when neither can place.</li>
  <li><b>Score</b>: the number of cells covered. Highest wins; a tie is possible.</li>
  <li><b>Playing</b>: pick a piece in your reserve, rotate it (R) or flip it (F). With a mouse, hovering shows in transparency where it would go (red-hatched and outlined if the move is illegal) and a click places it; on a phone, a tap places it. The placed piece (dashed frame) waits for Confirm; clicking it takes it back. Coloured dots mark your available corners. The move commands are in the bar under the board: Reset, Rotate, Flip, Swap, Confirm; in free play, Undo last move.</li>
@@ -282,8 +282,9 @@ const plain=s=>solo()?seatName(s):view.names[s]||t(s===0?'p1':'p2');
 
 // ---------- move preparation ----------
 // ui: piece picked in the tray (-1: none), its current orientation (cur) and the cell under the pointer (ctr), the cell
-// hovered or tapped, the move awaiting confirmation (a placement or the swap)
-function newUi(){return {piece:-1,cur:null,ctr:0,hover:-1,pending:null};}
+// hovered or tapped, the move awaiting confirmation (a placement or the swap); kept: the number of moves when the swap
+// was declined (« Keep the pink pieces »)
+function newUi(){return {piece:-1,cur:null,ctr:0,hover:-1,pending:null,kept:-1};}
 const preparing=()=>ui.piece>=0||!!ui.pending;
 const hv=()=>typeof ui.hover==='number'?ui.hover:-1;
 // Reset: drop the whole move being prepared (placement, aim, picked piece) and come back to the bare position
@@ -299,7 +300,8 @@ function previewAt(st,c,h){if(ui.piece<0||h<0||!ui.cur)return null;const o=ui.cu
   const R=((h/W)|0)-o[ui.ctr][0],Cc=h%W-o[ui.ctr][1],cells=[];
   for(const [r,q] of o){const rr=R+r,cc=Cc+q;if(rr>=0&&rr<W&&cc>=0&&cc<W)cells.push(rr*W+cc);}
   return {cells,ok:false,free:cells.length===o.length&&cells.every(i=>E.OK[i]&&!st.b[i])};}
-const swapInfo=r=>({swapNow:!r.over&&E.canSwap(r.st.es),lastSwap:!r.over&&!!r.last&&r.last.mv.t==='s'&&r.st.n===2,stuckC:!r.over?[0,1].find(c=>r.st.stuck[c]):undefined});
+// ask: the swap is a phase of its own, a single question (Swap or Keep the pink pieces) answered before any move is prepared
+const swapInfo=r=>({swapNow:!r.over&&E.canSwap(r.st.es),ask:!r.over&&E.canSwap(r.st.es)&&ui.kept!==view.moves.length,lastSwap:!r.over&&!!r.last&&r.last.mv.t==='s'&&r.st.n===2,stuckC:!r.over?[0,1].find(c=>r.st.stuck[c]):undefined});
 // core's renderGame: the board and the tray, then the bar for my turn (turnStatus) and the opponent's (waitStatus)
 function dbBoard({r,d,mine}){
   const myC=mySeat>=0?E.colorOf(r.st,mySeat):-1;
@@ -315,16 +317,17 @@ function dbBoard({r,d,mine}){
   const marks=mine&&!ui.pending&&!r.over?liveCorners(r.st,myC):null;
   // the last move's frame goes as soon as a move is being prepared
   drawBoard(d.st,navAt===null&&preparing()?null:d.last,pv,marks,marks?myC:-1);
-  placeTray();renderTrays(d.st,mine&&!ui.pending);
-  return swapInfo(r);}
-// My turn, nothing pending. Nothing picked: the message, Undo last move (free play) and Swap when it is possible ·
-// a piece picked: Reset, Rotate, Flip, and Swap when it is possible (no need to drop the piece first)
-const swapB=o=>o.swapNow?{label:t('swap'),on:doSwap}:null;
+  const o=swapInfo(r);placeTray();renderTrays(d.st,mine&&!ui.pending&&!o.ask);
+  return o;}
+// My turn, nothing pending. The swap question: Swap or Keep the pink pieces (and Undo last move in free play) ·
+// nothing picked: the message and Undo last move (free play) · a piece picked: Reset, Rotate, Flip
+function keepPink(){ui.kept=view.moves.length;renderGame();}
 function dbTurnStatus({r,o,idle,RST}){
-  if(ui.piece>=0){status(t('placeHint'),'turn',[RST,{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')},swapB(o)]);return;}
-  const msg=o.swapNow?t('st_swap'):o.lastSwap?t('st_swapped',{n:plain(1-r.st.turn)}):o.stuckC!==undefined?t('st_stuck',{n:plain(E.seatOf(r.st,o.stuckC))}):
+  if(o.ask){status(t('st_swap'),'turn',idle.concat([{label:t('swap'),on:doSwap},{label:t('keepPink'),on:keepPink}]));return;}
+  if(ui.piece>=0){status(t('placeHint'),'turn',[RST,{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]);return;}
+  const msg=o.lastSwap?t('st_swapped',{n:plain(1-r.st.turn)}):o.stuckC!==undefined?t('st_stuck',{n:plain(E.seatOf(r.st,o.stuckC))}):
     solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn');
-  status(msg,'turn',idle.concat([swapB(o)]));}
+  status(msg,'turn',idle);}
 function dbWaitStatus({r}){const o=swapInfo(r);
   if(o.swapNow){status(t('st_swapWait',{n:plain(r.st.turn)}));return true;}
   if(o.lastSwap){status(t('st_swappedW',{n:plain(1-r.st.turn)}));return true;}
@@ -384,7 +387,7 @@ function boardTap(i){if(!view||i<0)return;
   const pv=previewAt(r.st,E.colorOf(r.st,mySeat),i);if(pv&&pv.ok)choose({t:'p',k:ui.piece,cells:pv.cells.slice().sort((a,b)=>a-b)});}
 // Placing a piece is error-prone (pick, rotate, flip, aim): it always waits for the final confirmation before it is sent
 function choose(mv){ui.hover=-1;ui.pending=mv;renderGame();}
-// Swap: offered whether or not a piece is picked; choosing it drops the picked piece
+// Swap: the answer to the swap question; it then waits for Confirm like any move
 function doSwap(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!E.canSwap(r.st.es))return;selectPiece(-1,true);choose({t:'s'});}
 document.addEventListener('keydown',e=>{if(!view||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')||e.ctrlKey||e.metaKey||e.altKey)return;
   if(mySeat>=0&&ui.piece>=0&&(e.key==='r'||e.key==='R')){e.preventDefault();turnPiece('r');return;}
