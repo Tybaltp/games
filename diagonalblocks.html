@@ -380,9 +380,10 @@ function miniSvg(o,c,vw,vh){const w=1+Math.max(...o.map(x=>x[1])),h=1+Math.max(.
   const g=el('g',{transform:`translate(${(vw-w)/2} ${(vh-h)/2})`},s);
   for(const [r,q] of o)el('rect',{x:q,y:r,width:1,height:1,fill:`var(--k${c})`,stroke:`var(--k${c}e)`,'stroke-width':.08},g);return s;}
 let trayKey='';
-// The orientation the player last gave each of their pieces (by colour, then piece), kept when another piece is picked
-// and from one move to the next: pieces can be arranged in advance. oriV changes with it (the reserves are redrawn).
-const oris=[{},{}];let oriV=0;
+// The orientation the player last gave each of their pieces (by colour, then piece), kept when another piece is picked,
+// from one move to the next and across reloads (browser storage): pieces can be arranged in advance. oriV changes with
+// it (the reserves are redrawn).
+const oris=(o=>Array.isArray(o)&&o.length===2?o:[{},{}])(LS.get('dblk-oris',null));let oriV=0;
 const oriOf=(c,k)=>c>=0&&oris[c][k]||E.P[k].wide;
 const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result).st,mySeat):-1;
 // Pieces left only (a used piece leaves the reserve); the picked piece is drawn in its current orientation (R / F turn it)
@@ -443,7 +444,7 @@ function centreOf(o){let sr=0,sc=0;for(const [r,q] of o){sr+=r;sc+=q;}sr/=o.leng
   o.forEach(([r,q],j)=>{const dd=(r-sr)**2+(q-sc)**2;if(dd<bd-1e-9){bd=dd;best=j;}});return best;}
 function selectPiece(k,silent){if(!silent&&(hintMv||busy==='hint')){if(busy==='hint')stopAI();hintMv=null;}ui.piece=k;ui.cur=k>=0?oriOf(myColour(),k).map(x=>x.slice()):null;ui.ctr=k>=0?centreOf(ui.cur):0;if(!silent)renderGame();}
 function turnPiece(how){if(ui.piece<0||ui.pending)return;ui.cur=how==='f'?E.flip(ui.cur):E.rot(ui.cur);ui.ctr=centreOf(ui.cur);
-  const c=myColour();if(c>=0){oris[c][ui.piece]=ui.cur.map(x=>x.slice());oriV++;}renderGame();}
+  const c=myColour();if(c>=0){oris[c][ui.piece]=ui.cur.map(x=>x.slice());oriV++;LS.set('dblk-oris',oris);}renderGame();}
 
 // ---------- input ----------
 // Mouse: hovering shows the placement, a click places it provisionally. Touch: a single tap places it provisionally.
