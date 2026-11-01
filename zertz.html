@@ -298,7 +298,7 @@ const ZZ_I18N={fr:{
  <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
  <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
  <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
- <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile : un premier toucher l'affiche, un second le joue). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile, un seul toucher suffit). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
@@ -316,7 +316,7 @@ const ZZ_I18N={fr:{
  <li><b>Capture</b>: a marble jumps over a neighbour onto the empty ring just behind it; the capture continues as long as possible.</li>
  <li><b>Isolate</b>: a separated group of rings that is fully occupied goes to the player who isolated it.</li>
  <li><b>Win</b>: 3 of each colour, 4 white, 5 grey or 6 black. Also on time or by resignation.</li>
- <li><b>Play</b>: choose the colour under the board, click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen: a first tap shows it, a second plays it). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Play</b>: choose the colour under the board, click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen, a single tap is enough). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 }};
@@ -427,20 +427,20 @@ function clickRing(i){if(!view||navAt!==null)return;const r=replay(view,view.mov
     if(!P){if(legal.some(m=>m.path[0]===i))ui.path=[i];renderGame();return;}
     const cand=legal.filter(m=>P.every((x,k)=>m.path[k]===x));
     if(cand.some(m=>m.path[P.length]===i)){const done=cand.find(m=>m.path.length===P.length+1&&m.path[P.length]===i);
-      if(done){if(ui.hover===i)choose(done);else{ui.hover=ui.tap=i;renderGame();}return;}P.push(i);ui.hover=-1;renderGame();return;}
+      if(done){choose(done);return;}P.push(i);ui.hover=-1;renderGame();return;}
     // a ring of the path: the current end is taken back, an earlier one rewinds the path to it
     if(P.length>1){const k=P.lastIndexOf(i);if(k>=0){ui.path=P.slice(0,k===P.length-1?k:k+1);ui.hover=-1;renderGame();}return;}
     if(P.length===1){ui.path=legal.some(m=>m.path[0]===i)&&i!==P[0]?[i]:null;renderGame();}return;}
   const c=ui.color;
-  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){if(ui.hover===i)choose(mv);else{ui.hover=ui.tap=i;renderGame();}return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
+  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){choose(mv);return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
   const opts=legal.filter(m=>m.c===c&&m.at===i);if(!opts.length){renderGame();return;}
-  if(opts.length===1&&opts[0].rm<0){if(ui.hover===i)choose(opts[0]);else{ui.hover=ui.tap=i;renderGame();}return;}ui.at=i;ui.hover=-1;renderGame();}
+  if(opts.length===1&&opts[0].rm<0){choose(opts[0]);return;}ui.at=i;ui.hover=-1;renderGame();}
 // A complete move waits for Confirm (unless « Confirm each move » is off)
 function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;ui.tap=-1;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
 $('needConfirm').checked=LS.get('zertz-confirm',true);
 $('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
-// With a mouse, hovering shows the move, so one click plays it; on a touch screen the first tap shows it.
+// With a mouse, hovering shows the move; a click (or a single tap) plays it.
 function hoverRing(i){if(!view||navAt!==null||ui.pending||hintMv||i===ui.hover)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;setBoard(ringsOf(view));
   const old=ui.hover;ui.hover=i;ui.tap=-1;if(i>=0&&!hoverMove(E.gen(r.st)))ui.hover=-1;if(ui.hover!==old)renderGame();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
