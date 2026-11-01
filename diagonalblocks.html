@@ -13,18 +13,18 @@
   --boardbg:#e2dfd6;--cell:#f7f6f2;--gridl:#d3cfc4;--start:#a29d91;--coord:#8a877d;
   --k0:#16917f;--k0e:#0b4f45;--k1:#c43f72;--k1e:#6f173b;
   --s0:var(--k0);--s0e:var(--k0e);--s1:var(--k1);--s1e:var(--k1e);   /* players' swatches: by colour (dbDecorate) */
-  --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
+  --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;--illegal:#ff2b2b;
   --board-ar:1/1;                /* viewBox of the board (604×604; 566×566 without the coordinates) */
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#131614;--panel:#1b1f1d;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
   --boardbg:#0f1211;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
-  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;--illegal:#ff2b2b;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#131614;--panel:#1b1f1d;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
   --boardbg:#0f1211;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
-  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
+  --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;--illegal:#ff2b2b;color-scheme:dark}
 h1 span{white-space:nowrap}
 .board{background:var(--boardbg);border:0;border-radius:14px}
 html.ingame:not(.wide) .board{background:var(--boardbg);border-radius:10px}
@@ -238,7 +238,7 @@ const DB_I18N={fr:{
  <li><b>Échange</b> : juste après la première pièce posée, le second joueur peut jouer normalement ou échanger : il prend cette pièce et sa couleur, et l'autre joueur pose alors sa première pièce avec l'autre couleur.</li>
  <li><b>Passe forcée</b> : qui ne peut plus poser passe automatiquement ; l'autre continue. La partie finit quand plus personne ne peut poser.</li>
  <li><b>Score</b> : le nombre de cases couvertes. Le plus grand gagne ; égalité possible.</li>
- <li><b>Jouer</b> : choisissez une pièce dans votre réserve, tournez-la (R) ou retournez-la (F). À la souris, le survol montre en transparence où elle irait (liseré rouge si le coup est interdit) et un clic la pose ; sur téléphone, un toucher la pose. La pièce posée (cadre en pointillés) attend Confirmer ; cliquer dessus la reprend. Les points de couleur signalent vos coins disponibles. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Tourner, Retourner, Échanger, Confirmer ; en partie libre, Annuler le dernier coup.</li>
+ <li><b>Jouer</b> : choisissez une pièce dans votre réserve, tournez-la (R) ou retournez-la (F). À la souris, le survol montre en transparence où elle irait (hachurée et cernée de rouge si le coup est interdit) et un clic la pose ; sur téléphone, un toucher la pose. La pièce posée (cadre en pointillés) attend Confirmer ; cliquer dessus la reprend. Les points de couleur signalent vos coins disponibles. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Tourner, Retourner, Échanger, Confirmer ; en partie libre, Annuler le dernier coup.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
@@ -251,7 +251,7 @@ const DB_I18N={fr:{
  <li><b>Swap</b>: right after the first piece is placed, the second player may play normally or swap: they take that piece and its colour, and the other player then places their first piece with the other colour.</li>
  <li><b>Forced pass</b>: a player who cannot place passes automatically; the other plays on. The game ends when neither can place.</li>
  <li><b>Score</b>: the number of cells covered. Highest wins; a tie is possible.</li>
- <li><b>Playing</b>: pick a piece in your reserve, rotate it (R) or flip it (F). With a mouse, hovering shows in transparency where it would go (red outline if the move is illegal) and a click places it; on a phone, a tap places it. The placed piece (dashed frame) waits for Confirm; clicking it takes it back. Coloured dots mark your available corners. The move commands are in the bar under the board: Reset, Rotate, Flip, Swap, Confirm; in free play, Undo last move.</li>
+ <li><b>Playing</b>: pick a piece in your reserve, rotate it (R) or flip it (F). With a mouse, hovering shows in transparency where it would go (red-hatched and outlined if the move is illegal) and a click places it; on a phone, a tap places it. The placed piece (dashed frame) waits for Confirm; clicking it takes it back. Coloured dots mark your available corners. The move commands are in the bar under the board: Reset, Rotate, Flip, Swap, Confirm; in free play, Undo last move.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Two-player adaptation of Diagonal Blocks (Dave Dyer); board size and swap rule chosen for this site.</p>`
@@ -411,7 +411,7 @@ function innerFrame(p,cells,w,a){const id='dbclip'+(clipN++),cp=el('clipPath',{i
   for(const i of cells)el('rect',{x:(i%W)*S,y:((i/W)|0)*S,width:S,height:S},cp);
   return el('path',Object.assign({d:outline(cells),fill:'none','stroke-width':2*w,'clip-path':`url(#${id})`,'pointer-events':'none'},a),p);}
 // st: position shown; last: {mv} last move (null while a move is being prepared); pv: {cells,c} placement being shown,
-// hovered (legal: translucent; illegal: fainter, red outline), pend (awaiting confirmation: opaque, dashed frame) or swap (the piece a pending
+// hovered (legal: translucent; illegal: fainter, red hatching and outline), pend (awaiting confirmation: opaque, dashed frame) or swap (the piece a pending
 // swap takes over: dashed frame); marks: set of corner cells for colour mc
 function drawBoard(st,last,pv,marks,mc){const svg=$('svg');svg.textContent='';clipN=0;
   // coordinates (core: coordsOn): a–n above the board, 14–1 on its left; without them, a tighter viewBox
@@ -431,9 +431,13 @@ function drawBoard(st,last,pv,marks,mc){const svg=$('svg');svg.textContent='';cl
     if(pv.pend){   // drawn like a played piece, with a dashed frame inside
       for(const i of pv.cells)el('rect',{x:(i%W)*S,y:((i/W)|0)*S,width:S,height:S,fill:`var(--k${pv.c})`,stroke:`var(--k${pv.c}e)`,'stroke-width':.6,'stroke-opacity':.45},gl);
       el('path',{d:outline(pv.cells),fill:'none',stroke:`var(--k${pv.c}e)`,'stroke-width':1.8,'stroke-linecap':'square'},gl);}
-    else if(!pv.swap){   // hover: translucent, no frame if legal; fainter with a red outline if illegal
+    else if(!pv.swap){   // hover: translucent, no frame if legal; fainter, red-hatched, with a vivid red outline if illegal
       for(const i of pv.cells)el('rect',{x:(i%W)*S+1,y:((i/W)|0)*S+1,width:S-2,height:S-2,fill:`var(--k${pv.c})`,opacity:pv.ok?.7:.35},gl);
-      if(!pv.ok)el('path',{d:outline(pv.cells),fill:'none',stroke:'var(--danger)','stroke-width':2.4,'stroke-linecap':'square'},gl);}
+      if(!pv.ok){   // illegal: red hatching over the piece and a vivid red outline
+        const pt=el('pattern',{id:'dbhatch',width:8,height:8,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},el('defs',{},gl));
+        el('line',{x1:0,y1:0,x2:0,y2:8,stroke:'var(--illegal)','stroke-width':2.5},pt);
+        for(const i of pv.cells)el('rect',{x:(i%W)*S+1,y:((i/W)|0)*S+1,width:S-2,height:S-2,fill:'url(#dbhatch)'},gl);
+        el('path',{d:outline(pv.cells),fill:'none',stroke:'var(--illegal)','stroke-width':3,'stroke-linecap':'square'},gl);}}
     if(pv.pend||pv.swap)innerFrame(gl,pv.cells,2.6,{stroke:'var(--accent)','stroke-dasharray':'6 5','stroke-linecap':'butt'});}}
 
 // ---------- the interface with common/core.js ----------
