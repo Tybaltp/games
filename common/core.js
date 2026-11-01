@@ -156,12 +156,14 @@ function status(txt,cls,btns){const s=$('status');s.className='status'+(cls?' '+
       if(b.short){const l=document.createElement('span'),k=document.createElement('span');l.className='bl';l.textContent=b.label;k.className='bs';k.textContent=b.short;e.append(l,k);}else e.textContent=b.label;
       if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}bx.appendChild(e);}}
   fitBtns();}
-// Short labels when the full ones overflow the bar (checked again whenever the bar changes size)
-function fitBtns(){const n=$('notice'),bx=n&&n.querySelector('.btns');if(!bx)return;n.classList.remove('short');
-  if(!bx.querySelector('.bs'))return;
+// Short labels when the full ones overflow the bar; if the buttons still overflow, they wrap onto a second row and the
+// bar grows (checked again whenever the bar changes size)
+function fitBtns(){const n=$('notice'),bx=n&&n.querySelector('.btns');if(!bx)return;n.classList.remove('short','rows2');
   // measure the buttons at their natural width (no shrinking): do they fit?
-  bx.classList.add('measure');const over=bx.scrollWidth>bx.clientWidth+1;bx.classList.remove('measure');
-  if(over)n.classList.add('short');}
+  const over=()=>{bx.classList.add('measure');const o=bx.scrollWidth>bx.clientWidth+1;bx.classList.remove('measure');return o;};
+  if(!over())return;
+  if(bx.querySelector('.bs')){n.classList.add('short');if(!over())return;}
+  n.classList.add('rows2');}
 
 function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
 function peerOpts(){return {debug:1};}
