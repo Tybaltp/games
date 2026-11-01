@@ -228,7 +228,7 @@ function VoloEngine(){
 }
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
- title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_tapAgain:"Touchez à nouveau le point d'arrivée pour voler.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
+ title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
  <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
@@ -238,7 +238,7 @@ const VO_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",keepR:"Garder {r}"
 },en:{
- title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_tapAgain:"Tap the landing point again to fly there.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
+ title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
  <li><b>Add a bird</b>: on any empty point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
@@ -274,7 +274,9 @@ function voReplay(rules,moves){
 // ---------- move preparation ----------
 // ui: sel (the birds selected to fly), hist (the successive selections), basemv (a move that cuts the opponent's birds
 // into regions: the one that stays is still to choose), pending (the complete move, awaiting confirmation), hover
+// (the point under the mouse: a legal target, or an opponent's bird during the region choice; -1 = none)
 const newUi=()=>({sel:[],hist:[],basemv:null,pending:null,hover:-1});
+const hov=()=>typeof ui.hover==='number'?ui.hover:-1;   // core may clear it to null
 // a move is being prepared: a selection, a region choice or a pending confirmation
 const preparing=()=>!!(ui.sel.length||ui.basemv||ui.pending);
 // Reset: drop the whole prepared sequence, back to the neutral board
@@ -284,28 +286,42 @@ const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,
 function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
   for(let d=0;d<6;d++){const path=[];let x=a;for(let k=0;k<14;k++){x=E.NB[x*6+d];if(x<0)break;if(x===b)return {d,path};path.push(x);}}return null;}
 const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
-// Rewind: back to the moment bird c was selected in this sequence (what came after is dropped)
-function rewindTo(c){const k=ui.hist.findIndex(h=>h.includes(c));ui.hist=k<0?[]:ui.hist.slice(0,k+1);ui.sel=k<0?[]:ui.hist[k].slice();
-  ui.basemv=null;ui.pending=null;ui.hover=-1;renderGame();}
+// The landing point clicked for a flight: where the leading bird lands (in file, the front bird; side by side, the first
+// bird of the line). Always a free point, and a different one for each flight of the same line.
+function landAt(m){if(m.cells.length>1&&m.d===lineThrough(m.cells[0],m.cells[1]).d)return E.dest(m,m.cells[m.cells.length-1]);return E.dest(m,m.cells[0]);}
+// The provisional birds of a prepared move: the bird added, or where the flying birds land
+const provCells=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>E.dest(m,c)):[];
+let curLegal=[];   // legal moves of the position drawn (for the hover)
+// A click (or a single tap) plays one step; a click on a provisional bird goes back one step.
 function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
-  const legal=E.gen(r.st),me=mySeat+1,st=r.st;
+  const legal=E.gen(r.st),me=mySeat+1,st=r.st;ui.hover=-1;
   const prep=ui.pending||ui.basemv;
-  if(prep){ // a highlighted bird of the prepared move: the added bird drops the move, a bird of the line goes back to its selection
-    if(prep.t==='p'&&prep.at===i){cancelPrep();return;}
-    if(prep.t==='f'){const o=prep.cells.includes(i)?i:prep.cells.find(c=>E.dest(prep,c)===i);
-      if(o!==undefined&&(st[i]===me||!st[i])){if(!ui.hist.length)ui.hist=[prep.cells.slice()];rewindTo(o);return;}}
-    if(ui.pending)return;}
-  if(ui.basemv){ // choose the region that stays
-    const t=E.base(st,ui.basemv);if(t[i]!==3-me)return;const rg=E.regions(t,1-mySeat);
-    const mv=E.expand(st,ui.basemv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv);}return;}
+  // the region choice, or a move awaiting confirmation that removes birds: an opponent's bird picks its region
+  // (the region already kept: back to the choice)
+  const kmv=ui.basemv||(ui.pending&&ui.pending.keep>=0?ui.pending:null);
+  if(kmv){const t=E.base(st,kmv);
+    if(t[i]===3-me){const rg=E.regions(t,1-mySeat);
+      if(ui.pending&&rg.lab[ui.pending.keep]===rg.lab[i]){ui.basemv={...ui.pending,keep:-1};ui.pending=null;renderGame();return;}
+      const mv=E.expand(st,kmv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv);}return;}}
+  if(prep){
+    // a provisional bird: the added bird drops the move, a flown bird goes back to the selected line
+    if(provCells(prep).includes(i)){if(prep.t==='p'){cancelPrep();return;}
+      ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];ui.pending=null;ui.basemv=null;renderGame();return;}
+    // otherwise only a click that starts another step replaces the prepared move: another landing point of the same
+    // line, another addition, one of my birds (the points the flying birds left are ignored)
+    const isLand=prep.t==='f'&&legal.some(m=>sameSeg(m,prep.cells)&&landAt(m)===i);
+    const isOwn=st[i]===me&&!(prep.t==='f'&&prep.cells.includes(i));
+    const isPl=prep.t!=='f'&&legal.some(m=>m.t==='p'&&m.at===i);
+    if(!(isLand||isOwn||isPl))return;
+    ui.pending=null;ui.basemv=null;
+    if(prep.t==='f'){ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];}else{ui.sel=[];ui.hist=[];}}
   if(ui.sel.length){
     const sel=ui.sel;
-    const land=legal.find(m=>sameSeg(m,sel)&&E.dest(m,sel[0])===i);
-    if(land&&st[i]!==me){if(ui.hover===i)pick(land);else{ui.hover=i;renderGame();}return;}
-    ui.hover=-1;
+    const land=legal.find(m=>sameSeg(m,sel)&&landAt(m)===i);
+    if(land){pick(land);return;}
     if(st[i]===me){
-      // the last selected birds: deselect; a bird selected earlier: back to that selection
-      if(sel.includes(i)){const k=ui.hist.findIndex(h=>h.includes(i));if(k>=0&&k<ui.hist.length-1)rewindTo(i);else{ui.sel=[];ui.hist=[];renderGame();}return;}
+      // a selected bird: back to the selection before it was added (the first bird: nothing selected)
+      if(sel.includes(i)){const k=ui.hist.findIndex(h=>h.includes(i));ui.hist=k>0?ui.hist.slice(0,k):[];ui.sel=k>0?ui.hist[k-1].slice():[];renderGame();return;}
       // extend the selection along its axis (or pick an axis for a single bird)
       const ends=[sel[0],sel[sel.length-1]];
       for(const e of ends){const L=lineThrough(e,i);if(!L)continue;if(L.path.some(x=>st[x]!==me||sel.includes(x)))continue;
@@ -318,37 +334,53 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
 // pick: base move chosen; if several variants exist (regions), ask which one stays
 function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
   if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
-// A move takes several clicks: it always waits for the final confirmation (in the action bar) before it is sent
+// A move always waits for the final confirmation (in the action bar) before it is sent
 function choose(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;ui.pending=mv;renderGame();}
 function doPass(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);}
-// The region choice: one command per region of the opponent's birds (lettered on the board), « Keep A », « Keep B »…
+// The region choice: one command per region of the opponent's birds (lettered on the board), « Keep A », « Keep B »…;
+// hovering a command shows the result (the birds of the other regions fade)
 function regionBtns(st){if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.basemv),1-mySeat);
   return E.expand(st,ui.basemv).map(mv=>({k:rg.list.indexOf(rg.lab[mv.keep]),mv})).sort((a,b)=>a.k-b.k)
-    .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv);}}));}
-let ptrType='mouse';
-$('svg').addEventListener('pointerdown',e=>{ptrType=e.pointerType||'mouse';});
+    .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv);},
+      hover:on=>{if(!ui.basemv)return;ui.hover=on?mv.keep:-1;redrawBoard();}}));}
+// The board alone (the hover changes nothing in the action bar)
+function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);voBoard({r,d:r,mine:isMyTurn(r)});}
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
-function hoverCell(i){if(!view||ui.pending||ui.basemv||!ui.sel.length)return;if(i===ui.hover)return;
-  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
-  const ok=i>=0&&E.gen(r.st).some(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===i);const nv=ok?i:-1;if(nv===ui.hover)return;ui.hover=nv;renderGame();}
+// A click anywhere else (off the points, off the board) drops the selected bird or line; the commands keep it
+document.addEventListener('click',e=>{if(!view||!ui.sel.length||ui.pending||ui.basemv)return;
+  if(e.target.closest('[data-i],button,a,input,select,label,#notice,dialog'))return;ui.sel=[];ui.hist=[];ui.hover=-1;renderGame();});
+// With a mouse: the bird to add, or the flight to the point hovered, in transparency (legal targets only); any of my
+// birds hovered (able to fly or not) is ringed; during the region choice, an opponent's bird hovered fades the birds
+// of the other regions
+function hoverCell(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  const st=r.st;let nv=-1;
+  if(i>=0){if(ui.basemv){if(E.base(st,ui.basemv)[i]===2-mySeat)nv=i;}
+    else if(st[i]===mySeat+1){if(!ui.sel.includes(i))nv=i;}
+    else if(ui.sel.length){if(curLegal.some(m=>sameSeg(m,ui.sel)&&landAt(m)===i))nv=i;}
+    else if(curLegal.some(m=>m.t==='p'&&m.at===i))nv=i;}
+  if(nv===hov())return;ui.hover=nv;redrawBoard();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest('[data-i]');hoverCell(g?+g.dataset.i:-1);});
   $('svg').addEventListener('pointerleave',()=>hoverCell(-1));}
 
 // ---------- the board and the action bar (hooks) ----------
 function voBoard({r,d,mine}){
-  if(navAt!==null){drawBoard(d.st,d.st,[],false,d.last);return {legal:[]};}
-  const legal=r.over?[]:E.gen(r.st);
-  const hm=mine&&!ui.pending&&!ui.basemv&&ui.sel.length&&ui.hover>=0?legal.find(m=>sameSeg(m,ui.sel)&&E.dest(m,ui.sel[0])===ui.hover):null;
-  const gm=ui.basemv?null:(ui.pending&&ui.pending.t!=='x'?ui.pending:null)||hm;   // a pass has nothing to show on the board
-  const shown=ui.basemv?E.apply(r.st,ui.basemv).st:r.st;
-  drawBoard(r.st,shown,legal,mine&&!ui.pending,ui.basemv?{mv:ui.basemv,removed:[],preview:true}:gm?{mv:gm,removed:[],preview:true,ghost:true}:r.last);
+  if(navAt!==null){drawBoard(d.st,{last:d.last});return {legal:[]};}
+  const legal=r.over?[]:E.gen(r.st);curLegal=mine?legal:[];
+  const h=hov();let pv=null;
+  if(mine){
+    if(ui.basemv)pv={prov:ui.basemv,region:true,hover:h};
+    else if(ui.pending){if(ui.pending.t!=='x')pv={prov:ui.pending};}   // a pass has nothing to show on the board
+    else if(h>=0){const m=ui.sel.length?legal.find(m=>sameSeg(m,ui.sel)&&landAt(m)===h):legal.find(m=>m.t==='p'&&m.at===h);if(m)pv={hover:m};}}
+  // the last move is marked until a move is being prepared
+  const hb=mine&&!ui.pending&&!ui.basemv&&h>=0&&r.st[h]===mySeat+1?h:-1;   // my bird under the mouse
+  drawBoard(r.st,{legal,interactive:mine&&!ui.pending&&!ui.basemv,pv,hb,last:mine&&preparing()?null:r.last});
   const canPass=legal.some(m=>m.t==='x');
   return {legal,canPass,onlyPass:legal.length===1&&canPass};}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
 function voTurnStatus({r,o,prep,undoB,RST}){
   if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn',[RST].concat(regionBtns(r.st)));
-  else if(ui.sel.length)status(t(ui.hover>=0&&ptrType==='touch'?'st_tapAgain':'st_sel'),'turn',[RST]);
+  else if(ui.sel.length)status(t('st_sel'),'turn',[RST]);
   else if(prep)status('','turn',[RST]);
   else if(o.onlyPass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass},undoB]);
   else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',[undoB,o.canPass?{label:t('pass'),on:doPass}:null]);}
@@ -363,37 +395,67 @@ function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d
 const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function bird(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:18,fill:c?'var(--b2)':'var(--o2)',stroke:c?'var(--b3)':'var(--o3)','stroke-width':1.6},g);if(op)e.setAttribute('opacity',op);}
-// cur: real position; st: position shown (with the move being prepared); legal: moves in cur
-function drawBoard(cur,st,legal,interactive,last){const svg=$('svg');svg.textContent='';
+const LASTDOT='#13202a';   // the last move's dot on the birds (dark on both colours, in both themes)
+// cur: real position. opt: {legal (moves in cur), interactive, last (the last move, to mark), pv: {hover:mv} (in transparency)
+// or {prov:mv, region, hover} (a provisional move: the board after it, its birds opaque in a dashed frame)}
+function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   svg.setAttribute('viewBox',VB[coordsOn?0:1]);
     // grid lines between neighbouring points
   const grid=el('g',{stroke:'var(--grid)','stroke-width':1.3,opacity:.75},svg);
   for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
   if(coordsOn)for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
-  const lm=last&&last.mv,me=mySeat+1;
-  const flyers=new Set(),places=new Set(),lands=new Set(),keepable=new Set(),moved=new Set();
-  if(interactive&&!ui.basemv){for(const m of legal){if(m.t==='f'){if(!ui.sel.length)m.cells.forEach(c=>flyers.add(c));else if(sameSeg(m,ui.sel)){const z=E.dest(m,ui.sel[0]);if(st[z]!==me)lands.add(z);}}else if(m.t==='p'&&!ui.sel.length)places.add(m.at);}}
-  let rg=null;if(ui.basemv&&!ui.pending){rg=E.regions(st,1-mySeat);}
-  if(lm&&lm.t==='f')for(const c of lm.cells)moved.add(E.dest(lm,c));
+  const pv=opt.pv||null,prov=pv&&pv.prov,last=opt.last,lm=last&&last.mv,me=mySeat+1;
+  const st=prov?E.base(cur,prov):cur;   // the removed regions are only faded
+  const marked=new Set(prov&&prov.t==='p'?[prov.at]:[]);   // a provisional flight is outlined by flightMark
+  // regions of the opponent's birds: lettered during the choice; the birds of the regions that go are faded
+  let rg=null,kk=-1;
+  if(prov&&(pv.region||prov.keep>=0)){rg=E.regions(st,1-mySeat);kk=pv.region?(pv.hover>=0&&st[pv.hover]===3-me?rg.lab[pv.hover]:-1):rg.lab[prov.keep];}
+  // no marker on the points where a bird can be added: hovering one shows the bird (legal points only)
+  const lands=new Set();   // no marker on the birds able to fly: hovering any of my birds rings it
+  if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'&&ui.sel.length&&sameSeg(m,ui.sel))lands.add(landAt(m));}
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
     const c=st[i];
     el('circle',{cx:x,cy:y,r:c?19:3.2,fill:c?'transparent':'var(--dot)',stroke:'none'},g);
     if(!c)el('circle',{cx:x,cy:y,r:16,fill:'transparent'},g);   // easier to click
-    if(places.has(i))el('circle',{cx:x,cy:y,r:6.5,fill:'none',stroke:'var(--accent)','stroke-width':1.6,opacity:.5},g);
     if(lands.has(i))el('circle',{cx:x,cy:y,r:13,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
-    if(last&&last.removed&&last.removed.includes(i))el('circle',{cx:x,cy:y,r:14,fill:'none',stroke:'var(--danger)','stroke-width':2,'stroke-dasharray':'3 4',opacity:.9},g);
-    if(c){const preview=last&&last.preview&&!last.ghost&&(moved.has(i)||(lm.t==='p'&&lm.at===i));bird(g,x,y,c-1,preview?.8:0);
-      if(flyers.has(i))el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
+    // birds removed by the last move: a small cross on their point
+    if(last&&last.removed&&last.removed.includes(i)&&!c){const q=6;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:'var(--danger)','stroke-width':2.4,'stroke-linecap':'round',fill:'none'},g);}
+    if(c){const fade=rg&&kk>=0&&c===3-me&&rg.lab[i]!==kk;bird(g,x,y,c-1,fade?.3:0);
+      if(i===opt.hb)el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
       if(ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
-      if(lm&&!last.preview&&((lm.t==='p'&&lm.at===i)||moved.has(i)))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3},g);
-      if(preview)el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
-      if(last&&last.ghost&&lm.t==='f'&&lm.cells.includes(i)&&!ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3},g);
-      if(rg&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse'},g);
+      if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
+      if(lm&&lm.t==='p'&&lm.at===i)el('circle',{cx:x,cy:y,r:4.5,fill:LASTDOT,'pointer-events':'none'},g);
+      if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
         const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
-  if(last&&last.ghost){const gl=el('g',{'pointer-events':'none'},svg);const c=mySeat;
-    const spots=lm.t==='p'?[lm.at]:lm.cells.map(z=>E.dest(lm,z)).filter(z=>!lm.cells.includes(z));
-    for(const z of spots){bird(gl,X(z),Y(z),c,.5);el('circle',{cx:X(z),cy:Y(z),r:21,fill:'none',stroke:'var(--accent)','stroke-width':2.5,'stroke-dasharray':'4 4'},gl);}}
-  if(lm&&lm.t==='f'&&!last.preview){const a=lm.cells[0],b=E.dest(lm,a);el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'2 7','stroke-linecap':'round',opacity:.9,'pointer-events':'none'},svg);}}
+  // hovered: the bird to add, or the birds of the flight where they land, in transparency
+  if(pv&&pv.hover){const m=pv.hover,gl=el('g',{'pointer-events':'none'},svg);
+    for(const z of provCells(m).filter(z=>m.t==='p'||!m.cells.includes(z)))bird(gl,X(z),Y(z),mySeat,.5);}
+  // the last flight: a dashed outline around the line of birds that left, a solid one around where they landed, and a
+  // stroke between the two (outline to outline when they are apart, centre to centre when they touch or overlap)
+  // a provisional flight: the same, all dashed
+  if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
+  if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
+// Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
+const FR=24;
+function ends(cells){let best=[cells[0],cells[0]],bd=-1;for(const a of cells)for(const b of cells){const d=Math.hypot(X(a)-X(b),Y(a)-Y(b));if(d>bd){bd=d;best=[a,b];}}
+  return best.map(z=>[X(z),Y(z)]);}
+function stadium(p,q){const dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy);
+  if(L<1e-6)return `M${p[0]-FR} ${p[1]}a${FR} ${FR} 0 1 0 ${2*FR} 0a${FR} ${FR} 0 1 0 ${-2*FR} 0Z`;
+  const nx=-dy/L*FR,ny=dx/L*FR;
+  return `M${p[0]+nx} ${p[1]+ny}L${q[0]+nx} ${q[1]+ny}A${FR} ${FR} 0 0 0 ${q[0]-nx} ${q[1]-ny}L${p[0]-nx} ${p[1]-ny}A${FR} ${FR} 0 0 0 ${p[0]+nx} ${p[1]+ny}Z`;}
+// distance from point c to segment p–q, and between two segments (they do not cross: parallel or apart)
+function dPS(c,p,q){const dx=q[0]-p[0],dy=q[1]-p[1],L2=dx*dx+dy*dy,t=L2?Math.max(0,Math.min(1,((c[0]-p[0])*dx+(c[1]-p[1])*dy)/L2)):0;
+  return Math.hypot(c[0]-p[0]-t*dx,c[1]-p[1]-t*dy);}
+const dSS=(a,b)=>Math.min(dPS(a[0],b[0],b[1]),dPS(a[1],b[0],b[1]),dPS(b[0],a[0],a[1]),dPS(b[1],a[0],a[1]));
+// from centre c along unit u, the distance to the outline of segment s
+function exitAt(c,u,s){let lo=0,hi=400;for(let j=0;j<30;j++){const m=(lo+hi)/2;if(dPS([c[0]+u[0]*m,c[1]+u[1]*m],s[0],s[1])<FR)lo=m;else hi=m;}return lo;}
+function flightMark(svg,from,to,dashed){const da=dashed?{'stroke-dasharray':'5 4'}:{};const g=el('g',{fill:'none',stroke:'var(--accent)','stroke-width':2.4,'pointer-events':'none'},svg);
+  const A=ends(from),B=ends(to),ca=[(A[0][0]+A[1][0])/2,(A[0][1]+A[1][1])/2],cb=[(B[0][0]+B[1][0])/2,(B[0][1]+B[1][1])/2];
+  el('path',{d:stadium(A[0],A[1]),'stroke-dasharray':'5 4'},g);el('path',Object.assign({d:stadium(B[0],B[1])},da),g);
+  const D=Math.hypot(cb[0]-ca[0],cb[1]-ca[1]);if(D<1e-6)return;const u=[(cb[0]-ca[0])/D,(cb[1]-ca[1])/D];
+  // apart: outline to outline, unless the gap is too short to read (then centre to centre, as when they touch)
+  let s=0,e=D;if(dSS(A,B)>2*FR){const s1=exitAt(ca,u,A),e1=D-exitAt(cb,[-u[0],-u[1]],B);if(e1-s1>=16){s=s1;e=e1;}}
+  if(e>s)el('line',Object.assign({x1:ca[0]+u[0]*s,y1:ca[1]+u[1]*s,x2:ca[0]+u[0]*e,y2:ca[1]+u[1]*e,'stroke-linecap':dashed?'butt':'round'},da),g);}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   rules:()=>({}),form:()=>({}),
@@ -402,7 +464,7 @@ const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   enc,describe,newUi,preparing,cancel:cancelPrep,
   board:voBoard,turnStatus:voTurnStatus,
   hintable:()=>false,   // no computer opponent, so no hint (free play has undo only)
-  home:()=>{const s0=E.init();drawBoard(s0,s0,[],false,null);}};
+  home:()=>{drawBoard(E.init(),{});}};
 coreStart();
 </script>
 </body></html>

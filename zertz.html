@@ -298,7 +298,7 @@ const ZZ_I18N={fr:{
  <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
  <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
  <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
- <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile : un premier toucher l'affiche, un second le joue). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile, un seul toucher suffit). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
@@ -316,7 +316,7 @@ const ZZ_I18N={fr:{
  <li><b>Capture</b>: a marble jumps over a neighbour onto the empty ring just behind it; the capture continues as long as possible.</li>
  <li><b>Isolate</b>: a separated group of rings that is fully occupied goes to the player who isolated it.</li>
  <li><b>Win</b>: 3 of each colour, 4 white, 5 grey or 6 black. Also on time or by resignation.</li>
- <li><b>Play</b>: choose the colour under the board, click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen: a first tap shows it, a second plays it). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Play</b>: choose the colour under the board, click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen, a single tap is enough). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 }};
@@ -363,19 +363,24 @@ function hoverMove(legal){const i=ui.hover;if(i<0||!legal.length)return null;
   if(ui.at!==null)return legal.find(m=>m.c===ui.color&&m.at===ui.at&&m.rm===i)||null;
   const opts=legal.filter(m=>m.c===ui.color&&m.at===i);return opts.length===1&&opts[0].rm<0?opts[0]:opts.length?{t:0,c:ui.color,at:i,rm:-1,part:true}:null;}
 // (a suggestion shown is drawn exactly like a move awaiting confirmation)
-function preview(st,legal,mine){const mv=(mine&&hintOn()?hintMv:null)||ui.pending||(mine&&!ui.pending?hoverMove(legal):null);
-  if(!mv&&ui.at!==null&&mine)return {mv:{t:0,c:ui.color,at:ui.at,rm:-1,part:true},gone:[],taken:[]};
-  if(!mv)return null;if(mv.part)return {mv,gone:[],taken:[]};
-  const after=E.apply(st,mv),gone=diff(st,after),taken=[];
-  if(mv.t===1)for(let k=0;k+1<mv.path.length;k++)taken.push(E.MID[mv.path[k]*N+mv.path[k+1]]);
+// prov: the whole move is provisional (awaiting confirmation, or a suggestion): opaque, dashed frames; otherwise what the
+// pointer / first tap adds is shown in transparency, without a frame, over what was already clicked (provisional:
+// the placed marble ui.at, the capture path ui.path)
+function preview(st,legal,mine){const prov=!!(mine&&hintOn()&&hintMv||ui.pending),mv=(mine&&hintOn()?hintMv:null)||ui.pending||(mine&&!ui.pending?hoverMove(legal):null);
+  const P=mine&&!prov?ui.path:null,jumped=Q=>{const o=[];for(let k=0;k+1<Q.length;k++)o.push(E.MID[Q[k]*N+Q[k+1]]);return o;};
+  if(!mv&&ui.at!==null&&mine)return {mv:{t:0,c:ui.color,at:ui.at,rm:-1,part:true},gone:[],taken:[],prov,atProv:true};
+  // a capture path being clicked: the marble already stands on its last landing, the marbles it jumped are lifted
+  if(!mv&&P&&P.length>1){const j=jumped(P);return {mv:{t:1,path:P},gone:[],taken:j,provTaken:j,prov:true,atProv:true,part:true};}
+  if(!mv)return null;if(mv.part)return {mv,gone:[],taken:[],provTaken:[],prov,atProv:ui.at!==null};
+  const after=E.apply(st,mv),gone=diff(st,after),taken=mv.t===1?jumped(mv.path):[];
   for(const i of gone)if(st[M+i])taken.push(i);
-  return {mv,gone,taken};}
+  return {mv,gone,taken,prov,atProv:prov||ui.at!==null,provTaken:prov?taken:P?jumped(P):[]};}
 // core's renderGame: the board and the pool bar, then the action bar for my turn (turnStatus)
 let shownSt=null;   // position shown (the players' cards show its captures)
 function zzBoard({r,d,mine}){setBoard(ringsOf(view));if(ui.hover==null)ui.hover=-1;
   const live=navAt===null,legal=r.over||!live?[]:E.gen(r.st),caps=!!(legal.length&&legal[0].t===1);
   if(mine){const cols=E.colors(r.st);if(!cols.includes(ui.color))ui.color=cols[0]??0;}
-  drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint'&&!hintOn(),d.last,live?preview(r.st,legal,mine):null);
+  drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint'&&!hintOn(),live&&mine&&(prepared()||hintOn())?null:d.last,live?preview(r.st,legal,mine):null);
   shownSt=d.st;poolBar(d.st,r,mine,caps);
   return {caps};}
 // The shared pool (once empty, the marbles each player captured) and the colour to place: under the board, always in view
@@ -422,20 +427,20 @@ function clickRing(i){if(!view||navAt!==null)return;const r=replay(view,view.mov
     if(!P){if(legal.some(m=>m.path[0]===i))ui.path=[i];renderGame();return;}
     const cand=legal.filter(m=>P.every((x,k)=>m.path[k]===x));
     if(cand.some(m=>m.path[P.length]===i)){const done=cand.find(m=>m.path.length===P.length+1&&m.path[P.length]===i);
-      if(done){if(ui.hover===i)choose(done);else{ui.hover=ui.tap=i;renderGame();}return;}P.push(i);ui.hover=-1;renderGame();return;}
+      if(done){choose(done);return;}P.push(i);ui.hover=-1;renderGame();return;}
     // a ring of the path: the current end is taken back, an earlier one rewinds the path to it
     if(P.length>1){const k=P.lastIndexOf(i);if(k>=0){ui.path=P.slice(0,k===P.length-1?k:k+1);ui.hover=-1;renderGame();}return;}
     if(P.length===1){ui.path=legal.some(m=>m.path[0]===i)&&i!==P[0]?[i]:null;renderGame();}return;}
   const c=ui.color;
-  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){if(ui.hover===i)choose(mv);else{ui.hover=ui.tap=i;renderGame();}return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
+  if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){choose(mv);return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
   const opts=legal.filter(m=>m.c===c&&m.at===i);if(!opts.length){renderGame();return;}
-  if(opts.length===1&&opts[0].rm<0){if(ui.hover===i)choose(opts[0]);else{ui.hover=ui.tap=i;renderGame();}return;}ui.at=i;ui.hover=-1;renderGame();}
+  if(opts.length===1&&opts[0].rm<0){choose(opts[0]);return;}ui.at=i;ui.hover=-1;renderGame();}
 // A complete move waits for Confirm (unless « Confirm each move » is off)
 function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;ui.tap=-1;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
 $('needConfirm').checked=LS.get('zertz-confirm',true);
 $('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
-// With a mouse, hovering shows the move, so one click plays it; on a touch screen the first tap shows it.
+// With a mouse, hovering shows the move; a click (or a single tap) plays it.
 function hoverRing(i){if(!view||navAt!==null||ui.pending||hintMv||i===ui.hover)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;setBoard(ringsOf(view));
   const old=ui.hover;ui.hover=i;ui.tap=-1;if(i>=0&&!hoverMove(E.gen(r.st)))ui.hover=-1;if(ui.hover!==old)renderGame();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
@@ -452,7 +457,7 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500
 const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function marble(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:22,fill:`var(--m${c})`,stroke:`var(--m${c}e)`,'stroke-width':2},g);if(op)e.setAttribute('opacity',op);}
-function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv)last=null;
+function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv&&(pv.prov||pv.atProv))last=null;   // a mere hover keeps the last move's marks
   // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox (--board-ar too)
   svg.setAttribute('viewBox',`${VB[0]} ${VB[1]} ${VB[2]} ${VB[3]+(coordsOn?30:0)}`);
   if(coordsOn)for(const q of COLQ){const t=el('text',{x:60*q-CX,y:BOTTOM,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--ghost)'},svg);t.textContent='abcdefgh'[COLQ.indexOf(q)];}
@@ -460,25 +465,40 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
   const starters=new Set(),targets=new Set(),removable=new Set();
   if(interactive&&caps){if(!ui.path)legal.forEach(m=>starters.add(m.path[0]));else{const P=ui.path;legal.filter(m=>P.every((x,k)=>m.path[k]===x)).forEach(m=>{if(m.path[P.length]!==undefined)targets.add(m.path[P.length]);});}}
   if(interactive&&!caps&&ui.at!==null)legal.forEach(m=>{if(m.c===ui.color&&m.at===ui.at&&m.rm>=0)removable.add(m.rm);});
+  // frames are drawn inside the ring (r 27, between the marble and the ring's edge): solid for the last move and the
+  // selected marble, dashed for what is provisional; what the pointer previews has no frame, only transparency
+  const fr=(g,x,y,col,o)=>el('circle',Object.assign({cx:x,cy:y,r:27,fill:'none',stroke:col,'stroke-width':3},o||{}),g),DASH={'stroke-dasharray':'4 4'};
+  const lmLand=lm&&(lm.t===1?lm.path[lm.path.length-1]:lm.at);
+  const pmv=pv&&pv.mv,land=pmv?pmv.t===1?pmv.path[pmv.path.length-1]:pmv.at:-1,from=pmv&&pmv.t===1?pmv.path[0]:-1;
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'ring','data-i':i},svg);
     if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1.2,'stroke-dasharray':'3 5',opacity:wasRm?.9:.55},g);g.style.cursor='default';continue;}
-    const fade=pv&&pv.gone.includes(i);   // ring that the previewed move removes: shown in transparency
-    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.35:1},g);
+    // Hover and prepared move share one drawing (the hover: no frame on the arriving marble, a dotted path): the rings
+    // removed and the marbles taken in a dashed red frame, the marble that leaves and the one that arrives translucent
+    const fade=pv&&pv.gone.includes(i),prep=pv&&(pv.prov||pv.atProv);
+    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.88:1},g);
     el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
-    if(removable.has(i)&&!fade){el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--danger)','stroke-width':4,class:'pulse'},g);const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
-    if(targets.has(i))el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
+    if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)',{class:'pulse'});const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
+    if(targets.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
     const c=st[M+i];
-    if(c)marble(g,x,y,c-1,0);
-    if(lm&&lm.t===0&&lm.at===i&&c)el('circle',{cx:x,cy:y,r:27,fill:'none',stroke:'var(--accent)','stroke-width':3},g);
-    if(pv){const mv=pv.mv;
-      if(fade)el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--danger)','stroke-width':3,'stroke-dasharray':'4 4'},g);
-      if(pv.taken.includes(i))el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:'var(--danger)','stroke-width':2.5,'stroke-dasharray':'4 4'},g);
-      const land=mv.t===1?mv.path[mv.path.length-1]:mv.at,col=mv.t===1?st[M+mv.path[0]]-1:mv.c;
-      if(land===i){marble(g,x,y,col,.5);el('circle',{cx:x,cy:y,r:27,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);}}
-    if(starters.has(i))el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':4,class:'pulse'},g);
-    if(ui.path&&ui.path[ui.path.length-1]===i)el('circle',{cx:x,cy:y,r:31,fill:'none',stroke:'var(--accent)','stroke-width':5},g);}
+    if(c)marble(g,x,y,c-1,i===from?.88:0);
+    if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
+    if(pv){
+      if(fade||c&&pv.taken.includes(i))fr(g,x,y,'var(--danger)',DASH);
+      if(land===i){marble(g,x,y,pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,.88);if(prep)fr(g,x,y,'var(--accent)');}}
+    if(starters.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    // the jumping marble picked (path not started yet): the element to click again to drop it
+    if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
   const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};
-  if(lm&&lm.t===1)path(lm.path,'2 8');if(pv&&pv.mv.t===1)path(pv.mv.path,'4 6');else if(ui.path)path(ui.path);}
+  // a line from the starting ring to the landing marble: solid up to its frame (the last capture, a capture prepared),
+  // dotted up to the marble's edge (a capture hovered)
+  const capLine=(Q,dot)=>{const P=Q.map(i=>[X(i),Y(i)]),a=P[P.length-2],b=P[P.length-1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),k=dot?22:27;
+    P[P.length-1]=[b[0]-(b[0]-a[0])/L*k,b[1]-(b[1]-a[1])/L*k];
+    el('polyline',Object.assign({points:P.map(p=>p.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},dot?{'stroke-dasharray':'1 6'}:{}),svg);};
+  // the last capture: that line, and a red cross on each marble taken (the middle of each jump)
+  if(lm&&lm.t===1&&lm.path.length>1){capLine(lm.path);
+    for(let k=1;k<lm.path.length;k++){const x=(X(lm.path[k-1])+X(lm.path[k]))/2,y=(Y(lm.path[k-1])+Y(lm.path[k]))/2,d=7;
+      el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round','pointer-events':'none'},svg);}}
+  if(pv&&pv.mv.t===1){if(pv.mv.path.length>1)capLine(pv.mv.path,!(pv.prov||pv.atProv));}else if(ui.path)path(ui.path);}
 
 // ---------- the interface with common/core.js ----------
 const GAME={id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,

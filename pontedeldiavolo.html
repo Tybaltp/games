@@ -477,7 +477,8 @@ function drawBoard(real,last,a){
       frame(d[0],'dash',d[1]);}
     else for(const i of d)frame(i,'dash');
     if(ui.bridge){ghostBridge(ui.bridge.a,ui.bridge.b,1);frame(ui.bridge.a,'dash');frame(ui.bridge.b,'dash');}
-    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null)ghostBridge(ui.sel,ui.hover,.5);else tile(ui.hover,.5);frame(ui.hover,'hover');}
+    // hover: the translucent tile or bridge only, no frame (charter A1)
+    if(!ui.pending&&ui.hover>=0){if(ui.sel!==null)ghostBridge(ui.sel,ui.hover,.5);else tile(ui.hover,.5);}
     if(!ui.pending&&ui.sel===null&&!d.length&&ui.hoverOwn>=0)frame(ui.hoverOwn,'hover');}
   const tgts=new Set();
   if(active&&ui.sel!==null){
