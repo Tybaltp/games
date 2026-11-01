@@ -10,8 +10,8 @@
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
   --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6a645a;--line:#ddd7cb;
-  --wood:#e2d3b1;--wood-edge:#c9b386;--sq:#f3ead6;--gridl:#c2ad82;--trap:#e3b4a2;--trapk:#a5563f;--coord:#7b6a4a;
-  --g1:#f3c13a;--g3:#7d560a;--gk:#3b2800;--s1:#6f7d8b;--s3:#28323c;--sk:#ffffff;
+  --wood:#e2d3b1;--wood-edge:#c9b386;--sq:#f3ead6;--gridl:#c2ad82;--trap:#f2dacd;--trapk:#a5563f;--coord:#7b6a4a;
+  --g1:#a8730f;--g3:#573904;--gk:#fff3d1;--s1:#56636f;--s3:#222a32;--sk:#ffffff;
   --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
   --accent:#2f7d8c;--accent-ink:#ffffff;--danger:#cf4a35;
   --frost:rgba(226,243,255,.75);
@@ -20,12 +20,12 @@
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
-  --wood:#3a3226;--wood-edge:#2a241b;--sq:#4a4234;--gridl:#2c261d;--trap:#7a463a;--trapk:#e19a83;--coord:#b9a888;
-  --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark}}
+  --wood:#43382a;--wood-edge:#2e261b;--sq:#4d3f2c;--gridl:#2e2519;--trap:#7e4434;--trapk:#e19a83;--coord:#b9a888;
+  --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark;--g1:#f0bb35;--s1:#c9d1d8;--s3:#56616b;--sk:#1f2830;--g3:#7d560a;--gk:#3b2800;}}
 :root[data-theme="dark"]{
   --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
-  --wood:#3a3226;--wood-edge:#2a241b;--sq:#4a4234;--gridl:#2c261d;--trap:#7a463a;--trapk:#e19a83;--coord:#b9a888;
-  --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark}
+  --wood:#43382a;--wood-edge:#2e261b;--sq:#4d3f2c;--gridl:#2e2519;--trap:#7e4434;--trapk:#e19a83;--coord:#b9a888;
+  --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark;--g1:#f0bb35;--s1:#c9d1d8;--s3:#56616b;--sk:#1f2830;--g3:#7d560a;--gk:#3b2800;}
 /* the board sits on its wood frame, on phones too (thinner there) */
 .board{background:linear-gradient(var(--wood),var(--wood-edge));border:0;border-radius:16px}
 html.ingame:not(.wide) .board{--bp:4px;padding:4px;border-radius:10px;background:linear-gradient(var(--wood),var(--wood-edge))}
