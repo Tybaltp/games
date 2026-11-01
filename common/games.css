@@ -34,6 +34,7 @@ header .seg{margin-left:auto}
 .optbtn{display:none;position:relative;font-size:1.2rem;line-height:1;padding:5px 12px;font-weight:700}
 .optbtn.attn::after{content:"";position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
 html.ingame:not(.wide) .optbtn{display:inline-block}
+.fsbtn{line-height:0;padding:6px 9px}.fsbtn.on{color:var(--accent);border-color:var(--accent)}
 .boardwrap{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
 /* The board fits its area in both dimensions, keeping its proportions (--board-ar, set by the page), centred */
 .boardarea{flex:1 1 0;min-height:0;min-width:0;container-type:size;display:flex;align-items:center;justify-content:center}
