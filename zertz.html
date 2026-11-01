@@ -485,7 +485,7 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
       if(fade&&pv.prov)fr(g,x,y,'var(--danger)',DASH);
       if(c&&pv.taken.includes(i)&&(pv.prov||pv.provTaken&&pv.provTaken.includes(i)))fr(g,x,y,'var(--danger)',DASH);
       if(land===i){const col=pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,solid=pv.prov||pmv.t===0&&pv.atProv;
-        marble(g,x,y,col,solid?0:.5);if(solid)fr(g,x,y,'var(--accent)',DASH);}}
+        marble(g,x,y,col,solid?0:.8);if(solid)fr(g,x,y,'var(--accent)',DASH);}}
     if(starters.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
     // the jumping marble picked (path not started yet): the element to click again to drop it
     if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
