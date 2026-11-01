@@ -66,6 +66,8 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .slot.sel{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .slot:disabled{opacity:1}
 .slot.gap{visibility:hidden}
+.slot.tall{grid-row:span 2}.slot.tall svg{height:100%}
+.pblock .tray{grid-auto-flow:row dense}
 </style>
 </head><body>
 <div class="wrap">
@@ -384,11 +386,16 @@ const oriOf=(c,k)=>c>=0&&oris[c][k]||E.P[k].wide;
 const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result).st,mySeat):-1;
 // Pieces left only (a used piece leaves the reserve); the picked piece is drawn in its current orientation (R / F turn it)
 function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
-  E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1);if(used)return;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';b.className='slot'+(sel?' sel':'');
-    b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(sel&&ui.cur?ui.cur:oriOf(c,k),c,5,3));
+  // a piece standing 4 or 5 cells tall (straight pieces, L, N and Y pentominoes upright) takes two rows of its column, so
+  // that it is drawn at the same scale as the others
+  let cells=0;
+  E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1);if(used)return;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
+    const o=sel&&ui.cur?ui.cur:oriOf(c,k),tall=1+Math.max(...o.map(x=>x[0]))>=4;b.className='slot'+(sel?' sel':'')+(tall?' tall':'');cells+=tall?2:1;
+    b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(o,c,5,tall?6.4:3));
     if(live&&!used)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);});
-  // empty slots up to 21: the reserve keeps the height of a full one, so the board never changes size during the game
-  for(let n=box.children.length;n<E.P.length;n++){const e=document.createElement('span');e.className='slot gap';e.setAttribute('aria-hidden','true');e.appendChild(miniSvg(E.P[E.P.length-1].wide,c,5,3));box.appendChild(e);}}
+  // empty slots up to 26 cells (21 pieces, the 5 that can stand 4 or 5 tall on two rows): the reserve keeps the height of
+  // a full one, so the board never changes size during the game
+  for(let n=cells;n<E.P.length+5;n++){const e=document.createElement('span');e.className='slot gap';e.setAttribute('aria-hidden','true');e.appendChild(miniSvg(E.P[E.P.length-1].wide,c,5,3));box.appendChild(e);}}
 // The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine ».
 // Both sides on one screen (free play, face to face): the blocks stay put, Player 2 above and Player 1 below, and the
 // pieces are picked in the block of the side to move.
