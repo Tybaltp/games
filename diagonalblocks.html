@@ -65,6 +65,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray.live .slot:not(.used):hover{border-color:var(--line)}
 .slot.sel{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .slot:disabled{opacity:1}
+.slot.gap{visibility:hidden}
 </style>
 </head><body>
 <div class="wrap">
@@ -385,7 +386,9 @@ const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result)
 function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
   E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1);if(used)return;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';b.className='slot'+(sel?' sel':'');
     b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(sel&&ui.cur?ui.cur:oriOf(c,k),c,5,3));
-    if(live&&!used)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);});}
+    if(live&&!used)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);});
+  // empty slots up to 21: the reserve keeps the height of a full one, so the board never changes size during the game
+  for(let n=box.children.length;n<E.P.length;n++){const e=document.createElement('span');e.className='slot gap';e.setAttribute('aria-hidden','true');e.appendChild(miniSvg(E.P[E.P.length-1].wide,c,5,3));box.appendChild(e);}}
 // The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine ».
 // Both sides on one screen (free play, face to face): the blocks stay put, Player 2 above and Player 1 below, and the
 // pieces are picked in the block of the side to move.
