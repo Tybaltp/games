@@ -47,12 +47,14 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
 .pblock .pinfo{flex:0 0 104px;min-width:0}
 .pblock .player .tally{flex-direction:column;gap:0}   /* cells and pieces on two lines */
 .pblock .player{border:0;background:none;box-shadow:none;padding:0;opacity:1}
-.pblock .tray{flex:1;min-width:0;grid-template-columns:repeat(auto-fill,30px);gap:2px;justify-content:start}
+/* the slot grows with the screen's width (the board gives up the height): same size in both reserves */
+.pblock{--slot:clamp(44px,10vw,64px)}
+.pblock .tray{flex:1;min-width:0;grid-template-columns:repeat(auto-fill,minmax(var(--slot),1fr));gap:2px}
 .pblock .slot{padding:2px}
 #myBlock .notice{border:0;background:none;padding:2px 0 0;border-radius:0}
 html.ingame.wide .pblock .prow{flex-direction:column;gap:4px}
 html.ingame.wide .pblock .pinfo{flex:none;width:100%}
-html.ingame.wide .pblock .tray{width:100%;grid-template-columns:repeat(auto-fill,32px)}
+html.ingame.wide .pblock{--slot:36px}html.ingame.wide .pblock .tray{width:100%}
 html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:4px}
 .slot{padding:3px;border:1.5px solid transparent;border-radius:7px;background:transparent;line-height:0}
