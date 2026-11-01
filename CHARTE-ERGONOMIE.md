@@ -3,7 +3,7 @@
 Règles générales ; chaque jeu les applique selon son contexte.
 
 ## A. États visuels
-1. **Survol** : la pièce ou le coup apparaît en transparence, seulement là où le coup est légal. Pas de cadre au survol (y compris Gygès et Ponte, à corriger). Exception, Diagonal Blocks Duo : la pièce survolée s'affiche dès que les cases sous elle sont vides, même si le coup est illégal ; coup illégal en transparence plus marquée, hachuré de rouge et cerné d'un liseré rouge vif, coup légal un peu plus opaque sans liseré.
+1. **Survol** : la pièce ou le coup apparaît en transparence, seulement là où le coup est légal. Pas de cadre au survol (y compris Gygès et Ponte, à corriger).
 2. **Provisoire** (cliqué, pas encore joué) : pièce opaque, cadre en pointillés.
 3. **Dernier coup** : cadre plein ou point de marquage (comme Pente), à juger jeu par jeu ; disparaît dès qu'on prépare un coup. Volo, vol : contour pointillé autour de la ligne de départ, contour plein autour de la ligne d'arrivée (rectangle fermé par deux demi-cercles), un trait les relie, de bord à bord quand ils sont séparés, de centre à centre quand ils se touchent ou se recouvrent. Vol provisoire : le même marquage, tout en pointillés. Zèrtz, capture : trait plein du départ jusqu'au cercle de la bille arrivée, une croix rouge sur chaque bille prise. Zèrtz, survol et coup préparé : même dessin ; billes prises et anneaux retirés opaques dans un cercle rouge pointillé (exception à A1), bille qui part et bille qui arrive translucides ; au survol le trajet est en pointillés jusqu'au bord de la bille, sans cadre ; préparé, trait plein jusqu'au cadre plein de la bille arrivée (pose comprise).
 4. **Cadres** tracés à l'intérieur de la case. (Le cadre commun à deux éléments voisins reste propre à Ponte.)
