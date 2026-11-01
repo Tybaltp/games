@@ -400,7 +400,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   if(coordsOn)for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
   const pv=opt.pv||null,prov=pv&&pv.prov,last=opt.last,lm=last&&last.mv,me=mySeat+1;
   const st=prov?E.base(cur,prov):cur;   // the removed regions are only faded
-  const marked=new Set(prov?provCells(prov):[]);
+  const marked=new Set(prov&&prov.t==='p'?[prov.at]:[]);   // a provisional flight is outlined by flightMark
   // regions of the opponent's birds: lettered during the choice; the birds of the regions that go are faded
   let rg=null,kk=-1;
   if(prov&&(pv.region||prov.keep>=0)){rg=E.regions(st,1-mySeat);kk=pv.region?(pv.hover>=0&&st[pv.hover]===3-me?rg.lab[pv.hover]:-1):rg.lab[prov.keep];}
@@ -426,7 +426,9 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
     for(const z of provCells(m).filter(z=>m.t==='p'||!m.cells.includes(z)))bird(gl,X(z),Y(z),mySeat,.5);}
   // the last flight: a dashed outline around the line of birds that left, a solid one around where they landed, and a
   // stroke between the two (outline to outline when they are apart, centre to centre when they touch or overlap)
-  if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));}
+  // a provisional flight: the same, all dashed
+  if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
+  if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
 // Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
 const FR=24;
 function ends(cells){let best=[cells[0],cells[0]],bd=-1;for(const a of cells)for(const b of cells){const d=Math.hypot(X(a)-X(b),Y(a)-Y(b));if(d>bd){bd=d;best=[a,b];}}
@@ -441,12 +443,12 @@ function dPS(c,p,q){const dx=q[0]-p[0],dy=q[1]-p[1],L2=dx*dx+dy*dy,t=L2?Math.max
 const dSS=(a,b)=>Math.min(dPS(a[0],b[0],b[1]),dPS(a[1],b[0],b[1]),dPS(b[0],a[0],a[1]),dPS(b[1],a[0],a[1]));
 // from centre c along unit u, the distance to the outline of segment s
 function exitAt(c,u,s){let lo=0,hi=400;for(let j=0;j<30;j++){const m=(lo+hi)/2;if(dPS([c[0]+u[0]*m,c[1]+u[1]*m],s[0],s[1])<FR)lo=m;else hi=m;}return lo;}
-function flightMark(svg,from,to){const g=el('g',{fill:'none',stroke:'var(--accent)','stroke-width':2.4,'pointer-events':'none'},svg);
+function flightMark(svg,from,to,dashed){const da=dashed?{'stroke-dasharray':'5 4'}:{};const g=el('g',{fill:'none',stroke:'var(--accent)','stroke-width':2.4,'pointer-events':'none'},svg);
   const A=ends(from),B=ends(to),ca=[(A[0][0]+A[1][0])/2,(A[0][1]+A[1][1])/2],cb=[(B[0][0]+B[1][0])/2,(B[0][1]+B[1][1])/2];
-  el('path',{d:stadium(A[0],A[1]),'stroke-dasharray':'5 4'},g);el('path',{d:stadium(B[0],B[1])},g);
+  el('path',{d:stadium(A[0],A[1]),'stroke-dasharray':'5 4'},g);el('path',Object.assign({d:stadium(B[0],B[1])},da),g);
   const D=Math.hypot(cb[0]-ca[0],cb[1]-ca[1]);if(D<1e-6)return;const u=[(cb[0]-ca[0])/D,(cb[1]-ca[1])/D];
   let s=0,e=D;if(dSS(A,B)>2*FR){s=exitAt(ca,u,A);e=D-exitAt(cb,[-u[0],-u[1]],B);}
-  if(e>s)el('line',{x1:ca[0]+u[0]*s,y1:ca[1]+u[1]*s,x2:ca[0]+u[0]*e,y2:ca[1]+u[1]*e,'stroke-linecap':'round'},g);}
+  if(e>s)el('line',Object.assign({x1:ca[0]+u[0]*s,y1:ca[1]+u[1]*s,x2:ca[0]+u[0]*e,y2:ca[1]+u[1]*e,'stroke-linecap':dashed?'butt':'round'},da),g);}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   rules:()=>({}),form:()=>({}),
