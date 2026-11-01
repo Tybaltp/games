@@ -48,15 +48,17 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
 .pblock .player .tally{flex-direction:column;gap:0}   /* cells and pieces on two lines */
 .pblock .player{border:0;background:none;box-shadow:none;padding:0;opacity:1}
 /* the slot grows with the screen's width (the board gives up the height): same size in both reserves */
-.pblock{--slot:clamp(44px,10vw,64px)}
-.pblock .tray{flex:1;min-width:0;grid-template-columns:repeat(auto-fill,minmax(var(--slot),1fr));gap:2px}
-.pblock .slot{padding:2px}
+.pblock{--cell:clamp(8px,2.4vw,13px)}
+/* each piece in a square whose side is its longest dimension plus one cell (any orientation fits); squares on a grid of
+   half cells, packed densely (largest first): turning a piece never moves anything */
+.pblock .tray{flex:1;min-width:0;grid-template-columns:repeat(auto-fill,calc(var(--cell) / 2));grid-auto-rows:calc(var(--cell) / 2);grid-auto-flow:row dense;gap:0;align-content:start}
+.pblock .slot{padding:0;border-radius:6px}.pblock .slot svg{width:100%;height:100%}
 #myBlock .notice{border:0;background:none;padding:2px 0 0;border-radius:0}
 html.ingame.wide .pblock .prow{flex-direction:column;gap:4px}
 html.ingame.wide .pblock .pinfo{flex:none;width:100%}
-html.ingame.wide .pblock{--slot:36px}html.ingame.wide .pblock .tray{width:100%}
+html.ingame.wide .pblock{--cell:9px}html.ingame.wide .pblock .tray{width:100%}
 /* wide screens (not landscape phones): a wider side column, so that the pieces are not dwarfed by the board */
-@media (min-width:821px){html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) clamp(320px,36vw,520px)}html.ingame.wide .pblock{--slot:clamp(40px,4.2vw,64px)}}
+@media (min-width:821px){html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) clamp(320px,36vw,520px)}html.ingame.wide .pblock{--cell:clamp(10px,1.1vw,15px)}}
 html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:4px}
 .slot{padding:3px;border:1.5px solid transparent;border-radius:7px;background:transparent;line-height:0}
@@ -65,9 +67,6 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray.live .slot:not(.used):hover{border-color:var(--line)}
 .slot.sel{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .slot:disabled{opacity:1}
-.slot.gap{visibility:hidden}
-.slot.tall{grid-row:span 2}.slot.tall svg{height:100%}
-.pblock .tray{grid-auto-flow:row dense}
 </style>
 </head><body>
 <div class="wrap">
@@ -385,23 +384,28 @@ const oris=[{},{}];let oriV=0;
 const oriOf=(c,k)=>c>=0&&oris[c][k]||E.P[k].wide;
 const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result).st,mySeat):-1;
 // Pieces left only (a used piece leaves the reserve); the picked piece is drawn in its current orientation (R / F turn it)
+// The pieces left, each in a square of side its longest dimension + 1 (half-cell grid units: 2n+2), largest first so the
+// dense packing is tight; the reserve keeps the height of a full one (measured once per width), so the board never changes
+// size during the game
+const sideOf=k=>{const o=E.P[k].wide;return Math.max(1+Math.max(...o.map(x=>x[0])),1+Math.max(...o.map(x=>x[1])));};
+const ORDER=E.P.map((_,k)=>k).sort((a,b)=>sideOf(b)-sideOf(a)||a-b);
+const fullH={};
+function fullHeight(box){const w=box.clientWidth,cs=getComputedStyle(box),key=w+'/'+cs.gridAutoRows;if(fullH[key])return fullH[key];
+  const t=document.createElement('div');t.className=box.className;t.style.cssText=`position:absolute;visibility:hidden;width:${w}px`;
+  for(const k of ORDER){const e=document.createElement('span');const n=2*sideOf(k)+2;e.style.gridColumn=e.style.gridRow='span '+n;t.appendChild(e);}
+  box.parentNode.appendChild(t);const h=t.offsetHeight;t.remove();return fullH[key]=h;}
 function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
-  // a piece standing 4 or 5 cells tall (straight pieces, L, N and Y pentominoes upright) takes two rows of its column, so
-  // that it is drawn at the same scale as the others
-  let cells=0;
-  E.P.forEach((p,k)=>{const used=!!(st.used[c]>>k&1);if(used)return;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
-    const o=sel&&ui.cur?ui.cur:oriOf(c,k),tall=1+Math.max(...o.map(x=>x[0]))>=4;b.className='slot'+(sel?' sel':'')+(tall?' tall':'');cells+=tall?2:1;
-    b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live||used;b.appendChild(miniSvg(o,c,5,tall?6.4:3));
-    if(live&&!used)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);});
-  // empty slots up to 26 cells (21 pieces, the 5 that can stand 4 or 5 tall on two rows): the reserve keeps the height of
-  // a full one, so the board never changes size during the game
-  for(let n=cells;n<E.P.length+5;n++){const e=document.createElement('span');e.className='slot gap';e.setAttribute('aria-hidden','true');e.appendChild(miniSvg(E.P[E.P.length-1].wide,c,5,3));box.appendChild(e);}}
+  for(const k of ORDER){const p=E.P[k];if(st.used[c]>>k&1)continue;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
+    const o=sel&&ui.cur?ui.cur:oriOf(c,k),n=sideOf(k);b.className='slot'+(sel?' sel':'');b.style.gridColumn=b.style.gridRow='span '+(2*n+2);
+    b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live;b.appendChild(miniSvg(o,c,n+1,n+1));
+    if(live)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);}
+  if(box.clientWidth&&box.parentNode&&getComputedStyle)box.style.minHeight=fullHeight(box)+'px';}
 // The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine ».
 // Both sides on one screen (free play, face to face): the blocks stay put, Player 2 above and Player 1 below, and the
 // pieces are picked in the block of the side to move.
 const seatsShown=r=>{if(solo())return {top:1,bot:0};const bot=mySeat>=0?mySeat:r.st.turn;return {top:1-bot,bot};};
 function renderTrays(st,live){const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
-  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
+  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,$('myTray').clientWidth,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
   if(key===trayKey)return;trayKey=key;
   fillTray($('oppTray'),st,E.colorOf(st,top),mySeat===top&&live);fillTray($('myTray'),st,E.colorOf(st,bot),mySeat===bot&&live);}
 // After core's render: the players' cards go into the blocks (opponent above, player below), the action bar into mine
