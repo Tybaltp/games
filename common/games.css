@@ -24,7 +24,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
    Wide screens and landscape phones (html.wide, the WIDE query): header + board column on the left, side panel on the
    right over the full height, scrolling inside. Phones in portrait: header, players' row, board, action bar stacked;
    the side panel becomes a bottom sheet opened with « ⋯ ». */
-:root{--barH:52px;--barW:150px;--sab:env(safe-area-inset-bottom,0px);--bp:9px}
+:root{--barH:52px;--barW:150px;--barMax:112px;--sab:env(safe-area-inset-bottom,0px);--bp:9px}
 html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none}
 html.ingame body{height:100vh;height:100dvh;padding-top:max(10px,env(safe-area-inset-top,0px));padding-bottom:max(10px,var(--sab))}
 html.ingame .wrap{max-width:none;height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px 16px}
@@ -49,10 +49,10 @@ html.ingame.wide .side{grid-column:2;grid-row:2;min-height:0;overflow:visible;pa
 html.ingame.wide .boardarea{align-items:flex-start}
 .sidescroll{display:contents}
 html.ingame.wide .side > .sidescroll{display:flex;flex-direction:column;gap:12px;flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;padding:3px;margin:0 -3px -3px}
-/* the action bar in the panel: message on its own lines, buttons wrapped full width, a fixed reserved height */
-html.ingame.wide .side .notice{height:var(--barW);flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px}
-/* wide screens: a fixed height that holds a three-line message and two rows of buttons */
-html.ingame.wide .side .notice .msg{-webkit-line-clamp:3;line-clamp:3}
+/* the action bar in the panel: message on its own lines, buttons wrapped full width; it takes the height it needs and
+   what follows in the panel moves down */
+html.ingame.wide .side .notice{height:auto;min-height:var(--barH);flex-direction:column;align-items:stretch;gap:6px;padding:8px 10px}
+html.ingame.wide .side .notice .msg{-webkit-line-clamp:unset;line-clamp:none}
 html.ingame.wide .side .notice .btns{flex-wrap:wrap;justify-content:center}
 html.ingame.wide .side .notice .btns button{flex:1 1 auto}
 /* Phones: thin side gutters, no frame around the board, compact players' row */
@@ -84,7 +84,9 @@ html.ingame:not(.wide) .side::before{content:"";flex:none;align-self:center;widt
 .notice.on{background:var(--panel);border-color:var(--line)}
 .notice.turn{border-color:var(--accent)}.notice.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 .notice button{padding:5px 10px;font-size:.85rem;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:560px){:root{--barH:86px}.notice.has-btns{flex-direction:column;gap:5px}}
+@media (max-width:560px){:root{--barH:86px;--barMax:124px}.notice.has-btns{flex-direction:column;gap:5px}}
+/* Not wide: the bar takes the height it needs, up to --barMax, kept free under the board (core: lockBoard) */
+html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .players{display:flex;justify-content:space-between;gap:8px;flex:none}
 .players.side-only{flex-direction:column}
 .player{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;opacity:.75}

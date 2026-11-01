@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=7">
+<link rel="stylesheet" href="common/games.css?v=9">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -375,7 +375,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=7"></script>
+<script src="common/core.js?v=9"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -423,7 +423,7 @@ const PE_I18N={fr:{
  <li>Cinq paires capturées gagnent.</li>
  <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
  <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
- <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Valider ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Valider, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Valider ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
@@ -448,7 +448,7 @@ const PE_I18N={fr:{
  <li>Capturing five pairs wins.</li>
  <li>Swap2: the first player places 2 black stones and 1 white. The second player takes Black, takes White, or adds 1 black and 1 white and lets the first player choose. White moves next.</li>
  <li>Fischer clock: base time for each player, increment added after every action. Running out of time loses the game.</li>
- <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; on a touch screen, a first tap places it provisionally; a winning move is played at once). Clicking a provisional stone removes it; in the opening and the 2 more stones the order does not matter: the next stone takes the colour of the one removed. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; on a touch screen, a first tap places it provisionally; a winning move is played at once). Clicking a provisional stone removes it; in the opening and the 2 more stones the order does not matter: the next stone takes the colour of the one removed. The opening and the 2 more stones always wait for Confirm, even with “Confirm each move” off. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, six levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 }};
@@ -479,7 +479,7 @@ function dec(code){code=String(code||'');let m;
 const enc=mv=>mv.t==='o'||mv.t==='a'?mv.t+mv.s.join('.'):mv.t==='m'?'m'+mv.i:mv.t;
 // Applies one action to st (in place); false if it is not legal now
 function applyMv(st,mv){const free=a=>a.every((i,k)=>i>=0&&!st.B[i]&&a.indexOf(i)===k);
-  const pick=(seat,c)=>{st.color[seat]=c;st.color[1-seat]=3-c;st.phase='play';st.toMove=2;st.turn=st.color[0]===2?0:1;st.last=[];st.lastCap=[];};
+  const pick=(seat,c)=>{st.color[seat]=c;st.color[1-seat]=3-c;st.phase='play';st.toMove=2;st.turn=st.color[0]===2?0:1;};   // the marks of the last stones stay until the next stone
   if(st.phase==='open'){if(mv.t!=='o'||!free(mv.s))return false;mv.s.forEach((i,k)=>{st.B[i]=[1,2,1][k];});st.last=mv.s.slice();st.lastCap=[];st.phase='choose';st.turn=1;return true;}
   if(st.phase==='choose'){if(mv.t==='B'||mv.t==='W'){pick(1,mv.t==='B'?1:2);return true;}
     if(mv.t!=='a'||!free(mv.s))return false;st.B[mv.s[0]]=1;st.B[mv.s[1]]=2;st.last=mv.s.slice();st.lastCap=[];st.phase='choose1';st.turn=0;return true;}
@@ -566,7 +566,8 @@ const prepared=()=>ui.tent.length>0||ui.add2||!!ui.pending;
 function cancelPrep(){clearTent();ui.add2=false;ui.pending=null;ui.hover=-1;renderGame();}
 // A click on an intersection: places the next provisional stone (a single stone moves to the new place); on a
 // provisional stone, removes it alone, and the next stone placed takes its colour (with « Confirm each move » off, a
-// click on a single provisional stone plays it). Complete: the move waits for Confirm, or is played at once (confirmation off, not on a touch screen).
+// click on a single provisional stone plays it). Complete: the move waits for Confirm, or a single stone is played at once
+// (confirmation off, not on a touch screen); the opening and the 2 more stones always wait for Confirm.
 function onCell(i,touch){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(busy==='hint')stopAI();if(hintMv)hintMv=null;
   const st=meSt(r),cols=placing(st);if(!cols){renderGame();return;}
@@ -574,15 +575,15 @@ function onCell(i,touch){if(!view||navAt!==null)return;const r=replay(view,view.
   if(k>=0){if(!confirmOn()&&cols.length===1){commit(st,cols);return;}ui.tent.splice(k,1);ui.tc.splice(k,1);ui.pending=null;renderGame();return;}
   if(st.B[i]){renderGame();return;}
   if(ui.tent.length<cols.length){ui.tc.push(nextCol(cols));ui.tent.push(i);}else if(cols.length===1){ui.tent=[i];ui.tc=[cols[0]];}else{renderGame();return;}
-  if(ui.tent.length===cols.length){if(!confirmOn()&&!touch||winsNow(st,ui.tent)){commit(st,cols);return;}ui.pending=makeMv(st,ordered(cols));}else ui.pending=null;
+  if(ui.tent.length===cols.length){if(!confirmOn()&&!touch&&cols.length===1||winsNow(st,ui.tent)){commit(st,cols);return;}ui.pending=makeMv(st,ordered(cols));}else ui.pending=null;
   renderGame();}
 // A stone that wins at once (five in a row, or the fifth pair) is played without confirmation
 function winsNow(st,s){if(st.phase!=='play'||s.length!==1)return false;const w=cloneSt(st);return applyMv(w,{t:'m',i:s[0]})&&!!w.win&&w.win.w===st.turn;}
 function commit(st,cols){if(ui.tent.length!==cols.length)return;const mv=makeMv(st,ordered(cols));clearTent();ui.add2=false;ui.pending=null;send(mv);}
 $('needConfirm').checked=(()=>{try{return localStorage.getItem('pente-confirm')!=='0';}catch(e){return true;}})();
 $('needConfirm').onchange=e=>{try{localStorage.setItem('pente-confirm',e.target.checked?'1':'0');}catch(x){}
-  // switched off with a complete move waiting: it is played
-  if(!e.target.checked&&ui.pending&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;clearTent();ui.add2=false;ui.pending=null;send(mv);}}};
+  // switched off with a complete move waiting: it is played (the opening and the 2 more stones always wait for Confirm)
+  if(!e.target.checked&&ui.pending&&ui.pending.t==='m'&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;clearTent();ui.add2=false;ui.pending=null;send(mv);}}};
 let lastPT='mouse';
 $('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
@@ -629,11 +630,9 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   const sh=shown;
   if(sh&&view){const st=sh.d.st,g=el('g',{},svg);
     for(let i=0;i<NN;i++)if(st.B[i])stone(g,i,st.B[i]);
-    // the last action: a dot on its stones, a cross on the stones it captured; gone while a move is being prepared
-    // (or a suggestion is shown)
-    const prep=sh.mine&&(prepared()||hintOn());
-    if(!prep)for(const i of st.lastCap){if(st.B[i])continue;const x=PX(i),y=PY(i),q=CELL*.18;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:MK,'stroke-width':2,fill:'none'},g);}
-    if(!prep)for(const i of st.last)if(st.B[i])el('circle',{cx:PX(i),cy:PY(i),r:SR*.24,fill:MK},g);
+    // the last action: a dot on its stones, a cross on the stones it captured; kept until the next move is played
+    for(const i of st.lastCap){if(st.B[i])continue;const x=PX(i),y=PY(i),q=CELL*.18;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:MK,'stroke-width':2,fill:'none'},g);}
+    for(const i of st.last)if(st.B[i])el('circle',{cx:PX(i),cy:PY(i),r:SR*.24,fill:MK},g);
     // a suggestion shown is drawn like provisional stones; « take White, then play X » rings X
     if(sh.mine&&hintOn()){const h=hintMv,ms=sh.ms;
       if(h.t==='o')h.s.forEach((i,k)=>ghost(g,i,[1,2,1][k]));else if(h.t==='a')h.s.forEach((i,k)=>ghost(g,i,[1,2][k]));

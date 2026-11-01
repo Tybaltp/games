@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=7">
+<link rel="stylesheet" href="common/games.css?v=9">
 <style>
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
@@ -168,7 +168,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=7"></script>
+<script src="common/core.js?v=9"></script>
 <script>
 function ZertzEngine(size){
   const B=size===48?[-3,4,-4,3,-3,4]:[-3,3,-3,3,-3,3],cells=[];
@@ -477,15 +477,15 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
     const fade=pv&&pv.gone.includes(i),prep=pv&&(pv.prov||pv.atProv);
     el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.88:1},g);
     el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
-    if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)',{class:'pulse'});const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
-    if(targets.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)');const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
+    if(targets.has(i))fr(g,x,y,'var(--accent)');
     const c=st[M+i];
     if(c)marble(g,x,y,c-1,i===from?.88:0);
     if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
     if(pv){
       if(fade||c&&pv.taken.includes(i))fr(g,x,y,'var(--danger)',DASH);
       if(land===i){marble(g,x,y,pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,.88);if(prep)fr(g,x,y,'var(--accent)');}}
-    if(starters.has(i))fr(g,x,y,'var(--accent)',{class:'pulse'});
+    if(starters.has(i))fr(g,x,y,'var(--accent)');
     // the jumping marble picked (path not started yet): the element to click again to drop it
     if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
   const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};

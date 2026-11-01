@@ -27,6 +27,7 @@
 //  board(c)                      draws the board, c={r,d (position shown: r or the navigated one),mine,ms (position to act on)};
 //                                returns the game's click state o, handed back to turnStatus/hintable
 //  turnStatus(c)                 my turn, nothing pending: calls status(); c={r,o,ms,prep,idle,undoB,RST}
+//  pendBtns(mv,ms)               optional: extra buttons between Reset and Confirm while a move awaits confirmation
 //  waitStatus?(c)                the opponent's turn, live: calls status() and returns true, or false for « X to move »
 //  pendText?(mv,st)              [message, confirm label] for a move awaiting confirmation
 //  hintable?(o), hintOk?(mv)     Hint offered now · a found move may be shown
@@ -353,7 +354,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
   else if(mine&&hintOn())status(t('hint_move',{m:GAME.describe(hintMv,ms)}),'turn',[{label:t('hintPlay'),short:t('hintPlayS'),primary:true,on:hintPlay},{label:t('dismiss'),on:hintOff}]);
   else if(mine&&ui.pending){const [msg,ok]=GAME.pendText?GAME.pendText(ui.pending,ms):[t('pend_mv',{m:GAME.describe(ui.pending,ms)}),t('confirmMv')];
-    status(msg,'turn',[RST,{label:ok,primary:true,on:()=>{if(ui.pending)send(ui.pending);}}]);}
+    status(msg,'turn',[RST,...(GAME.pendBtns?GAME.pendBtns(ui.pending,ms):[]),{label:ok,primary:true,on:()=>{if(ui.pending)send(ui.pending);}}]);}
   else if(sending)quiet();
   else if(ns&&mySeat>=0&&view.myHold)status(t('st_simWait'));
   else if(ns&&mySeat<0)status(t('st_simWatch'));
@@ -368,7 +369,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="dot c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
     el.append(h,ck);if(GAME.playerCard)GAME.playerCard(el,p,d);host.appendChild(el);}
-  tick();
+  tick();lockBoard();
   // side panel: settings only (level of the computer and its opinion, against the computer only: hints use GAME.hintLevel)
   $('myCard').hidden=!(role==='ai'||solo()||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
   if($('aiBox'))$('aiBox').hidden=role!=='ai';
@@ -407,6 +408,16 @@ function sheet(on){const R=document.documentElement,was=R.classList.contains('sh
 // back under the board (after the move navigation). The same element moves, nothing is duplicated.
 function layoutMode(){const w=isWide();document.documentElement.classList.toggle('wide',w);if(w)sheet(false);
   const n=$('notice'),at=w?$('playersSide'):$('nav');if(n&&at&&n.previousElementSibling!==at)at.after(n);}
+// Not wide: the board's area gets a fixed height, so that the action bar can grow up to --barMax under it without the
+// board ever changing size (the room the bar does not use stays empty). Games that lay out the board themselves
+// (GAME.ownLayout) are left alone.
+function lockBoard(){const ba=document.querySelector('.boardwrap .boardarea'),bw=ba&&ba.parentNode,n=$('notice');
+  if(!ba||!n||typeof getComputedStyle!=='function')return;
+  if(GAME.ownLayout||isWide()||$('game').hidden||n.parentNode!==bw||!bw.clientHeight){if(ba.style.height){ba.style.height='';ba.style.flex='';}return;}
+  const gap=parseFloat(getComputedStyle(bw).rowGap)||0,max=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--barMax'))||112;
+  let h=bw.clientHeight-max,k=0;
+  for(const c of bw.children){if(c===ba||c.hidden||getComputedStyle(c).display==='none')continue;k++;if(c!==n)h-=c.offsetHeight;}
+  const px=Math.max(120,Math.floor(h-gap*k))+'px';if(ba.style.height!==px){ba.style.flex='none';ba.style.height=px;}}
 // Board coordinates, shared by all the games (games-coords, default on): html.nocoords when off. The game reads coordsOn
 // when it draws (labels left out, a tighter viewBox) and sets --board-ar for html.nocoords.
 let coordsOn=LS.get('games-coords',true)!==false;

@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=7">
+<link rel="stylesheet" href="common/games.css?v=9">
 <style>
 /* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -123,6 +123,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before playing it</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
@@ -139,7 +140,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=7"></script>
+<script src="common/core.js?v=9"></script>
 <script>
 function VoloEngine(){
   // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
@@ -228,7 +229,7 @@ function VoloEngine(){
 }
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
- title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
+ needConfirm:"Confirmer chaque coup avant de le jouer",title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
  <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
@@ -238,7 +239,7 @@ const VO_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",keepR:"Garder {r}"
 },en:{
- title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
+ needConfirm:"Confirm each move before playing it",title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
  <li><b>Add a bird</b>: on any empty point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
@@ -302,7 +303,7 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
   if(kmv){const t=E.base(st,kmv);
     if(t[i]===3-me){const rg=E.regions(t,1-mySeat);
       if(ui.pending&&rg.lab[ui.pending.keep]===rg.lab[i]){ui.basemv={...ui.pending,keep:-1};ui.pending=null;renderGame();return;}
-      const mv=E.expand(st,kmv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv);}return;}}
+      const mv=E.expand(st,kmv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv,true);}return;}}
   if(prep){
     // a provisional bird: the added bird drops the move, a flown bird goes back to the selected line
     if(provCells(prep).includes(i)){if(prep.t==='p'){cancelPrep();return;}
@@ -334,18 +335,27 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
 // pick: base move chosen; if several variants exist (regions), ask which one stays
 function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
   if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
-// A move always waits for the final confirmation (in the action bar) before it is sent
-function choose(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;ui.pending=mv;renderGame();}
+// A move waits for the final confirmation (in the action bar) before it is sent, unless « Confirm each move » is off
+// (not on a touch screen, and never after a region choice)
+function choose(mv,viaRegion){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;
+  if(!$('needConfirm').checked&&lastPT!=='touch'&&!viaRegion){ui.pending=null;send(mv);return;}
+  ui.pending=mv;renderGame();}
+$('needConfirm').checked=LS.get('volo-confirm',true)!==false;
+$('needConfirm').onchange=e=>{LS.set('volo-confirm',e.target.checked);
+  // switched off with a simple move waiting: it is played
+  if(!e.target.checked&&ui.pending&&!(ui.pending.keep>=0)&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;ui.pending=null;send(mv);}}};
 function doPass(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);}
 // The region choice: one command per region of the opponent's birds (lettered on the board), « Keep A », « Keep B »…;
 // hovering a command shows the result (the birds of the other regions fade)
 function regionBtns(st){if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.basemv),1-mySeat);
   return E.expand(st,ui.basemv).map(mv=>({k:rg.list.indexOf(rg.lab[mv.keep]),mv})).sort((a,b)=>a.k-b.k)
-    .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv);},
+    .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv,true);},
       hover:on=>{if(!ui.basemv)return;ui.hover=on?mv.keep:-1;redrawBoard();}}));}
 // The board alone (the hover changes nothing in the action bar)
 function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);voBoard({r,d:r,mine:isMyTurn(r)});}
-$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);});
+let lastPT='mouse';
+$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
+$('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);lastPT='mouse';});
 // A click anywhere else (off the points, off the board) drops the selected bird or line; the commands keep it
 document.addEventListener('click',e=>{if(!view||!ui.sel.length||ui.pending||ui.basemv)return;
   if(e.target.closest('[data-i],button,a,input,select,label,#notice,dialog'))return;ui.sel=[];ui.hist=[];ui.hover=-1;renderGame();});
@@ -422,7 +432,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
     if(last&&last.removed&&last.removed.includes(i)&&!c){const q=6;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:'var(--danger)','stroke-width':2.4,'stroke-linecap':'round',fill:'none'},g);}
     if(c){const fade=rg&&kk>=0&&c===3-me&&rg.lab[i]!==kk;bird(g,x,y,c-1,fade?.3:0);
       if(i===opt.hb)el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
-      if(ui.sel.includes(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
+      if(ui.sel.length===1&&ui.sel[0]===i)el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
       if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
       if(lm&&lm.t==='p'&&lm.at===i)el('circle',{cx:x,cy:y,r:4.5,fill:LASTDOT,'pointer-events':'none'},g);
       if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
@@ -434,6 +444,8 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // stroke between the two (outline to outline when they are apart, centre to centre when they touch or overlap)
   // a provisional flight: the same, all dashed
   if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
+  // a selected line: one frame around it
+  if(ui.sel.length>1&&opt.interactive){const A=ends(ui.sel);el('path',{d:stadium(A[0],A[1]),fill:'none',stroke:'var(--accent)','stroke-width':3.5,'pointer-events':'none'},svg);}
   if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
 // Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
 const FR=24;
