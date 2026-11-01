@@ -43,8 +43,9 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
    same slot size; only mine can be picked from. */
 .pblock{flex:none;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:flex;flex-direction:column;gap:6px;opacity:.85}
 .pblock.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
-.pblock .prow{display:flex;gap:8px;align-items:flex-start;min-width:0}
-.pblock .pinfo{flex:0 0 104px;min-width:0}
+/* the player's card is the reserve's first item: the pieces fill the rest of its row, then the rows under it */
+.pblock .prow{display:block;min-width:0}
+.pblock .pinfo{flex:none;width:100px;min-width:0;align-self:flex-start;margin-right:4px}
 .pblock .player .tally{flex-direction:column;gap:0}   /* cells and pieces on two lines */
 .pblock .player{border:0;background:none;box-shadow:none;padding:0;opacity:1}
 /* the slot grows with the screen's width (the board gives up the height): same size in both reserves */
@@ -57,8 +58,6 @@ html.ingame:not(.wide) .player .tally{font-size:.62rem}
    opponent's sticks to the top of it, mine to the bottom */
 .pwrap{flex:none;display:flex;flex-direction:column}#oppWrap{justify-content:flex-start}#myWrap{justify-content:flex-end}
 #myBlock .notice{border:0;background:none;padding:2px 0 0;border-radius:0}
-html.ingame.wide .pblock .prow{flex-direction:column;gap:4px}
-html.ingame.wide .pblock .pinfo{flex:none;width:100%}
 html.ingame.wide .pblock{--cell:9px}html.ingame.wide .pblock .tray{width:100%}
 /* wide screens (not landscape phones): a wider side column, so that the pieces are not dwarfed by the board */
 @media (min-width:821px){html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) clamp(320px,36vw,520px)}html.ingame.wide .pblock{--cell:clamp(10px,1.1vw,15px)}}
@@ -133,12 +132,12 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="pwrap" id="oppWrap"><div class="pblock" id="oppBlock" hidden><div class="prow"><div class="pinfo"></div><div class="tray" id="oppTray"></div></div></div></div>
+    <div class="pwrap" id="oppWrap"><div class="pblock" id="oppBlock" hidden><div class="prow"><div class="tray" id="oppTray"><div class="pinfo"></div></div></div></div></div>
     <div class="boardarea"><div class="board"><svg id="svg" viewBox="-22 -22 604 604" role="img" aria-label="Diagonal Blocks board"></svg></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
     <!-- the players' blocks (placeBlocks): the opponent's above the board, mine under it (its card, its pieces left,
          then the action bar); on wide screens both at the top of the side panel, the opponent's first -->
-    <div class="pwrap" id="myWrap"><div class="pblock" id="myBlock" hidden><div class="prow"><div class="pinfo"></div><div class="tray" id="myTray" data-i18n-t="trayHint"></div></div></div></div>
+    <div class="pwrap" id="myWrap"><div class="pblock" id="myBlock" hidden><div class="prow"><div class="tray" id="myTray" data-i18n-t="trayHint"><div class="pinfo"></div></div></div></div></div>
     <div class="notice" id="notice"></div>
   </div>
   <aside class="side" id="side" tabindex="-1">
@@ -391,21 +390,28 @@ const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result)
 // largest first then in the pieces' order
 const sideOf=k=>{const o=E.P[k].wide;return Math.max(3,1+Math.max(...o.map(x=>x[0])),1+Math.max(...o.map(x=>x[1])))+1;};
 const ORDER=E.P.map((_,k)=>k).sort((a,b)=>sideOf(b)-sideOf(a)||a-b);
-// height of a full reserve at the tray's width (measured once per width)
-const fullH={};
-function fullHeight(box){const w=box.clientWidth,key=w+'/'+getComputedStyle(box).getPropertyValue('--cell');if(fullH[key])return fullH[key];
+// The cell size: the largest (up to 16 px) for which a full reserve holds in 3 rows at the tray's width; and the height
+// of that full reserve (both measured once per width, on a hidden copy)
+const fit={};
+function fitTray(box){const w=box.clientWidth,info=box.querySelector('.pinfo'),ih=info?info.offsetHeight:0,key=w+'/'+ih;if(fit[key])return fit[key];
   const t=document.createElement('div');t.className=box.className;t.style.cssText=`position:absolute;visibility:hidden;width:${w}px`;
+  if(info){const e=document.createElement('span');e.className='pinfo';e.style.height=ih+'px';t.appendChild(e);}
   for(const k of ORDER){const e=document.createElement('span');e.className='slot';e.style.setProperty('--n',sideOf(k));t.appendChild(e);}
-  box.parentNode.appendChild(t);const h=t.offsetHeight;t.remove();return fullH[key]=h;}
-function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
+  box.parentNode.appendChild(t);let cell=16;
+  for(;cell>6;cell-=.5){t.style.setProperty('--cell',cell+'px');const rows=new Set([...t.children].filter(e=>e.className==='slot').map(e=>Math.round(e.offsetTop+e.offsetHeight/2))).size;if(rows<=3)break;}   // a row's squares share their centre
+  t.style.setProperty('--cell',cell+'px');const h=t.offsetHeight;t.remove();return fit[key]={cell,h};}
+function fillTray(box,st,c,live){const info=box.querySelector('.pinfo');box.textContent='';if(info)box.appendChild(info);box.classList.toggle('live',!!live);
   for(const k of ORDER){const p=E.P[k];if(st.used[c]>>k&1)continue;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
     const o=sel&&ui.cur?ui.cur:oriOf(c,k),n=sideOf(k);b.className='slot'+(sel?' sel':'');b.style.setProperty('--n',n);
     b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live;b.appendChild(miniSvg(o,c,n,n));
     if(live)b.onclick=()=>selectPiece(k===ui.piece?-1:k);box.appendChild(b);}}
 // Phones: each block's wrapper keeps the height the block has with a full reserve (the board never changes size)
-function holdHeights(w){for(const [wr,b,t] of [['oppWrap','oppBlock','oppTray'],['myWrap','myBlock','myTray']]){const W_=$(wr);if(!W_)continue;
-  if(w||!$(t).clientWidth){W_.style.minHeight='';continue;}
-  W_.style.minHeight=($(b).offsetHeight-$(t).offsetHeight+fullHeight($(t)))+'px';}}
+// Each block gets the cell size of a 3-row full reserve; phones: each block's wrapper keeps the height the block has with a
+// full reserve (the board never changes size)
+function holdHeights(w){for(const [wr,b,t] of [['oppWrap','oppBlock','oppTray'],['myWrap','myBlock','myTray']]){const W_=$(wr),T=$(t);if(!W_)continue;
+  if(!T.clientWidth){W_.style.minHeight='';continue;}
+  const f=fitTray(T);if($(b).style.getPropertyValue('--cell')!==f.cell+'px')$(b).style.setProperty('--cell',f.cell+'px');
+  W_.style.minHeight=w?'':($(b).offsetHeight-T.offsetHeight+f.h)+'px';}}
 // The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine ».
 // Both sides on one screen (free play, face to face): the blocks stay put, Player 2 above and Player 1 below, and the
 // pieces are picked in the block of the side to move.
