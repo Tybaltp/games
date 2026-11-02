@@ -418,7 +418,7 @@ $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)
 
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg',S=60;
-// Silver sees the board turned half a turn, its own pieces at the bottom (core: flip, over the network only)
+// Silver sees the board turned half a turn, its own pieces at the bottom (core: flip, over the network and against the computer)
 const X=i=>(flip?7-(i&7):i&7)*S,Y=i=>(flip?i>>3:7-(i>>3))*S;
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function piece(g,i,v,op){const cx=X(i)+S/2,cy=Y(i)+S/2,gold=v>0,gr=el('g',{'pointer-events':'none'},g);if(op!==undefined)gr.setAttribute('opacity',op);
