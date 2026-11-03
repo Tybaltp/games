@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="common/games.css?v=10">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
+.qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
+.qhand svg{width:34px;height:34px;flex:none}
 :root{
   --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6c675c;--line:#dcd7cb;
   --wood:#c9a273;--wood-s:#a47a4e;--wood-f:#8e6640;--grid:#8e6640;--lbl:#6f532f;--res:#e6d8bf;
@@ -45,29 +47,36 @@
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
-        <!-- for now: games on this device only (no link game, no computer) -->
+        <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Five levels, to practise.</span></button>
         <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxtQ">Both sides on this screen, no clock, with undo.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
       </div>
-      <!-- link game: kept for the shared code, not offered yet -->
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <label class="toggle" for="cSq"><input type="checkbox" id="cSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label class="toggle" for="aSq"><input type="checkbox" id="aSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
       <form class="form" id="faceForm" hidden>
-        <label for="fView"><span data-i18n="viewOpt">View</span><select id="fView" class="qview"></select></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <label class="toggle" for="fSq"><input type="checkbox" id="fSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <label for="tView"><span data-i18n="viewOpt">View</span><select id="tView" class="qview"></select></label>
+        <label class="toggle" for="tSq"><input type="checkbox" id="tSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
       </form>
     </div>
     <p class="hint err" id="joinErr"></p>
-    <p class="joinLine noinv" hidden><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <p class="joinLine noinv"><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
     <div class="card primary-card" id="joinCard" hidden>
       <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
       <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
@@ -81,10 +90,10 @@
       <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
     </div>
     <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
-    <details hidden><summary data-i18n="more">Other options</summary>
+    <details><summary data-i18n="more">Other options</summary>
       <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="QUARTO1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
         <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
-        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game.</p></div>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
     </details>
   </div>
 </section>
@@ -119,6 +128,10 @@
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
       <label class="lvl" for="gView"><span data-i18n="viewOpt">View</span><select id="gView" class="qview"></select></label>
       <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
@@ -141,6 +154,7 @@
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: crossed), 4 square, 8 hollow.
+// Advanced variant (sq): the nine 2×2 squares win too.
 // Cell i = row*4+col, row 0 at the top (rank 4), column 0 on the left (file a).
 // A move: place the piece received on an empty cell, then choose the piece the opponent will place. The first move of the
 // game only chooses; a placement that wins, or the last one, chooses nothing. Code: two characters, the cell then the
@@ -148,43 +162,47 @@
 function QuartoEngine(){
   const LINES=[];for(let k=0;k<4;k++){LINES.push([0,1,2,3].map(c=>k*4+c));LINES.push([0,1,2,3].map(r=>r*4+k));}
   LINES.push([0,5,10,15]);LINES.push([3,6,9,12]);
+  const SQUARES=[];for(let r=0;r<3;r++)for(let c=0;c<3;c++){const i=r*4+c;SQUARES.push([i,i+1,i+4,i+5]);}
   const init=()=>({b:Array(16).fill(-1),hand:-1,turn:0,n:0});
   const placed=st=>st.b.filter(x=>x>=0).length;
   const used=st=>{const u=new Set(st.b.filter(x=>x>=0));if(st.hand>=0)u.add(st.hand);return u;};
   const free=st=>[...Array(16).keys()].filter(p=>!used(st).has(p));   // pieces that can still be given
-  // the line(s) completed through cell i, if their four pieces share a trait
-  function wins(b,i){const out=[];for(const L of LINES){if(!L.includes(i))continue;const v=L.map(j=>b[j]);if(v.some(x=>x<0))continue;
-      const all=v.reduce((a,x)=>a&x,15),none=v.reduce((a,x)=>a&(15^x),15);if(all||none)out.push(L);}return out;}
+  // the lines (and squares, in the variant) completed through cell i whose four pieces share a trait:
+  // [{cells, all (traits all have), none (traits none has), sq (a square)}]
+  function wins(b,i,sq){const out=[];for(const L of sq?LINES.concat(SQUARES):LINES){if(!L.includes(i))continue;const v=L.map(j=>b[j]);if(v.some(x=>x<0))continue;
+      const all=v.reduce((a,x)=>a&x,15),none=v.reduce((a,x)=>a&(15^x),15);if(all||none)out.push({cells:L,all,none,sq:SQUARES.includes(L)});}return out;}
   const dec=code=>{if(typeof code!=='string'||code.length!==2)return null;const f=ch=>ch==='-'?-1:parseInt(ch,16);
     const a=f(code[0]),g=f(code[1]);if(Number.isNaN(a)||Number.isNaN(g))return null;return {a,g};};
   const enc=mv=>(mv.a>=0?mv.a.toString(16):'-')+(mv.g>=0?mv.g.toString(16):'-');
   // what a move needs in st: {place (a cell is required), give (a piece is required)}, given the cell chosen (or -1)
-  function needs(st,a){const place=st.hand>=0;if(!place)return {place:false,give:true};
+  function needs(st,a,sq){const place=st.hand>=0;if(!place)return {place:false,give:true};
     if(a<0)return {place:true,give:null};
-    const b=st.b.slice();b[a]=st.hand;const won=wins(b,a).length>0,left=free(st).length;
+    const b=st.b.slice();b[a]=st.hand;const won=wins(b,a,sq).length>0,left=free(st).length;
     return {place:true,give:!won&&left>0,won};}
   // the position after mv, or null if mv is illegal; over: {w,why,line} when the game ends
-  function play(st,mv){if(!mv)return null;const nd=needs(st,mv.a);
+  function play(st,mv,sq){if(!mv)return null;const nd=needs(st,mv.a,sq);
     if(nd.place){if(mv.a<0||mv.a>15||st.b[mv.a]>=0)return null;}else if(mv.a>=0)return null;
     const b=st.b.slice();if(nd.place)b[mv.a]=st.hand;
-    const lines=nd.place?wins(b,mv.a):[];
+    const lines=nd.place?wins(b,mv.a,sq):[];
     const give=nd.place?!lines.length&&free(st).length>0:true;
     if(give){if(mv.g<0||mv.g>15||!free(st).includes(mv.g))return null;}else if(mv.g>=0)return null;
     const s={b,hand:give?mv.g:-1,turn:1-st.turn,n:st.n+1};
-    let over=null;if(lines.length)over={w:st.turn,why:'w_quarto',line:[...new Set(lines.flat())]};
+    let over=null;if(lines.length){const w=lines[0];over={w:st.turn,why:whyKey(w.sq,w.all,w.none),line:[...new Set(lines.flatMap(x=>x.cells))]};}
     else if(b.every(x=>x>=0))over={w:-1,why:'w_full'};
     return {st:s,over};}
-  return {LINES,init,placed,free,wins,dec,enc,needs,play};
+  return {LINES,SQUARES,init,placed,free,wins,dec,enc,needs,play};
 }
+// The reason of a win: one key per shape (line or square) and shared traits (all have / none has), its texts made below
+function whyKey(sq,all,none){return 'wq'+(sq?'s':'l')+all+'_'+none;}
 const E=QuartoEngine();
 const enc=E.enc;
-// View: '2d' (top view, cross for tall) or 'iso' (3D isometric), kept for all Quarto games on this device
-let qView=LS.get('quarto-view','2d')==='iso'?'iso':'2d';
+// View: '2d' (top view, cross for tall) or 'iso' (3D isometric, the default), kept for all Quarto games on this device
+let qView=LS.get('quarto-view','iso')==='2d'?'2d':'iso';
 const cellName=i=>'abcd'[i%4]+(4-((i/4)|0));
 function pieceName(p){const L=t('traits');return [L[p&1?1:0],L[p&4?3:2],L[p&8?5:4],qView==='iso'?L[p&2?9:8]:L[p&2?7:6]].join(' ');}
 function txtOf(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv.g>=0)parts.push(t('gives',{p:pieceName(mv.g)}));return parts.join(', ');}
-function qReplay(rules,moves){let st=E.init(),last=null,over=null;const log=[];
-  for(const code of moves){if(over)break;const mv=E.dec(code),res=mv&&E.play(st,mv);
+function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=null,over=null;const log=[];
+  for(const code of moves){if(over)break;const mv=E.dec(code),res=mv&&E.play(st,mv,sq);
     if(!res){over={w:-1,why:'w_bad'};break;}
     log.push({p:st.turn,mv,txt:txtOf(mv)});last={p:st.turn,mv,prev:st};st=res.st;over=res.over;}
   return {st,log,last,over};}
@@ -192,31 +210,43 @@ function qReplay(rules,moves){let st=E.init(),last=null,over=null;const log=[];
 // ---------- strings ----------
 const Q_I18N={fr:{
  title:"Quarto",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
- m_freeTxtQ:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
+ m_aiTxt:"Cinq niveaux, pour s'entraîner.",
+ lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_fort:"Fort",lv_expert:"Expert",
+ sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
  traits:["claire","foncée","ronde","carrée","pleine","creuse","sans croix","à croix","basse","haute"],
- gives:"donne la {p}",sep:" : ",
+ gives:"donne la {p}",sep:" : ",toPlace:"à poser",
  st_give1:"choisissez la pièce que l'adversaire va poser.",st_place:"posez la pièce encadrée, puis choisissez celle que l'adversaire posera.",
  st_giveNow:"choisissez la pièce que l'adversaire posera.",st_placeNow:"posez la pièce encadrée.",
- w_quarto:"quatre pièces alignées avec un caractère commun",w_full:"plateau plein sans alignement",
+ w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractères : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est remplacée par une croix : à croix (haute) ou sans croix (basse).</li>
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est remplacée par une croix : à croix (haute) ou sans croix (basse).</li>
  <li><b>Tour</b> : on pose sur une case libre la pièce que l'adversaire a choisie (encadrée dans la réserve), puis on choisit dans la réserve la pièce que l'adversaire posera. Au premier coup, le premier joueur choisit seulement.</li>
- <li><b>Victoire</b> : gagne celui qui pose la pièce qui complète une ligne de quatre (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins un caractère. Ici, la ligne est reconnue d'elle-même.</li>
- <li><b>Nulle</b> : les 16 pièces sont posées sans ligne gagnante.</li></ul>`
+ <li><b>Victoire</b> : gagne celui qui pose la pièce qui complète une ligne de quatre (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins une caractéristique. La ligne est reconnue d'elle-même.</li>
+ <li><b>Variante avancée</b> (<span class="sqState"></span>) : quatre pièces en carré 2 × 2 qui partagent une caractéristique gagnent aussi.</li>
+ <li><b>Nulle</b> : les 16 pièces sont posées sans alignement gagnant.</li></ul>`
 },en:{
  title:"Quarto",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
- m_freeTxtQ:"Both sides on this screen, no clock, with undo: to try things and analyse.",
+ m_aiTxt:"Five levels, to practise.",
+ lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_fort:"Strong",lv_expert:"Expert",
+ sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
  traits:["light","dark","round","square","solid","hollow","plain","crossed","short","tall"],
- gives:"gives the {p}",sep:": ",
+ gives:"gives the {p}",sep:": ",toPlace:"to place",
  st_give1:"choose the piece your opponent will place.",st_place:"place the framed piece, then choose the one your opponent will place.",
  st_giveNow:"choose the piece your opponent will place.",st_placeNow:"place the framed piece.",
- w_quarto:"four pieces in a line sharing a trait",w_full:"board full with no line",
+ w_full:"board full with no line",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, tall or short. In the 2D view, height is replaced by a cross: crossed (tall) or plain (short).</li>
  <li><b>Turn</b>: place on an empty cell the piece your opponent chose (framed in the reserve), then choose from the reserve the piece your opponent will place. On the first move, the first player only chooses.</li>
- <li><b>Winning</b>: the player who places the piece completing a line of four (row, column or diagonal) whose four pieces share at least one trait wins. Here, the line is recognised by itself.</li>
+ <li><b>Winning</b>: the player who places the piece completing a line of four (row, column or diagonal) whose four pieces share at least one trait wins. The line is recognised by itself.</li>
+ <li><b>Advanced variant</b> (<span class="sqState"></span>): four pieces in a 2 × 2 square sharing a trait win too.</li>
  <li><b>Draw</b>: all 16 pieces are placed with no winning line.</li></ul>`
 }};
+// The texts of a win: « four pieces in a line, all dark and hollow » (whyKey: the shape, the traits all have, none has)
+{const ADJ={fr:{all:["foncées","hautes","carrées","creuses"],none:["claires","basses","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
+  en:{all:["dark","tall","square","hollow"],none:["light","short","round","solid"],line:"four pieces in a line, all ",sq:"four pieces in a square, all ",and:" and "}};
+  for(const lg of ['fr','en'])for(const sq of [0,1])for(let all=0;all<16;all++)for(let none=0;none<16;none++){if(all&none||!(all|none))continue;
+    const A=ADJ[lg],w=[];for(let k=0;k<4;k++){if(all>>k&1)w.push(A.all[k]);if(none>>k&1)w.push(A.none[k]);}
+    Q_I18N[lg][whyKey(sq,all,none)]=(sq?A.sq:A.line)+(w.length>1?w.slice(0,-1).join(', ')+A.and+w[w.length-1]:w[0]);}}
 
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg';
@@ -282,7 +312,7 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?
   el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
   for(let p=0;p<16;p++){const x=(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x,y,width:rs,height:rh,fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
-    const c=sc.res[p];if(c)piece2D(g,c.p,x+rs/2,y+rh/2,rs*.36,c.op);
+    const c=sc.res[p];if(c){piece2D(g,c.p,x+rs/2,y+rh/2,rs*.36,c.op);el('title',{},g).textContent=pieceName(p);}
     const fk=sc.resFr[p];if(fk)el('rect',{x:x+2,y:y+2,width:rs-4,height:rh-4,rx:6,...fr(fk)},svg);}}
 // 3D isometric: same layout, the board in projection; the reserve as a row of pieces, also in projection
 function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
@@ -309,7 +339,7 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   const rS=S*.82;el('rect',{x:f1(left),y:f1(Y0-4),width:f1(Bw),height:f1(2*rh+8),rx:8,fill:'var(--res)'},svg);
   for(let p=0;p<16;p++){const x=left+(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x:f1(x),y:f1(y),width:f1(rs),height:f1(rh),fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
-    const c=sc.res[p];if(c)pieceIso(g,c.p,x+rs/2,y+rh-PR*rS*SQ*1.25-3,rS,c.op);
+    const c=sc.res[p];if(c){pieceIso(g,c.p,x+rs/2,y+rh-PR*rS*SQ*1.25-3,rS,c.op);el('title',{},g).textContent=pieceName(p);}
     const fk=sc.resFr[p];if(fk)el('rect',{x:f1(x+2),y:f1(y+2),width:f1(rs-4),height:f1(rh-4),rx:6,...fr(fk)},svg);}}
 
 // ---------- move preparation ----------
@@ -321,12 +351,13 @@ function cancelPrep(){resetUi();renderGame();}
 const posNow=()=>{const r=replay(view,view.moves,view.result);return r;};
 // The move is complete once every step it needs is chosen: sent at once if it wins, after confirmation if the option
 // asks for it, otherwise at once
-function maybeComplete(st){const nd=E.needs(st,ui.a);
+function maybeComplete(st){const nd=E.needs(st,ui.a,!!view.sq);
   if(nd.place&&ui.a<0)return;
   const mv={a:nd.place?ui.a:-1,g:nd.give?ui.g:-1};if(nd.give&&ui.g<0)return;
   if(nd.won||!$('needConfirm').checked){resetUi();send(mv);return;}
   ui.pending=mv;ui.hover=null;}
 function clickKey(k){if(!view)return;const r=posNow();if(!isMyTurn(r)||navAt!==null)return;const st=r.st,x=+k.slice(1),free=E.free(st);
+  if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;}   // a click drops the suggestion
   if(k[0]==='c'){if(st.hand<0||st.b[x]>=0)return;
     if(ui.a===x){ui.a=-1;ui.pending=null;}else{if(ui.pending)return;ui.a=x;}}
   else{if(!free.includes(x))return;
@@ -334,7 +365,7 @@ function clickKey(k){if(!view)return;const r=posNow();if(!isMyTurn(r)||navAt!==n
   ui.hover=null;if(!ui.pending)maybeComplete(st);renderGame();}
 const keyOf=e=>{const g=e.target.closest('[data-k]');return g?g.dataset.k:null;};
 $('svg').addEventListener('click',e=>{const k=keyOf(e);if(k)clickKey(k);});
-function hoverKey(k){if(!view||ui.pending)return;if(k===ui.hover)return;const r=posNow();if(!isMyTurn(r)){ui.hover=null;return;}ui.hover=k;renderGame();}
+function hoverKey(k){if(!view||ui.pending||hintOn())return;if(k===ui.hover)return;const r=posNow();if(!isMyTurn(r)){ui.hover=null;return;}ui.hover=k;renderGame();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;hoverKey(keyOf(e));});
   $('svg').addEventListener('pointerleave',()=>hoverKey(null));}
@@ -352,17 +383,19 @@ function qBoard({r,d,mine}){
   if(mine&&!nav){const free=E.free(st);
     if(hand>=0)for(let i=0;i<16;i++)if(st.b[i]<0)sc.click.add('c'+i);
     for(const p of free)sc.click.add('r'+p);
-    if(ui.a>=0){sc.cells[ui.a]={p:hand};sc.cellFr[ui.a]='prov';sc.res[hand]=null;delete sc.resFr[hand];}
-    if(ui.g>=0)sc.resFr[ui.g]='prov';
-    const hv=ui.hover;
+    // the move being prepared, or the computer's suggestion (shown the same way)
+    const pa=hintOn()?hintMv.a:ui.a,pg=hintOn()?hintMv.g:ui.g;
+    if(pa>=0){sc.cells[pa]={p:hand};sc.cellFr[pa]='prov';sc.res[hand]=null;delete sc.resFr[hand];}
+    if(pg>=0)sc.resFr[pg]='prov';
+    const hv=hintOn()?null:ui.hover;
     if(hv&&!ui.pending){const x=+hv.slice(1);
       if(hv[0]==='c'&&hand>=0&&st.b[x]<0&&ui.a!==x){if(ui.a<0){sc.cells[x]={p:hand,op:.45};}}
       if(hv[0]==='r'&&free.includes(x)&&ui.g!==x&&ui.g<0)sc.resHov=x;}}
   // last move: its cell framed while no move is prepared
   const last=nav?d.last:r.last;
-  if(last&&last.mv.a>=0&&!(mine&&preparing()))sc.cellFr[last.mv.a]='last';
+  if(last&&last.mv.a>=0&&!(mine&&(preparing()||hintOn())))sc.cellFr[last.mv.a]='last';
   const ov=nav?d.over:r.over;if(ov&&ov.line)for(const i of ov.line)sc.cellFr[i]='win';
-  drawBoard(sc);
+  drawBoard(sc);sqLine();
   return {st};}
 // keep ui only while it is my turn (another player's turn, or a position shown from the list: nothing prepared)
 function resetUiSoft(){if(preparing()||ui.hover){ui=newUi();}}
@@ -370,21 +403,102 @@ function qTurnStatus({r,o,idle,RST}){const st=o.st,who=solo()?seatName(st.turn)+
   let k;if(st.hand<0)k='st_give1';else if(ui.a<0&&ui.g<0)k='st_place';else if(ui.a>=0)k='st_giveNow';else k='st_placeNow';
   status(who+cap(t(k)),'turn',preparing()?[RST]:idle);}
 
-// ---------- view choice (2D / 3D), in the home forms and the panel ----------
+// The player to move: the piece received, small, in their card (« to place »)
+function qCard(el,p,d){const st=d.st;if(d.over||st.turn!==p||st.hand<0)return;
+  const w=document.createElement('div');w.className='qhand';
+  const svg=document.createElementNS(NS,'svg');svg.setAttribute('aria-hidden','true');
+  if(qView==='iso'){svg.setAttribute('viewBox','-14 -29 28 39');pieceIso(svg,st.hand,0,0,34);}else{svg.setAttribute('viewBox','-17 -17 34 34');piece2D(svg,st.hand,0,0,15);}
+  const tx=document.createElement('span');tx.textContent=t('toPlace');w.append(svg,tx);w.title=pieceName(st.hand);el.appendChild(w);}
+// the variant's state in the rules (« on in this game »)
+function sqLine(){document.querySelectorAll('.sqState').forEach(e=>e.textContent=t(view&&view.sq?'sqOn':'sqOff'));}
+
+// ---------- view choice (2D / 3D), in the panel ----------
 function viewSelects(){document.querySelectorAll('select.qview').forEach(s=>{s.innerHTML=['2d','iso'].map(v=>`<option value="${v}">${t('v_'+v)}</option>`).join('');s.value=qView;});}
 document.querySelectorAll('select.qview').forEach(s=>s.addEventListener('change',e=>{qView=e.target.value==='iso'?'iso':'2d';LS.set('quarto-view',qView);
   document.querySelectorAll('select.qview').forEach(x=>x.value=qView);if(view)renderGame();else GAME.home();}));
 $('needConfirm').checked=LS.get('quarto-confirm',true);
 $('needConfirm').onchange=e=>{LS.set('quarto-confirm',e.target.checked);if(view)renderGame();};
 
+// ---------- computer opponent ----------
+// Alpha-beta (negamax) over whole moves: place the piece received, then give one. A gift the opponent could win with at
+// once is never searched below the root (it loses); a position whose depth runs out is worth 0, so the search only knows
+// wins, losses and « nothing found ». opt: depth (moves looked ahead; iterative deepening), time (ms cap of the
+// deepening), noise (probability of a random legal move instead), sq (the 2×2 squares win too). Runs in the worker
+// (GAME.aiSrc): no page globals.
+function QuartoAI(){'use strict';
+  const L0=[];for(let k=0;k<4;k++){L0.push([0,1,2,3].map(c=>k*4+c));L0.push([0,1,2,3].map(r=>r*4+k));}
+  L0.push([0,5,10,15]);L0.push([3,6,9,12]);
+  const L1=L0.slice();for(let r=0;r<3;r++)for(let c=0;c<3;c++){const i=r*4+c;L1.push([i,i+1,i+4,i+5]);}
+  const lof=LS=>{const o=Array.from({length:16},()=>[]);LS.forEach(L=>L.forEach(c=>o[c].push(L)));return o;},LOF0=lof(L0),LOF1=lof(L1);
+  let LINES=L0,LOF=LOF0;   // the winning groups of the game searched
+  const WIN=1000,STOP={};let nodes=0,dl=Infinity;
+  // a line through a (just filled) whose four pieces share a trait
+  function winsAt(b,a){for(const L of LOF[a]){let and=15,nor=15,full=true;for(const j of L){const p=b[j];if(p<0){full=false;break;}and&=p;nor&=~p;}
+      if(full&&((and|nor)&15))return true;}return false;}
+  // the pieces that would win on some empty cell (bit g set: giving g loses)
+  function deadly(b){let m=0;for(const L of LINES){let e=0,and=15,nor=15;for(const j of L){const p=b[j];if(p<0)e++;else{and&=p;nor&=~p;}}
+      and&=15;nor&=15;if(e!==1||!(and|nor))continue;for(let g=0;g<16;g++)if((g&and)||(~g&nor))m|=1<<g;}return m;}
+  // value for the side to move, who holds h; F: the pieces still free (not on the board, not h)
+  function neg(b,h,F,d,al,be,ply){if((++nodes&4095)===0&&Date.now()>dl)throw STOP;
+    for(let a=0;a<16;a++)if(b[a]<0){b[a]=h;const w=winsAt(b,a);b[a]=-1;if(w)return WIN-ply;}
+    let best=-Infinity;
+    for(let a=0;a<16&&al<be;a++){if(b[a]>=0)continue;b[a]=h;let v;
+      if(!F)v=0;   // the last piece: a draw
+      else{const S=F&~deadly(b);
+        if(!S)v=-(WIN-ply-1);
+        else if(d<=1)v=0;
+        else{v=-Infinity;for(let g=0;g<16&&v<be;g++)if(S>>g&1){const x=-neg(b,g,F&~(1<<g),d-1,-be,-Math.max(al,v),ply+1);if(x>v)v=x;}}}
+      b[a]=-1;if(v>best)best=v;if(best>al)al=best;}
+    return best;}
+  // every legal move of the position, {a,g} (-1: none), as the engine expects them
+  function legal(b,h){const used=new Set(b.filter(p=>p>=0));if(h>=0)used.add(h);const F=[];for(let g=0;g<16;g++)if(!used.has(g))F.push(g);
+    if(h<0)return F.map(g=>({a:-1,g}));const out=[];
+    for(let a=0;a<16;a++){if(b[a]>=0)continue;b[a]=h;const w=winsAt(b,a);b[a]=-1;
+      if(w||!F.length)out.push({a,g:-1});else for(const g of F)out.push({a,g});}
+    return out;}
+  // the value of a root move for its player, searched d moves deep (window al..be)
+  function rootVal(b,h,m,d,al,be){if(m.a>=0)b[m.a]=h;let v;
+    if(m.a>=0&&winsAt(b,m.a))v=WIN;else if(m.g<0)v=0;
+    else{let F=0;for(let g=0;g<16;g++)F|=1<<g;for(const p of b)if(p>=0)F&=~(1<<p);F&=~(1<<m.g);
+      v=deadly(b)>>m.g&1?-(WIN-1):d<=1?0:-neg(b,m.g,F,d-1,-be,-al,1);}
+    if(m.a>=0)b[m.a]=-1;return v;}
+  function search(pos,opt){LINES=opt.sq?L1:L0;LOF=opt.sq?LOF1:LOF0;const b=pos.b.slice(),h=pos.hand,L=legal(b,h);if(!L.length)return null;
+    if(L.length===1)return {move:L[0],score:0,depth:0,forced:true};
+    if(Math.random()<(opt.noise||0))return {move:L[(Math.random()*L.length)|0],score:0,depth:0};
+    for(let i=L.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[L[i],L[j]]=[L[j],L[i]];}   // equal moves: one at random
+    let res=null;nodes=0;const t0=Date.now();
+    for(let d=1;d<=(opt.depth||1);d++){dl=d===1?Infinity:t0+(opt.time||3000);
+      try{let al=-Infinity,bm=null;for(const m of L){const v=rootVal(b,h,m,d,al,Infinity);if(v>al){al=v;bm=m;}}
+        res={move:bm,score:al,depth:d};
+        L.splice(L.indexOf(bm),1);L.unshift(bm);   // the best first at the next depth
+        if(Math.abs(al)>=WIN-50)break;}   // decided
+      catch(e){if(e!==STOP)throw e;break;}}
+    res.nodes=nodes;return res;}
+  return {search,legal,deadly,winsAt,WIN};}
+// The levels: depth in whole moves (place, then give), noise = probability of a random legal move
+const LEVELS={
+  debutant:{depth:1,noise:.5},
+  facile:{depth:1,noise:.15},
+  moyen:{depth:2,noise:.03,time:2000},
+  fort:{depth:3,time:3000},
+  expert:{depth:8,time:5000}};
+let pageAI=null;
+function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null;
+  return r.score>=950?{k:'ai_win'}:r.score<=-950?{k:'ai_lost'}:{k:'ai_eq',d:r.depth};}
+
 // ---------- the interface with common/core.js ----------
 const GAME={id:'quarto',size:16,codeTag:'QUARTO1',i18n:Q_I18N,
-  rules:()=>({}),form:()=>({}),
+  rules:g=>({sq:!!(g&&g.sq)}),form:p=>({sq:$(p+'Sq').checked}),
   replay:qReplay,
-  legal:(st,code)=>{const mv=E.dec(code);return mv&&E.play(st,mv)?enc(mv):null;},
+  legal:(st,code,g)=>{const mv=E.dec(code);return mv&&E.play(st,mv,!!(g&&g.sq))?enc(mv):null;},
   enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
   board:qBoard,turnStatus:qTurnStatus,
-  applyStatic:viewSelects,
+  applyStatic:()=>{viewSelects();sqLine();},
+  levels:LEVELS,levelDefault:'moyen',hintLevel:LEVELS.expert,
+  aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return QA.search(pos,opt);}',
+  aiPos:st=>({b:st.b.slice(),hand:st.hand}),aiOpt:v=>({sq:!!v.sq}),
+  playerCard:qCard,aiSearch:(st,opt)=>(pageAI=pageAI||QuartoAI()).search({b:st.b.slice(),hand:st.hand},opt),
+  evalInfo:qEvalInfo,
   home:()=>drawBoard(scene(E.init()))};
 coreStart();
 </script>
