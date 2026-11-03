@@ -300,10 +300,15 @@ const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,
 function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
   for(let d=0;d<6;d++){const path=[];let x=a;for(let k=0;k<14;k++){x=E.NB[x*6+d];if(x<0)break;if(x===b)return {d,path};path.push(x);}}return null;}
 const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
-// The landing point clicked for a flight: where the leading bird lands (in file, the front bird; side by side, the first
-// bird of the line). Always a free point, and a different one for each flight of the same line.
+// The landing point clicked for a flight: where one marked bird of the line lands, a different point for each flight.
+// One bird for all the flights of the line when one lands off the line in every one of them (the first such bird,
+// ends first); otherwise (a line sliding along its axis only onto itself, in both directions) the front bird of each
+// flight: in file, the end on the side it flies to; side by side, the first bird.
 const leadOf=m=>m.cells.length>1&&m.d===lineThrough(m.cells[0],m.cells[1]).d?m.cells[m.cells.length-1]:m.cells[0];
-function landAt(m){return E.dest(m,leadOf(m));}
+function soleLead(cells,legal){const fl=legal.filter(m=>sameSeg(m,cells));if(!fl.length)return -1;
+  for(const b of [cells[0],cells[cells.length-1]].concat(cells.slice(1,-1)))if(fl.every(m=>!cells.includes(E.dest(m,b))))return b;
+  return -1;}
+function landAt(m,legal){const b=soleLead(m.cells,legal);return E.dest(m,b>=0?b:leadOf(m));}
 // The provisional birds of a prepared move: the bird added, or where the flying birds land
 const provCells=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>E.dest(m,c)):[];
 let curLegal=[];   // legal moves of the position drawn (for the hover)
@@ -325,7 +330,7 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
       ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];ui.pending=null;ui.basemv=null;renderGame();return;}
     // otherwise only a click that starts another step replaces the prepared move: another landing point of the same
     // line, another addition, one of my birds (the points the flying birds left are ignored)
-    const isLand=prep.t==='f'&&legal.some(m=>sameSeg(m,prep.cells)&&landAt(m)===i);
+    const isLand=prep.t==='f'&&legal.some(m=>sameSeg(m,prep.cells)&&landAt(m,legal)===i);
     const isOwn=st[i]===me&&!(prep.t==='f'&&prep.cells.includes(i));
     const isPl=prep.t!=='f'&&legal.some(m=>m.t==='p'&&m.at===i);
     if(!(isLand||isOwn||isPl))return;
@@ -333,7 +338,7 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
     if(prep.t==='f'){ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];}else{ui.sel=[];ui.hist=[];}}
   if(ui.sel.length){
     const sel=ui.sel;
-    const land=legal.find(m=>sameSeg(m,sel)&&landAt(m)===i);
+    const land=legal.find(m=>sameSeg(m,sel)&&landAt(m,legal)===i);
     if(land){pick(land);return;}
     if(st[i]===me){
       // a selected bird: back to the selection before it was added (the first bird: nothing selected)
@@ -381,7 +386,7 @@ function hoverCell(i){if(!view||ui.pending||hintOn())return;const r=replay(view,
   const st=r.st;let nv=-1;
   if(i>=0){if(ui.basemv){if(E.base(st,ui.basemv)[i]===2-mySeat)nv=i;}
     else if(st[i]===mySeat+1){if(!ui.sel.includes(i))nv=i;}
-    else if(ui.sel.length){if(curLegal.some(m=>sameSeg(m,ui.sel)&&landAt(m)===i))nv=i;}
+    else if(ui.sel.length){if(curLegal.some(m=>sameSeg(m,ui.sel)&&landAt(m,curLegal)===i))nv=i;}
     else if(curLegal.some(m=>m.t==='p'&&m.at===i))nv=i;}
   if(nv===hov())return;ui.hover=nv;redrawBoard();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
@@ -397,7 +402,7 @@ function voBoard({r,d,mine}){
     if(hintOn())pv={prov:hintMv};   // the computer's suggestion, shown like a move awaiting confirmation
     else if(ui.basemv)pv={prov:ui.basemv,region:true,hover:h};
     else if(ui.pending){if(ui.pending.t!=='x')pv={prov:ui.pending};}   // a pass has nothing to show on the board
-    else if(h>=0){const m=ui.sel.length?legal.find(m=>sameSeg(m,ui.sel)&&landAt(m)===h):legal.find(m=>m.t==='p'&&m.at===h);if(m)pv={hover:m};}}
+    else if(h>=0){const m=ui.sel.length?legal.find(m=>sameSeg(m,ui.sel)&&landAt(m,legal)===h):legal.find(m=>m.t==='p'&&m.at===h);if(m)pv={hover:m};}}
   // the last move is marked until a move is being prepared
   const hb=mine&&!ui.pending&&!ui.basemv&&h>=0&&r.st[h]===mySeat+1?h:-1;   // my bird under the mouse
   drawBoard(r.st,{legal,interactive:mine&&!ui.pending&&!ui.basemv&&!hintOn(),pv,hb,last:mine&&(preparing()||hintOn())?null:r.last});
@@ -447,7 +452,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   if(prov&&(pv.region||prov.keep>=0)){rg=E.regions(st,1-mySeat);kk=pv.region?(pv.hover>=0&&st[pv.hover]===3-me?rg.lab[pv.hover]:-1):rg.lab[prov.keep];}
   // no marker on the points where a bird can be added: hovering one shows the bird (legal points only)
   const lands=new Set();   // no marker on the birds able to fly: hovering any of my birds rings it
-  if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'&&ui.sel.length&&sameSeg(m,ui.sel))lands.add(landAt(m));}
+  if(opt.interactive)for(const m of opt.legal||[]){if(m.t==='f'&&ui.sel.length&&sameSeg(m,ui.sel))lands.add(landAt(m,opt.legal));}
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'cell','data-i':i},svg);
     const c=st[i];
     el('circle',{cx:x,cy:y,r:c?19:3.2,fill:c?'transparent':'var(--dot)',stroke:'none'},g);
@@ -470,10 +475,11 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // a provisional flight: the same, all dashed
   if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
   // a selected line: one frame around it
-  // and a dot on each bird whose landing points are shown: the first bird of the line, and the last one for the flights
-  // in file towards its side (the front bird lands there); for the hovered flight, its own leading bird only
+  // and a dot on the bird whose landing points are shown, or on both ends when each flight shows its front bird's (for
+  // the hovered flight, its own front bird only)
   if(ui.sel.length>1&&opt.interactive){const A=ends(ui.sel);el('path',{d:stadium(A[0],A[1]),fill:'none',stroke:'var(--accent)','stroke-width':3.5,'pointer-events':'none'},svg);
-    const lds=new Set(pv&&pv.hover&&pv.hover.t==='f'?[leadOf(pv.hover)]:(opt.legal||[]).filter(m=>sameSeg(m,ui.sel)).map(leadOf));
+    const L=opt.legal||[],sb=soleLead(ui.sel,L);
+    const lds=new Set(sb>=0?[sb]:pv&&pv.hover&&pv.hover.t==='f'?[leadOf(pv.hover)]:L.filter(m=>sameSeg(m,ui.sel)).map(leadOf));
     for(const ld of lds)el('circle',{cx:X(ld),cy:Y(ld),r:6,fill:'var(--accent)',stroke:LASTDOT,'stroke-width':1.5,'pointer-events':'none'},svg);}
   if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
 // Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
