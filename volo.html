@@ -52,7 +52,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
-        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Six levels, to practise.</span></button>
         <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
         <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
       </div>
@@ -240,6 +240,7 @@ function VoloEngine(){
 }
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
+ lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six niveaux, pour s'entraîner.",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup avant de le jouer",title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
@@ -250,6 +251,7 @@ const VO_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",keepR:"Garder {r}"
 },en:{
+ lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six levels, to practise.",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move before playing it",title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
@@ -401,12 +403,21 @@ function voBoard({r,d,mine}){
   drawBoard(r.st,{legal,interactive:mine&&!ui.pending&&!ui.basemv&&!hintOn(),pv,hb,last:mine&&(preparing()||hintOn())?null:r.last});
   const canPass=legal.some(m=>m.t==='x');
   return {legal,canPass,onlyPass:legal.length===1&&canPass};}
+// A forced pass plays itself: half a second after the move that forces it, « No move available: you pass » for a
+// second, then the pass is sent. Returns whether the message is showing.
+let ap=null;   // {n: the position (moves played), shown}
+function autoPass(r){const n=view.moves.length;if(ap&&ap.n===n)return ap.shown;const a=ap={n,shown:false};
+  const still=()=>ap===a&&view&&!view.result&&view.moves.length===n;
+  setTimeout(()=>{if(!still())return;a.shown=true;renderGame();
+    setTimeout(()=>{if(!still())return;ap=null;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+      const L=E.gen(r.st);if(L.length===1&&L[0].t==='x')send(L[0]);},1000);},500);
+  return false;}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
 function voTurnStatus({r,o,prep,idle,undoB,RST}){
   if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn',[RST].concat(regionBtns(r.st)));
   else if(ui.sel.length)status(t('st_sel'),'turn',[RST]);
   else if(prep)status('','turn',[RST]);
-  else if(o.onlyPass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass},undoB]);
+  else if(o.onlyPass)status(autoPass(r)?t('st_autoPass'):'','turn',[undoB]);
   else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',idle.concat([o.canPass?{label:t('pass'),on:doPass}:null]));}
 // Players' cards: birds in the sky, in reserve, and flocks, under each name (added to the cards the shared code draws)
 function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
@@ -459,9 +470,11 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // a provisional flight: the same, all dashed
   if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
   // a selected line: one frame around it
-  // and a dot on its leading bird, the one whose landing points are shown (the first bird; for the hovered flight, its own)
+  // and a dot on each bird whose landing points are shown: the first bird of the line, and the last one for the flights
+  // in file towards its side (the front bird lands there); for the hovered flight, its own leading bird only
   if(ui.sel.length>1&&opt.interactive){const A=ends(ui.sel);el('path',{d:stadium(A[0],A[1]),fill:'none',stroke:'var(--accent)','stroke-width':3.5,'pointer-events':'none'},svg);
-    const ld=pv&&pv.hover&&pv.hover.t==='f'?leadOf(pv.hover):ui.sel[0];el('circle',{cx:X(ld),cy:Y(ld),r:6,fill:'var(--accent)',stroke:LASTDOT,'stroke-width':1.5,'pointer-events':'none'},svg);}
+    const lds=new Set(pv&&pv.hover&&pv.hover.t==='f'?[leadOf(pv.hover)]:(opt.legal||[]).filter(m=>sameSeg(m,ui.sel)).map(leadOf));
+    for(const ld of lds)el('circle',{cx:X(ld),cy:Y(ld),r:6,fill:'var(--accent)',stroke:LASTDOT,'stroke-width':1.5,'pointer-events':'none'},svg);}
   if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
 // Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
 const FR=24;
@@ -696,14 +709,17 @@ return {N,LEN,TM,PS,WN,RAYS,fromPos,flocks,count,connected,flights,placements,ar
 // Levels: plain parameters for VoloAI().search (tune or add levels here; tournaments: outils/aitools, adapter volo.js).
 // algo 'greedy': one ply; exact: candidates ordered by the evaluation after them (without: by the policy alone, which
 // is cheaper and weaker); temp, softmax temperature in moves of advance. algo 'mcts' (common/ai.js): sims, simulations
-// (time is only a cap, so the strength does not depend on the machine) · time, the cap (ms) · cut, playout moves before
+// (the MCTS levels set no real limit: they think for `time` ms, so their strength depends on the machine) · time (ms) · cut, playout moves before
 // the evaluation (0: none; shorter was better in tournaments) · cellsIn, candidates kept (best by the policy) at each
 // node below the root · c, UCT exploration · scale, evaluation moves per logit.
 const LEVELS={
   debutant:{algo:'greedy',temp:.6},
   moyen:{algo:'greedy',exact:1},
-  fort:{algo:'mcts',sims:1000,time:8000,cut:0,cellsIn:12,scale:1,c:.5}};
-const HINT=LEVELS.fort;
+  mcts3:{algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5},
+  mcts6:{algo:'mcts',sims:1e7,time:6000,cut:0,cellsIn:12,scale:1,c:.5},
+  mcts10:{algo:'mcts',sims:1e7,time:10000,cut:0,cellsIn:12,scale:1,c:.5},
+  mcts15:{algo:'mcts',sims:1e7,time:15000,cut:0,cellsIn:12,scale:1,c:.5}};
+const HINT=LEVELS.mcts3;
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
 function voEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(r.policy)return null;if(s>=1000||s>4)return {k:'ai_win'};if(s<=-1000||s<-4)return {k:'ai_lost'};
