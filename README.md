@@ -17,7 +17,7 @@ index.html            accueil du site : liste des jeux, « Comment ça marche ? 
 common/core.js        tout ce qui n'est pas propre à un jeu (ci-dessous)
 common/games.css      styles communs : accueil, écran de jeu fixe, barre d'actions, tiroir « ⋯ », cartes des joueurs
 common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS),
-                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas et Diagonal Blocks Duo
+                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks Duo et Volo
 CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
 ```
 
@@ -35,7 +35,7 @@ La page charge `common/core.js`, définit `const GAME={…}`, puis appelle `core
 
 ## Règles à respecter
 
-- **Version des fichiers communs.** Les pages chargent `common/core.js?v=N`, `common/games.css?v=N` et, pour trois d'entre elles, `common/ai.js?v=M`. Après toute modification d'un fichier commun, augmenter son numéro dans **toutes les pages qui le chargent** ; sinon un navigateur peut garder l'ancien fichier en cache à côté d'une page récente.
+- **Version des fichiers communs.** Les pages chargent `common/core.js?v=N`, `common/games.css?v=N` et, pour quatre d'entre elles, `common/ai.js?v=M`. Après toute modification d'un fichier commun, augmenter son numéro dans **toutes les pages qui le chargent** ; sinon un navigateur peut garder l'ancien fichier en cache à côté d'une page récente.
 - **`GAME.id` ne change jamais.** Il préfixe les clés de stockage, les identifiants réseau et les codes de reprise (`gyges-test`, `gyges-p2p-…`) : le changer ferait perdre les parties enregistrées. Deux identifiants diffèrent du nom de fichier : `diagonalblocks.html` → `dblk`, `pontedeldiavolo.html` → `pdd`.
 - **Ergonomie.** Appliquer `CHARTE-ERGONOMIE.md` : survol en transparence, provisoire en pointillés, joué en plein, une seule mise en évidence, une seule barre d'actions, écran sans défilement.
 

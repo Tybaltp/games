@@ -52,14 +52,20 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
       <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
       <div class="picks" id="newPick" hidden>
         <button type="button" class="pick" data-pick="link"><b data-i18n="m_link">Invite with a link</b><span data-i18n="m_linkTxt">An opponent on another device, with a link or a code.</span></button>
+        <button type="button" class="pick" data-pick="ai"><b data-i18n="m_ai">Computer</b><span data-i18n="m_aiTxt">Three levels, to practise.</span></button>
         <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxt">Both sides on this screen, no clock, with undo and hints: to try things and analyse.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
         <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
         <label for="cFirst"><span data-i18n="orangeIs">Orange (plays first)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="orangeIs">Orange (plays first)</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
@@ -123,6 +129,10 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
     <div class="card" id="myCard" hidden>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
       <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before playing it</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
@@ -141,6 +151,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 </section>
 </div>
 <script src="common/core.js?v=10"></script>
+<script src="common/ai.js?v=1"></script>
 <script>
 function VoloEngine(){
   // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
@@ -179,7 +190,7 @@ function VoloEngine(){
     for(let i=0;i<N;i++){if(s[i]!==0)continue;let adj=false;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y>=0&&s[y]===c){adj=true;break;}}if(adj)continue;
       if(cls[lab[i]]===2)continue;out.push({t:'p',at:i,own:cls[lab[i]]===1,keep:-1});}
     return out;}
-  // Flights: a straight segment of p's birds moves k steps in direction d. Opponent birds block; friendly birds may be flown over.
+  // Flights: a straight segment of p's birds moves k steps in direction d. Every bird blocks, except the segment's own.
   function flights(s){const p=s[TURN],c=color(p),out=[];
     const F=comps(s,i=>s[i]===c);                       // flocks before the move
     const size=new Int16Array(F.n);for(let i=0;i<N;i++)if(F.lab[i]>=0)size[F.lab[i]]++;
@@ -237,7 +248,7 @@ const VO_I18N={fr:{
  <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
  <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
- <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",keepR:"Garder {r}"
+ <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",keepR:"Garder {r}"
 },en:{
  needConfirm:"Confirm each move before playing it",title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
@@ -247,7 +258,7 @@ const VO_I18N={fr:{
  <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
  <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
  <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
- <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",keepR:"Keep {r}"
+ <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",keepR:"Keep {r}"
 }};
 const E=VoloEngine(),{N,TURN}=E;
 const SIZE=120;
@@ -296,6 +307,7 @@ const provCells=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>E.dest(m,c)):[];
 let curLegal=[];   // legal moves of the position drawn (for the hover)
 // A click (or a single tap) plays one step; a click on a provisional bird goes back one step.
 function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;renderGame();}   // a click drops the suggestion
   const legal=E.gen(r.st),me=mySeat+1,st=r.st;ui.hover=-1;
   const prep=ui.pending||ui.basemv;
   // the region choice, or a move awaiting confirmation that removes birds: an opponent's bird picks its region
@@ -363,7 +375,7 @@ document.addEventListener('click',e=>{if(!view||!ui.sel.length||ui.pending||ui.b
 // With a mouse: the bird to add, or the flight to the point hovered, in transparency (legal targets only); any of my
 // birds hovered (able to fly or not) is ringed; during the region choice, an opponent's bird hovered fades the birds
 // of the other regions
-function hoverCell(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+function hoverCell(i){if(!view||ui.pending||hintOn())return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   const st=r.st;let nv=-1;
   if(i>=0){if(ui.basemv){if(E.base(st,ui.basemv)[i]===2-mySeat)nv=i;}
     else if(st[i]===mySeat+1){if(!ui.sel.includes(i))nv=i;}
@@ -380,21 +392,22 @@ function voBoard({r,d,mine}){
   const legal=r.over?[]:E.gen(r.st);curLegal=mine?legal:[];
   const h=hov();let pv=null;
   if(mine){
-    if(ui.basemv)pv={prov:ui.basemv,region:true,hover:h};
+    if(hintOn())pv={prov:hintMv};   // the computer's suggestion, shown like a move awaiting confirmation
+    else if(ui.basemv)pv={prov:ui.basemv,region:true,hover:h};
     else if(ui.pending){if(ui.pending.t!=='x')pv={prov:ui.pending};}   // a pass has nothing to show on the board
     else if(h>=0){const m=ui.sel.length?legal.find(m=>sameSeg(m,ui.sel)&&landAt(m)===h):legal.find(m=>m.t==='p'&&m.at===h);if(m)pv={hover:m};}}
   // the last move is marked until a move is being prepared
   const hb=mine&&!ui.pending&&!ui.basemv&&h>=0&&r.st[h]===mySeat+1?h:-1;   // my bird under the mouse
-  drawBoard(r.st,{legal,interactive:mine&&!ui.pending&&!ui.basemv,pv,hb,last:mine&&preparing()?null:r.last});
+  drawBoard(r.st,{legal,interactive:mine&&!ui.pending&&!ui.basemv&&!hintOn(),pv,hb,last:mine&&(preparing()||hintOn())?null:r.last});
   const canPass=legal.some(m=>m.t==='x');
   return {legal,canPass,onlyPass:legal.length===1&&canPass};}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
-function voTurnStatus({r,o,prep,undoB,RST}){
+function voTurnStatus({r,o,prep,idle,undoB,RST}){
   if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn',[RST].concat(regionBtns(r.st)));
   else if(ui.sel.length)status(t('st_sel'),'turn',[RST]);
   else if(prep)status('','turn',[RST]);
   else if(o.onlyPass)status(t('st_mustPass'),'turn',[{label:t('pass'),primary:true,on:doPass},undoB]);
-  else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',[undoB,o.canPass?{label:t('pass'),on:doPass}:null]);}
+  else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',idle.concat([o.canPass?{label:t('pass'),on:doPass}:null]));}
 // Players' cards: birds in the sky, in reserve, and flocks, under each name (added to the cards the shared code draws)
 function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
   for(const p of [0,1]){const pc=$('pl'+p);if(!pc)continue;const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
@@ -471,6 +484,230 @@ function flightMark(svg,from,to,dashed){const da=dashed?{'stroke-dasharray':'5 4
   // apart: outline to outline, unless the gap is too short to read (then centre to centre, as when they touch)
   let s=0,e=D;if(dSS(A,B)>2*FR){const s1=exitAt(ca,u,A),e1=D-exitAt(cb,[-u[0],-u[1]],B);if(e1-s1>=16){s=s1;e=e1;}}
   if(e>s)el('line',Object.assign({x1:ca[0]+u[0]*s,y1:ca[1]+u[1]*s,x2:ca[0]+u[0]*e,y2:ca[1]+u[1]*e,'stroke-linecap':dashed?'butt':'round'},da),g);}
+// ---------- computer opponent ----------
+// AISearch (the game-independent search) is in common/ai.js; aiSrc() puts VoloEngine and VoloAI in the worker.
+/*AI*/
+function VoloAI(E){
+'use strict';
+// ----- a fast copy of the rules (same moves and results as VoloEngine) -----
+// The position: one Int8Array, [0..N-1] the points (0 empty, 1 orange = seat 0, 2 blue = seat 1), [TM] seat to move,
+// [PS] passes in a row, [WN] the result (-1 game on, 0 or 1 the winner, 2 a draw)
+const N=E.N,NB=E.NB,MAX=E.MAX,TM=N,PS=N+1,WN=N+2,LEN=N+3;
+const RAYS=[];   // RAYS[i*6+d]: the points from i in direction d, nearest first
+for(let i=0;i<N;i++)for(let d=0;d<6;d++){const a=[];let x=i;for(;;){x=NB[x*6+d];if(x<0)break;a.push(x);}RAYS.push(Int16Array.from(a));}
+function fromPos(P){const S=new Int8Array(LEN);for(let i=0;i<N+2;i++)S[i]=P[i];S[WN]=-1;return S;}
+// scratch buffers, shared by every call (the searches never nest two calls of the same function)
+const LAB=new Int16Array(N),SZF=new Int16Array(N+1),STK=new Int16Array(N+8),MK=new Int32Array(N);let stamp=1;
+// a new mark; MK and SEEN are Int32Arrays: past 2^31 the stamps no longer match what was stored (an endless search)
+const newStamp=()=>{if(++stamp>2e9){MK.fill(0);stamp=1;}return stamp;};
+// p's flocks: LAB[i] its flock (-1 not p's), SZF[f] the size of flock f; returns their number
+function flocks(S,p){const c=p+1;let n=0;LAB.fill(-1);
+  for(let i=0;i<N;i++){if(S[i]!==c||LAB[i]>=0)continue;let sp=0,sz=1;STK[sp++]=i;LAB[i]=n;
+    while(sp){const x=STK[--sp];for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&S[y]===c&&LAB[y]<0){LAB[y]=n;STK[sp++]=y;sz++;}}}
+    SZF[n++]=sz;}
+  return n;}
+function count(S,p){const c=p+1;let n=0;for(let i=0;i<N;i++)if(S[i]===c)n++;return n;}
+function connected(S,p){const c=p+1;let st=-1,n=0;for(let i=0;i<N;i++)if(S[i]===c){n++;if(st<0)st=i;}if(!n)return false;
+  newStamp();let sp=0,k=1;STK[sp++]=st;MK[st]=stamp;
+  while(sp){const x=STK[--sp];for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&S[y]===c&&MK[y]!==stamp){MK[y]=stamp;STK[sp++]=y;k++;}}}
+  return k===n;}
+// the size of p's group holding i (p's birds connected to i), marked with the current stamp
+function groupAt(S,c,i){newStamp();let sp=0,k=1;STK[sp++]=i;MK[i]=stamp;
+  while(sp){const x=STK[--sp];for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&S[y]===c&&MK[y]!==stamp){MK[y]=stamp;STK[sp++]=y;k++;}}}
+  return k;}
+// p's flights into out (moves as in VoloEngine: {t:'f',cells,d,k,keep:-1}); with info, each also gets f (the flock that
+// flies) and j (a bitmask-free list of the other flocks it joins). Needs flocks(S,p) to have been called just before.
+const SEG=new Int16Array(16),POS=new Int16Array(16),NXT=new Int16Array(16),INS=new Uint8Array(N);
+function flights(S,p,out,info){const c=p+1;
+  for(let a=0;a<3;a++){const back=a+3;
+    for(let i=0;i<N;i++){if(S[i]!==c)continue;const pr=NB[i*6+back];if(pr>=0&&S[pr]===c)continue;   // i starts a run along axis a
+      let len=1,x=i;const run=[i];for(;;){x=NB[x*6+a];if(x<0||S[x]!==c)break;run.push(x);len++;}
+      for(let u=0;u<len;u++)for(let v=u;v<len;v++){const L=v-u+1;if(a>0&&L===1)continue;   // single birds once (axis 0)
+        for(let z=0;z<L;z++){SEG[z]=run[u+z];INS[run[u+z]]=1;}
+        const f=LAB[SEG[0]],fsz=SZF[f];
+        for(let d=0;d<6;d++){for(let z=0;z<L;z++)POS[z]=SEG[z];
+          for(let k=1;;k++){let ok=true;
+            for(let z=0;z<L;z++){const y=NB[POS[z]*6+d];if(y<0||(S[y]!==0&&!INS[y])){ok=false;break;}NXT[z]=y;}
+            if(!ok)break;for(let z=0;z<L;z++)POS[z]=NXT[z];
+            let free=true;for(let z=0;z<L;z++)if(S[POS[z]]!==0&&!INS[POS[z]]){free=false;break;}
+            if(!free)continue;
+            // fly in place, then: the flock of the first bird must hold all of f's birds and be larger than f
+            for(let z=0;z<L;z++)S[SEG[z]]=0;for(let z=0;z<L;z++)S[POS[z]]=c;
+            const g=groupAt(S,c,POS[0]);let good=g>fsz;
+            if(good)for(let y=0;y<N;y++)if(LAB[y]===f&&!INS[y]&&MK[y]!==stamp){good=false;break;}
+            let jn=null;
+            if(good&&info){jn=[];for(let y=0;y<N;y++){const h=LAB[y];if(h>=0&&h!==f&&MK[y]===stamp&&!jn.includes(h))jn.push(h);}}
+            for(let z=0;z<L;z++)S[POS[z]]=0;for(let z=0;z<L;z++)S[SEG[z]]=c;
+            if(good){const m={t:'f',cells:Array.from(SEG.subarray(0,L)),d,k,keep:-1};if(info){m.f=f;m.j=jn;m.to=Array.from(POS.subarray(0,L));}out.push(m);}}}
+        for(let z=0;z<L;z++)INS[SEG[z]]=0;}}}
+  return out;}
+// the empty areas: EL[i] the area of empty point i, EC[a] 1 = only p's birds around, 2 = only the opponent's, 3 = both
+const EL=new Int16Array(N),EC=new Uint8Array(N+1);
+function areas(S,p){const c=p+1,o=2-p;EL.fill(-1);let n=0;
+  for(let i=0;i<N;i++){if(S[i]!==0||EL[i]>=0)continue;let sp=0,cl=0;STK[sp++]=i;EL[i]=n;
+    while(sp){const x=STK[--sp];for(let d=0;d<6;d++){const y=NB[x*6+d];if(y<0)continue;const v=S[y];
+      if(v===0){if(EL[y]<0){EL[y]=n;STK[sp++]=y;}}else cl|=v===c?1:2;}}
+    EC[n++]=cl;}
+  return n;}
+// p's additions: {t:'p',at,own,keep:-1}
+function placements(S,p,out){const c=p+1;if(count(S,p)>=MAX)return out;areas(S,p);
+  for(let i=0;i<N;i++){if(S[i]!==0)continue;let adj=false;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y>=0&&S[y]===c){adj=true;break;}}
+    if(adj||EC[EL[i]]===2)continue;out.push({t:'p',at:i,own:EC[EL[i]]===1,keep:-1});}
+  return out;}
+const dest=(m,z)=>{let y=z;for(let j=0;j<m.k;j++)y=NB[y*6+m.d];return y;};
+// the base move (no region removed) applied to T in place
+function base(T,m,c){if(m.t==='p')T[m.at]=c;else if(m.t==='f'){for(const z of m.cells)T[z]=0;for(const z of m.cells)T[dest(m,z)]=c;}}
+// the regions of q (components of the points not held by the other side) that hold q's birds: RL[i] the region,
+// returns the list of regions with q's birds
+const RL=new Int16Array(N);
+function regions(T,q){const o=2-q,c=q+1;RL.fill(-1);let n=0;const has=[];
+  for(let i=0;i<N;i++){if(T[i]===o||RL[i]>=0)continue;let sp=0,h=0;STK[sp++]=i;RL[i]=n;
+    while(sp){const x=STK[--sp];if(T[x]===c)h=1;for(let d=0;d<6;d++){const y=NB[x*6+d];if(y>=0&&T[y]!==o&&RL[y]<0){RL[y]=n;STK[sp++]=y;}}}
+    if(h)has.push(n);n++;}
+  return has;}
+const BT=new Int8Array(LEN);
+// as VoloEngine.expand: a move that cuts the opponent's birds into regions comes once per region kept
+function expand(S,m,out){const p=S[TM];if(m.t==='x'){out.push(m);return out;}
+  BT.set(S);base(BT,m,p+1);
+  if(connected(BT,p)){out.push(m);return out;}
+  const rg=regions(BT,1-p);if(rg.length<2){out.push(m);return out;}
+  const oc=2-p;for(const r of rg){let keep=-1;for(let i=0;i<N;i++)if(RL[i]===r&&BT[i]===oc){keep=i;break;}out.push({...m,keep});}
+  return out;}
+// all the legal moves, as VoloEngine.gen
+function gen(S){const p=S[TM],out=[];flocks(S,p);const fl=flights(S,p,[]),pl=placements(S,p,[]);
+  for(const m of fl)expand(S,m,out);for(const m of pl)expand(S,m,out);
+  if(!fl.length&&!pl.some(m=>!m.own))out.push({t:'x',keep:-1});
+  return out;}
+// m played in T, in place (its result in T[WN])
+function apply(T,m){const p=T[TM],c=p+1;base(T,m,c);T[PS]=m.t==='x'?T[PS]+1:0;
+  if(m.keep>=0){regions(T,1-p);const kk=RL[m.keep],oc=2-p;for(let i=0;i<N;i++)if(T[i]===oc&&RL[i]!==kk)T[i]=0;}
+  T[TM]=1-p;
+  if(m.t==='x'){if(T[PS]>=2)T[WN]=2;}
+  else if(connected(T,p))T[WN]=p;
+  else if(m.keep>=0&&connected(T,1-p))T[WN]=1-p;
+  return T;}
+const play=(S,m)=>apply(S.slice(),m);
+// ----- indicators -----
+// Every flight joins its flock to at least one other (it must grow), every addition makes a new flock. The joining
+// graph: the flocks, linked when a flight available now joins them. Its components (C) are the parts no flight links
+// yet; reaching one flock takes at least F − 1 flights, and linking two components costs about 2 more moves (an
+// addition that opens a flight, then that flight). T = (F − 1) + 2 (C − 1): the estimated moves left to win.
+let EV={tempo:.5,best:.15,nf:.02,relay:1,wF:1,wC:2,wR:2,solo:0,mix:.3};
+const UF=new Int16Array(N+1);
+const find=x=>{while(UF[x]!==x){UF[x]=UF[UF[x]];x=UF[x];}return x;};
+// p's indicators in S: {F, C, T, nf (flights), best (most flocks one flight joins)}. With blk, every point a flight of
+// p passes over or lands on gets blk[point] += the flocks that flight joins (another bird there would stop it).
+// Leaves LAB/SZF for p, and CMP[f] the component of flock f.
+const CMP=new Int16Array(N+1),FL=[];
+function feats(S,p,blk){const F=flocks(S,p);FL.length=0;flights(S,p,FL,true);
+  for(let f=0;f<F;f++)UF[f]=f;let best=0;
+  for(const m of FL){const j=m.j.length;if(j>best)best=j;for(const h of m.j){const a=find(m.f),b=find(h);if(a!==b)UF[a]=b;}
+    if(blk)for(const z of m.cells){let y=z;for(let s=0;s<m.k;s++){y=NB[y*6+m.d];if(S[y]===0)blk[y]+=j;}}}
+  let C=0;for(let f=0;f<F;f++)if(find(f)===f)CMP[f]=C++;for(let f=0;f<F;f++)CMP[f]=CMP[find(f)];
+  // relays: components that one addition sees together are linked in 2 moves (the addition, its flight); the others
+  // need two additions at least (C2: the components left once the relays are counted)
+  let C2=C;if(EV.relay&&C>1){const c=p+1;areas(S,p);for(let k=0;k<C;k++)UF[k]=k;
+    for(let i=0;i<N&&C2>1;i++){if(S[i]!==0||EC[EL[i]]===2)continue;let adj=false;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y>=0&&S[y]===c){adj=true;break;}}if(adj)continue;
+      if(sees(S,c,i)<2)continue;let r=-1;for(let k=0;k<C;k++)if(SEEN[k]===seenStamp){const a=find(k);if(r<0)r=a;else if(a!==r){UF[a]=r;C2--;}}}}
+  return {F,C,C2,T:F?EV.wF*(F-1)+EV.wC*(C-1)+EV.relay*EV.wR*(C2-1):99,nf:FL.length,best};}
+// p's solo distance: the moves p needs to be one flock if the opponent let it play alone (an upper bound, found by
+// playing p's moves only: the flight that joins the most flocks, else the addition that sees the most components;
+// cap when stuck or too long). Regions are ignored.
+const SB=new Int8Array(LEN);
+function solo(S,p,cap){SB.set(S);const c=p+1;let n=0;
+  for(;n<cap;n++){const f=feats(SB,p,null);if(f.F<=1)return n;
+    if(FL.length){let bm=FL[0];for(const m of FL)if(m.j.length>bm.j.length)bm=m;base(SB,bm,c);continue;}
+    if(count(SB,p)>=MAX)return cap;areas(SB,p);let bi=-1,bk=0;
+    for(let i=0;i<N;i++){if(SB[i]!==0||EC[EL[i]]===2)continue;let adj=false;for(let d=0;d<6;d++){const y=NB[i*6+d];if(y>=0&&SB[y]===c){adj=true;break;}}if(adj)continue;
+      const k=sees(SB,c,i);if(k>bk){bk=k;bi=i;}}
+    if(bi<0)return cap;SB[bi]=c;}
+  return cap;}
+// The evaluation for p, in moves: the opponent's estimated moves to win minus p's, plus a tempo for the side to move
+function evalS(S,p){if(S[WN]>=0)return result(S,p);
+  const so=EV.mix?EV.mix*(solo(S,1-p,15)-solo(S,p,15)):0;
+  const a=feats(S,p,null),b=feats(S,1-p,null);
+  let v=b.T-a.T+(S[TM]===p?EV.tempo:-EV.tempo);
+  v+=EV.best*(Math.min(a.best,2)-Math.min(b.best,2))+EV.nf*(Math.min(a.nf,10)-Math.min(b.nf,10));
+  return v+so;}
+function result(S,p){const w=S[WN];return w===2?0:w===p?1000+count(S,p):-(1000+count(S,1-w));}
+// ----- the policy: candidate moves scored without playing them -----
+// flight: the flocks it joins (a win: the whole flock); addition at P: how many flocks a flight of the opponent passing
+// over P would join (P blocks it), the components of p's joining graph a bird at P would see (P links them), and
+// whether P sees any of p's flocks at all. A move that removes regions is scored by the evaluation after it.
+let PW={win:100,join:3,block:1.6,link:2.2,see:.6,cut:1};
+const BLK=new Float32Array(N),SEEN=new Int32Array(N+1);let seenStamp=1;
+// the components of p's joining graph a bird at P could join by one flight, or that could fly next to P (LAB, CMP of p)
+function sees(S,c,P){if(++seenStamp>2e9){SEEN.fill(0);seenStamp=1;}let k=0;
+  for(let d=0;d<6;d++){const r=RAYS[P*6+d];
+    for(let s=0;s<r.length;s++){const x=r[s];if(S[x]!==0){if(S[x]===c){const g=CMP[LAB[x]];if(SEEN[g]!==seenStamp){SEEN[g]=seenStamp;k++;}}break;}
+      for(let e=0;e<6;e++){const y=NB[x*6+e];if(y>=0&&y!==P&&S[y]===c){const g=CMP[LAB[y]];if(SEEN[g]!==seenStamp){SEEN[g]=seenStamp;k++;}}}}}
+  return k;}
+// the scored candidates of S for the side to move: [{m,s}] best first; w: keep the best w (0: all)
+function moves(S,w){const p=S[TM],c=p+1,out=[];if(S[WN]>=0)return out;
+  BLK.fill(0);feats(S,1-p,BLK);const me=feats(S,p,null),fl=FL.slice(),pl=placements(S,p,[]);
+  const X=[];
+  for(const m of fl)expand(S,m,X);
+  for(const m of pl)expand(S,m,X);
+  if(!fl.length&&!pl.some(m=>!m.own))X.push({t:'x',keep:-1});
+  // the moves that remove regions last: evalS overwrites LAB and CMP, which sees() reads
+  for(const m of X){let s;
+    if(m.keep>=0)continue;
+    else if(m.t==='f'){const j=m.j.length;s=me.F-j<=1?PW.win:PW.join*j;}
+    else if(m.t==='p'){const k=sees(S,c,m.at);s=PW.block*BLK[m.at]+PW.link*Math.max(0,k-1)+(k?PW.see:0)-(m.own?1:0);}
+    else s=-1;
+    out.push({m,s});}
+  for(const m of X)if(m.keep>=0){const T=play(S,m);out.push({m,s:T[WN]>=0?(T[WN]===p?PW.win:-PW.win):evalS(T,p)*PW.cut});}
+  out.sort((a,b)=>b.s-a.s);if(w&&out.length>w)out.length=w;return out;}
+// ----- playout: o.cut moves at most, each by the policy on a few candidates -----
+// a joining flight if there is one (the best, or a random one with probability o.rand); else the best of o.jk random
+// additions by the policy's score plus noise o.nz; a pass when nothing else is useful
+const PL=[],XP=[];
+function playout(S,o){const cut=o.cut===undefined?8:o.cut,jk=o.jk||8,nz=o.nz===undefined?.8:o.nz,rnd=o.rand||0;let t=0;
+  while(S[WN]<0&&t<cut){t++;const p=S[TM],c=p+1;
+    BLK.fill(0);feats(S,1-p,BLK);const me=feats(S,p,null);let m=null;
+    if(FL.length){if(Math.random()<rnd)m=FL[(Math.random()*FL.length)|0];else{let bs=-1;for(const x of FL){const s=x.j.length+Math.random()*.5;if(s>bs){bs=s;m=x;}}}}
+    else{PL.length=0;placements(S,p,PL);let bs=-1e9,any=false;
+      for(let k=0;k<jk&&PL.length;k++){const x=PL[(Math.random()*PL.length)|0];if(x.own)continue;any=true;
+        const q=sees(S,c,x.at),s=PW.block*BLK[x.at]+PW.link*Math.max(0,q-1)+(q?PW.see:0)+Math.random()*nz;if(s>bs){bs=s;m=x;}}
+      if(!any){if(!PL.some(x=>!x.own))m={t:'x',keep:-1};else for(const x of PL)if(!x.own){m=x;break;}}}
+    XP.length=0;expand(S,m,XP);
+    if(XP.length>1){let bs=-1e9,bm=XP[0];for(const x of XP){BT.set(S);apply(BT,x);const v=BT[WN]>=0?(BT[WN]===p?1e9:-1e9):flocks(BT,1-p);if(v>bs){bs=v;bm=x;}}m=bm;}
+    else m=XP[0];
+    apply(S,m);}
+  return t;}
+// ----- the searches, on Volo's interface -----
+const SC=new Int8Array(LEN);
+const KS=AISearch({moves,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,playout,scratch:S=>{SC.set(S);return SC;}});
+// the root: every move, ordered by the evaluation after it (exact, unlike the policy below the root)
+function rootMoves(S){const p=S[TM];return moves(S,0).map(x=>{const T=play(S,x.m);return {m:x.m,s:T[WN]>=0?result(T,p):evalS(T,p)+x.s*.01};}).sort((a,b)=>b.s-a.s);}
+function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
+  KS.start(opt.time);const C=opt.algo==='greedy'&&!opt.exact?moves(S,0):rootMoves(S);if(!C.length)return null;let r;
+  if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
+  else if(C[0].s>=1000)r={m:C[0].m,s:C[0].s,depth:1};   // a win now
+  else r=KS[opt.algo](S,C,opt);
+  const m=r.m,mv=m.t==='x'?{t:'x',keep:-1}:m.t==='p'?{t:'p',at:m.at,keep:m.keep}:{t:'f',cells:m.cells,d:m.d,k:m.k,keep:m.keep};
+  // policy: the score is the policy's, not an evaluation (no opinion to show)
+  return {move:mv,score:r.s,depth:r.depth,forced:!!r.forced,policy:opt.algo==='greedy'&&!opt.exact,nodes:KS.nodes()};}
+return {N,LEN,TM,PS,WN,RAYS,fromPos,flocks,count,connected,flights,placements,areas,regions,expand,gen,apply,play,dest,LAB,SZF,
+  feats,evalS,result,moves,rootMoves,playout,search,K:KS,setEV:o=>{EV={...EV,...o};},setPW:o=>{PW={...PW,...o};},EV:()=>EV,PW:()=>PW};
+}
+/*AIEND*/
+/*LEVELS*/
+// Levels: plain parameters for VoloAI().search (tune or add levels here; tournaments: outils/aitools, adapter volo.js).
+// algo 'greedy': one ply; exact: candidates ordered by the evaluation after them (without: by the policy alone, which
+// is cheaper and weaker); temp, softmax temperature in moves of advance. algo 'mcts' (common/ai.js): sims, simulations
+// (time is only a cap, so the strength does not depend on the machine) · time, the cap (ms) · cut, playout moves before
+// the evaluation (0: none; shorter was better in tournaments) · cellsIn, candidates kept (best by the policy) at each
+// node below the root · c, UCT exploration · scale, evaluation moves per logit.
+const LEVELS={
+  debutant:{algo:'greedy',temp:.6},
+  moyen:{algo:'greedy',exact:1},
+  fort:{algo:'mcts',sims:1000,time:8000,cut:0,cellsIn:12,scale:1,c:.5}};
+const HINT=LEVELS.fort;
+let pageAI=null;   // the search on the page itself, when no worker can be made
+// The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
+function voEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(r.policy)return null;if(s>=1000||s>4)return {k:'ai_win'};if(s<=-1000||s<-4)return {k:'ai_lost'};
+  return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   rules:()=>({}),form:()=>({}),
@@ -478,7 +715,10 @@ const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,
   legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,
   enc,describe,newUi,preparing,cancel:cancelPrep,
   board:voBoard,turnStatus:voTurnStatus,
-  hintable:()=>false,   // no computer opponent, so no hint (free play has undo only)
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\nconst VA=VoloAI(VoloEngine());function aiSearch(pos,opt){return VA.search(pos,opt);}',
+  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>(pageAI=pageAI||VoloAI(E)).search(Array.from(st),opt),
+  evalInfo:voEvalInfo,
   home:()=>{drawBoard(E.init(),{});}};
 coreStart();
 </script>
