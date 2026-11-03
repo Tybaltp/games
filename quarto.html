@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quarto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=10">
+<style>
+/* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
+:root{
+  --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6c675c;--line:#dcd7cb;
+  --wood:#c9a273;--wood-s:#a47a4e;--wood-f:#8e6640;--grid:#8e6640;--lbl:#6f532f;--res:#e6d8bf;
+  /* light pieces: face, outline, carved parts, sides (3D) */
+  --pl:#f6ecd6;--pl-l:#6f5a3a;--pl-g:#9a8264;--pl-a:#e2d2b0;--pl-b:#c4ae86;
+  /* dark pieces */
+  --pd:#8c4a28;--pd-l:#3a1c0c;--pd-g:#2e160a;--pd-a:#6e3a20;--pd-b:#552b16;
+  --s0:#2c8a6e;--s0e:#1b5c49;--s1:#b9503d;--s1e:#7d3123;
+  --accent:#1f62c8;--accent-ink:#ffffff;--danger:#d24a35;--lastc:#2b1c0d;
+  --board-ar:376/470;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
+  --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#2a241c;
+  --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
+  --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
+  --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
+  --accent:#6aa3ff;--accent-ink:#0b1a33;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
+  --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#2a241c;
+  --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
+  --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
+  --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
+  --accent:#6aa3ff;--accent-ink:#0b1a33;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="quarto.html"><b id="ttl" style="font-weight:inherit">Quarto</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <button class="primary big" type="button" id="newBtn" data-i18n="create">Create a game</button>
+      <div class="picks" id="newPick" hidden>
+        <!-- for now: games on this device only (no link game, no computer) -->
+        <button type="button" class="pick" data-pick="face"><b data-i18n="m_face">Face to face</b><span data-i18n="m_faceTxt">Two players on the same screen, with a clock if you like.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="m_free">Free play</b><span data-i18n="m_freeTxtQ">Both sides on this screen, no clock, with undo.</span></button>
+      </div>
+      <!-- link game: kept for the shared code, not offered yet -->
+      <form class="form" id="createForm" hidden>
+        <label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fView"><span data-i18n="viewOpt">View</span><select id="fView" class="qview"></select></label>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <label for="tView"><span data-i18n="viewOpt">View</span><select id="tView" class="qview"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    <p class="joinLine noinv" hidden><span data-i18n="haveCode">Received a code?</span> <button type="button" class="linkish" id="joinOpen" data-i18n="joinOpen">Join a game</button></p>
+    <div class="card primary-card" id="joinCard" hidden>
+      <h2 class="noinv" data-i18n="join">Join a game with a code</h2>
+      <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
+      <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
+      <form class="form" id="joinForm">
+        <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+        <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+        <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+      </form>
+      <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+      <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
+    </div>
+    <div class="card" id="resumeCard" hidden><h2 data-i18n="inProgress">Game in progress</h2><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+    <details hidden><summary data-i18n="more">Other options</summary>
+      <div class="card"><h2 data-i18n="resume">Resume a game</h2><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="QUARTO1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+        <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+        <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="0 0 376 470" role="img" aria-label="Quarto board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="notice" id="notice"></div>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
+      <p class="hint" id="watchInfo"></p>
+      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="linksBox" hidden>
+        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
+        <div><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+      </div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote"></p>
+      <p class="hint" id="hostNote" data-i18n="hostNote"></p>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <div class="card" id="myCard" hidden>
+      <label class="lvl" for="gView"><span data-i18n="viewOpt">View</span><select id="gView" class="qview"></select></label>
+      <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+    </div>
+    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
+      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt"></p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
+</main>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
+</div>
+<script src="common/core.js?v=10"></script>
+<script>
+// ===== Quarto: rules =====
+// 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: crossed), 4 square, 8 hollow.
+// Cell i = row*4+col, row 0 at the top (rank 4), column 0 on the left (file a).
+// A move: place the piece received on an empty cell, then choose the piece the opponent will place. The first move of the
+// game only chooses; a placement that wins, or the last one, chooses nothing. Code: two characters, the cell then the
+// piece given, in hexadecimal, '-' when absent ('-7' first move, '5c', 'a-').
+function QuartoEngine(){
+  const LINES=[];for(let k=0;k<4;k++){LINES.push([0,1,2,3].map(c=>k*4+c));LINES.push([0,1,2,3].map(r=>r*4+k));}
+  LINES.push([0,5,10,15]);LINES.push([3,6,9,12]);
+  const init=()=>({b:Array(16).fill(-1),hand:-1,turn:0,n:0});
+  const placed=st=>st.b.filter(x=>x>=0).length;
+  const used=st=>{const u=new Set(st.b.filter(x=>x>=0));if(st.hand>=0)u.add(st.hand);return u;};
+  const free=st=>[...Array(16).keys()].filter(p=>!used(st).has(p));   // pieces that can still be given
+  // the line(s) completed through cell i, if their four pieces share a trait
+  function wins(b,i){const out=[];for(const L of LINES){if(!L.includes(i))continue;const v=L.map(j=>b[j]);if(v.some(x=>x<0))continue;
+      const all=v.reduce((a,x)=>a&x,15),none=v.reduce((a,x)=>a&(15^x),15);if(all||none)out.push(L);}return out;}
+  const dec=code=>{if(typeof code!=='string'||code.length!==2)return null;const f=ch=>ch==='-'?-1:parseInt(ch,16);
+    const a=f(code[0]),g=f(code[1]);if(Number.isNaN(a)||Number.isNaN(g))return null;return {a,g};};
+  const enc=mv=>(mv.a>=0?mv.a.toString(16):'-')+(mv.g>=0?mv.g.toString(16):'-');
+  // what a move needs in st: {place (a cell is required), give (a piece is required)}, given the cell chosen (or -1)
+  function needs(st,a){const place=st.hand>=0;if(!place)return {place:false,give:true};
+    if(a<0)return {place:true,give:null};
+    const b=st.b.slice();b[a]=st.hand;const won=wins(b,a).length>0,left=free(st).length;
+    return {place:true,give:!won&&left>0,won};}
+  // the position after mv, or null if mv is illegal; over: {w,why,line} when the game ends
+  function play(st,mv){if(!mv)return null;const nd=needs(st,mv.a);
+    if(nd.place){if(mv.a<0||mv.a>15||st.b[mv.a]>=0)return null;}else if(mv.a>=0)return null;
+    const b=st.b.slice();if(nd.place)b[mv.a]=st.hand;
+    const lines=nd.place?wins(b,mv.a):[];
+    const give=nd.place?!lines.length&&free(st).length>0:true;
+    if(give){if(mv.g<0||mv.g>15||!free(st).includes(mv.g))return null;}else if(mv.g>=0)return null;
+    const s={b,hand:give?mv.g:-1,turn:1-st.turn,n:st.n+1};
+    let over=null;if(lines.length)over={w:st.turn,why:'w_quarto',line:[...new Set(lines.flat())]};
+    else if(b.every(x=>x>=0))over={w:-1,why:'w_full'};
+    return {st:s,over};}
+  return {LINES,init,placed,free,wins,dec,enc,needs,play};
+}
+const E=QuartoEngine();
+const enc=E.enc;
+// View: '2d' (top view, cross for tall) or 'iso' (3D isometric), kept for all Quarto games on this device
+let qView=LS.get('quarto-view','2d')==='iso'?'iso':'2d';
+const cellName=i=>'abcd'[i%4]+(4-((i/4)|0));
+function pieceName(p){const L=t('traits');return [L[p&1?1:0],L[p&4?3:2],L[p&8?5:4],qView==='iso'?L[p&2?9:8]:L[p&2?7:6]].join(' ');}
+function txtOf(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv.g>=0)parts.push(t('gives',{p:pieceName(mv.g)}));return parts.join(', ');}
+function qReplay(rules,moves){let st=E.init(),last=null,over=null;const log=[];
+  for(const code of moves){if(over)break;const mv=E.dec(code),res=mv&&E.play(st,mv);
+    if(!res){over={w:-1,why:'w_bad'};break;}
+    log.push({p:st.turn,mv,txt:txtOf(mv)});last={p:st.turn,mv,prev:st};st=res.st;over=res.over;}
+  return {st,log,last,over};}
+
+// ---------- strings ----------
+const Q_I18N={fr:{
+ title:"Quarto",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
+ m_freeTxtQ:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
+ traits:["claire","foncée","ronde","carrée","pleine","creuse","sans croix","à croix","basse","haute"],
+ gives:"donne la {p}",sep:" : ",
+ st_give1:"choisissez la pièce que l'adversaire va poser.",st_place:"posez la pièce encadrée, puis choisissez celle que l'adversaire posera.",
+ st_giveNow:"choisissez la pièce que l'adversaire posera.",st_placeNow:"posez la pièce encadrée.",
+ w_quarto:"quatre pièces alignées avec un caractère commun",w_full:"plateau plein sans alignement",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractères : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est remplacée par une croix : à croix (haute) ou sans croix (basse).</li>
+ <li><b>Tour</b> : on pose sur une case libre la pièce que l'adversaire a choisie (encadrée dans la réserve), puis on choisit dans la réserve la pièce que l'adversaire posera. Au premier coup, le premier joueur choisit seulement.</li>
+ <li><b>Victoire</b> : gagne celui qui pose la pièce qui complète une ligne de quatre (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins un caractère. Ici, la ligne est reconnue d'elle-même.</li>
+ <li><b>Nulle</b> : les 16 pièces sont posées sans ligne gagnante.</li></ul>`
+},en:{
+ title:"Quarto",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
+ m_freeTxtQ:"Both sides on this screen, no clock, with undo: to try things and analyse.",
+ traits:["light","dark","round","square","solid","hollow","plain","crossed","short","tall"],
+ gives:"gives the {p}",sep:": ",
+ st_give1:"choose the piece your opponent will place.",st_place:"place the framed piece, then choose the one your opponent will place.",
+ st_giveNow:"choose the piece your opponent will place.",st_placeNow:"place the framed piece.",
+ w_quarto:"four pieces in a line sharing a trait",w_full:"board full with no line",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, tall or short. In the 2D view, height is replaced by a cross: crossed (tall) or plain (short).</li>
+ <li><b>Turn</b>: place on an empty cell the piece your opponent chose (framed in the reserve), then choose from the reserve the piece your opponent will place. On the first move, the first player only chooses.</li>
+ <li><b>Winning</b>: the player who places the piece completing a line of four (row, column or diagonal) whose four pieces share at least one trait wins. Here, the line is recognised by itself.</li>
+ <li><b>Draw</b>: all 16 pieces are placed with no winning line.</li></ul>`
+}};
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg';
+function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+const f1=n=>Math.round(n*10)/10;
+const PC=p=>p&1?{f:'var(--pd)',l:'var(--pd-l)',g:'var(--pd-g)',a:'var(--pd-a)',b:'var(--pd-b)',grad:'qgd'}:{f:'var(--pl)',l:'var(--pl-l)',g:'var(--pl-g)',a:'var(--pl-a)',b:'var(--pl-b)',grad:'qgl'};
+let uid=0;
+// A piece seen from above, centred at (cx,cy), radius R: round or square, a hollow (round dip) and/or a cross along the
+// diagonals cut edge to edge, both in one carved colour
+function piece2D(par,p,cx,cy,R,op){const k=PC(p),g=el('g',{'pointer-events':'none',...(op?{opacity:op}:{})},par),id='qc'+(uid++),a=R*.9;
+  const shape=()=>p&4?el('rect',{x:f1(cx-a),y:f1(cy-a),width:f1(2*a),height:f1(2*a),rx:f1(R*.08)}):el('circle',{cx:f1(cx),cy:f1(cy),r:f1(R)});
+  const cp=el('clipPath',{id},g);cp.appendChild(shape());
+  const body=shape();body.setAttribute('fill',k.f);g.appendChild(body);
+  const gr=el('g',{'clip-path':`url(#${id})`},g);
+  if(p&2){const L=R*1.5,w=R*.32;el('line',{x1:f1(cx-L),y1:f1(cy-L),x2:f1(cx+L),y2:f1(cy+L),stroke:k.g,'stroke-width':f1(w)},gr);el('line',{x1:f1(cx-L),y1:f1(cy+L),x2:f1(cx+L),y2:f1(cy-L),stroke:k.g,'stroke-width':f1(w)},gr);}
+  if(p&8)el('circle',{cx:f1(cx),cy:f1(cy),r:f1(R*.47),fill:k.g},gr);
+  const ol=shape();ol.setAttribute('fill','none');ol.setAttribute('stroke',k.l);ol.setAttribute('stroke-width',1.8);g.appendChild(ol);
+  return g;}
+// Isometric projection: the board turned by 45°, seen from ELEV degrees above (high enough for every empty cell to stay
+// visible behind tall pieces). Board units: cells of 1, origin at the board's centre, z up.
+const ELEV=52*Math.PI/180,SQ=Math.sin(ELEV),HF=Math.cos(ELEV),R2=Math.SQRT1_2;
+const TALL=.86,SHORT=.48,PR=.30;
+const prj=(S,x,y,z)=>[(x-y)*R2*S,(x+y)*R2*S*SQ-(z||0)*S*HF];
+// An isometric piece with its base centre at screen (bx,by), cell size S
+function pieceIso(par,p,bx,by,S,op){const k=PC(p),g=el('g',{'pointer-events':'none',...(op?{opacity:op}:{})},par);
+  const h=p&2?TALL:SHORT,r=PR,P=(x,y,z)=>{const q=prj(S,x,y,z);return [bx+q[0],by+q[1]];},pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' ');
+  const st={stroke:k.l,'stroke-width':1.2,'stroke-linejoin':'round'};
+  let top;
+  if(p&4){const a=r*.92,c=(dx,dy,z)=>P(dx*a,dy*a,z);
+    el('polygon',{points:pts([c(-1,1,0),c(1,1,0),c(1,1,h),c(-1,1,h)]),fill:k.a,...st},g);
+    el('polygon',{points:pts([c(1,1,0),c(1,-1,0),c(1,-1,h),c(1,1,h)]),fill:k.b,...st},g);
+    el('polygon',{points:pts([c(-1,-1,h),c(1,-1,h),c(1,1,h),c(-1,1,h)]),fill:k.f,...st},g);}
+  else{const b=P(0,0,0),tp=P(0,0,h),rx=r*S,ry=r*S*SQ;
+    el('path',{d:`M${f1(tp[0]-rx)},${f1(tp[1])}L${f1(b[0]-rx)},${f1(b[1])}A${f1(rx)},${f1(ry)} 0 0 0 ${f1(b[0]+rx)},${f1(b[1])}L${f1(tp[0]+rx)},${f1(tp[1])}Z`,fill:`url(#${k.grad})`,...st},g);
+    el('ellipse',{cx:f1(tp[0]),cy:f1(tp[1]),rx:f1(rx),ry:f1(ry),fill:k.f,...st},g);}
+  if(p&8){const c=P(0,0,h),ri=r*.5;
+    el('ellipse',{cx:f1(c[0]),cy:f1(c[1]),rx:f1(ri*S),ry:f1(ri*S*SQ),fill:k.g},g);
+    el('ellipse',{cx:f1(c[0]),cy:f1(c[1]+ri*S*SQ*.3),rx:f1(ri*S*.8),ry:f1(ri*S*SQ*.6),fill:'rgba(0,0,0,.28)'},g);}
+  return g;}
+function gradDefs(svg){const d=el('defs',{},svg);
+  for(const [id,a,b] of [['qgl','--pl-a','--pl-b'],['qgd','--pd-a','--pd-b']]){const lg=el('linearGradient',{id,x1:0,x2:1,y1:0,y2:0},d);
+    el('stop',{offset:0,style:`stop-color:var(${a})`},lg);el('stop',{offset:.45,style:`stop-color:var(${a})`},lg);el('stop',{offset:1,style:`stop-color:var(${b})`},lg);}}
+// Frames: inside the cell or the reserve slot. kind: hand (the piece to place), prov (dashed: chosen, not played yet),
+// last (last move), win (winning line)
+const FR={hand:{stroke:'var(--accent)','stroke-width':3},prov:{stroke:'var(--accent)','stroke-width':2.6,'stroke-dasharray':'5 4'},
+  last:{stroke:'var(--lastc)','stroke-width':2.2},win:{stroke:'var(--accent)','stroke-width':4}};
+const fr=(kind)=>({fill:'none','pointer-events':'none',...FR[kind]});
+
+// The scene to draw: cell contents and frames, reserve contents and frames
+// opt: {cells:[{p,op}], cellFr:{i:kind}, res:[{p,op}|null]×16, resFr:{p:kind}, resHov (reserve slot hovered), click (interactive keys)}
+function drawBoard(sc){const svg=$('svg');svg.textContent='';gradDefs(svg);if(qView==='iso')drawIso(svg,sc);else draw2D(svg,sc);}
+// 2D: board of 4×4 square cells with lines between them, the reserve (16 slots, each piece keeps its own) below
+function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?28:14,rs=B/8,rh=rs*1.05,Y0=B+gap;
+  const W=B+lw+4,H=Y0+2*rh+4;svg.setAttribute('viewBox',`${-lw} 0 ${W} ${H}`);document.documentElement.style.setProperty('--board-ar',`${W}/${H}`);
+  el('rect',{x:0,y:0,width:B,height:B,rx:6,fill:'var(--wood)'},svg);
+  const L=[];for(let i=0;i<=4;i++){const q=m+i*S;L.push(`M${m},${q}H${m+4*S}`,`M${q},${m}V${m+4*S}`);}
+  el('path',{d:L.join(''),stroke:'var(--grid)','stroke-width':2,fill:'none','stroke-linecap':'square'},svg);
+  if(coordsOn){const lab={'font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--lbl)','text-anchor':'middle'};
+    for(let j=0;j<4;j++){el('text',{...lab,x:m+j*S+S/2,y:B+17},svg).textContent='abcd'[j];el('text',{...lab,x:-11,y:m+j*S+S/2+4},svg).textContent=String(4-j);}}
+  for(let i=0;i<16;i++){const x=m+(i%4)*S,y=m+((i/4)|0)*S,k='c'+i,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
+    el('rect',{x,y,width:S,height:S,fill:'transparent'},g);const c=sc.cells[i];if(c)piece2D(g,c.p,x+S/2,y+S/2,S*.36,c.op);
+    const fk=sc.cellFr[i];if(fk)el('rect',{x:x+4,y:y+4,width:S-8,height:S-8,rx:5,...fr(fk)},svg);}
+  el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
+  for(let p=0;p<16;p++){const x=(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
+    el('rect',{x,y,width:rs,height:rh,fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
+    const c=sc.res[p];if(c)piece2D(g,c.p,x+rs/2,y+rh/2,rs*.36,c.op);
+    const fk=sc.resFr[p];if(fk)el('rect',{x:x+2,y:y+2,width:rs-4,height:rh-4,rx:6,...fr(fk)},svg);}}
+// 3D isometric: same layout, the board in projection; the reserve as a row of pieces, also in projection
+function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
+  const cx=i=>(i%4)-1.5,cy=i=>((i/4)|0)-1.5;
+  const left=P(-hb,hb)[0],right=P(hb,-hb)[0],top=Math.min(P(-hb,-hb)[1],P(-1.5,-1.5,TALL)[1]-PR*1.3*S*SQ)-4,bot=P(hb,hb,-T)[1];
+  const lbl=coordsOn?22:0,Bw=right-left,gap=lbl+12,rs=Bw/8,rh=rs*1.25,Y0=bot+gap;
+  const W=Bw+2*lbl+8,H=(Y0-top)+2*rh+6;
+  svg.setAttribute('viewBox',`${f1(left-lbl-4)} ${f1(top)} ${f1(W)} ${f1(H)}`);document.documentElement.style.setProperty('--board-ar',`${f1(W)}/${f1(H)}`);
+  const pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' '),dn=q=>[q[0],q[1]+T*S*HF];
+  const A=P(-hb,-hb),B=P(hb,-hb),C=P(hb,hb),D=P(-hb,hb);
+  el('polygon',{points:pts([D,C,dn(C),dn(D)]),fill:'var(--wood-s)'},svg);el('polygon',{points:pts([C,B,dn(B),dn(C)]),fill:'var(--wood-f)'},svg);
+  el('polygon',{points:pts([A,B,C,D]),fill:'var(--wood)'},svg);
+  const L=[];for(let k=0;k<=4;k++){const v=k-2;const a=P(v,-2),b=P(v,2),c=P(-2,v),d=P(2,v);L.push(`M${f1(a[0])},${f1(a[1])}L${f1(b[0])},${f1(b[1])}M${f1(c[0])},${f1(c[1])}L${f1(d[0])},${f1(d[1])}`);}
+  el('path',{d:L.join(''),stroke:'var(--grid)','stroke-width':1.8,fill:'none'},svg);
+  if(coordsOn){const lab={'font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--lbl)','text-anchor':'middle'};
+    for(let j=0;j<4;j++){const a=P(j-1.5,hb+.32),b=P(-hb-.32,j-1.5);el('text',{...lab,x:f1(a[0]),y:f1(a[1]+5)},svg).textContent='abcd'[j];el('text',{...lab,x:f1(b[0]),y:f1(b[1]+5)},svg).textContent=String(4-j);}}
+  // cells (click targets and frames) under the pieces; pieces from the back to the front
+  const cellPoly=(i,ins)=>{const x=cx(i),y=cy(i),h=.5-ins;return pts([P(x-h,y-h),P(x+h,y-h),P(x+h,y+h),P(x-h,y+h)]);};
+  for(let i=0;i<16;i++){const k='c'+i;el('polygon',{points:cellPoly(i,0),fill:'transparent',...(sc.click.has(k)?{class:'cell','data-k':k}:{})},svg);
+    const fk=sc.cellFr[i];if(fk)el('polygon',{points:cellPoly(i,.07),'stroke-linejoin':'round',...fr(fk)},svg);}
+  const order=[...Array(16).keys()].sort((a,b)=>(cx(a)+cy(a))-(cx(b)+cy(b))||cx(a)-cx(b));
+  for(const i of order){const c=sc.cells[i];if(!c)continue;const q=P(cx(i),cy(i));pieceIso(svg,c.p,q[0],q[1],S,c.op);}
+  // reserve
+  const rS=S*.82;el('rect',{x:f1(left),y:f1(Y0-4),width:f1(Bw),height:f1(2*rh+8),rx:8,fill:'var(--res)'},svg);
+  for(let p=0;p<16;p++){const x=left+(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
+    el('rect',{x:f1(x),y:f1(y),width:f1(rs),height:f1(rh),fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
+    const c=sc.res[p];if(c)pieceIso(g,c.p,x+rs/2,y+rh-PR*rS*SQ*1.25-3,rS,c.op);
+    const fk=sc.resFr[p];if(fk)el('rect',{x:f1(x+2),y:f1(y+2),width:f1(rs-4),height:f1(rh-4),rx:6,...fr(fk)},svg);}}
+
+// ---------- move preparation ----------
+// ui.a: cell chosen for the piece received (-1) · ui.g: piece chosen for the opponent (-1) · ui.pending: complete move
+// awaiting confirmation · ui.hover: key under the mouse ('c5', 'r12')
+const newUi=()=>({a:-1,g:-1,pending:null,hover:null});
+const preparing=()=>ui.a>=0||ui.g>=0||!!ui.pending;
+function cancelPrep(){resetUi();renderGame();}
+const posNow=()=>{const r=replay(view,view.moves,view.result);return r;};
+// The move is complete once every step it needs is chosen: sent at once if it wins, after confirmation if the option
+// asks for it, otherwise at once
+function maybeComplete(st){const nd=E.needs(st,ui.a);
+  if(nd.place&&ui.a<0)return;
+  const mv={a:nd.place?ui.a:-1,g:nd.give?ui.g:-1};if(nd.give&&ui.g<0)return;
+  if(nd.won||!$('needConfirm').checked){resetUi();send(mv);return;}
+  ui.pending=mv;ui.hover=null;}
+function clickKey(k){if(!view)return;const r=posNow();if(!isMyTurn(r)||navAt!==null)return;const st=r.st,x=+k.slice(1),free=E.free(st);
+  if(k[0]==='c'){if(st.hand<0||st.b[x]>=0)return;
+    if(ui.a===x){ui.a=-1;ui.pending=null;}else{if(ui.pending)return;ui.a=x;}}
+  else{if(!free.includes(x))return;
+    if(ui.g===x){ui.g=-1;ui.pending=null;}else{if(ui.pending)return;ui.g=x;}}
+  ui.hover=null;if(!ui.pending)maybeComplete(st);renderGame();}
+const keyOf=e=>{const g=e.target.closest('[data-k]');return g?g.dataset.k:null;};
+$('svg').addEventListener('click',e=>{const k=keyOf(e);if(k)clickKey(k);});
+function hoverKey(k){if(!view||ui.pending)return;if(k===ui.hover)return;const r=posNow();if(!isMyTurn(r)){ui.hover=null;return;}ui.hover=k;renderGame();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;hoverKey(keyOf(e));});
+  $('svg').addEventListener('pointerleave',()=>hoverKey(null));}
+
+// ---------- the board for core's renderGame ----------
+function scene(st,o){const sc={cells:st.b.map(p=>p>=0?{p}:null),cellFr:{},res:Array(16).fill(null),resFr:{},resHov:-1,click:new Set()};
+  const onB=new Set(st.b.filter(p=>p>=0));for(let p=0;p<16;p++)if(!onB.has(p))sc.res[p]={p};
+  return sc;}
+function qBoard({r,d,mine}){
+  const nav=navAt!==null,st=nav?d.st:r.st,sc=scene(st);
+  $('needConfirmWrap').hidden=!(mySeat>=0&&!r.over);
+  if(!mine){resetUiSoft();}
+  const hand=st.hand;
+  if(hand>=0)sc.resFr[hand]='hand';
+  if(mine&&!nav){const free=E.free(st);
+    if(hand>=0)for(let i=0;i<16;i++)if(st.b[i]<0)sc.click.add('c'+i);
+    for(const p of free)sc.click.add('r'+p);
+    if(ui.a>=0){sc.cells[ui.a]={p:hand};sc.cellFr[ui.a]='prov';sc.res[hand]=null;delete sc.resFr[hand];}
+    if(ui.g>=0)sc.resFr[ui.g]='prov';
+    const hv=ui.hover;
+    if(hv&&!ui.pending){const x=+hv.slice(1);
+      if(hv[0]==='c'&&hand>=0&&st.b[x]<0&&ui.a!==x){if(ui.a<0){sc.cells[x]={p:hand,op:.45};}}
+      if(hv[0]==='r'&&free.includes(x)&&ui.g!==x&&ui.g<0)sc.resHov=x;}}
+  // last move: its cell framed while no move is prepared
+  const last=nav?d.last:r.last;
+  if(last&&last.mv.a>=0&&!(mine&&preparing()))sc.cellFr[last.mv.a]='last';
+  const ov=nav?d.over:r.over;if(ov&&ov.line)for(const i of ov.line)sc.cellFr[i]='win';
+  drawBoard(sc);
+  return {st};}
+// keep ui only while it is my turn (another player's turn, or a position shown from the list: nothing prepared)
+function resetUiSoft(){if(preparing()||ui.hover){ui=newUi();}}
+function qTurnStatus({r,o,idle,RST}){const st=o.st,who=solo()?seatName(st.turn)+t('sep'):'',cap=s=>who?s:s.charAt(0).toUpperCase()+s.slice(1);
+  let k;if(st.hand<0)k='st_give1';else if(ui.a<0&&ui.g<0)k='st_place';else if(ui.a>=0)k='st_giveNow';else k='st_placeNow';
+  status(who+cap(t(k)),'turn',preparing()?[RST]:idle);}
+
+// ---------- view choice (2D / 3D), in the home forms and the panel ----------
+function viewSelects(){document.querySelectorAll('select.qview').forEach(s=>{s.innerHTML=['2d','iso'].map(v=>`<option value="${v}">${t('v_'+v)}</option>`).join('');s.value=qView;});}
+document.querySelectorAll('select.qview').forEach(s=>s.addEventListener('change',e=>{qView=e.target.value==='iso'?'iso':'2d';LS.set('quarto-view',qView);
+  document.querySelectorAll('select.qview').forEach(x=>x.value=qView);if(view)renderGame();else GAME.home();}));
+$('needConfirm').checked=LS.get('quarto-confirm',true);
+$('needConfirm').onchange=e=>{LS.set('quarto-confirm',e.target.checked);if(view)renderGame();};
+
+// ---------- the interface with common/core.js ----------
+const GAME={id:'quarto',size:16,codeTag:'QUARTO1',i18n:Q_I18N,
+  rules:()=>({}),form:()=>({}),
+  replay:qReplay,
+  legal:(st,code)=>{const mv=E.dec(code);return mv&&E.play(st,mv)?enc(mv):null;},
+  enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
+  board:qBoard,turnStatus:qTurnStatus,
+  applyStatic:viewSelects,
+  home:()=>drawBoard(scene(E.init()))};
+coreStart();
+</script>
+</body></html>
