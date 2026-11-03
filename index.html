@@ -53,6 +53,7 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <li><a href="gyges.html"><span class="t">Gygès</span><span class="d" data-i18n="gyges"></span></a></li>
 <li><a href="tintas.html"><span class="t">Tintas</span><span class="d" data-i18n="tintas"></span></a></li>
 <li><a href="diagonalblocks.html"><span class="t">Diagonal Blocks Duo</span><span class="d" data-i18n="dblocks"></span></a></li>
+<li><a href="quarto.html"><span class="t">Quarto</span><span class="d" data-i18n="quarto"></span></a></li>
 </ul>
 </main>
 <script>
@@ -68,7 +69,8 @@ const I18N={
      pente:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",ponte:"Bâtissez des îles de quatre tuiles et reliez-les par des ponts.",
      zertz:"Des billes communes sur un plateau d'anneaux qui rétrécit.",volo:"Réunissez tous vos oiseaux en une seule nuée.",
      arimaa:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",gyges:"Des anneaux neutres qui rebondissent jusqu’au but adverse.",
-     tintas:"Un pion commun, sept couleurs : collectionnez-en une.",dblocks:"Posez vos polyominos coin contre coin, couvrez le plus de cases."},
+     tintas:"Un pion commun, sept couleurs : collectionnez-en une.",dblocks:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",
+     quarto:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent un caractère. Sur un même appareil pour l'instant."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
      howT:"How does it work?",
      how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer (Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Tintas, Volo, Zèrtz), play face to face on the same device, or in free mode to try things and analyse, with undo and hints.",
@@ -80,7 +82,8 @@ const I18N={
      pente:"Five in a row, or capture five pairs. Swap2 opening.",ponte:"Build islands of four tiles and link them with bridges.",
      zertz:"Shared marbles on a shrinking board of rings.",volo:"Gather all your birds into a single flock.",
      arimaa:"Get a rabbit to the far side: push, pull, traps.",gyges:"Neutral rings bounce their way to the opponent’s goal.",
-     tintas:"One shared pawn, seven colours: collect a full set.",dblocks:"Place your polyominoes corner to corner, cover the most squares."}};
+     tintas:"One shared pawn, seven colours: collect a full set.",dblocks:"Place your polyominoes corner to corner, cover the most squares.",
+     quarto:"Give your opponent the piece they will place; line up four pieces sharing a trait. On one device for now."}};
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
 function apply(){document.documentElement.lang=lang;document.title=I18N[lang].title;
   document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=I18N[lang][e.dataset.i18n]);

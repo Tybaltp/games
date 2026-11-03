@@ -2,7 +2,7 @@
 
 Jeux de plateau à deux, joués de navigateur à navigateur : https://tybaltp.github.io/games/
 
-Huit jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
+Neuf jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
 
 ## Branches
 
