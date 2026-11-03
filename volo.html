@@ -475,12 +475,14 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   // a provisional flight: the same, all dashed
   if(lm&&lm.t==='f')flightMark(svg,lm.cells,lm.cells.map(z=>E.dest(lm,z)));
   // a selected line: one frame around it
-  // and a dot on the bird whose landing points are shown, or on both ends when each flight shows its front bird's (for
+  // and a ring on the bird whose landing points are shown, or on both ends when each flight shows its front bird's (for
   // the hovered flight, its own front bird only)
   if(ui.sel.length>1&&opt.interactive){const A=ends(ui.sel);el('path',{d:stadium(A[0],A[1]),fill:'none',stroke:'var(--accent)','stroke-width':3.5,'pointer-events':'none'},svg);
     const L=opt.legal||[],sb=soleLead(ui.sel,L);
     const lds=new Set(sb>=0?[sb]:pv&&pv.hover&&pv.hover.t==='f'?[leadOf(pv.hover)]:L.filter(m=>sameSeg(m,ui.sel)).map(leadOf));
-    for(const ld of lds)el('circle',{cx:X(ld),cy:Y(ld),r:6,fill:'var(--accent)',stroke:LASTDOT,'stroke-width':1.5,'pointer-events':'none'},svg);}
+    // the same ring as on its landing points, steady, edged in dark to stand out on the bird
+    for(const ld of lds){el('circle',{cx:X(ld),cy:Y(ld),r:13,fill:'none',stroke:LASTDOT,'stroke-width':7,'pointer-events':'none'},svg);
+      el('circle',{cx:X(ld),cy:Y(ld),r:13,fill:'none',stroke:'var(--accent)','stroke-width':4,'pointer-events':'none'},svg);}}
   if(prov&&prov.t==='f')flightMark(svg,prov.cells,prov.cells.map(z=>E.dest(prov,z)),true);}
 // Outline of a line of points: a rectangle closed by two half circles, radius FR around the segment p–q
 const FR=24;
