@@ -328,7 +328,9 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?
     const fk=sc.cellFr[i];
     // the last move: a ring of the piece's shape, of one size between short and tall (inside a tall piece, around a short one)
     if(fk==='last'&&c){const R=S*.36*1.05,a=R*.9,X=x+S/2,Y=y+S/2;
-      if(c.p&4)el('rect',{x:f1(X-a),y:f1(Y-a),width:f1(2*a),height:f1(2*a),rx:f1(R*.08),...fr(fk)},svg);else el('circle',{cx:f1(X),cy:f1(Y),r:f1(R),...fr(fk)},svg);}
+      // inside a tall light piece, a deeper yellow for the contrast
+      for(const st of [{...fr(fk),'stroke-width':2.6,...(c.p&2&&!(c.p&1)?{stroke:'#d49a00'}:{})}])
+        if(c.p&4)el('rect',{x:f1(X-a),y:f1(Y-a),width:f1(2*a),height:f1(2*a),rx:f1(R*.08),...st},svg);else el('circle',{cx:f1(X),cy:f1(Y),r:f1(R),...st},svg);}
     else if(fk)el('rect',{x:x+4,y:y+4,width:S-8,height:S-8,rx:5,...fr(fk)},svg);}
   if(sc.win)el('polygon',{points:winOutline(sc.win).map(([u,v])=>f1(m+(u+2)*S)+','+f1(m+(v+2)*S)).join(' '),'stroke-linejoin':'round',...fr('win')},svg);
   el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
