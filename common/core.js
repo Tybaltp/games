@@ -651,10 +651,12 @@ function sgfUi(){if(!$('sgfLoad')&&$('newBtn')){const b=document.createElement('
   if(GAME.drawOffer&&!$('drawBtn')&&$('resign')){const b=document.createElement('button');b.type='button';b.id='drawBtn';b.hidden=true;b.textContent=t('drawOffer');
     b.onclick=()=>{const dv=view&&view.draw;drawSend(dv&&dv.st==='ask'&&dv.from===mySeat?'cancel':'ask');};$('resign').before(b);
     const p=document.createElement('p');p.className='hint';p.id='drawNote';p.hidden=true;$('resignAsk').after(p);}}
+// A saved game still to play: no result (resignation, time, agreement) and not over on the board either
+function unfinished(g){if(!g||g.result)return false;try{return !GAME.replay(g,g.moves||[]).over;}catch(e){return false;}}
 function init(){GAME.home();
   const saved=LS.get(K('p2p-host'),null),sg=LS.get(K('p2p-guest'),null);
-  if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
-  else if(sg&&sg.code&&sg.view&&!sg.view.result){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
+  if(saved&&saved.code&&unfinished(saved.game)){$('resumeCard').hidden=false;}
+  else if(sg&&sg.code&&unfinished(sg.view)){$('resumeCard').hidden=false;$('resumeBtn').dataset.guest=sg.code;$('resumeTxt').textContent=t('inProgressGuest');}
   status('');
   if(location.hash==='#ai'){const sv=LS.get(AK(),null);if(sv&&sv.view){stopAI();navAt=null;role='ai';mySeat=sv.mySeat;C.stop=true;
     view={...sv.view,recvAt:Date.now()};resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();return;}setHash('');}
@@ -760,7 +762,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     H.turnStart=Date.now();hostStart(null);});
   $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
   $('jWatch').onclick=()=>joinClick(true);
-  $('resumeBtn').onclick=()=>{const s=LS.get(K('p2p-host'),null);if(s&&s.game&&!s.game.result){hostStart(s);return;}const sg=LS.get(K('p2p-guest'),null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
+  $('resumeBtn').onclick=()=>{const s=LS.get(K('p2p-host'),null);if(s&&unfinished(s.game)){hostStart(s);return;}const sg=LS.get(K('p2p-guest'),null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
   $('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=false;inp.select();
     try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('rcCopy'),1500);},()=>{});}catch(e){}};
   $('rForm').addEventListener('submit',e=>{e.preventDefault();let p;try{p=importCode($('rIn').value);}catch(x){$('joinErr').textContent=t('badResume');$('rSeats').innerHTML='';return;}
