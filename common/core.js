@@ -381,9 +381,12 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     el.append(h,ck);if(GAME.playerCard)GAME.playerCard(el,p,d);host.appendChild(el);}
   tick();lockBoard();
   // side panel: settings only (level of the computer and its opinion, against the computer only: hints use GAME.hintLevel)
-  $('myCard').hidden=!(role==='ai'||solo()||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  // SGF export: always against the computer, in Libre play and for a loaded game; in a competitive game (face to face,
+  // by link) only once it is over
+  const sgfOk=role==='ai'||role==='test'||role==='file'||!!r.over;if($('sgfExpBox'))$('sgfExpBox').hidden=!sgfOk;
+  $('myCard').hidden=!(role==='ai'||solo()||sgfOk||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
   if($('aiBox'))$('aiBox').hidden=role!=='ai';
-  $('resignBox').hidden=!!r.over||!$('resignAsk').hidden;
+  $('resignBox').hidden=!!r.over||mySeat<0||!$('resignAsk').hidden;
   if(role==='ai')$('aiInfo').textContent=aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
@@ -609,7 +612,9 @@ function sgfPick(){const f=document.createElement('input');f.type='file';f.accep
   f.onchange=()=>{const x=f.files&&f.files[0];if(!x)return;x.text().then(txt=>{const e=sgfLoad(txt);if(e){$('joinErr').textContent=e;status(e);}});};f.click();}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
 function sgfUi(){if(!$('sgfLoad')&&$('newBtn')){const b=document.createElement('button');b.type='button';b.id='sgfLoad';b.className='sgfLoad';b.dataset.i18n='sgfLoad';b.textContent=t('sgfLoad');b.onclick=sgfPick;$('newBtn').after(b);}
-  if(!$('sgfExp')&&$('log')){const b=document.createElement('button');b.type='button';b.id='sgfExp';b.className='linkish sgfExp';b.dataset.i18n='sgfExport';b.textContent=t('sgfExport');b.onclick=sgfExport;$('log').after(b);}}
+  // in the settings card, above the resignation
+  if(!$('sgfExp')&&$('resignBox')){const d=document.createElement('div');d.className='confirm';d.id='sgfExpBox';d.hidden=true;
+    const b=document.createElement('button');b.type='button';b.id='sgfExp';b.dataset.i18n='sgfExport';b.textContent=t('sgfExport');b.onclick=sgfExport;d.appendChild(b);$('resignBox').before(d);}}
 function init(){GAME.home();
   const saved=LS.get(K('p2p-host'),null),sg=LS.get(K('p2p-guest'),null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
