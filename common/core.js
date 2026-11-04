@@ -514,7 +514,7 @@ const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';
 // « ⋯ » again or a swipe down.
 const mqWide=window.matchMedia(WIDE),isWide=()=>mqWide.matches;
 function sheet(on){const R=document.documentElement,was=R.classList.contains('sheet');on=!!on&&!isWide()&&!$('game').hidden;
-  R.classList.toggle('sheet',on);$('sheetBg').hidden=!on;$('optBtn').setAttribute('aria-expanded',on?'true':'false');
+  R.classList.toggle('sheet',on);$('sheetBg').hidden=!on;$('optBtn').setAttribute('aria-expanded',on?'true':'false');if(!on)sheetAttn.auto=false;
   if(on&&!was){$('side').scrollTop=0;$('side').focus({preventScroll:true});}
   if(!on&&was&&$('side').contains(document.activeElement))$('optBtn').focus({preventScroll:true});}
 // Wide: the action bar (#notice) goes into the side panel under the players' cards (the panel's fixed top part); otherwise
@@ -537,10 +537,14 @@ let coordsOn=LS.get('games-coords',true)!==false;
 function coordsSet(on){coordsOn=!!on;document.documentElement.classList.toggle('nocoords',!coordsOn);}
 // Cards that must not be missed (invitation while waiting, Start, end of game): on phones, the sheet opens by itself when
 // one appears (once; at the end of a game after a moment, so the last move is seen) and « ⋯ » carries a dot while one is shown.
+// A sheet opened this way closes by itself once those cards are all gone (the game starts, a rematch begins): the board
+// is what matters then. A sheet the player opened or closed is left alone (sheet() clears the flag on close).
 function sheetAttn(){const ids=['inviteBox','startCard','endCard'].filter(id=>!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
   $('optBtn').classList.toggle('attn',ids.length>0);
   const prev=sheetAttn.prev||[],fresh=ids.filter(id=>!prev.includes(id));sheetAttn.prev=ids;
-  if(!fresh.length||isWide())return;
+  if(isWide())return;
+  if(!ids.length&&prev.length&&sheetAttn.auto){sheet(false);return;}
+  if(!fresh.length)return;sheetAttn.auto=true;
   if(fresh.length===1&&fresh[0]==='endCard')setTimeout(()=>{if(!$('endCard').hidden&&!$('game').hidden)sheet(true);},1200);else sheet(true);}
 let audioCtx=null,lastMine=false;
 let sndOn=true,sndVol=50;
