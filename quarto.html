@@ -358,11 +358,13 @@ function maybeComplete(st){const nd=E.needs(st,ui.a,!!view.sq);
   ui.pending=mv;ui.hover=null;}
 function clickKey(k){if(!view)return;const r=posNow();if(!isMyTurn(r)||navAt!==null)return;const st=r.st,x=+k.slice(1),free=E.free(st);
   if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;}   // a click drops the suggestion
+  // the order is forced: the piece received is placed first, then the piece for the opponent is chosen; a click on
+  // another cell or piece moves the choice, a click on the chosen one drops it (dropping the cell drops the gift too)
   if(k[0]==='c'){if(st.hand<0||st.b[x]>=0)return;
-    if(ui.a===x){ui.a=-1;ui.pending=null;}else{if(ui.pending)return;ui.a=x;}}
-  else{if(!free.includes(x))return;
-    if(ui.g===x){ui.g=-1;ui.pending=null;}else{if(ui.pending)return;ui.g=x;}}
-  ui.hover=null;if(!ui.pending)maybeComplete(st);renderGame();}
+    if(ui.a===x){ui.a=-1;ui.g=-1;}else ui.a=x;}
+  else{if(!free.includes(x)||(st.hand>=0&&ui.a<0))return;
+    ui.g=ui.g===x?-1:x;}
+  ui.pending=null;ui.hover=null;maybeComplete(st);renderGame();}
 const keyOf=e=>{const g=e.target.closest('[data-k]');return g?g.dataset.k:null;};
 $('svg').addEventListener('click',e=>{const k=keyOf(e);if(k)clickKey(k);});
 function hoverKey(k){if(!view||ui.pending||hintOn())return;if(k===ui.hover)return;const r=posNow();if(!isMyTurn(r)){ui.hover=null;return;}ui.hover=k;renderGame();}
@@ -382,7 +384,7 @@ function qBoard({r,d,mine}){
   if(hand>=0)sc.resFr[hand]='hand';
   if(mine&&!nav){const free=E.free(st);
     if(hand>=0)for(let i=0;i<16;i++)if(st.b[i]<0)sc.click.add('c'+i);
-    for(const p of free)sc.click.add('r'+p);
+    if(hand<0||ui.a>=0)for(const p of free)sc.click.add('r'+p);   // the gift comes after the placement
     // the move being prepared, or the computer's suggestion (shown the same way)
     const pa=hintOn()?hintMv.a:ui.a,pg=hintOn()?hintMv.g:ui.g;
     if(pa>=0){sc.cells[pa]={p:hand};sc.cellFr[pa]='prov';sc.res[hand]=null;delete sc.resFr[hand];}
@@ -390,7 +392,7 @@ function qBoard({r,d,mine}){
     const hv=hintOn()?null:ui.hover;
     if(hv&&!ui.pending){const x=+hv.slice(1);
       if(hv[0]==='c'&&hand>=0&&st.b[x]<0&&ui.a!==x){if(ui.a<0){sc.cells[x]={p:hand,op:.45};}}
-      if(hv[0]==='r'&&free.includes(x)&&ui.g!==x&&ui.g<0)sc.resHov=x;}}
+      if(hv[0]==='r'&&free.includes(x)&&ui.g!==x&&ui.g<0&&(hand<0||ui.a>=0))sc.resHov=x;}}
   // last move: its cell framed while no move is prepared
   const last=nav?d.last:r.last;
   if(last&&last.mv.a>=0&&!(mine&&(preparing()||hintOn())))sc.cellFr[last.mv.a]='last';
