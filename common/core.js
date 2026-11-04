@@ -68,7 +68,7 @@ const I18C={fr:{
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
  rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",sounds:"Sons",moves:"Coups",
  noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",
- iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu (6 caractères).",
+ iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu.",codeWatch:"Code pour les observateurs",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
@@ -95,7 +95,7 @@ const I18C={fr:{
  hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
  rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",sounds:"Sounds",moves:"Moves",
  noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",
- iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received (6 characters).",
+ iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received.",codeWatch:"Code for spectators",
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
  st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
@@ -196,7 +196,7 @@ function hostHold(s,code){const g=H.game;if(!g.hold)g.hold=[null,null];if(g.hold
 const myHoldOf=s=>H.game.hold&&s>=0?H.game.hold[s]||null:null;
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,...GAME.rules(g),held:[0,1].map(q=>!!(g.hold&&g.hold[q])),tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
   running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
-  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null,draw:g.draw||null,match:g.match?{...g.match,res:MATCH?MATCH.res:{}}:null};}
+  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,wcode:H.wcode||null,rematch:g.rematch||null,draw:g.draw||null,match:g.match?{...g.match,res:MATCH?MATCH.res:{}}:null};}
 // Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
 // sides swapped (the players exchange seats), same time control and same rule set.
 function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
@@ -237,37 +237,47 @@ const PID=c=>GAME.id+'-p2p-'+c;
 const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+MATCH.code+'-'+MTK;   // a match table keeps its own address
   try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
-function hostSave(){const g=H.game;LS.set(K('p2p-host'),{code:H.code,guestCid:H.guestCid,game:g,savedAt:Date.now(),elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});if(g.match&&MATCH){MATCH.cur=MTK;MATCH.at=Date.now();mSave();}}
+function hostSave(){const g=H.game;LS.set(K('p2p-host'),{code:H.code,wcode:H.wcode,guestCid:H.guestCid,game:g,savedAt:Date.now(),elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});if(g.match&&MATCH){MATCH.cur=MTK;MATCH.at=Date.now();mSave();}}
 function hostReady(s){const g=H.game;if(g.started||g.result||!g.names[0]||!g.names[1]||(g.match&&!g.match.chosen))return;g.ready[s]=true;
   if(g.ready[0]&&g.ready[1]){g.started=true;g.running=true;H.turnStart=Date.now();}hostBroadcast();}
 function hostBroadcast(bump){if(bump)H.game.ver=(H.game.ver||0)+1;hostSyncPause();hostSave();const pub=hostPublic();
-  for(const c of H.conns)if(c.open)c.send({t:'state',game:c===H.guestConn?{...pub,myHold:myHoldOf(c.seat)}:pub});
+  const pubW={...pub,wcode:null,match:pub.match?{...pub.match,code:null}:null};
+  for(const c of H.conns)if(c.open)c.send({t:'state',game:c===H.guestConn?{...pub,myHold:myHoldOf(c.seat)}:pubW});
   showState({...pub,myHold:myHoldOf(mySeat)});}
+// Two codes: the game's (players; its id also lets them watch) and the spectators' (8 characters: its id only lets watch).
+// The host listens on both; a spectator's code does not give the game's.
+function wpeerStop(){const w=H.wpeer;H.wpeer=null;try{w&&w.destroy();}catch(e){}}
+function hostWatchPeer(){wpeerStop();if(!H.wcode)return;const wp=newPeer(PID(H.wcode));H.wpeer=wp;
+  wp.on('connection',conn=>{if(H.wpeer!==wp||role!=='host'){try{conn.close();}catch(e){}return;}conn.watchOnly=true;
+    conn.on('data',d=>{if(H.wpeer===wp)hostOnData(conn,d);});conn.on('close',()=>{if(H.wpeer===wp)hostDrop(conn);});conn.on('error',()=>{if(H.wpeer===wp)hostDrop(conn);});});
+  wp.on('disconnected',()=>{if(H.wpeer!==wp)return;setTimeout(()=>{try{if(!wp.destroyed)wp.reconnect();}catch(e){}},1500);});
+  wp.on('error',()=>{});}
 function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
-  if(saved){Object.assign(H,{code:saved.code,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
+  if(saved){Object.assign(H,{code:saved.code,wcode:saved.wcode,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
+  if(!H.wcode)H.wcode=rnd(8);
   H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);Object.assign(g0,GAME.rules(g0));
   if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
   mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
   setHash('host-'+H.code);status(t('st_open'));showGame();
   const me=newPeer(H.peerId);peer=me;
-  me.on('open',()=>{if(peer!==me)return;fillCodes();hostBroadcast();});
+  me.on('open',()=>{if(peer!==me)return;fillCodes();hostBroadcast();hostWatchPeer();});
   me.on('connection',conn=>{if(peer!==me){try{conn.close();}catch(e){}return;}conn.on('data',d=>{if(peer===me)hostOnData(conn,d);});conn.on('close',()=>{if(peer===me)hostDrop(conn);});conn.on('error',()=>{if(peer===me)hostDrop(conn);});});
   me.on('disconnected',()=>{if(peer!==me)return;status(t('st_lostMm'));setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500);});
   me.on('error',e=>{if(peer!==me)return;
-    if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}becomeClient();}
+    if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}wpeerStop();becomeClient();}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
 function becomeClient(){const pub={...hostPublic(),myHold:myHoldOf(mySeat)},code=H.code,seat=mySeat,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
   if(pub.running&&!pub.result){const r=replay(pub,pub.moves,pub.result);if(!r.over)pub.clock[r.st.turn]=Math.max(0,pub.clock[r.st.turn]-pub.elapsed);}
   clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
 function becomeHost(){if(!view)return;if(C.pending){pendClear();delete view.runSeat;}LS.del(K('p2p-guest'));C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
   const rem=remaining(),v=view;
-  H.code=C.code;H.guestCid=null;H.game={size:v.size,...GAME.rules(v),hold:v.myHold&&!v.moves.length?(mySeat===0?[v.myHold,null]:[null,v.myHold]):null,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
+  H.code=C.code;H.wcode=v.wcode||rnd(8);H.guestCid=null;H.game={size:v.size,...GAME.rules(v),hold:v.myHold&&!v.moves.length?(mySeat===0?[v.myHold,null]:[null,v.myHold]):null,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
     ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0,match:v.match?{...v.match}:null};
   if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
   H.turnStart=Date.now();hostStart(null);}
 function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
 function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping')return;const g=H.game;
-  if(d.t==='hello'){
+  if(d.t==='hello'){if(conn.watchOnly)d={...d,role:'watch'};
     const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
     if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
     if(d.role==='play'&&s>=0&&s!==mySeat){
@@ -606,18 +616,23 @@ const aiFirst=()=>{const v=$('aFirst').value;return v==='me'?0:v==='ai'?1:Math.r
 // ---------- invitation codes ----------
 function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
   $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
-  if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=base+'#watch-'+code;}}
+  const wc=guest?view&&view.wcode:H.wcode;
+  if($('codeWC')){$('codeWC').value=wc||'';$('codeWBox').hidden=!wc;}
+  if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=wc?base+'#watch-'+wc:'';if($('watchLinkBox'))$('watchLinkBox').hidden=!wc;}}
 
 // ---------- start screen ----------
 function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart($('jCode').value,nm||t('p2'),asWatch);}
+  // a whole link pasted: its kind and code; a code alone: the spectators' have 8 characters
+  const raw=$('jCode').value,lk=/#(join|watch)-([a-z0-9]+)/i.exec(raw),code=lk?lk[2].toLowerCase():cleanCode(raw);
+  const w=asWatch||(lk?lk[1].toLowerCase()==='watch':code.length===8);
+  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart(code,nm||t('p2'),w);}
 function exportCode(){const v=view,c=remaining();const p={size:v.size,...GAME.rules(v),tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
   return GAME.codeTag+'.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
 function importCode(t){const tag=GAME.codeTag+'.';t=String(t||'').replace(/\s+/g,'');if(t.indexOf(tag)!==0)throw 0;
   const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(tag.length)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;const rr=GAME.rules(p);p.size=GAME.size;Object.assign(p,rr);return p;}
 function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
   const th=[null,null];th[seat]=hh(MYID);
-  Object.assign(H,{code:rnd(6),guestCid:null,game:{size:GAME.size,...GAME.rules(p),hold:null,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
+  Object.assign(H,{code:rnd(6),wcode:rnd(8),guestCid:null,game:{size:GAME.size,...GAME.rules(p),hold:null,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
     started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
 // ---------- SGF: export of the game shown, reading of a file (read only) ----------
 // The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XR[rules, JSON] ;B[…];W[…]…). B and W are
@@ -712,7 +727,7 @@ const mSave=()=>{if(MATCH)LS.set('mochalunt-'+MATCH.code,MATCH);};
 // the score, by role: 1 a win, ½ a draw
 function mScore(rec){const p={c:0,i:0};for(const k in rec.res||{}){const w=rec.res[k].w;if(w==='d'){p.c+=.5;p.i+=.5;}else if(w)p[w]+=1;}return p;}
 const mNum=x=>String(x).replace('.',lang==='fr'?',':'.');
-function mGo(k,kind){const P=mPlan(MATCH);C.stop=true;try{peer&&peer.destroy();}catch(e){}
+function mGo(k,kind){const P=mPlan(MATCH);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
   location.href=k>=P.length?'mochalunt.html#res-'+MATCH.code:P[k].page+'.html#m'+kind+'-'+MATCH.code+'-'+k;}
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
@@ -774,7 +789,7 @@ function mStart(kind,code,k){MATCH=LS.get('mochalunt-'+code,null);MTK=k;MTW=kind
   const saved=LS.get(K('p2p-host'),null);
   if(saved&&saved.code===tc&&saved.game&&saved.game.match){hostStart(saved);return true;}
   const sg=LS.get(K('p2p-guest'),null);if(sg&&sg.code===tc){clientStart(tc,MATCH.name,false);return true;}
-  H.code=tc;H.guestCid=null;H.game=mTableGame();H.turnStart=Date.now();hostStart(null);return true;}
+  H.code=tc;H.wcode=MATCH.wcode?MATCH.wcode+'t'+k:rnd(8);H.guestCid=null;H.game=mTableGame();H.turnStart=Date.now();hostStart(null);return true;}
 
 // ---------- start-up: called by the page once GAME is defined ----------
 function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en}};sgfUi();
@@ -844,7 +859,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     if($('nav').hidden)return;
     const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
   // Home: leave the game and come back to the game's own start page
-  $('homeBtn').onclick=()=>{try{stopAI();}catch(e){}C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;setHash('');location.reload();};
+  $('homeBtn').onclick=()=>{try{stopAI();}catch(e){}C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();setHash('');location.reload();};
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
   const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden;
   $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
@@ -873,7 +888,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(Math.random()<.5?'host':'guest');const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set(K('tc'),tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
     const names=first==='host'?[nm,'']:['',nm];
     const th=[null,null];th[first==='host'?0:1]=hh(MYID);
-    Object.assign(H,{code:rnd(6),guestCid:null,game:{size:GAME.size,...GAME.form('c'),hold:null,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
+    Object.assign(H,{code:rnd(6),wcode:rnd(8),guestCid:null,game:{size:GAME.size,...GAME.form('c'),hold:null,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
     H.turnStart=Date.now();hostStart(null);});
   $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
   $('jWatch').onclick=()=>joinClick(true);

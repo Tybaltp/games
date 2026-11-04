@@ -150,19 +150,19 @@ function home(){show('vHome');history.replaceState(null,'',location.pathname);$(
     li.append(sp,b);ul.appendChild(li);}}
 $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('nName').value.trim().slice(0,24);if(!nm){$('nName').focus();return;}LS.set('games-name',nm);
   const team=$('nFmt').value==='team',jv=$('nJ1').value;
-  const rec={code:rnd(6),excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now()};
+  const rec={code:rnd(6),wcode:rnd(8),excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now()};
   LS.set('mochalunt-'+rec.code,rec);made(rec);});
 function made(rec){show('vMade');const base=location.href.split('#')[0];
-  $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec);$('watchLink').value=base+'#watch-'+rec.code+'-'+tail(rec);
+  $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec)+'-'+rec.wcode;$('watchLink').value=base+'#watch-'+rec.wcode+'-'+tail(rec);   // two codes: the spectators' does not give the players'
   $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});planList($('madePlan'),rec.excl);
   $('madeGo').onclick=()=>{location.href=tableUrl(rec,0,'t');};}
 
 // ---------- an invitation ----------
-function join(code,x){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
+function join(code,x,wcode){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
   const old=recOf(code);if(old&&old.me){location.replace(tableUrl(old,nextK(old),'t'));return;}
   show('vJoin');planList($('joinPlan'),p.excl);$('joinJ1').textContent=t('j1Is',{n:p.j1==='i'?t('you'):t('opp')});$('jName').value=LS.get('games-name','');
   $('joinForm').onsubmit=e=>{e.preventDefault();const nm=$('jName').value.trim().slice(0,24);if(!nm){$('jName').focus();return;}LS.set('games-name',nm);
-    const rec={code,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:{i:nm},res:{},at:Date.now()};LS.set('mochalunt-'+code,rec);location.href=tableUrl(rec,0,'t');};}
+    const rec={code,wcode:wcode||null,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:{i:nm},res:{},at:Date.now()};LS.set('mochalunt-'+code,rec);location.href=tableUrl(rec,0,'t');};}
 
 // ---------- a spectator: the open table, from the last one back ----------
 function watch(code,x){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
@@ -190,7 +190,7 @@ function result(code){const rec=recOf(code);if(!rec||rec.excl===undefined){home(
 function texts(){document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));}
 function route(){const h=location.hash;let m;
-  if((m=/^#join-([a-z0-9]+)-([a-z0-9]+)$/.exec(h)))join(m[1],m[2]);
+  if((m=/^#join-([a-z0-9]+)-([a-z0-9]+)(?:-([a-z0-9]+))?$/.exec(h)))join(m[1],m[2],m[3]);
   else if((m=/^#watch-([a-z0-9]+)-([a-z0-9]+)$/.exec(h)))watch(m[1],m[2]);
   else if((m=/^#res-([a-z0-9]+)$/.exec(h)))result(m[1]);
   else home();}
