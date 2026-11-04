@@ -18,7 +18,7 @@
   /* dark pieces */
   --pd:#8c4a28;--pd-l:#3a1c0c;--pd-g:#2e160a;--pd-a:#6e3a20;--pd-b:#552b16;
   --s0:#2c8a6e;--s0e:#1b5c49;--s1:#b9503d;--s1e:#7d3123;
-  --accent:#d98f1f;--accent-ink:#4f3200;--danger:#d24a35;
+  --accent:#d98f1f;--accent-ink:#4f3200;--hov:color-mix(in srgb,var(--accent) 22%,transparent);--danger:#d24a35;
   --board-ar:376/470;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -27,14 +27,14 @@
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
-  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}}
+  --accent:#efa93c;--accent-ink:#3d2700;--hov:color-mix(in srgb,var(--accent) 42%,transparent);--danger:#e8634d;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
   --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#2a241c;
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
-  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
+  --accent:#efa93c;--accent-ink:#3d2700;--hov:color-mix(in srgb,var(--accent) 42%,transparent);--danger:#e8634d;color-scheme:dark}
 .qmini{height:1.9em;width:auto;vertical-align:middle;margin:-.35em 0}
 .notice .msg .qmini,.status .qmini{height:1.8em;margin:0}   /* the message clips what overflows its lines */
 </style>
@@ -344,7 +344,7 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?
   if(sc.win)el('polygon',{points:winOutline(sc.win).map(([u,v])=>f1(m+(u+2)*S)+','+f1(m+(v+2)*S)).join(' '),'stroke-linejoin':'round',...fr('win')},svg);
   el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
   for(let p=0;p<16;p++){const x=(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
-    el('rect',{x,y,width:rs,height:rh,fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
+    el('rect',{x,y,width:rs,height:rh,fill:sc.resHov===p?'var(--hov)':'transparent',rx:6},g);
     const c=sc.res[p];if(c){piece2D(g,c.p,x+rs/2,y+rh/2,rs*.36,c.op);el('title',{},g).textContent=pieceName(p);}
     const fk=sc.resFr[p];if(fk&&c)ring2D(svg,c.p,x+rs/2,y+rh/2,rs*.36,fk);else if(fk)el('rect',{x:x+2,y:y+2,width:rs-4,height:rh-4,rx:6,...fr(fk)},svg);}}
 // 3D: a ring in the board's plane around a piece's base, of its shape (a circle, a square with rounded corners);
@@ -380,7 +380,7 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   // reserve
   const rS=S*.82;el('rect',{x:f1(left),y:f1(Y0-4),width:f1(Bw),height:f1(2*rh+8),rx:8,fill:'var(--res)'},svg);
   for(let p=0;p<16;p++){const x=left+(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
-    el('rect',{x:f1(x),y:f1(y),width:f1(rs),height:f1(rh),fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
+    el('rect',{x:f1(x),y:f1(y),width:f1(rs),height:f1(rh),fill:sc.resHov===p?'var(--hov)':'transparent',rx:6},g);
     // the piece to place, the piece chosen: the board's ring around its base (dashed while provisional), under the piece
     const c=sc.res[p],fk=sc.resFr[p],bx=x+rs/2,by=y+rh-PR*rS*SQ*1.25-3;
     if(fk){const Q=(u,v)=>{const q=prj(rS,u,v,0);return [bx+q[0],by+q[1]];};el('polygon',{points:pts(ringPts(Q,0,0,p)),'stroke-linejoin':'round',...fr(fk)},g);}
