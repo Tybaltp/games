@@ -64,16 +64,16 @@ const I18C={fr:{
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  cancel:"Annuler",confirmMv:"Confirmer",
  start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
- invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les spectateurs",
+ invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les observateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
  hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
  rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",sounds:"Sons",moves:"Coups",
- noSpect:"Aucun spectateur",spect:"{n} spectateur",spects:"{n} spectateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",
+ noSpect:"Aucun observateur",spect:"{n} observateur",spects:"{n} observateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",
  iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu.",codeWatch:"Code pour les observateurs",
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
+ t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre nom, puis cliquez Jouer.",
  draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",drawQ:"Nulle.",youWinQ:"Vous gagnez.",winsQ:"{n} gagne.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
@@ -956,7 +956,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
   $('hName').value=nickGet();$('jName').value=nickGet();
   $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
-    const nm=$('hName').value.trim()||t('p1');nickSet(nm);
+    const typed=$('hName').value.trim(),nm=typed||t('p1');if(typed)nickSet(typed);   // no name typed: « Player 1 » for this game only, the saved nickname stays
     const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(Math.random()<.5?'host':'guest');const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set(K('tc'),tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
     const names=first==='host'?[nm,'']:['',nm];
     const th=[null,null];th[first==='host'?0:1]=hh(MYID);
