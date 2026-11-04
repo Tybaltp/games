@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=14">
+<link rel="stylesheet" href="common/games.css?v=15">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -151,7 +151,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=18"></script>
+<script src="common/core.js?v=19"></script>
 <script>
 // ===== Arimaa rules engine =====
 // Board: 64 squares, index = row*8+col, row 0 = rank 1 (Gold's home), col 0 = file a.
@@ -227,6 +227,7 @@ function ArimaaEngine(){
 }
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
+ mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
  title:"Arimaa",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
  setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
@@ -250,6 +251,7 @@ const AR_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
+ mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_2:"Silver",
  title:"Arimaa",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
  setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",

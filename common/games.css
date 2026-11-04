@@ -211,3 +211,11 @@ h1 a.gname{color:inherit;text-decoration:none}
 .notice .btns.measure>button{flex-shrink:0;max-width:none}
 /* buttons that overflow even with their short labels: two rows, the bar grows (fitBtns) */
 .notice.rows2{height:auto;min-height:var(--barH);align-items:stretch}.notice.rows2 .btns{flex-wrap:wrap;justify-content:center}.notice.rows2 .btns button{flex:1 1 auto}.notice .bs{display:none}.notice.short .bl{display:none}.notice.short .bs{display:inline}
+/* Mochalunt: the match card in the side panel (table, score, seat choice, the tables) */
+.mcard h2{font-size:.9rem}
+.mcard .mscore{margin:0;font-weight:650}
+.mlist{margin:0;padding:0;list-style:none;font-size:.85rem;display:flex;flex-direction:column;gap:2px}
+.mlist li{display:flex;justify-content:space-between;gap:8px}
+.mlist li.cur{font-weight:650}
+.mlist a{color:inherit}
+.mlist .mres{color:var(--muted);text-align:right}
