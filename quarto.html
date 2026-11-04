@@ -325,7 +325,11 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?
     for(let j=0;j<4;j++){el('text',{...lab,x:m+j*S+S/2,y:B+17},svg).textContent='abcd'[j];el('text',{...lab,x:-11,y:m+j*S+S/2+4},svg).textContent=String(4-j);}}
   for(let i=0;i<16;i++){const x=m+(i%4)*S,y=m+((i/4)|0)*S,k='c'+i,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x,y,width:S,height:S,fill:'transparent'},g);const c=sc.cells[i];if(c)piece2D(g,c.p,x+S/2,y+S/2,S*.36,c.op);
-    const fk=sc.cellFr[i];if(fk)el('rect',{x:x+4,y:y+4,width:S-8,height:S-8,rx:5,...fr(fk)},svg);}
+    const fk=sc.cellFr[i];
+    // the last move: a ring of the piece's shape, of one size between short and tall (inside a tall piece, around a short one)
+    if(fk==='last'&&c){const R=S*.36*1.05,a=R*.9,X=x+S/2,Y=y+S/2;
+      if(c.p&4)el('rect',{x:f1(X-a),y:f1(Y-a),width:f1(2*a),height:f1(2*a),rx:f1(R*.08),...fr(fk)},svg);else el('circle',{cx:f1(X),cy:f1(Y),r:f1(R),...fr(fk)},svg);}
+    else if(fk)el('rect',{x:x+4,y:y+4,width:S-8,height:S-8,rx:5,...fr(fk)},svg);}
   if(sc.win)el('polygon',{points:winOutline(sc.win).map(([u,v])=>f1(m+(u+2)*S)+','+f1(m+(v+2)*S)).join(' '),'stroke-linejoin':'round',...fr('win')},svg);
   el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
   for(let p=0;p<16;p++){const x=(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
@@ -350,7 +354,7 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   // cells (click targets and frames) under the pieces; pieces from the back to the front
   const cellPoly=(i,ins)=>{const x=cx(i),y=cy(i),h=.5-ins;return pts([P(x-h,y-h),P(x+h,y-h),P(x+h,y+h),P(x-h,y+h)]);};
   for(let i=0;i<16;i++){const k='c'+i;el('polygon',{points:cellPoly(i,0),fill:'transparent',...(sc.click.has(k)?{class:'cell','data-k':k}:{})},svg);
-    const fk=sc.cellFr[i];if(fk)el('polygon',{points:cellPoly(i,.07),'stroke-linejoin':'round',...fr(fk)},svg);}
+    const fk=sc.cellFr[i];if(fk)el('polygon',{points:cellPoly(i,fk==='last'?.12:.07),'stroke-linejoin':'round',...fr(fk)},svg);}   // the last move: closer to the piece
   if(sc.win)el('polygon',{points:pts(winOutline(sc.win).map(([u,v])=>P(u,v))),'stroke-linejoin':'round',...fr('win')},svg);
   const order=[...Array(16).keys()].sort((a,b)=>(cx(a)+cy(a))-(cx(b)+cy(b))||cx(a)-cx(b));
   for(const i of order){const c=sc.cells[i];if(!c)continue;const q=P(cx(i),cy(i));pieceIso(svg,c.p,q[0],q[1],S,c.op);}
