@@ -246,7 +246,9 @@ const TI_I18N={fr:{
  <li><b>Saut</b> : si aucune pièce n'est en ligne avec le pion, posez-le sur la pièce de votre choix et prenez-la ; le tour s'arrête.</li>
  <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Quand chaque couleur a été prise au moins une fois par chacun, plus personne ne peut en compléter une : gagne alors celui qui a au moins 4 pièces dans au moins 4 couleurs (on continue tant que personne ne les a).</li>
  <li><b>Cartes joueurs</b> : pièces prises par couleur ; encadré = 4 ou plus (majorité), plein = 7.</li>
- <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
+ <li><b>Jouer</b> : cliquez une pièce que le pion peut atteindre (au survol, elle s'affiche en transparence) : le pion s'y pousse et la prend. Tant qu'une pièce de la même couleur est atteignable, continuez, ou cliquez Terminer le tour ; un tour qui s'arrête de lui-même après plusieurs prises attend Confirmer. Cliquer la dernière pièce prise la rend. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
  title:"Tintas",lede:"One shared pawn, seven colours: collect a full set.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
@@ -264,7 +266,9 @@ const TI_I18N={fr:{
  <li><b>Jump</b>: if no piece is in line with the pawn, put it on any piece you like and take it; your turn ends.</li>
  <li><b>Winning</b>: all 7 pieces of one colour win at once. Once every colour has been taken at least once by each player, no one can complete a colour any more: the player with at least 4 pieces in at least 4 colours then wins (play goes on until someone has them).</li>
  <li><b>Player cards</b>: pieces taken per colour; outlined = 4 or more (majority), filled = 7.</li>
- <li><b>Clock</b>: chosen when the game is created. It starts when both players have clicked Start the game, and stops while a player is disconnected.</li></ul>
+ <li><b>Playing</b>: click a piece the pawn can reach (hovering shows it in transparency): the pawn is pushed onto it and takes it. As long as a piece of the same colour can be reached, go on, or click End turn; a turn that ends by itself after several captures waits for Confirm. Clicking the last piece taken puts it back. The turn's commands are in the bar under the board: Reset, End turn, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Original rules: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, Creative Commons BY-NC 4.0 licence.</p>`
 }};
 // ---------- board geometry ----------

@@ -245,7 +245,10 @@ const Q_I18N={fr:{
  <li><b>Tour</b> : on pose sur une case libre la pièce choisie par l'adversaire, puis on choisit celle qu'il posera. Au premier coup, le premier joueur choisit seulement.</li>
  <li><b>Victoire</b> : gagne celui qui complète une ligne de quatre pièces (rangée, colonne ou diagonale) partageant au moins une caractéristique.</li>
  <li><b>Variante avancée</b> (<span class="sqState"></span>) : un carré 2 × 2 de quatre pièces partageant une caractéristique gagne aussi.</li>
- <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li></ul>`
+ <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li>
+ <li><b>Jouer</b> : posez la pièce reçue en cliquant une case libre (au survol, elle s'affiche en transparence), puis cliquez dans la réserve la pièce que l'adversaire posera. Cliquer la case ou la pièce choisie l'abandonne. Vue 2D ou 3D dans les Options. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, cinq niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  title:"Quarto",lede:"Give your opponent the piece they will place; line up four pieces sharing a trait.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
  m_aiTxt:"Five levels, to practise.",
@@ -261,7 +264,10 @@ const Q_I18N={fr:{
  <li><b>Turn</b>: place the piece your opponent chose on an empty cell, then choose the one they will place. On the first move, the first player only chooses.</li>
  <li><b>Winning</b>: whoever completes a line of four pieces (row, column or diagonal) sharing at least one trait wins.</li>
  <li><b>Advanced variant</b> (<span class="sqState"></span>): a 2 × 2 square of four pieces sharing a trait wins too.</li>
- <li><b>Draw</b>: all 16 pieces are placed without a win.</li></ul>`
+ <li><b>Draw</b>: all 16 pieces are placed without a win.</li>
+ <li><b>Playing</b>: place the piece received by clicking an empty cell (hovering shows it in transparency), then click in the reserve the piece your opponent will place. Clicking the chosen cell or piece drops it. 2D or 3D view in the Options. The move commands are in the bar under the board: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, five levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 }};
 // The texts of a win: « four pieces in a line, all dark and hollow » (whyKey: the shape, the traits all have, none has)
 {const ADJ={fr:{all:["foncées","grandes","carrées","creuses"],none:["claires","petites","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
