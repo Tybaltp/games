@@ -217,8 +217,8 @@ const Q_I18N={fr:{
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
  traits:["claire","foncée","ronde","carrée","pleine","creuse","basse","haute"],
  gives:"donne la {p}",givesM:"donne {p}",sep:" : ",toPlace:"à poser",
- st_give1:"choisissez la pièce que l'adversaire va poser.",st_place:"posez la pièce encadrée, puis choisissez celle que l'adversaire posera.",
- st_giveNow:"choisissez la pièce que l'adversaire posera.",st_placeNow:"posez la pièce encadrée.",
+ st_give1:"choisissez la pièce que l'adversaire va poser.",
+ st_giveNow:"choisissez la pièce suivante.",st_placeNow:"posez la pièce encadrée.",
  w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est rendue par la taille : grande (haute) ou petite (basse) ; le trou garde la même taille.</li>
@@ -233,8 +233,8 @@ const Q_I18N={fr:{
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
  traits:["light","dark","round","square","solid","hollow","short","tall"],
  gives:"gives the {p}",givesM:"gives {p}",sep:": ",toPlace:"to place",
- st_give1:"choose the piece your opponent will place.",st_place:"place the framed piece, then choose the one your opponent will place.",
- st_giveNow:"choose the piece your opponent will place.",st_placeNow:"place the framed piece.",
+ st_give1:"choose the piece your opponent will place.",
+ st_giveNow:"choose the next piece.",st_placeNow:"place the framed piece.",
  w_full:"board full with no line",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, tall or short. In the 2D view, height is shown by size: large (tall) or small (short); the hollow keeps the same size.</li>
@@ -446,7 +446,7 @@ function qBoard({r,d,mine}){
 // keep ui only while it is my turn (another player's turn, or a position shown from the list: nothing prepared)
 function resetUiSoft(){if(preparing()||ui.hover){ui=newUi();}}
 function qTurnStatus({r,o,idle,RST}){const st=o.st,who=solo()?seatName(st.turn)+t('sep'):'',cap=s=>who?s:s.charAt(0).toUpperCase()+s.slice(1);
-  let k;if(st.hand<0)k='st_give1';else if(ui.a<0&&ui.g<0)k='st_place';else if(ui.a>=0)k='st_giveNow';else k='st_placeNow';
+  const k=st.hand<0?'st_give1':ui.a<0?'st_placeNow':'st_giveNow';   // one step at a time: place, then give
   status(who+cap(t(k)),'turn',preparing()?[RST]:idle);}
 
 // The player to move: the piece received, small, in their card (« to place »)
