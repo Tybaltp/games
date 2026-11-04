@@ -18,13 +18,6 @@ h1{font-size:1.8rem;margin:0 0 4px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;margin-top:6px}
 .seg button{font:inherit;font-size:.8rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-/* games: as many columns as the width allows */
-.games{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(14.5rem,1fr));gap:12px}
-.games a{display:block;height:100%;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:inherit;text-decoration:none}
-.games a:hover,.games a:focus-visible{border-color:var(--accent)}
-.games a:hover .t,.games a:focus-visible .t{color:var(--accent)}
-.t{display:block;font-size:1.15rem;font-weight:650}
-.d{display:block;color:var(--muted);font-size:.92rem;margin-top:2px}
 /* game cards: the game's name top left, a piece of its board bottom right behind an oblique cut underlined in the
    game's accent; each card takes the game page's tint, ink and accent (dark: its panel tint); images in img/cartes/ */
 .cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:14px}
@@ -53,7 +46,6 @@ details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;back
 details.how summary{cursor:pointer;font-weight:600}
 details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
 details.how li{margin:.35em 0}
-h2.sect{font-size:1.1rem;margin:28px 0 10px}
 details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
 </style>
 </head>
@@ -81,10 +73,6 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <li><a class="card c-tintas" href="tintas.html"><span class="ct">Tintas</span><span class="bar"></span><span class="art"></span></a></li>
 <li><a class="card c-dblocks" href="diagonalblocks.html"><span class="ct">Diagonal Blocks</span><span class="bar"></span><span class="art"></span></a></li>
 <li><a class="card c-quarto" href="quarto.html"><span class="ct">Quarto</span><span class="bar"></span><span class="art"></span></a></li>
-</ul>
-<h2 class="sect" data-i18n="tourT"></h2>
-<ul class="games">
-<li><a href="mochalunt.html"><span class="t">Mochalunt</span><span class="d" data-i18n="mochalunt"></span></a></li>
 </ul>
 </main>
 <script>
