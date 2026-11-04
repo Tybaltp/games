@@ -9,7 +9,7 @@
 <style>
 /* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
-  --bg:#e9eff7;--panel:#f9fbfe;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
+  --bg:#ccd9e9;--panel:#e5ecf4;--ink:#1c282d;--muted:#5d6d74;--line:#b4bfcd;
   --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--ghost:#355b75;
   --o1:#ffb347;--o2:#e07a12;--o3:#8a4300;--b1:#6fb3ff;--b2:#1f6fd6;--b3:#0b3a7a;
   --s0:var(--o2);--s0e:var(--o3);--s1:var(--b2);--s1e:var(--b3);
@@ -30,7 +30,7 @@ html.nocoords{--board-ar:610/579.615}
 .board{--bp:10px;padding:10px;border-radius:18px}
 html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 @media (orientation:landscape) and (max-height:500px){.board{--bp:4px;padding:4px;border-radius:12px}}
-/* players' cards: birds in the sky, in reserve, number of flocks */
+/* players' cards: birds in the sky, number of flocks */
 .player .tally{display:flex;gap:6px;font-size:.66rem;overflow:hidden;letter-spacing:-.01em}
 .player{container-type:inline-size}
 .player .tally span::before{content:attr(data-l) ' ';color:var(--muted)}
@@ -181,7 +181,7 @@ function VoloEngine(){
   const DQ=[1,1,0,-1,-1,0],DR=[0,-1,-1,0,1,1];
   const NB=new Int8Array(N*6).fill(-1);
   for(let i=0;i<N;i++)for(let d=0;d<6;d++){const k=AT[(Q[i]+DQ[d])+','+(R[i]+DR[d])];NB[i*6+d]=k===undefined?-1:k;}
-  const TURN=N,PASS=N+1,SZ=N+2,MAX=60;
+  const TURN=N,PASS=N+1,SZ=N+2,MAX=Infinity;   // no reserve: the birds are unlimited (the designer's intent)
   // Nests: one step inward from each removed corner; Orange (1) and Blue (2) alternate.
   const NEST=[];for(let d=0;d<6;d++)NEST.push(AT[(DQ[d]*(RAD-1))+','+(DR[d]*(RAD-1))]);
   function init(){const s=new Int8Array(SZ);NEST.forEach((c,k)=>{s[c]=1+(k&1);});s[TURN]=0;s[PASS]=0;return s;}
@@ -257,8 +257,8 @@ function VoloEngine(){
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
  lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six niveaux, pour s'entraîner.",st_autoPass:"Aucun coup possible : vous passez.",
- needConfirm:"Confirmer chaque coup avant de le jouer",title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",reserve:"rés.",reserveL:"réserve",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
- <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Chaque joueur a 60 oiseaux ; 3 débutent dans les nids près des coins. Orange commence.</li>
+ needConfirm:"Confirmer chaque coup avant de le jouer",title:"Volo",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
+ <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
  <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
  <li><b>Voler</b> : un oiseau seul, ou une ligne droite de vos oiseaux, avance en ligne droite (en file ou de front) sur des points vides seulement ; tout oiseau bloque le passage. Il doit se poser contre un autre de vos oiseaux de sorte que sa nuée grandisse, sans scinder aucune nuée.</li>
@@ -269,8 +269,8 @@ const VO_I18N={fr:{
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",
  lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six levels, to practise.",st_autoPass:"No move available: you pass.",
- needConfirm:"Confirm each move before playing it",title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",reserve:"res.",reserveL:"reserve",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
- <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Each player has 60 birds; 3 start in the nests near the corners. Orange plays first.</li>
+ needConfirm:"Confirm each move before playing it",title:"Volo",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Birds are unlimited; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
  <li><b>Add a bird</b>: on any empty point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
  <li><b>Fly</b>: a single bird, or a straight line of your birds, moves any distance in a straight line (in file or side by side) over empty points only; any bird blocks the way. It must land next to one of your other birds so that its flock grows, and no flock may be split.</li>
@@ -441,11 +441,11 @@ function voTurnStatus({r,o,prep,idle,undoB,RST}){
   else if(prep)status('','turn',[RST]);
   else if(o.onlyPass)status(autoPass(r)?t('st_autoPass'):'','turn',[undoB]);
   else status(solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn'),'turn',idle.concat([o.canPass?{label:t('pass'),on:doPass}:null]));}
-// Players' cards: birds in the sky, in reserve, and flocks, under each name (added to the cards the shared code draws)
+// Players' cards: birds in the sky and flocks, under each name (added to the cards the shared code draws)
 function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
   for(const p of [0,1]){const pc=$('pl'+p);if(!pc)continue;const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
     const lab=(l,s)=>`title="${t(l)}" data-l="${t(l)}" data-s="${t(s||l)}"`;
-    ty.innerHTML=`<span ${lab('sky')}>${on}</span><span ${lab('reserveL','reserve')}>${E.MAX-on}</span><span ${lab('flocks')}>${fl}</span>`;pc.appendChild(ty);}}
+    ty.innerHTML=`<span ${lab('sky')}>${on}</span><span ${lab('flocks')}>${fl}</span>`;pc.appendChild(ty);}}
 {const coreRender=renderGame;renderGame=function(){coreRender();voTally();};}
 
 // ---------- drawing ----------
