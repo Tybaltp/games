@@ -35,6 +35,7 @@
 //  logDesc?(e)                   Extra description line under a move-list entry
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
 //  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
+//  rich?(txt)                    status texts with pictures: txt holds U+2063…U+2063 marks; returns {node(), plain}
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
 //  home()                        draws the board shown on the home page (and again when the coordinates are switched)
 //  simMode?(g), simHold?(g,r), holdLegal?(r,s,code,g)  simultaneous hidden first moves over the network: the rules use it ·
@@ -156,9 +157,11 @@ const H={};             // host-only state
 
 // The bar under the board (#notice): a message (2 lines at most) and the move commands available now. A command that
 // does not apply is left out, never shown disabled.
-function status(txt,cls,btns){const s=$('status');s.className='status'+(cls?' '+cls:'');s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
+// Rich status texts: a game may mark pictures in a text with U+2063 (GAME.rich(txt) gives {node(), plain})
+const richOf=txt=>GAME.rich&&typeof txt==='string'&&txt.includes('\u2063')?GAME.rich(txt):null;
+function status(txt,cls,btns){const s=$('status'),rt=richOf(txt);s.className='status'+(cls?' '+cls:'');if(rt){s.textContent='';s.append(rt.node());}else s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
   const n=$('notice');if(!n)return;btns=(btns||[]).filter(Boolean);n.className='notice on'+(cls?' '+cls:'')+(btns.length?' has-btns':'');n.textContent='';
-  if(txt){const sp=document.createElement('span');sp.className='msg';sp.textContent=txt;sp.title=txt;n.appendChild(sp);}
+  if(txt){const sp=document.createElement('span');sp.className='msg';if(rt){sp.append(rt.node());sp.title=rt.plain;}else{sp.textContent=txt;sp.title=txt;}n.appendChild(sp);}
   if(btns.length){const bx=document.createElement('div');bx.className='btns';n.appendChild(bx);
     for(const b of btns){const e=document.createElement('button');e.type='button';e.title=b.label;if(b.primary)e.className='primary';if(b.id)e.id=b.id;e.onclick=b.on;
       // b.short: a shorter label, used only when the buttons don't fit in the bar
