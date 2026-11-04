@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mochalunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
 <style>
@@ -11,7 +13,7 @@
 @media (prefers-color-scheme:dark){:root{--bg:#151515;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--panel:#1d1c1b;--accent:#E1737D;--err:#f28b82}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
-main{max-width:40rem;margin:0 auto;padding:6vh 16px 48px}
+main{max-width:48rem;margin:0 auto;padding:6vh 16px 48px}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
 h1{font-size:1.8rem;margin:0}
 h1 a{color:var(--muted);text-decoration:none;font-size:1rem;font-weight:500}
@@ -20,15 +22,32 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;margin-top:6px}
 .seg button{font:inherit;font-size:.8rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}
-.card[hidden],[hidden]{display:none!important}
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}
+[hidden]{display:none!important}
 label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
 input,select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
 button{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
 button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row > *{flex:1}
-.plan{margin:0;padding-left:1.4em}.plan li{margin:.15em 0}
-.plan .off{color:var(--muted);text-decoration:line-through}
+/* the match's games as the home page's cards, in table order: one column on a phone, two on a wide screen (2 × 2, or
+   2 × 2 + 1 with the fifth centred); under each card its clock and rule, or its result */
+.plan{list-style:none;margin:4px 0;padding:0;display:grid;grid-template-columns:1fr;gap:16px 14px}
+@media (min-width:600px){.plan{grid-template-columns:repeat(4,1fr)}.plan li{grid-column:span 2}.plan li:last-child:nth-child(odd){grid-column:2/span 2}}
+.plan .gm{margin:6px 2px 0;font-size:.9rem;color:var(--muted);display:flex;gap:8px;align-items:baseline}
+.plan .gm b{flex:none;font-size:.78rem;font-weight:650;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:0 8px}
+.gc{position:relative;display:block;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:var(--gbg);color:var(--gink);text-decoration:none;isolation:isolate}
+.gc .ct{position:absolute;left:18px;top:14px;z-index:3;max-width:50%;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:2.15rem;line-height:1.05;letter-spacing:-.01em;transition:color .2s}
+a.gc:hover .ct,a.gc:focus-visible .ct{color:var(--gacc)}
+a.gc:focus-visible{outline:2px solid var(--gacc);outline-offset:3px}
+.gc .art,.gc .bar{position:absolute;right:0;top:0;bottom:0;width:76%}
+.gc .art{background:var(--img) center/cover no-repeat;clip-path:polygon(calc(52% + 6px) 0,100% 0,100% 100%,6px 100%)}
+.gc .bar{background:var(--gacc);clip-path:polygon(52% 0,calc(52% + 6px) 0,6px 100%,0 100%)}
+.c-volo{--gbg:#eef1f2;--gink:#1c282d;--gacc:#2f6fd6;--img:url(img/cartes/volo.svg)}
+.c-arimaa{--gbg:#f1efe9;--gink:#26231d;--gacc:#2f7d8c;--img:url(img/cartes/arimaa.svg)}
+.c-gyges{--gbg:#f1efe9;--gink:#26231d;--gacc:#d98f1f;--img:url(img/cartes/gyges.svg)}
+.c-tintas{--gbg:#eef0f1;--gink:#1d2629;--gacc:#6a3790;--img:url(img/cartes/tintas.svg)}
+.c-dblocks{--gbg:#f2efe7;--gink:#22231f;--gacc:#9c2457;--img:url(img/cartes/dblocks.svg)}
+@media (prefers-color-scheme:dark){.c-volo{--gbg:#172125;--gink:#e2e9eb;--gacc:#6aa2f5;--img:url(img/cartes/volo-dark.svg)}.c-arimaa{--gbg:#1d1c19;--gink:#ebe6db;--gacc:#3f95a5;--img:url(img/cartes/arimaa-dark.svg)}.c-gyges{--gbg:#1f1c17;--gink:#ebe5d8;--gacc:#efa93c;--img:url(img/cartes/gyges-dark.svg)}.c-tintas{--gbg:#192226;--gink:#e2e9eb;--gacc:#a676d4;--img:url(img/cartes/tintas-dark.svg)}.c-dblocks{--gbg:#1b1f1d;--gink:#e6e8e3;--gacc:#d4588a;--img:url(img/cartes/dblocks-dark.svg)}}
 .hint{color:var(--muted);font-size:.85rem;margin:0}
 .err{color:var(--err);font-size:.88rem;margin:0}
 .big{font-size:1.25rem;font-weight:650;margin:0}
@@ -37,7 +56,6 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .matches li{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:8px}
 .matches .acts{display:flex;gap:6px;flex:none}
 .matches li:first-child{border-top:0;padding-top:0}
-.res{margin:0;padding-left:1.4em}.res li{margin:.25em 0}.res a{color:inherit}
 </style>
 </head>
 <body>
@@ -47,13 +65,13 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 
 <!-- home: my matches, a new match -->
 <section id="vHome">
-  <div class="card" id="mineCard" hidden><h2 data-i18n="mine"></h2><ul class="matches" id="mineList"></ul></div>
-  <form class="card" id="newForm">
+  <div class="panel" id="mineCard" hidden><h2 data-i18n="mine"></h2><ul class="matches" id="mineList"></ul></div>
+  <form class="panel" id="newForm">
     <h2 data-i18n="newT"></h2>
     <label><span data-i18n="name"></span><input id="nName" maxlength="24" autocomplete="nickname"></label>
     <label><span data-i18n="fmt"></span><select id="nFmt"><option value="all" data-i18n="fmtAll"></option><option value="team" data-i18n="fmtTeam"></option></select></label>
     <label id="nExclW" hidden><span data-i18n="excl"></span><select id="nExcl"></select></label>
-    <label><span data-i18n="j1"></span><select id="nJ1"><option value="rnd" data-i18n="j1Rnd"></option><option value="c" data-i18n="j1Me"></option><option value="i" data-i18n="j1Opp"></option></select></label>
+    <label><span data-i18n="j1"></span><select id="nJ1"><option value="c" data-i18n="j1Me"></option><option value="i" data-i18n="j1Opp"></option><option value="rnd" data-i18n="j1Rnd"></option></select></label>
     <p class="hint" data-i18n="j1Hint"></p>
     <ol class="plan" id="nPlan"></ol>
     <button class="primary" type="submit" data-i18n="create"></button>
@@ -62,7 +80,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 
 <!-- the match just created: the links to send -->
 <section id="vMade" hidden>
-  <div class="card">
+  <div class="panel">
     <h2 data-i18n="madeT"></h2>
     <p class="hint" id="madeJ1"></p>
     <label><span data-i18n="invLink"></span><span class="link"><input id="invLink" readonly><button type="button" data-copy="invLink" data-i18n="copy"></button></span></label>
@@ -74,7 +92,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 
 <!-- an invitation -->
 <section id="vJoin" hidden>
-  <form class="card" id="joinForm">
+  <form class="panel" id="joinForm">
     <h2 data-i18n="joinT"></h2>
     <p class="hint" id="joinJ1"></p>
     <ol class="plan" id="joinPlan"></ol>
@@ -85,12 +103,12 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 
 <!-- a spectator: looking for the table in play -->
 <section id="vWatch" hidden>
-  <div class="card"><h2 data-i18n="watchT"></h2><p class="hint" id="watchMsg"></p><button type="button" id="watchRetry" data-i18n="retry" hidden></button></div>
+  <div class="panel"><h2 data-i18n="watchT"></h2><p class="hint" id="watchMsg"></p><button type="button" id="watchRetry" data-i18n="retry" hidden></button></div>
 </section>
 
 <!-- the result -->
 <section id="vRes" hidden>
-  <div class="card"><h2 data-i18n="resT"></h2><p class="big" id="resLine"></p><ol class="res" id="resList"></ol>
+  <div class="panel"><h2 data-i18n="resT"></h2><p class="big" id="resLine"></p><ol class="plan" id="resList"></ol>
     <button type="button" class="primary" id="resGo" hidden></button></div>
 </section>
 <p class="err" id="err"></p>
@@ -99,8 +117,8 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 'use strict';
 // The match: the plan below, the record kept on each device under mochalunt-<code> (see common/core.js, « Mochalunt
 // matches »), the tables played on the games' own pages (#mt-<code>-<k>).
-const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',tc:'20 min + 30 s'},{id:'dblk',page:'diagonalblocks',name:'Diagonal Blocks Duo',tc:'20 min + 10 s',note:'swap'},
-  {id:'volo',page:'volo',name:'Volo',tc:'20 min + 20 s'},{id:'gyges',page:'gyges',name:'Gygès',tc:'20 min + 10 s',note:'adv'},{id:'tintas',page:'tintas',name:'Tintas',tc:'20 min + 10 s'}];
+const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',cls:'arimaa',tc:'20 min + 30 s'},{id:'dblk',page:'diagonalblocks',name:'Diagonal Blocks Duo',cls:'dblocks',card:'Diagonal Blocks',tc:'20 min + 10 s',note:'swap'},
+  {id:'volo',page:'volo',name:'Volo',cls:'volo',tc:'20 min + 20 s'},{id:'gyges',page:'gyges',name:'Gygès',cls:'gyges',tc:'20 min + 10 s',note:'adv'},{id:'tintas',page:'tintas',name:'Tintas',cls:'tintas',tc:'20 min + 10 s'}];
 const I18N={
  fr:{lede:"Match entre deux joueurs, une partie par jeu, dans l'ordre du tournoi.",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
   fmtAll:"Match individuel : les 5 jeux",fmtTeam:"Match par équipe : 4 jeux",excl:"Jeu retiré",j1:"Joueur 1 du match",j1Rnd:"Tirage au sort",j1Me:"Moi",j1Opp:"Mon adversaire",
@@ -108,7 +126,7 @@ const I18N={
   watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinBtn:"Rejoindre le match",
   watchT:"Suivre un match Mochalunt",watchFind:"Recherche de la table en cours…",watchNone:"Aucune table n'est ouverte pour l'instant : les joueurs ne sont pas encore à une table.",retry:"Réessayer",
   resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",del:"Supprimer",delQ:"Supprimer le match contre {n} de cet appareil ?",result:"Résultat",
-  drawn:"nulle",won:"{n} gagne",live:"à jouer",tableN:"table {k} / {n}",vs:"contre {n}",opp:"votre adversaire",you:"vous",
+  drawn:"nulle",won:"{n} gagne",live:"à jouer",tableN:"table {k} / {n}",table:"Table {k}",vs:"contre {n}",opp:"votre adversaire",you:"vous",
   j1Is:"Joueur 1 du match : {n}.",swap:"règle du swap",adv:"règle avancée",bad:"Ce lien de match n'est pas valide.",unknown:"Ce match n'est pas connu sur cet appareil.",noPeer:"Impossible de charger PeerJS : vérifiez la connexion."},
  en:{lede:"A match between two players, one game each, in the tournament's order.",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
   fmtAll:"Individual match: the 5 games",fmtTeam:"Team match: 4 games",excl:"Game left out",j1:"Match's Player 1",j1Rnd:"Random draw",j1Me:"Me",j1Opp:"My opponent",
@@ -116,7 +134,7 @@ const I18N={
   watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinBtn:"Join the match",
   watchT:"Follow a Mochalunt match",watchFind:"Looking for the table in play…",watchNone:"No table is open yet: the players are not at a table.",retry:"Try again",
   resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",result:"Result",
-  drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",vs:"against {n}",opp:"your opponent",you:"you",
+  drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",table:"Table {k}",vs:"against {n}",opp:"your opponent",you:"you",
   j1Is:"Match's Player 1: {n}.",swap:"swap rule",adv:"advanced rule",bad:"This match link is not valid.",unknown:"This match is not known on this device.",noPeer:"PeerJS could not be loaded: check the connection."}};
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
@@ -134,7 +152,13 @@ const tail=rec=>(rec.excl<0?'a':String(rec.excl))+rec.j1;
 function parseTail(x){const m=/^([a0-4])([ci])$/.exec(x||'');return m?{excl:m[1]==='a'?-1:+m[1],j1:m[2]}:null;}
 const nextK=rec=>{const P=plan(rec.excl);let k=0;while(k<P.length&&rec.res&&rec.res[k])k++;return k;};
 const tableUrl=(rec,k,kind)=>{const P=plan(rec.excl);return k>=P.length?'mochalunt.html#res-'+rec.code:P[k].page+'.html#m'+kind+'-'+rec.code+'-'+k;};
-function planList(ol,excl){ol.innerHTML='';MOCHA.forEach((g,i)=>{const li=document.createElement('li');li.textContent=g.name+' · '+g.tc+(g.note?' · '+t(g.note):'');if(i===excl)li.className='off';ol.appendChild(li);});}
+// one card per table: the game's card (a link when href is given), then the table's number and a caption
+function gameCard(g,k,cap,href){const li=document.createElement('li'),c=document.createElement(href?'a':'div');c.className='gc c-'+g.cls;if(href)c.href=href;
+  const ct=document.createElement('span');ct.className='ct';ct.textContent=g.card||g.name;c.append(ct);
+  for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
+  const p=document.createElement('p'),b=document.createElement('b');p.className='gm';b.textContent=t('table',{k:k+1});p.append(b,cap);li.append(c,p);return li;}
+// the match's tables: the game left out does not appear
+function planList(ol,excl){ol.innerHTML='';plan(excl).forEach((g,k)=>ol.appendChild(gameCard(g,k,g.tc+(g.note?' · '+t(g.note):''))));}
 function show(v){for(const id of ['vHome','vMade','vJoin','vWatch','vRes'])$(id).hidden=id!==v;$('err').textContent='';}
 
 // ---------- home ----------
@@ -187,9 +211,8 @@ function result(code){const rec=recOf(code);if(!rec||rec.excl===undefined){home(
   const A=nameOf(rec,a),B=nameOf(rec,b);
   $('resLine').textContent=k<P.length?t('sofar',{a:A,x:num(sc[a]),y:num(sc[b]),b:B}):sc[a]===sc[b]?t('tie',{x:num(sc[a]),y:num(sc[b])}):
     sc[a]>sc[b]?t('wins',{n:A,x:num(sc[a]),y:num(sc[b])}):t('wins',{n:B,x:num(sc[b]),y:num(sc[a])});
-  const ol=$('resList');ol.innerHTML='';P.forEach((g,i)=>{const li=document.createElement('li'),res=rec.res[i];
-    if(res){const an=document.createElement('a');an.href=g.page+'.html#mv-'+code+'-'+i;an.textContent=g.name;li.append(an,' · '+(res.w==='d'?t('drawn'):t('won',{n:res.names&&res.names[res.w]||nameOf(rec,res.w)})));}
-    else li.textContent=g.name+' · '+t('live');ol.appendChild(li);});
+  const ol=$('resList');ol.innerHTML='';P.forEach((g,i)=>{const res=rec.res[i],href=res?g.page+'.html#mv-'+code+'-'+i:null;   // a played table: its game to look at
+    ol.appendChild(gameCard(g,i,res?(res.w==='d'?t('drawn'):t('won',{n:res.names&&res.names[res.w]||nameOf(rec,res.w)})):t('live'),href));});
   $('resGo').hidden=k>=P.length;if(k<P.length){$('resGo').textContent=t('resume');$('resGo').onclick=()=>{location.href=tableUrl(rec,k,rec.me?'t':'w');};}}
 
 // ---------- start ----------
