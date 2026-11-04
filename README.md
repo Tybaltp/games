@@ -24,6 +24,7 @@ CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
 ### Ce que fait le socle commun (`common/core.js`)
 
 - Accueil d'un jeu : « Créer une partie », puis par lien, contre l'ordinateur, Face à face ou Libre ; invitation par lien `#join-CODE` ; reprise par code.
+- SGF (socle commun) : « Exporter la partie (SGF) » sous la liste des coups, dans tous les modes ; « Charger une partie » sous « Créer une partie » ouvre un fichier `.sgf` en lecture seule (rôle `file` : navigation, pas de jeu). Structure SGF FF[4] standard (`AP[tybaltp.github.io/games]`, `PB`, `PW`, `DT`, `RE`, `B`/`W`), propriétés privées `XG` (identifiant du jeu) et `XR` (règles, JSON). Coups : notation de la page, sauf Pente (Gomoku, `GM[4]`, `SZ[15]`, choix de couleur du Swap2 en `XS`) ; Zèrtz porte `GM[22]` (aucune notation SGF définie pour lui). Crochet `GAME.sgf` pour une notation propre.
 - Partie par lien (PeerJS) : hôte, invité, spectateurs, reconnexion, reprise de l'hébergement par l'invité, « Rejouer », codes de reprise, pendules.
 - Modes sur un seul appareil : Face à face (pendule au choix, sans annulation), Libre (annulation, suggestions si le jeu a un ordinateur). Contre l'ordinateur : calcul dans une tâche de fond, annulation et suggestions.
 - Sauvegarde dans le navigateur et reprise au rafraîchissement, dans tous les modes (`#test`, `#ai`, `#local`, parties par lien).

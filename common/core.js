@@ -39,6 +39,9 @@
 //  simMode?(g), simHold?(g,r), holdLegal?(r,s,code,g)  simultaneous hidden first moves over the network: the rules use it ·
 //                                it is that phase now · seat s's held code is legal
 //  clockOff?(v,st)               no clock runs in st (face to face)
+//  sgf?                          {gm, sz: the game's SGF number and size · nodes?(r,view) → [{B|W|other prop: value}],
+//                                codes?(nodes) → move codes: a notation of its own · black?(st) → the seat of B};
+//                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value
 //  levels, levelDefault, hintLevel  computer levels {key:opt} (labels lv_key), the default key, the options of hints
 //  aiSrc(), aiPos(st), aiSearch(st,opt), aiOpt?(v), aiView?(st), evalInfo(res,st)  worker source defining
 //                                aiSearch(pos,opt) on the aiPos() form · page fallback search · extra search options ·
@@ -70,7 +73,9 @@ const I18C={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",coords:"Coordonnées"
+ w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",coords:"Coordonnées",
+ sgfLoad:"Charger une partie",sgfExport:"Exporter la partie (SGF)",st_file:"Partie chargée, en lecture seule : parcourez-la avec les flèches ou la liste des coups.",
+ sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
  fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
@@ -95,7 +100,9 @@ const I18C={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",coords:"Coordinates"
+ w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",coords:"Coordinates",
+ sgfLoad:"Load a game",sgfExport:"Export the game (SGF)",st_file:"Game loaded, read only: go through it with the arrows or the list of moves.",
+ sgfBad:"Unreadable SGF file.",sgfOther:"This file is a game of another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 }};
 let I18N=I18C;
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||((navigator.language||'fr').toLowerCase().startsWith('fr')?'fr':'en');
@@ -136,7 +143,7 @@ const sameRules=(a,b)=>JSON.stringify(GAME.rules(a))===JSON.stringify(GAME.rules
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
-let role=null;          // 'host' | 'guest' | 'watch' | 'ai' (against the computer) | 'local' (face to face) | 'test' (free play): no network for the last three
+let role=null;          // 'host' | 'guest' | 'watch' | 'ai' (against the computer) | 'local' (face to face) | 'test' (free play) | 'file' (a game read from an SGF file): no network for the last four
 // Both sides on this device (the seat follows the side to move, the board stays put)
 const solo=()=>role==='test'||role==='local';
 // Take-back and hints: against the computer and in free play only
@@ -322,7 +329,7 @@ function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&
 // Navigation through the moves: for everyone once the game is over, for spectators at any time.
 // navAt=null follows the game live; otherwise the board shows the position after navAt moves.
 let navAt=null,navKey=null,navVal=null;
-const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch'));
+const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch')||role==='file');
 function navPos(k){const key=view.moves.slice(0,k).join(',');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
 function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
@@ -346,8 +353,10 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const undoB=canUndo()&&!busy&&undoOk(r)?{label:t('undo'),short:t('undoS'),on:doUndo}:null;
   const hintB=canHint()&&!busy&&mine&&(!GAME.hintable||GAME.hintable(o))?{label:t('hint'),on:doHint}:null;
   const idle=[undoB,hintB];
-  if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);
+  if(role==='file'&&navAt!==null)status(t('st_file'));
+  else if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);
   else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
+  else if(role==='file')status(t('st_file'));   // the last position of an unfinished game
   else if(role==='ai'&&busy)status(t('st_aiThinking'));
   else if(role==='host'&&!view.names[1-mySeat])status(t('st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
@@ -383,7 +392,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     // waiting: open at the top of the column; once folded, below the commands
     if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!r.over;
+  $('endCard').hidden=!r.over&&role!=='file';   // a game read from a file: always the way back home
   {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
@@ -510,7 +519,7 @@ function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)retur
 let localTick=0;
 // Home: "Create a game", then the opponent (link, computer, face to face, free play), then that choice's options
 let homeK='';
-function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
+function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';if($('sgfLoad'))$('sgfLoad').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
   const F={link:'createForm',ai:'aiForm',face:'faceForm',free:'testForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=k!==x;
   const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
 // An invitation link opens straight on the name to play under (the saved nickname by default)
@@ -552,6 +561,54 @@ function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));retu
   const th=[null,null];th[seat]=hh(MYID);
   Object.assign(H,{code:rnd(6),guestCid:null,game:{size:GAME.size,...GAME.rules(p),hold:null,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
     started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
+// ---------- SGF: export of the game shown, reading of a file (read only) ----------
+// The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XR[rules, JSON] ;B[…];W[…]…). B and W are
+// seat 0 and seat 1 (Pente: the stone colours), their values the page's move codes unless the game has a notation of
+// its own (GAME.sgf). XG and XR are private properties (the SGF lets readers skip them).
+const AP='tybaltp.github.io/games';
+const sgfEsc=v=>String(v).replace(/\\/g,'\\\\').replace(/\]/g,'\\]');
+function sgfName(s){if(role==='ai')return s===mySeat?nickGet()||t('you'):t('computer')+' ('+t('lv_'+level)+')';return view.names[s]||t(s===0?'p1':'p2');}
+function sgfText(){const r=replay(view,view.moves,view.result),G=GAME.sgf,bs=G&&G.black?G.black(r.st):0;
+  const pad=n=>String(n).padStart(2,'0'),d=new Date(),dt=view.sgfDT||d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const col=s=>s===bs?'B':'W',o=r.over;
+  const re=!o?'':o.w<0?'0':col(o.w)+'+'+(o.why==='w_resign'?'R':o.why==='w_time'?'T':'');
+  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&G.sz,GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XR:JSON.stringify(GAME.rules(view))};
+  const node=o=>';'+Object.keys(o).filter(k=>o[k]!==undefined&&o[k]!=='').map(k=>k+'['+sgfEsc(o[k])+']').join('');
+  const moves=G&&G.nodes?G.nodes(r,view):r.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:view.moves[j]}));
+  return '('+node(head)+'\n'+moves.map(node).join('\n')+')\n';}
+function sgfExport(){if(!view)return;const a=document.createElement('a'),d=new Date(),pad=n=>String(n).padStart(2,'0');
+  a.href=URL.createObjectURL(new Blob([sgfText()],{type:'application/x-go-sgf'}));
+  a.download=GAME.id+'-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes())+'.sgf';
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
+// The main line of an SGF text: [{PROP:[values]}] (the first variation at each branch)
+function sgfParse(txt){let i=0;const n=txt.length,ws=()=>{while(i<n&&/\s/.test(txt[i]))i++;};
+  function tree(){ws();if(txt[i]!=='(')throw 'tree';i++;const out=[];let sub=null;
+    for(;;){ws();const c=txt[i];if(c===undefined)throw 'end';
+      if(c===';'){i++;const nd={};for(;;){ws();const m=/^[A-Za-z]+/.exec(txt.slice(i,i+40));if(!m)break;const id=m[0].replace(/[a-z]/g,'');i+=m[0].length;const vals=[];
+          for(;;){ws();if(txt[i]!=='[')break;i++;let v='';while(i<n&&txt[i]!==']'){if(txt[i]==='\\'){i++;if(txt[i]==='\n'){i++;continue;}}v+=txt[i++];}if(i>=n)throw 'value';i++;vals.push(v);}
+          if(id)nd[id]=vals;}
+        if(sub===null)out.push(nd);}
+      else if(c==='('){const t=tree();if(sub===null)sub=t;}
+      else if(c===')'){i++;return sub?out.concat(sub):out;}
+      else throw 'char';}}
+  return tree();}
+// A file read: checked against the rules, then shown read only, from its first position
+function sgfLoad(txt){let nodes;try{nodes=sgfParse(String(txt).replace(/^\uFEFF/,''));}catch(e){return t('sgfBad');}
+  const root=nodes[0]||{},v=k=>root[k]&&root[k][0],G=GAME.sgf;
+  if(v('XG')?v('XG')!==GAME.id:!(G&&G.gm&&+v('GM')===G.gm))return v('XG')?t('sgfOther',{g:v('XG')}):t('sgfBad');
+  let rules={};try{rules=JSON.parse(v('XR')||'{}');}catch(e){}rules=GAME.rules(rules);
+  const body=nodes.slice(1);let codes;try{codes=G&&G.codes?G.codes(body):body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);}catch(e){return t('sgfBad');}
+  const r=GAME.replay(rules,codes);if(r.over&&r.over.why==='w_bad')return t('sgfMove',{n:r.log.length+1});
+  const bs=G&&G.black?G.black(r.st):0,names=[];names[bs]=v('PB')||t('p1');names[1-bs]=v('PW')||t('p2');
+  const re=/^([BW])\+([RT])/i.exec(v('RE')||''),result=!r.over&&re?{winner:re[1].toUpperCase()==='B'?bs:1-bs,reason:re[2].toUpperCase()==='T'?'time':'resign'}:null;
+  stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
+  view={...soloView(rules,null),names,moves:codes,result,sgfDT:v('DT')||''};navAt=codes.length?0:null;
+  resetUi();hintMv=null;showGame();renderGame();return '';}
+function sgfPick(){const f=document.createElement('input');f.type='file';f.accept='.sgf,application/x-go-sgf,text/plain';
+  f.onchange=()=>{const x=f.files&&f.files[0];if(!x)return;x.text().then(txt=>{const e=sgfLoad(txt);if(e){$('joinErr').textContent=e;status(e);}});};f.click();}
+// The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
+function sgfUi(){if(!$('sgfLoad')&&$('newBtn')){const b=document.createElement('button');b.type='button';b.id='sgfLoad';b.className='sgfLoad';b.dataset.i18n='sgfLoad';b.textContent=t('sgfLoad');b.onclick=sgfPick;$('newBtn').after(b);}
+  if(!$('sgfExp')&&$('log')){const b=document.createElement('button');b.type='button';b.id='sgfExp';b.className='linkish sgfExp';b.dataset.i18n='sgfExport';b.textContent=t('sgfExport');b.onclick=sgfExport;$('log').after(b);}}
 function init(){GAME.home();
   const saved=LS.get(K('p2p-host'),null),sg=LS.get(K('p2p-guest'),null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}
@@ -569,7 +626,7 @@ function init(){GAME.home();
   joinClick(m[1]==='watch');}
 
 // ---------- start-up: called by the page once GAME is defined ----------
-function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en}};
+function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en}};sgfUi();
   if(GAME.levels){level=LS.get(K('level'),null);if(!GAME.levels[level])level=GAME.levelDefault;}
   applyStatic();
   document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status('');});
