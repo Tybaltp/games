@@ -394,16 +394,18 @@ function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
     el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.4},g);}
   const pcs=el('g',{'pointer-events':'none'},svg);
   // path of the pawn: last turn (accent) or the turn being prepared (dashed)
-  const path=(from,seq,dash,col)=>{const pts=(from>=0?[from]:[]).concat(seq);if(pts.length<2)return;
-    el('polyline',{points:pts.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:col,'stroke-width':3,'stroke-dasharray':dash,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.85},pcs);};
-  // last turn: dotted path, a dot on each cell emptied on the way, a solid frame round the pawn
-  if(last){path(last.from,last.seq,'2 7','var(--accent)');
-    for(const i of last.seq.slice(0,-1))el('circle',{cx:X(i),cy:Y(i),r:6,fill:'none',stroke:'var(--accent)','stroke-width':2.5},pcs);}
+  const path=(from,seq,col,a)=>{const pts=(from>=0?[from]:[]).concat(seq);if(pts.length<2)return;
+    el('polyline',{points:pts.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:col,'stroke-linecap':'round','stroke-linejoin':'round',...a},pcs);};
+  // last turn, drawn like a move in Gygès: a thin solid gold path, a dot on each cell where the pawn stopped (a slightly
+  // larger one on its start), a solid frame round the pawn where it ended
+  if(last){path(last.from,last.seq,'var(--accent)',{'stroke-width':2});
+    if(last.from>=0)el('circle',{cx:X(last.from),cy:Y(last.from),r:4.6,fill:'var(--accent)'},pcs);
+    for(const i of last.seq.slice(0,-1))el('circle',{cx:X(i),cy:Y(i),r:3.6,fill:'var(--accent)'},pcs);}
   for(let i=0;i<N;i++){const c=st.b[i];if(c<0)continue;const x=X(i),y=Y(i);
     const taking=pend.includes(i);piece(pcs,x,y,c,taking?.35:0);
     if(taking)frame(pcs,i,'var(--hl)',true);
     else if(targets.has(i))el('circle',{cx:x,cy:y,r:22.5,fill:'none',stroke:'var(--hl)','stroke-width':1.8,opacity:.7},pcs);}
-  if(pend.length)path(st.pawn,pend,'3 6','var(--hl)');
+  if(pend.length)path(st.pawn,pend,'var(--hl)',{'stroke-width':3,'stroke-dasharray':'3 6',opacity:.85});
   const at=pend.length?pend[pend.length-1]:st.pawn;   // the pawn: on the last piece taken this turn, else where it stands
   if(at>=0){pawn(pcs,X(at),Y(at));if(last)frame(pcs,at,'var(--accent)');}
   if(hv>=0)pawn(pcs,X(hv),Y(hv),.5);}
