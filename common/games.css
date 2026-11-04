@@ -163,14 +163,19 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .dot.c1{background:var(--s1);border:1.5px solid var(--s1e)}
 .hint{font-size:.8rem;color:var(--muted);margin:0}
 /* the list's columns shared by every row (subgrid): the names as wide as the widest one, shrunk only when space runs out */
-ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:grid;grid-template-columns:2.2em minmax(0,max-content) minmax(0,1fr);column-gap:8px;row-gap:2px;align-content:start}
+ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:grid;grid-template-columns:minmax(2.2em,max-content) minmax(0,max-content) minmax(0,1fr);column-gap:8px;row-gap:2px;align-content:start}
 ol.log li{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;font-variant-numeric:tabular-nums}
 ol.log li span:last-child{overflow-wrap:anywhere}
 ol.log .n{color:var(--muted)}
 ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
-.navbar{display:flex;align-items:center;justify-content:center;gap:6px}
-.navbar button{min-width:44px;padding:6px 10px}
+.navbar{display:flex;align-items:center;justify-content:center;gap:4px}
+.navbar button{min-width:40px;padding:6px 8px}
+/* analysis: the alternatives of the move shown, above and below the move number */
+.navmid{display:flex;flex-direction:column;align-items:center;gap:2px}
+.navbar .navalt{min-width:0;padding:0 18px;font-size:.62rem;line-height:1.5}
+.navbar button:disabled{opacity:.35;cursor:default}
+ol.log .alt{color:var(--accent);margin-left:2px}
 .navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
 details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 details summary{cursor:pointer;font-weight:600}

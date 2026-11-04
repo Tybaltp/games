@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=15">
+<link rel="stylesheet" href="common/games.css?v=16">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -135,7 +135,7 @@ h1{font-weight:400;letter-spacing:0}
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
     <div class="boardarea"><div class="board"><svg id="svg" viewBox="0 0 660 660" role="img" aria-label="Pente board"></svg></div></div>
-    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
     <div class="notice" id="notice"></div>
   </div>
   <aside class="side" id="side" tabindex="-1">
@@ -390,7 +390,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=21"></script>
+<script src="common/core.js?v=22"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -603,7 +603,10 @@ function cancelPrep(){clearTent();ui.add2=false;ui.pending=null;ui.hover=-1;rend
 // provisional stone, removes it alone, and the next stone placed takes its colour (with « Confirm each move » off, a
 // click on a single provisional stone plays it). Complete: the move waits for Confirm, or a single stone is played at once
 // (confirmation off, not on a touch screen); the opening and the 2 more stones always wait for Confirm.
-function onCell(i,touch){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+// Analysis (core): the other variations of the stone shown are marked; a click on one switches to it
+function altCells(){const out=new Map();if(typeof anaAlts!=='function')return out;for(const c of anaAlts()){const m=dec(c);if(m&&m.t==='m')out.set(m.i,c);}return out;}
+function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(busy==='hint')stopAI();if(hintMv)hintMv=null;
   const st=meSt(r),cols=placing(st);if(!cols){renderGame();return;}
   const k=ui.tent.indexOf(i);
@@ -668,6 +671,8 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
     // the last action: a dot on its stones, a cross on the stones it captured; kept until the next move is played
     for(const i of st.lastCap){if(st.B[i])continue;const x=PX(i),y=PY(i),q=CELL*.18;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:MK,'stroke-width':2,fill:'none'},g);}
     for(const i of st.last)if(st.B[i])el('circle',{cx:PX(i),cy:PY(i),r:SR*.24,fill:MK},g);
+    // analysis: the other variations of the last stone, in transparency with a hollow mark (a click switches to one)
+    {const ac=altCells(),lc=st.last.length===1?st.B[st.last[0]]:0;for(const i of ac.keys())if(!st.B[i]){if(lc)stone(g,i,lc,.4);el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:MK,'stroke-width':2.4},g);}}
     // a suggestion shown is drawn like provisional stones; « take White, then play X » rings X
     if(sh.mine&&hintOn()){const h=hintMv,ms=sh.ms;
       if(h.t==='o')h.s.forEach((i,k)=>ghost(g,i,[1,2,1][k]));else if(h.t==='a')h.s.forEach((i,k)=>ghost(g,i,[1,2][k]));
@@ -677,11 +682,12 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('g',{id:'hov','pointer-events':'none'},svg);
   // the intersections, for the clicks
   const hit=el('g',{fill:'transparent'},svg),mine=!!(sh&&sh.mine&&sh.cols),live=mine&&(ui.tent.length<sh.cols.length||sh.cols.length===1);   // a pointer only where a click acts
-  for(let i=0;i<NN;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&ui.tent.indexOf(i)>=0||live&&!sh.ms.B[i])e.setAttribute('class','pt');}
+  const alt=sh?altCells():new Map();
+  for(let i=0;i<NN;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&ui.tent.indexOf(i)>=0||live&&!sh.ms.B[i]||alt.has(i))e.setAttribute('class','pt');}
   drawHover();}
 // The stone to place, under the mouse
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
-  if(!sh||!sh.mine||!sh.cols||i<0||hintOn()||busy==='hint'||sending)return;if(sh.ms.B[i]||ui.tent.indexOf(i)>=0)return;
+  if(!sh||!sh.mine||!sh.cols||i<0||hintOn()||busy==='hint'||sending)return;if(sh.ms.B[i]||ui.tent.indexOf(i)>=0||!prepared()&&altCells().has(i))return;
   const c=ui.tent.length<sh.cols.length?nextCol(sh.cols):sh.cols.length===1?sh.cols[0]:0;if(c)stone(g,i,c,.5);}
 
 // ---------- former saves ----------

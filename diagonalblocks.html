@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=15">
+<link rel="stylesheet" href="common/games.css?v=16">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -153,7 +153,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
     <div class="pwrap" id="oppWrap"><div class="pblock" id="oppBlock" hidden><div class="prow"><div class="pinfo"></div><div class="tray" id="oppTray"></div></div></div></div>
     <div class="boardarea"><div class="board"><svg id="svg" viewBox="-22 -22 604 604" role="img" aria-label="Diagonal Blocks board"></svg></div></div>
-    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navpos" id="navPos"></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭</button></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
     <!-- the players' blocks (placeBlocks): the opponent's above the board, mine under it (its card, its pieces left,
          then the action bar); on wide screens both at the top of the side panel, the opponent's first -->
     <div class="pwrap" id="myWrap"><div class="pblock" id="myBlock" hidden><div class="prow"><div class="pinfo"></div><div class="tray" id="myTray" data-i18n-t="trayHint"></div></div></div></div>
@@ -204,7 +204,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=21"></script>
+<script src="common/core.js?v=22"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function DBEngine(){

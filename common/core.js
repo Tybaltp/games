@@ -54,7 +54,7 @@ const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18C={fr:{
- fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
+ fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
@@ -81,7 +81,7 @@ const I18C={fr:{
  sgfLoad:"Charger une partie",sgfExport:"Exporter la partie (SGF)",st_file:"Partie chargée, en lecture seule : parcourez-la avec les flèches ou la liste des coups.",
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
- fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
+ fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
@@ -370,43 +370,77 @@ function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&
 // Navigation through the moves: for everyone once the game is over, for spectators at any time.
 // navAt=null follows the game live; otherwise the board shows the position after navAt moves.
 let navAt=null,navKey=null,navVal=null;
-const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch')||role==='file'||role==='test');
+const canNav=r=>!!view&&!ana()&&(!!r.over||(mySeat<0&&role==='watch')||role==='file'||role==='test');
 function navPos(k){const key=view.moves.slice(0,k).join(',');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
 function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
+// ---------- analysis: a tree of variations ----------
+// In Libre play, for a loaded game, and for a game on one screen once it is over (face to face, against the computer), a
+// move played from any position of the tree adds a variation there (or follows the one that has it already).
+// view.tree: {c:[{m:code,c:[…]},…]}, the first child being the main line and the others in their order of creation (or
+// of the SGF file); view.moves: the path to the position shown, which is always the live one here (navAt stays null);
+// view.gameResult: the game's own result (resignation, time, agreement), holding only at the end of the main line.
+// The line shown is that path, then the first child at each branching.
+const ana=()=>!!view&&(role==='test'||role==='file'||((role==='local'||role==='ai')&&!!view.tree));
+const meS=()=>role==='ai'&&view&&view.tree?view.names.indexOf('me'):mySeat;   // against the computer: the player, whoever moves in the analysis
+function anaInit(){const root={c:[]};let n=root;for(const m of view.moves){const x={m,c:[]};n.c.push(x);n=x;}view.tree=root;view.gameResult=view.result||null;}
+function anaNode(p){let n=view.tree;for(const m of p){n=n&&n.c.find(x=>x.m===m);}return n||null;}
+function anaLine(){const p=view.moves.slice();let n=anaNode(p);while(n&&n.c.length){n=n.c[0];p.push(n.m);}return p;}
+function anaMain(p){let n=view.tree;for(const m of p){if(!n.c.length||n.c[0].m!==m)return false;n=n.c[0];}return !n.c.length;}
+function anaSet(p){if(busy==='hint')stopAI();view.moves=p;view.result=anaMain(p)?view.gameResult||null:null;view.draw=null;hintMv=null;
+  const r=GAME.replay(view,p);mySeat=r.st.turn;resetUi();renderGame();}
+function anaGo(k){const L=anaLine();anaSet(L.slice(0,Math.max(0,Math.min(k,L.length))));}
+const anaHasAlt=(L,j)=>j>=1&&anaNode(L.slice(0,j-1)).c.length>1;   // the j-th move of the line has variations
+// the previous / next branching on the line: a move with variations (or the start / the end)
+function anaBr(dir){const L=anaLine(),k=view.moves.length;
+  if(dir<0){for(let j=k-1;j>=1;j--)if(anaHasAlt(L,j))return anaGo(j);return anaGo(0);}
+  for(let j=k+1;j<=L.length;j++)if(anaHasAlt(L,j))return anaGo(j);anaGo(L.length);}
+// the other variations of the move shown (up: the previous one, down: the next one)
+function anaSib(d){const p=view.moves,k=p.length;if(!k)return;const par=anaNode(p.slice(0,k-1)),i=par.c.findIndex(x=>x.m===p[k-1])+d;
+  if(i<0||i>=par.c.length)return;anaSet(p.slice(0,k-1).concat(par.c[i].m));}
+// for the boards: the codes of the other variations of the move shown, and the switch to one of them
+function anaAlts(){if(!ana()||!view.moves.length)return [];const p=view.moves,par=anaNode(p.slice(0,-1));return par?par.c.map(x=>x.m).filter(m=>m!==p[p.length-1]):[];}
+function anaAltGo(code){if(!ana()||!view.moves.length)return;anaSet(view.moves.slice(0,-1).concat(code));}
+function anaPlay(code){const n=anaNode(view.moves);if(!n)return;if(!n.c.some(x=>x.m===code))n.c.push({m:code,c:[]});anaSet(view.moves.concat(code));}
+// The main line (the first child at each branching)
+function anaMainLine(){const p=[];let n=view.tree;while(n.c.length){n=n.c[0];p.push(n.m);}return p;}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
-const seatName=s=>solo()?(role==='test'&&view.customNames&&view.names[s]||t(s===0?'p1':'p2')):role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+const seatName=s=>solo()?(role==='test'&&view.customNames&&view.names[s]||t(s===0?'p1':'p2')):role==='ai'?(s===meS()?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
 
 // A player's name, editable in place (nothing shows it but the text cursor): Enter or leaving the field keeps it
 function nameEdit(sp,p){sp.className='nmEdit';sp.contentEditable='plaintext-only';sp.spellcheck=false;sp.title=t('editName');
   sp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sp.blur();}if(e.key==='Escape'){sp.textContent=seatName(p);sp.blur();}};
   sp.onblur=()=>{const v=sp.textContent.replace(/\s+/g,' ').trim().slice(0,24);if(!view)return;view.names=view.names.slice();view.names[p]=v||t(p?'p2':'p1');
     if(role==='test')view.customNames=true;if(role==='test')LS.set(TK(),view);renderGame();};}
-function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});else if(role==='test')LS.set(TK(),view);else if(role==='local')localSave();const r=replay(view,view.moves,view.result);
+function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});else if(role==='test')LS.set(TK(),view);else if(role==='local')localSave();
+  if(!view.tree&&(role==='test'||role==='file'||((role==='local'||role==='ai')&&replay(view,view.moves,view.result).over)))anaInit();   // a game on one screen, once over: analysis
+  if(ana()&&!anaNode(view.moves)){let n=view.tree;for(const m of view.moves){let x=n.c.find(y=>y.m===m);if(!x){x={m,c:[]};n.c.push(x);}n=x;}}   // a path set from outside: grafted on the tree
+  const r=replay(view,view.moves,view.result),A=ana();if(A){navAt=null;mySeat=r.st.turn;}
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
-  flip=mySeat===1&&!solo();   // on one device the board stays put: the players adapt
+  flip=!solo()&&role!=='file'&&meS()===1;   // on one device the board stays put: the players adapt
   const mine=navAt===null&&isMyTurn(r),ns=netSim(r),ms=meSt(r);
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
   const o=GAME.board({r,d,mine,ms});
-  {const n=view.moves.length,k=navAt===null?n:navAt,on=canNav(r);$('nav').hidden=!on;
-    if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=navAt===null;}}
+  {const L=A?anaLine():view.moves,n=L.length,k=A?view.moves.length:navAt===null?n:navAt,on=A||canNav(r);$('nav').hidden=!on;
+    for(const id of ['navBrP','navBrN','navAltU','navAltD'])if($(id))$(id).hidden=!A;
+    if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=k>=n;
+      if(A&&$('navBrP')){$('navBrP').disabled=k===0;$('navBrN').disabled=k>=n;
+        const par=k?anaNode(view.moves.slice(0,k-1)):null,i=par?par.c.findIndex(x=>x.m===view.moves[k-1]):-1;
+        $('navAltU').disabled=!par||i<=0;$('navAltD').disabled=!par||i<0||i>=par.c.length-1;}}}
   const nm=seatName;
   // The bar under the board: the only place for the move commands.
   // Nothing engaged: Undo last move / Hint (where the game allows them) · something engaged: Reset (drops the whole move
   // being prepared), with the game's own commands · move complete: Reset + Confirm · suggestion shown: Play this move +
   // Dismiss · waiting states: the message only.
   const prep=GAME.preparing(),RST={label:t('reset'),on:GAME.cancel};
-  const undoB=canUndo()&&!busy&&undoOk(r)?{label:t('undo'),short:t('undoS'),on:doUndo}:null;
+  const undoB=canUndo()&&!A&&!busy&&undoOk(r)?{label:t('undo'),short:t('undoS'),on:doUndo}:null;
   const hintB=canHint()&&!busy&&mine&&(!GAME.hintable||GAME.hintable(o))?{label:t('hint'),on:doHint}:null;
   const idle=[undoB,hintB];
-  if(role==='file'&&navAt!==null)status(t('st_file'));
-  else if(role==='test'&&navAt!==null&&!r.over)status(t('st_navTest'));   // free play: moves are played from the last position only
-  else if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
-    status(r.over.w<0?t('draw'+q,{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin'+q,{why:t(r.over.why)}):t('wins'+q,{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);}
+  if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
+    status(r.over.w<0?t('draw'+q,{why:t(r.over.why)}):r.over.w===meS()&&!solo()&&role!=='file'?t('youWin'+q,{why:t(r.over.why)}):t('wins'+q,{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);}
   else if(view.draw&&view.draw.st==='ask'&&navAt===null&&(role==='local'||(mySeat>=0&&view.draw.from!==mySeat)))
     status(t('drawAsk',{n:nm(view.draw.from)}),'turn',[{label:t('decline'),on:()=>drawSend('no')},{label:t('accept'),primary:true,on:()=>drawSend('yes')}]);
   else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
-  else if(role==='file')status(t('st_file'));   // the last position of an unfinished game
   else if(role==='ai'&&busy)status(t('st_aiThinking'));
   else if(role==='host'&&!view.names[1-mySeat])status(t(view.match?'m_waitOpp':'st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
@@ -435,11 +469,11 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   // side panel: settings only (level of the computer and its opinion, against the computer only: hints use GAME.hintLevel)
   // SGF export: always against the computer, in Libre play and for a loaded game; in a competitive game (face to face,
   // by link) only once it is over
-  const sgfOk=role==='ai'||role==='test'||role==='file'||!!r.over;if($('sgfExpBox'))$('sgfExpBox').hidden=!sgfOk;
+  const sgfOk=role==='ai'||role==='test'||role==='file'||A||!!r.over;if($('sgfExpBox'))$('sgfExpBox').hidden=!sgfOk;
   $('myCard').hidden=!(role==='ai'||solo()||sgfOk||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
   if($('aiBox'))$('aiBox').hidden=role!=='ai';
-  $('resignBox').hidden=!!r.over||mySeat<0||!$('resignAsk').hidden;
-  if($('drawBtn')){const dv=view.draw,pl=!r.over&&!!view.started&&mySeat>=0&&navAt===null&&(role==='ai'||role==='local'||((role==='host'||role==='guest')&&!!view.names[1-mySeat]));
+  $('resignBox').hidden=A||!!r.over||mySeat<0||!$('resignAsk').hidden;
+  if($('drawBtn')){const dv=view.draw,pl=!A&&!r.over&&!!view.started&&mySeat>=0&&navAt===null&&(role==='ai'||role==='local'||((role==='host'||role==='guest')&&!!view.names[1-mySeat]));
     const myAsk=!!dv&&dv.st==='ask'&&dv.from===mySeat&&role!=='local';
     $('drawBtn').hidden=!pl||(!!dv&&!myAsk);$('drawBtn').textContent=t(myAsk?'drawCancel':'drawOffer');
     const note=!pl||!dv?'':myAsk?t('drawWait',{n:nm(1-mySeat)}):dv.st==='no'&&(role==='local'||dv.from===mySeat)?t('drawNo',{n:nm(1-dv.from)}):'';
@@ -457,18 +491,21 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     // waiting: open at the top of the column; once folded, below the commands
     if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
   $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
-  $('endCard').hidden=!r.over&&role!=='file';   // a game read from a file: always the way back home
+  $('endCard').hidden=!r.over&&role!=='file'&&!(A&&(role==='local'||role==='ai'));   // the analysis of a game over keeps the way to a new one   // a game read from a file: always the way back home
   {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;
     if(view.match)for(const id of ['rmTxt','rmBox','rmAsk','rmWait'])$(id).hidden=true;}   // a match: the next table instead of a rematch
   const ol=$('log');ol.textContent='';
-  const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
-  r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+  // analysis: the whole line (the path, then the first child at each branching); a move with variations: ◆ and their number
+  const AL=A?anaLine():null,rl=A&&AL.length>view.moves.length?GAME.replay(view,AL):r;
+  const nv=A||canNav(r),cur=A?view.moves.length:navAt===null?r.log.length:navAt,go=A?anaGo:navGo;
+  rl.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>go(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+    if(A){const par=anaNode(AL.slice(0,j));if(par&&par.c.length>1){const x=document.createElement('span');x.className='alt';x.textContent='◆'+par.c.length;x.title=t('altN',{n:par.c.length});a.appendChild(x);}}
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
-    const c=document.createElement('span'),cn=GAME.logNode&&GAME.logNode(e,r);if(cn)c.append(cn);else c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
-  const ce=ol.querySelector('.cur');if(ce&&navAt!==null){const a=ce.getBoundingClientRect(),b=ol.getBoundingClientRect();if(a.top<b.top)ol.scrollTop+=a.top-b.top;else if(a.bottom>b.bottom)ol.scrollTop+=a.bottom-b.bottom;}else ol.scrollTop=ol.scrollHeight;sheetAttn();}
+    const c=document.createElement('span'),cn=GAME.logNode&&GAME.logNode(e,rl);if(cn)c.append(cn);else c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
+  const ce=ol.querySelector('.cur');if(ce&&(navAt!==null||A)){const a=ce.getBoundingClientRect(),b=ol.getBoundingClientRect();if(a.top<b.top)ol.scrollTop+=a.top-b.top;else if(a.bottom>b.bottom)ol.scrollTop+=a.bottom-b.bottom;}else ol.scrollTop=ol.scrollHeight;sheetAttn();}
 // Players' cards in the side panel: wide screens, and landscape phones (board and panel side by side)
 const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';
 // Game view layout: html.ingame = a fixed-height app (no page scroll); html.wide = two columns (the WIDE query). Otherwise
@@ -523,6 +560,7 @@ function tick(){if(!view||!view.tc)return;const r=replay(view,view.moves,view.re
 
 // ---------- sending a move ----------
 function send(mv){if(sending)return;ui.pending=null;const code=GAME.enc(mv),n=view.moves.length;
+  if(ana()){anaPlay(code);return;}
   if(role==='host'){hostMove(mySeat,n,code,null);return;}
   if(role==='ai'){aiPlay(code);return;}
   if(role==='test'){testPlay(code);return;}
@@ -596,7 +634,7 @@ function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
 // An invitation link opens straight on the name to play under (the saved nickname by default)
 function invited(on){$('setup').classList.toggle('invited',on);$('joinD').open=on;if(on){homeStep('');const n=$('jName');n.value=nickGet();n.focus();n.select();}}
 function aiPlay(code){if(view.result)return;view.draw=null;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
-function aiStep(){if(role!=='ai'||busy)return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
+function aiStep(){if(role!=='ai'||busy||ana())return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
   ask(aiView(r.st),GAME.levels[level],res=>{const wait=Math.max(0,400-(Date.now()-t0));setTimeout(()=>{if(role!=='ai'||view.moves.length!==n||busy!=='ai')return;busy='';
     if(!res||!res.move){renderGame();return;}aiInfo=GAME.evalInfo(res,r.st);aiLast=res;view.draw=null;view.moves=view.moves.concat([GAME.enc(res.move)]);renderGame();aiStep();},wait);});}
@@ -653,45 +691,60 @@ function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));retu
 // its own (GAME.sgf). XG and XR are private properties (the SGF lets readers skip them).
 const AP='tybaltp.github.io/games';
 const sgfEsc=v=>String(v).replace(/\\/g,'\\\\').replace(/\]/g,'\\]');
-function sgfName(s){if(role==='ai')return s===mySeat?nickGet()||t('you'):t('computer')+' ('+t('lv_'+level)+')';return view.names[s]||t(s===0?'p1':'p2');}
-function sgfText(){const r=replay(view,view.moves,view.result),G=GAME.sgf,bs=G&&G.black?G.black(r.st):0;
+function sgfName(s){if(role==='ai')return s===meS()?nickGet()||t('you'):t('computer')+' ('+t('lv_'+level)+')';return view.names[s]||t(s===0?'p1':'p2');}
+// The whole tree of an analysis: the main line first, each branching as (;…)(;…) in the tree's order; the header (players,
+// result) is the main line's. A move gives one node or more (GAME.sgf.nodes: those of a line, the move's are the ones its
+// line adds to the line before it).
+function sgfText(){const A=ana(),main=A?anaMainLine():view.moves,r=replay(view,main,A?view.gameResult||null:view.result),G=GAME.sgf,bs=G&&G.black?G.black(r.st):0;
   const pad=n=>String(n).padStart(2,'0'),d=new Date(),dt=view.sgfDT||d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const col=s=>s===bs?'B':'W',o=r.over;
   const re=!o?'':o.w<0?'0':col(o.w)+'+'+(o.why==='w_resign'?'R':o.why==='w_time'?'T':'');
   const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&G.sz,GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XR:JSON.stringify(GAME.rules(view))};
   const node=o=>';'+Object.keys(o).filter(k=>o[k]!==undefined&&o[k]!=='').map(k=>k+'['+sgfEsc(o[k])+']').join('');
-  const moves=G&&G.nodes?G.nodes(r,view):r.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:view.moves[j]}));
-  return '('+node(head)+'\n'+moves.map(node).join('\n')+')\n';}
+  const nodesOf=p=>{const rr=GAME.replay(view,p);return G&&G.nodes?G.nodes(rr,{...view,moves:p}):rr.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:p[j]}));};
+  const cnt=new Map(),count=p=>{const k=p.join(',');if(!cnt.has(k))cnt.set(k,nodesOf(p).length);return cnt.get(k);};
+  const mv=(p,m)=>{const q=p.concat(m),all=nodesOf(q);cnt.set(q.join(','),all.length);return '\n'+all.slice(count(p)).map(node).join('\n');};
+  const tree=A?view.tree:(()=>{const root={c:[]};let n=root;for(const m of view.moves){const x={m,c:[]};n.c.push(x);n=x;}return root;})();
+  const emit=(n,p)=>{let out='';while(n.c.length===1){const x=n.c[0];out+=mv(p,x.m);p=p.concat(x.m);n=x;}
+    for(const x of n.c.length>1?n.c:[])out+='\n('+mv(p,x.m).slice(1)+emit(x,p.concat(x.m))+')';return out;};
+  return '('+node(head)+emit(tree,[])+')\n';}
 function sgfExport(){if(!view)return;const a=document.createElement('a'),d=new Date(),pad=n=>String(n).padStart(2,'0');
   a.href=URL.createObjectURL(new Blob([sgfText()],{type:'application/x-go-sgf'}));
   a.download=GAME.id+'-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes())+'.sgf';
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
-// The main line of an SGF text: [{PROP:[values]}] (the first variation at each branch)
+// An SGF text: its first game tree, {nodes:[{PROP:[values]}],vars:[trees]}
 function sgfParse(txt){let i=0;const n=txt.length,ws=()=>{while(i<n&&/\s/.test(txt[i]))i++;};
-  function tree(){ws();if(txt[i]!=='(')throw 'tree';i++;const out=[];let sub=null;
+  function tree(){ws();if(txt[i]!=='(')throw 'tree';i++;const out={nodes:[],vars:[]};
     for(;;){ws();const c=txt[i];if(c===undefined)throw 'end';
       if(c===';'){i++;const nd={};for(;;){ws();const m=/^[A-Za-z]+/.exec(txt.slice(i,i+40));if(!m)break;const id=m[0].replace(/[a-z]/g,'');i+=m[0].length;const vals=[];
           for(;;){ws();if(txt[i]!=='[')break;i++;let v='';while(i<n&&txt[i]!==']'){if(txt[i]==='\\'){i++;if(txt[i]==='\n'){i++;continue;}}v+=txt[i++];}if(i>=n)throw 'value';i++;vals.push(v);}
           if(id)nd[id]=vals;}
-        if(sub===null)out.push(nd);}
-      else if(c==='('){if(sub!==null)throw 'branch';sub=tree();}
-      else if(c===')'){i++;return sub?out.concat(sub):out;}
+        if(out.vars.length)throw 'char';out.nodes.push(nd);}
+      else if(c==='('){out.vars.push(tree());}
+      else if(c===')'){i++;return out;}
       else throw 'char';}}
   return tree();}
 // A file read: checked against the rules, then shown read only, from its first position
-function sgfLoad(txt){let nodes;try{nodes=sgfParse(String(txt).replace(/^\uFEFF/,''));}catch(e){return t(e==='branch'?'sgfBranch':'sgfBad');}
-  const root=nodes[0]||{},v=k=>root[k]&&root[k][0],G=GAME.sgf;
+function sgfLoad(txt){let T;try{T=sgfParse(String(txt).replace(/^\uFEFF/,''));}catch(e){return t('sgfBad');}
+  // every line of the tree, from the root node to a leaf, in the file's order (the first one: the main line)
+  const lines=[],walk=(x,pre)=>{const q=pre.concat(x.nodes);if(!x.vars.length){lines.push(q);return;}for(const y of x.vars)walk(y,q);};walk(T,[]);
+  if(lines.length>5000)return t('sgfBad');
+  const root=lines[0][0]||{},v=k=>root[k]&&root[k][0],G=GAME.sgf;
   if(v('XG')?v('XG')!==GAME.id:!(G&&G.gm&&+v('GM')===G.gm))return v('XG')?t('sgfOther',{g:v('XG')}):t('sgfBad');
   let rules={};try{rules=JSON.parse(v('XR')||'{}');}catch(e){}rules=GAME.rules(rules);
-  const body=nodes.slice(1);let codes;try{codes=G&&G.codes?G.codes(body):body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);}catch(e){return t('sgfBad');}
-  const r=GAME.replay(rules,codes);if(r.over&&r.over.why==='w_bad')return t('sgfMove',{n:r.log.length+1});
+  const tree={c:[]};let codes=null;
+  for(const ln of lines){const body=ln.slice(1);let cs;try{cs=G&&G.codes?G.codes(body):body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);}catch(e){return t('sgfBad');}
+    const rr=GAME.replay(rules,cs);if(rr.over&&rr.over.why==='w_bad')return t('sgfMove',{n:rr.log.length+1});
+    let n=tree;for(const m of cs){let x=n.c.find(y=>y.m===m);if(!x){x={m,c:[]};n.c.push(x);}n=x;}if(!codes)codes=cs;}
+  const r=GAME.replay(rules,codes);
   const bs=G&&G.black?G.black(r.st):0,names=[];names[bs]=v('PB')||t('p1');names[1-bs]=v('PW')||t('p2');
   const re=/^([BW])\+([RT])/i.exec(v('RE')||''),result=r.over?null:re?{winner:re[1].toUpperCase()==='B'?bs:1-bs,reason:re[2].toUpperCase()==='T'?'time':'resign'}:/^(0|draw)$/i.test(v('RE')||'')?{winner:-1,reason:'agree'}:null;
-  // unfinished: free play from its last position (both sides, undo, hints); finished: read only, from the first position
+  // unfinished: Libre play from the main line's last position (both sides, hints); finished: from the first position.
+  // Both are analyses: a move played anywhere adds a variation.
   if(!r.over&&!result){stopAI();navAt=null;role='test';C.stop=true;setHash('test');
-    view={...soloView(rules,null),names,customNames:true,moves:codes};LS.set(TK(),view);hintMv=null;showGame();testTurn();return '';}
+    view={...soloView(rules,null),names,customNames:true,moves:codes,tree,gameResult:null};LS.set(TK(),view);hintMv=null;showGame();testTurn();return '';}
   stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
-  view={...soloView(rules,null),names,moves:codes,result,sgfDT:v('DT')||''};navAt=codes.length?0:null;
+  view={...soloView(rules,null),names,moves:[],tree,gameResult:result,result:null,sgfDT:v('DT')||''};navAt=null;
   resetUi();hintMv=null;showGame();renderGame();return '';}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
 function sgfUi(){
@@ -859,18 +912,23 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     if(role==='ai'||solo()){if(!view.result){if(role==='local')localFreeze();view.result={winner:1-mySeat,reason:'resign'};stopAI();hintMv=null;resetUi();renderGame();}return;}
     if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});};
   $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
-  $('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,GAME.rules(view));return;}if(role==='test'){startTest(GAME.rules(view));return;}
+  $('newGame').onclick=()=>{if(role==='ai'){startAI(1-meS(),GAME.rules(view));return;}if(role==='test'){startTest(GAME.rules(view));return;}
     if(role==='local'){startLocal(GAME.rules(view),view.tc);return;}rmSend('ask');};
   $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
-  $('navFirst').onclick=()=>navGo(0);
-  $('navPrev').onclick=()=>navGo((navAt===null?view.moves.length:navAt)-1);
-  $('navNext').onclick=()=>navGo(navAt===null?null:navAt+1);
-  $('navLast').onclick=()=>navGo(null);
+  $('navFirst').onclick=()=>ana()?anaGo(0):navGo(0);
+  $('navPrev').onclick=()=>ana()?anaGo(view.moves.length-1):navGo((navAt===null?view.moves.length:navAt)-1);
+  $('navNext').onclick=()=>ana()?anaGo(view.moves.length+1):navGo(navAt===null?null:navAt+1);
+  $('navLast').onclick=()=>ana()?anaGo(Infinity):navGo(null);
+  if($('navBrP')){$('navBrP').onclick=()=>anaBr(-1);$('navBrN').onclick=()=>anaBr(1);$('navAltU').onclick=()=>anaSib(-1);$('navAltD').onclick=()=>anaSib(1);}
   document.addEventListener('keydown',e=>{if(!view||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||''))return;
     if(e.key==='Escape'&&(hintMv||busy==='hint')){hintOff();return;}
     if(e.key==='Escape'&&GAME.preparing()){GAME.cancel();return;}
     if($('nav').hidden)return;
-    const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:k-1,ArrowRight:k+1,Home:0,End:null}[e.key];if(go===undefined)return;e.preventDefault();navGo(go);});
+    // ← → move by move (with Shift: start, end), Home End; analysis: ↑ ↓ the branchings, with Shift the variations of the move shown
+    if(e.altKey||e.ctrlKey||e.metaKey)return;const sh=e.shiftKey,ky=e.key;
+    if(ana()){const k=view.moves.length,f={ArrowLeft:()=>anaGo(sh?0:k-1),ArrowRight:()=>anaGo(sh?Infinity:k+1),Home:()=>anaGo(0),End:()=>anaGo(Infinity),
+        ArrowUp:()=>sh?anaSib(-1):anaBr(-1),ArrowDown:()=>sh?anaSib(1):anaBr(1)}[ky];if(!f)return;e.preventDefault();f();return;}
+    const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:sh?0:k-1,ArrowRight:sh?null:k+1,Home:0,End:null}[ky];if(go===undefined)return;e.preventDefault();navGo(go);});
   // Home: leave the game and come back to the game's own start page
   $('homeBtn').onclick=()=>{try{stopAI();}catch(e){}C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();setHash('');location.reload();};
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
