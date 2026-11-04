@@ -12,7 +12,8 @@ Neuf jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quart
 ## Organisation
 
 ```
-index.html            accueil du site : liste des jeux, « Comment ça marche ? »
+index.html            accueil du site : une carte par jeu, « Comment ça marche ? »
+img/cartes/           images des cartes de l'accueil (un morceau de plateau par jeu, clair et sombre)
 <jeu>.html            une page par jeu : règles, plateau, ordinateur s'il y en a un, textes FR/EN du jeu
 common/core.js        tout ce qui n'est pas propre à un jeu (ci-dessous)
 common/games.css      styles communs : accueil, écran de jeu fixe, barre d'actions, tiroir « ⋯ », cartes des joueurs
