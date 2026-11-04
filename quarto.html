@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=16">
+<link rel="stylesheet" href="common/games.css?v=17">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
@@ -48,6 +48,7 @@
 
 <section class="view" id="setup">
   <div class="home">
+    <p class="lede noinv" data-i18n="lede"></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -110,6 +111,7 @@
       </form>
     </div>
     <p class="hint err" id="joinErr"></p>
+    <details id="rulesHome" class="noinv"></details>
     
     
     
@@ -170,7 +172,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=24"></script>
+<script src="common/core.js?v=25"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
@@ -229,7 +231,7 @@ function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=
 
 // ---------- strings ----------
 const Q_I18N={fr:{
- title:"Quarto",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
+ title:"Quarto",lede:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
  m_aiTxt:"Cinq niveaux, pour s'entraîner.",
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_fort:"Fort",lv_expert:"Expert",
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
@@ -245,7 +247,7 @@ const Q_I18N={fr:{
  <li><b>Variante avancée</b> (<span class="sqState"></span>) : un carré 2 × 2 de quatre pièces partageant une caractéristique gagne aussi.</li>
  <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li></ul>`
 },en:{
- title:"Quarto",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
+ title:"Quarto",lede:"Give your opponent the piece they will place; line up four pieces sharing a trait.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
  m_aiTxt:"Five levels, to practise.",
  lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_fort:"Strong",lv_expert:"Expert",
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",

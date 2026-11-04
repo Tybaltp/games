@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=16">
+<link rel="stylesheet" href="common/games.css?v=17">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -31,7 +31,6 @@ html.nocoords{--board-ar:1/1}
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
   --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}
 h1{font-weight:400;letter-spacing:0}
-.lede{color:var(--muted);margin:0;font-size:.95rem}
 /* the wooden board, edge to edge in its frame, on every screen */
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--pboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
@@ -390,7 +389,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=24"></script>
+<script src="common/core.js?v=25"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -417,7 +416,7 @@ const HINT={...LEVELS.expert,hint:true};
 // Pente strings, merged over the shared ones (core.js)
 const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n});
 const PE_I18N={fr:{
- title:"Pente",lede:"Le jeu de Pente sur un plateau 15×15 : ouverture Swap2, cinq paires capturées gagnent, les lignes de six et plus gagnent.",
+ title:"Pente",lede:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",
  lv_facile:"Facile",lv_confirme:"Confirmé",lv_expert:"Expert",m_aiTxt:"Six niveaux, pour s'entraîner.",
  firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
@@ -442,7 +441,7 @@ const PE_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
- title:"Pente",lede:"Pente on a 15×15 board: Swap2 opening, five captured pairs win, lines of six or more win.",
+ title:"Pente",lede:"Five in a row, or capture five pairs. Swap2 opening.",
  lv_facile:"Easy",lv_confirme:"Advanced",lv_expert:"Expert",m_aiTxt:"Six levels, to practise.",
  firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
@@ -730,7 +729,6 @@ const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   pendText:mv=>mv.t==='m'?[t('st_tentative',{c:coord(mv.i)}),t('confirm1')]:[t('pend_stones',{m:stonesTxt(mv.s,mv.t==='o'?[1,2,1]:[1,2])}),t('confirmN')],
   playerCard,
   logText:e=>logTxt(e),
-  applyStatic:()=>{$('rulesHome').innerHTML=t('rules');},
   home:()=>{shown=null;drawBoard();},
   levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
   aiSrc,aiPos,aiSearch:aiSearchPage,

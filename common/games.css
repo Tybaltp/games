@@ -126,6 +126,7 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
 .home button.big{padding:14px;font-size:1.05rem}
+.lede{color:var(--muted);margin:0;font-size:.95rem}   /* the game in one line, above the home card */
 .newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.85rem;cursor:pointer}
 .linkish{color:var(--ink)}

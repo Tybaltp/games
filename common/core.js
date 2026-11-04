@@ -118,7 +118,7 @@ function applyStatic(){document.documentElement.lang=lang;document.title=t('titl
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
-  $('rules').innerHTML=t('rules');
+  $('rules').innerHTML=t('rules');if($('rulesHome'))$('rulesHome').innerHTML=t('rules').replace(/ \(<span class="\w+State"><\/span>\)/g,'');   // home: the same rules, without « (on in this game) »
   const sel=$('cTc');if(sel){const cur=sel.value||LS.get(K('tc'),null)||GAME.tcDefault||'20+10';
     sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
   // face to face: its own time control, no clock by default

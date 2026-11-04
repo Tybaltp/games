@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=16">
+<link rel="stylesheet" href="common/games.css?v=17">
 <style>
 /* Tintas palette (light, dark), board and colour counters; the shared layout is in common/games.css */
 :root{
@@ -55,6 +55,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 
 <section class="view" id="setup">
   <div class="home">
+    <p class="lede noinv" data-i18n="lede"></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -113,6 +114,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
       </form>
     </div>
     <p class="hint err" id="joinErr"></p>
+    <details id="rulesHome" class="noinv"></details>
     
     
     
@@ -176,7 +178,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=24"></script>
+<script src="common/core.js?v=25"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function TintasEngine(){
@@ -229,7 +231,7 @@ function TintasEngine(){
 const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
- title:"Tintas",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
+ title:"Tintas",lede:"Un pion commun, sept couleurs : collectionnez-en une.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
  cb:"Daltonien",needConfirm:"Confirmer chaque coup",
@@ -247,7 +249,7 @@ const TI_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création. Elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
- title:"Tintas",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
+ title:"Tintas",lede:"One shared pawn, seven colours: collect a full set.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
  cb:"Colorblind",needConfirm:"Confirm each move",
