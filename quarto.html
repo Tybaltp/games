@@ -18,7 +18,7 @@
   /* dark pieces */
   --pd:#8c4a28;--pd-l:#3a1c0c;--pd-g:#2e160a;--pd-a:#6e3a20;--pd-b:#552b16;
   --s0:#2c8a6e;--s0e:#1b5c49;--s1:#b9503d;--s1e:#7d3123;
-  --accent:#d98f1f;--accent-ink:#4f3200;--danger:#d24a35;--lastc:#2b1c0d;
+  --accent:#d98f1f;--accent-ink:#4f3200;--danger:#d24a35;
   --board-ar:376/470;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -27,14 +27,14 @@
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
-  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}}
+  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
   --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#2a241c;
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
-  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}
+  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
 .qmini{height:2.1em;width:auto;vertical-align:middle;margin:-.45em 0}
 </style>
 </head><body>
@@ -297,7 +297,7 @@ function gradDefs(svg){const d=el('defs',{},svg);
 // Frames: inside the cell or the reserve slot. kind: hand (the piece to place), prov (dashed: chosen, not played yet),
 // last (last move), win (winning line)
 const FR={hand:{stroke:'var(--accent)','stroke-width':3},prov:{stroke:'var(--accent)','stroke-width':2.6,'stroke-dasharray':'5 4'},
-  last:{stroke:'var(--lastc)','stroke-width':2.2},win:{stroke:'var(--accent)','stroke-width':4}};
+  last:{stroke:'var(--accent)','stroke-width':2.2},win:{stroke:'var(--accent)','stroke-width':4}};
 const fr=(kind)=>({fill:'none','pointer-events':'none',...FR[kind]});
 
 // The scene to draw: cell contents and frames, reserve contents and frames
