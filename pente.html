@@ -424,7 +424,7 @@ const PE_I18N={fr:{
  n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
  st_play:"À vous de jouer ({color}).",st_openOther:"{name} pose l'ouverture.",st_chooseOther:"{name} choisit : Noir, Blanc, ou 2 pierres de plus.",
  st_choose1Other:"{name} choisit sa couleur.",st_turnC:"Au tour de {name} ({color}).",
- st_tentative:"Coup en {c} : validez pour le jouer.",pend_stones:"Pierres : {m}. Validez pour les jouer.",confirm1:"Valider le coup",confirmN:"Valider les pierres",
+ st_tentative:"Coup en {c} : confirmez pour le jouer.",pend_stones:"Pierres : {m}. Confirmez pour les jouer.",confirm1:"Confirmer",confirmN:"Confirmer les pierres",
  bBlack:"Noir",bWhite:"Blanc",bAdd:"+2 pierres",takeBlack:"Prendre Noir",takeBlackSub:"Blanc joue le prochain coup.",takeWhite:"Prendre Blanc",takeWhiteSub:"Le prendre, c'est jouer le prochain coup.",
  add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",
  d_open:"noire {a}, blanche {b}, noire {c}",d_add:"2 pierres de plus, noire {a} et blanche {b}",d_B:"Prendre les noirs",d_W:"Prendre les blancs",d_Wn:"Prendre les blancs et jouer {c}",
@@ -437,7 +437,7 @@ const PE_I18N={fr:{
  <li>Cinq paires capturées gagnent.</li>
  <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
  <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
- <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Valider, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Valider ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Confirmer, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
@@ -449,7 +449,7 @@ const PE_I18N={fr:{
  n_add2:"Add 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_openN:"{name} places the opening: 2 black and 1 white ({n}/3).",n_add2N:"{who} adds 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_choose1:"{name} added a black and a white stone: choose your colour.",
  st_play:"Your move ({color}).",st_openOther:"{name} is placing the opening.",st_chooseOther:"{name} is choosing: Black, White, or 2 more stones.",
  st_choose1Other:"{name} is choosing a colour.",st_turnC:"{name} to move ({color}).",
- st_tentative:"Move at {c}: confirm to play it.",pend_stones:"Stones: {m}. Confirm to play them.",confirm1:"Confirm move",confirmN:"Confirm stones",
+ st_tentative:"Move at {c}: confirm to play it.",pend_stones:"Stones: {m}. Confirm to play them.",confirm1:"Confirm",confirmN:"Confirm stones",
  bBlack:"Black",bWhite:"White",bAdd:"+2 stones",takeBlack:"Take Black",takeBlackSub:"White plays the next move.",takeWhite:"Take White",takeWhiteSub:"Taking it means playing the next move.",
  add2:"Add 2 stones",add2Sub:"1 black, then 1 white; {name} then chooses.",
  d_open:"black {a}, white {b}, black {c}",d_add:"2 more stones, black {a} and white {b}",d_B:"Take black",d_W:"Take white",d_Wn:"Take white and play {c}",
