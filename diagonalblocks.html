@@ -9,8 +9,8 @@
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
-  --bg:#f2efe7;--panel:#ffffff;--ink:#22231f;--muted:#64655e;--line:#d9d7cf;
-  --boardbg:#e5ddcc;--cell:#f8f4ea;--gridl:#dad1bf;--start:#a3967f;--coord:#8a877d;
+  --bg:#f0e1e5;--panel:#fbf2f4;--ink:#22231f;--muted:#64655e;--line:#d9d7cf;
+  --boardbg:transparent;--cell:#d3cdc1;--gridl:#bcb5a6;--start:#a3967f;--coord:#8a877d;
   --k0:#12806f;--k0e:#07463d;--k1:#b73a67;--k1e:#641334;
   --s0:var(--k0);--s0e:var(--k0e);--s1:var(--k1);--s1e:var(--k1e);   /* players' swatches: by colour (dbDecorate) */
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
@@ -18,12 +18,12 @@
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#131614;--panel:#1b1f1d;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
-  --boardbg:#0f1211;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
+  --bg:#1a1315;--panel:#251b1e;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
+  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}}
 :root[data-theme="dark"]{
-  --bg:#131614;--panel:#1b1f1d;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
-  --boardbg:#0f1211;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
+  --bg:#1a1315;--panel:#251b1e;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
+  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}
 h1 span{white-space:nowrap}
 .board{background:var(--boardbg);border:0;border-radius:14px}
@@ -204,7 +204,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function DBEngine(){
@@ -366,11 +366,12 @@ function dbBoard({r,d,mine}){
   const o=swapInfo(r);renderTrays(d.st,mine&&(!ui.pending||ui.pending.t==='p')&&!o.ask);
   return o;}
 // My turn, nothing pending. The swap question: Swap or Keep the pink pieces (and Undo last move in free play) ·
-// nothing picked: the message and Undo last move (free play) · a piece picked: Reset, Rotate, Flip
+// nothing picked: the message and Undo last move (free play) · a piece picked: Rotate, Flip (no Reset: clicking the
+// picked piece again drops it, picking another piece drops the placement)
 function keepPink(){ui.kept=view.moves.length;renderGame();}
 function dbTurnStatus({r,o,idle,RST}){
   if(o.ask){status(t('st_swap'),'turn',idle.concat([{label:t('swap'),on:doSwap},{label:t('keepPink'),short:t('keepPinkS'),on:keepPink}]));return;}
-  if(ui.piece>=0){status(t('placeHint'),'turn',[RST,{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]);return;}
+  if(ui.piece>=0){status(t('placeHint'),'turn',[{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]);return;}
   const msg=o.lastSwap?t('st_swapped',{n:plain(1-r.st.turn)}):o.stuckC!==undefined?t('st_stuck',{n:plain(E.seatOf(r.st,o.stuckC))}):
     solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn');
   status(msg,'turn',idle);}
@@ -749,6 +750,7 @@ const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
   enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
   board:dbBoard,turnStatus:dbTurnStatus,waitStatus:dbWaitStatus,ownLayout:true,
   pendText:mv=>[mv.t==='s'?t('swapMv'):t('pend_mv',{m:txtOf(mv)}),t('confirmMv')],
+  noReset:mv=>mv.t==='p',   // a placement is dropped from the reserve (the picked piece again, or another piece)
   pendBtns:mv=>mv.t==='p'&&ui.piece>=0?[{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]:[],
   levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+DiagAI.toString()+'\nconst DA=DiagAI();function aiSearch(pos,opt){return DA.search(pos,opt);}',

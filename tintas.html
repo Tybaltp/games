@@ -9,8 +9,8 @@
 <style>
 /* Tintas palette (light, dark), board and colour counters; the shared layout is in common/games.css */
 :root{
-  --bg:#eef0f1;--panel:#ffffff;--ink:#1d2629;--muted:#5e6b70;--line:#d5dbde;
-  --board:#d3d9dc;--board-edge:#bcc5c9;--hex:#f7f7f4;--hex-edge:#9aa6ab;--hl:#16202a;--pawn:#ffffff;--pawn-ink:#1d2629;
+  --bg:#e8e2ee;--panel:#f6f3fa;--ink:#1d2629;--muted:#5e6b70;--line:#d5dbde;
+  --board:#d2ccdb;--board-edge:#c6bfcf;--hex:#f7f7f4;--hex-edge:#9aa6ab;--hl:#5a2d82;--pawn:#ffffff;--pawn-ink:#1d2629;
   --k0:#d6323c;--k0s:#8e1b22;--k0i:#ffffff;
   --k1:#e06f0e;--k1s:#7a3f04;--k1i:#1b1b1b;
   --k2:#ebbb17;--k2s:#806500;--k2i:#1b1b1b;
@@ -22,13 +22,13 @@
   --board-ar:432/435.73;         /* viewBox of the board (no coordinates in Tintas, so no html.nocoords variant) */
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#11171a;--panel:#192226;--ink:#e2e9eb;--muted:#8d9fa5;--line:#2a383d;
-  --board:#141c1f;--board-edge:#0d1316;--hex:#232d32;--hex-edge:#3d4c53;--hl:#f4f7f8;--pawn:#f2f5f6;--pawn-ink:#0b1012;
+  --bg:#161419;--panel:#201c24;--ink:#e2e9eb;--muted:#8d9fa5;--line:#2a383d;
+  --board:#393440;--board-edge:#2f2a36;--hex:#1f1d23;--hex-edge:#3d4c53;--hl:#f4f7f8;--pawn:#f2f5f6;--pawn-ink:#0b1012;
   --k0s:#f08a90;--k1s:#f7c08a;--k2s:#fbe89a;--k3s:#8fd6a6;--k4s:#b4e2f6;--k5s:#a6bdf0;--k6s:#d9b6ea;--k5:#4a78e0;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k1:#f08a24;--k2:#f4d03f;--k3:#2f9e55;--k4:#5bbbe8;}}
 :root[data-theme="dark"]{
-  --bg:#11171a;--panel:#192226;--ink:#e2e9eb;--muted:#8d9fa5;--line:#2a383d;
-  --board:#141c1f;--board-edge:#0d1316;--hex:#232d32;--hex-edge:#3d4c53;--hl:#f4f7f8;--pawn:#f2f5f6;--pawn-ink:#0b1012;
+  --bg:#161419;--panel:#201c24;--ink:#e2e9eb;--muted:#8d9fa5;--line:#2a383d;
+  --board:#393440;--board-edge:#2f2a36;--hex:#1f1d23;--hex-edge:#3d4c53;--hl:#f4f7f8;--pawn:#f2f5f6;--pawn-ink:#0b1012;
   --k0s:#f08a90;--k1s:#f7c08a;--k2s:#fbe89a;--k3s:#8fd6a6;--k4s:#b4e2f6;--k5s:#a6bdf0;--k6s:#d9b6ea;--k5:#4a78e0;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k1:#f08a24;--k2:#f4d03f;--k3:#2f9e55;--k4:#5bbbe8;}
 /* the board: a soft gradient behind the hexagons, on every layout */
@@ -176,7 +176,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function TintasEngine(){

@@ -9,7 +9,7 @@
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
-  --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6a645a;--line:#ddd7cb;
+  --bg:#e5f1f4;--panel:#f8fcfd;--ink:#26231d;--muted:#6a645a;--line:#ddd7cb;
   --wood:#e2d3b1;--wood-edge:#c9b386;--sq:#f3ead6;--gridl:#c2ad82;--trap:#d39178;--trapk:#a5563f;--coord:#7b6a4a;
   --g1:#d4a237;--g3:#573904;--gk:#3a2600;--s1:#9eabb7;--s3:#222a32;--sk:#141b22;
   --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
@@ -19,11 +19,11 @@
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
+  --bg:#171511;--panel:#201e19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
   --wood:#56462f;--wood-edge:#2e261b;--sq:#6b583d;--gridl:#3e3222;--trap:#94523f;--trapk:#e19a83;--coord:#b9a888;
   --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark;--g1:#f0bb35;--s1:#aab6c1;--s3:#56616b;--sk:#1a2229;--g3:#7d560a;--gk:#3b2800;}}
 :root[data-theme="dark"]{
-  --bg:#141412;--panel:#1d1c19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
+  --bg:#171511;--panel:#201e19;--ink:#ebe6db;--muted:#9c958a;--line:#33302a;
   --wood:#56462f;--wood-edge:#2e261b;--sq:#6b583d;--gridl:#3e3222;--trap:#94523f;--trapk:#e19a83;--coord:#b9a888;
   --accent:#5fb7c6;--accent-ink:#0b2328;--danger:#e46a55;color-scheme:dark;--g1:#f0bb35;--s1:#aab6c1;--s3:#56616b;--sk:#1a2229;--g3:#7d560a;--gk:#3b2800;}
 /* the board sits on its wood frame, on phones too (thinner there) */
@@ -152,7 +152,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script>
 // ===== Arimaa rules engine =====
 // Board: 64 squares, index = row*8+col, row 0 = rank 1 (Gold's home), col 0 = file a.

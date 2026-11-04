@@ -9,22 +9,20 @@
 <style>
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
-  --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
+  --bg:#e5f1f4;--panel:#edf6f9;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
   --plate:#2a4852;--plate-edge:#1f3840;--ring:#dfe5e7;--ring-hole:#2a4852;--ghost:#6d8a93;
   --m0:#f7f9fa;--m0e:#5f6b70;--m1:#6f7a7f;--m1e:#3c4549;--m2:#22272a;--m2e:#000000;
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  /* viewBox of the board: 48 rings 500×595 (500×565 without the coordinates), 37 rings 440×526 (440×496) */
-  --board-ar:500/595;
+  /* the board is square: its viewBox is widened left and right to its height (48 rings 595×595, 565 without the
+     coordinates; 37 rings 526, 496) */
+  --board-ar:1/1;
 }
-html.nocoords{--board-ar:500/565}
-html.b37{--board-ar:440/526}
-html.b37.nocoords{--board-ar:440/496}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --bg:#0f1618;--panel:#152023;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
   --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --bg:#0f1618;--panel:#152023;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
   --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
 /* the plate under the rings, on every screen (the light rings need it) */
@@ -133,7 +131,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-240 -282.5 500 595" role="img" aria-label="Zèrtz board"></svg></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-287.5 -282.5 595 595" role="img" aria-label="Zèrtz board"></svg></div></div>
     <!-- the shared pool, and the colour of the marble to place -->
     <div class="poolbar" id="poolBar"><span class="plabel" id="poolLbl"></span><div class="colors" id="colors" role="group"></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
@@ -184,7 +182,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script>
 function ZertzEngine(size){
   const B=size===48?[-3,4,-4,3,-3,4]:[-3,3,-3,3,-3,3],cells=[];
@@ -345,7 +343,7 @@ const ringsOf=g=>g&&ENG[g.rings]?+g.rings:g&&ENG[g.size]?+g.size:48;
 let E,N,M,CAP,POOL,TURN,CX=0,CY=0,COLQ=[],RMAX={},BOTTOM=238,SIZE=0,VB=[0,0,0,0];
 const X=i=>60*E.Q[i]-CX,Y=i=>69.282*(E.R[i]+E.Q[i]/2)-CY;
 const name=i=>'abcdefgh'[COLQ.indexOf(E.Q[i])]+(RMAX[E.Q[i]]-E.R[i]+1);
-// html.b37 picks the board's aspect ratio (--board-ar) for the 37-ring board
+// html.b37 marks the 37-ring board (the board stays square, --board-ar 1/1)
 function setBoard(sz){if(sz===SIZE)return;SIZE=sz;E=ENG[sz];({N,M,CAP,POOL,TURN}=E);
   let sx=0,sy=0;COLQ=[];RMAX={};
   for(let i=0;i<N;i++){sx+=60*E.Q[i];sy+=69.282*(E.R[i]+E.Q[i]/2);if(!COLQ.includes(E.Q[i]))COLQ.push(E.Q[i]);RMAX[E.Q[i]]=Math.max(RMAX[E.Q[i]]??-99,E.R[i]);}
@@ -475,8 +473,9 @@ const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function marble(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:22,fill:`var(--m${c})`,stroke:`var(--m${c}e)`,'stroke-width':2},g);if(op)e.setAttribute('opacity',op);}
 function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv&&(pv.prov||pv.atProv))last=null;   // a mere hover keeps the last move's marks
-  // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox (--board-ar too)
-  svg.setAttribute('viewBox',`${VB[0]} ${VB[1]} ${VB[2]} ${VB[3]+(coordsOn?30:0)}`);
+  // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox
+  const vh=VB[3]+(coordsOn?30:0),vw=Math.max(VB[2],vh);   // square: as wide as high, the rings centred
+  svg.setAttribute('viewBox',`${VB[0]-(vw-VB[2])/2} ${VB[1]} ${vw} ${vh}`);
   if(coordsOn)for(const q of COLQ){const t=el('text',{x:60*q-CX,y:BOTTOM,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--ghost)'},svg);t.textContent='abcdefgh'[COLQ.indexOf(q)];}
   const caps=legal.length&&legal[0].t===1,lm=last&&last.mv;
   const starters=new Set(),targets=new Set(),removable=new Set();

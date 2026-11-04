@@ -9,7 +9,7 @@
 <style>
 /* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
-  --bg:#eef1f2;--panel:#ffffff;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
+  --bg:#e9eff7;--panel:#f9fbfe;--ink:#1c282d;--muted:#5d6d74;--line:#d4dcdf;
   --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--ghost:#355b75;
   --o1:#ffb347;--o2:#e07a12;--o3:#8a4300;--b1:#6fb3ff;--b2:#1f6fd6;--b3:#0b3a7a;
   --s0:var(--o2);--s0e:var(--o3);--s1:var(--b2);--s1e:var(--b3);
@@ -18,11 +18,11 @@
 }
 html.nocoords{--board-ar:610/579.615}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --bg:#12151a;--panel:#1a1e26;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
   --sky:#14283a;--sky-edge:#0c1a26;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--b2:#5aa2f5;--b3:#1b4f99;--o2:#f08a24;}}
 :root[data-theme="dark"]{
-  --bg:#10171a;--panel:#172125;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
+  --bg:#12151a;--panel:#1a1e26;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
   --sky:#14283a;--sky-edge:#0c1a26;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--b2:#5aa2f5;--b3:#1b4f99;--o2:#f08a24;}
 /* the sky behind the board, on every layout */
@@ -165,7 +165,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function VoloEngine(){

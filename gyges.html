@@ -9,7 +9,7 @@
 <style>
 /* Gyges palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
-  --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6c675c;--line:#dcd7cb;
+  --bg:#ede4d9;--panel:#f9f3ed;--ink:#26231d;--muted:#6c675c;--line:#dcd7cb;
   --wood:#dcc59c;--wood-edge:#b39360;--grid:#8f7445;--hole:#8f7246;--hole-e:#4f3a1e;--lbl:#7d6a45;
   --pc:#fffaf0;--pe:#241b0d;
   --s0:#2c8a6e;--s0e:#1b5c49;--s1:#b9503d;--s1e:#7d3123;
@@ -20,14 +20,14 @@
 @media (prefers-reduced-motion:no-preference){.gpulse{animation:gpulse 2.2s ease-in-out infinite}@keyframes gpulse{50%{opacity:.7}}}
 html.nocoords{--board-ar:388/552}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
-  --wood:#56412a;--wood-edge:#73583a;--grid:#8c6f47;--hole:#1a130b;--hole-e:#b8996a;--lbl:#b7a47c;
+  --bg:#221d17;--panel:#2d261f;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
+  --wood:#56412a;--wood-edge:#73583a;--grid:#8c6f47;--hole:#30251a;--hole-e:#b8996a;--lbl:#b7a47c;
   --pc:#f3e6cc;--pe:#000;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
-  --wood:#56412a;--wood-edge:#73583a;--grid:#8c6f47;--hole:#1a130b;--hole-e:#b8996a;--lbl:#b7a47c;
+  --bg:#221d17;--panel:#2d261f;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
+  --wood:#56412a;--wood-edge:#73583a;--grid:#8c6f47;--hole:#30251a;--hole-e:#b8996a;--lbl:#b7a47c;
   --pc:#f3e6cc;--pe:#000;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
@@ -164,7 +164,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script>
 function GygesEngine(){
   // 6×6 board, cell i = row*6+col, row 0 at the top. Seat 0 sits at the bottom (home row 5) and aims at the goal above row 0;
