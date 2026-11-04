@@ -35,6 +35,7 @@
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--hov:color-mix(in srgb,var(--accent) 42%,transparent);--danger:#e8634d;color-scheme:dark}
+.qlog{display:grid;grid-template-columns:2.5ch auto;justify-content:start;align-items:center;column-gap:8px}
 .qmini{height:1.9em;width:auto;vertical-align:middle;margin:-.35em 0}
 .notice .msg .qmini,.status .qmini{height:1.8em;margin:0}   /* the message clips what overflows its lines */
 </style>
@@ -298,8 +299,9 @@ function richOfMv(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv
 function qRich(txt){const bits=txt.split(MK);
   return {plain:bits.map((b,i)=>i%2?pieceName(+b):b).join(''),
     node(){const f=document.createDocumentFragment();bits.forEach((b,i)=>f.append(i%2?miniPiece(+b):b));return f;}};}
-function qLogNode(e){const f=document.createDocumentFragment(),mv=e.mv;
-  if(mv.a>=0)f.append(cellName(mv.a));if(mv.g>=0){if(mv.a>=0)f.append(' ');f.append(miniPiece(mv.g));}return f;}
+// two columns of their own: the cell (empty on the first move), the piece given (none on the last)
+function qLogNode(e){const f=document.createElement('span'),mv=e.mv,c=document.createElement('span');f.className='qlog';
+  c.textContent=mv.a>=0?cellName(mv.a):'';f.append(c);if(mv.g>=0)f.append(miniPiece(mv.g));return f;}
 function gradDefs(svg){const d=el('defs',{},svg);
   for(const [id,a,b] of [['qgl','--pl-a','--pl-b'],['qgd','--pd-a','--pd-b']]){const lg=el('linearGradient',{id,x1:0,x2:1,y1:0,y2:0},d);
     el('stop',{offset:0,style:`stop-color:var(${a})`},lg);el('stop',{offset:.45,style:`stop-color:var(${a})`},lg);el('stop',{offset:1,style:`stop-color:var(${b})`},lg);}}
