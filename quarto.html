@@ -36,6 +36,7 @@
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
 .qmini{height:2.1em;width:auto;vertical-align:middle;margin:-.45em 0}
+.notice .msg .qmini,.status .qmini{height:1.8em;margin:0}   /* the message clips what overflows its lines */
 </style>
 </head><body>
 <div class="wrap">
@@ -287,7 +288,7 @@ function pieceIso(par,p,bx,by,S,op){const k=PC(p),g=el('g',{'pointer-events':'no
     el('ellipse',{cx:f1(c[0]),cy:f1(c[1]+ri*S*SQ*.3),rx:f1(ri*S*.8),ry:f1(ri*S*SQ*.6),fill:'rgba(0,0,0,.28)'},g);}
   return g;}
 // The move list: the cell, then a small picture of the piece given (in the current view), its name as a tooltip
-function miniPiece(p){const iso=qView==='iso',svg=el('svg',{viewBox:iso?'-9 -18 18 25.5':'-10.5 -10.5 21 21',class:'qmini',role:'img','aria-label':pieceName(p)});
+function miniPiece(p){const iso=qView==='iso',svg=el('svg',{viewBox:iso?'-9 -18 18 25.5':'-11.5 -11.5 23 23',class:'qmini',role:'img','aria-label':pieceName(p)});
   el('title',{},svg).textContent=pieceName(p);if(iso)pieceIso(svg,p,0,0,20);else piece2D(svg,p,0,0,8);return svg;}
 // A move with the piece given as a picture (status texts: suggestion, move awaiting confirmation)
 const MK='\u2063';
