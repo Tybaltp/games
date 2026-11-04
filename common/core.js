@@ -449,7 +449,10 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   if(view.match){mSync(r);mRender(r);}else if($('mCard'))$('mCard').hidden=true;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
-  {const ib=$('inviteBox'),waiting=!view.names[1-mySeat]||!view.started;ib.hidden=role==='ai'||solo()||!!view.match||!(role==='host'||(mySeat>=0&&C.code));if(role!=='host'&&C.code)fillCodes(C.code,true);
+  {const ib=$('inviteBox'),waiting=mySeat>=0&&(!view.names[1-mySeat]||!view.started),wC=role==='watch'&&!!C.code&&C.code.length===8;
+    // always there in a network game, folded once it has started: a match gives its own pages' links, a spectator only the spectators' link
+    ib.hidden=role==='ai'||solo()||role==='file'||(view.match?MTW==='v':!(role==='host'||(mySeat>=0&&C.code)||wC));
+    if(!ib.hidden){if(view.match)fillMatch();else if(role==='watch')fillWatch(C.code);else if(role!=='host'&&C.code)fillCodes(C.code,true);}
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
     if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
@@ -615,10 +618,20 @@ const aiFirst=()=>{const v=$('aFirst').value;return v==='me'?0:v==='ai'?1:Math.r
 
 // ---------- invitation codes ----------
 function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
-  $('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
+  if($('codePBox'))$('codePBox').hidden=false;$('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
   const wc=guest?view&&view.wcode:H.wcode;
   if($('codeWC')){$('codeWC').value=wc||'';$('codeWBox').hidden=!wc;}
   if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=wc?base+'#watch-'+wc:'';if($('watchLinkBox'))$('watchLinkBox').hidden=!wc;}}
+// a spectator: the code they came with, if it is the spectators' one (an older link gave the players' code: nothing shown)
+function fillWatch(wc){const web=/^https?:$/.test(location.protocol);if($('codePBox'))$('codePBox').hidden=true;$('oppLink').hidden=true;$('hostNote').hidden=true;
+  if($('codeWC')){$('codeWC').value=wc;$('codeWBox').hidden=false;}$('linksBox').hidden=!web;$('fileNote').hidden=web;
+  if(web){$('codeW').value=location.href.split('#')[0]+'#watch-'+wc;if($('watchLinkBox'))$('watchLinkBox').hidden=false;}}
+// a Mochalunt table: the match's links (mochalunt.html), not the table's codes; a spectator only gets the spectators' one
+function fillMatch(){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0].replace(/[^/]*$/,'')+'mochalunt.html';
+  const tl=(MATCH.excl<0?'a':String(MATCH.excl))+MATCH.j1,pl=!!MATCH.me,wc=pl?MATCH.wcode:MATCH.code;
+  if($('codePBox'))$('codePBox').hidden=true;if($('codeWBox'))$('codeWBox').hidden=true;$('hostNote').hidden=true;$('linksBox').hidden=!web;$('fileNote').hidden=web;
+  $('oppLink').hidden=!pl;$('codeP').value=pl?base+'#join-'+MATCH.code+'-'+tl+(MATCH.wcode?'-'+MATCH.wcode:''):'';
+  $('codeW').value=wc?base+'#watch-'+wc+'-'+tl:'';if($('watchLinkBox'))$('watchLinkBox').hidden=!wc;}
 
 // ---------- start screen ----------
 function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));return;}

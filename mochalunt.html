@@ -35,6 +35,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .link{display:flex;gap:6px}.link input{flex:1;min-width:0;font-size:.8rem}
 .matches{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .matches li{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:8px}
+.matches .acts{display:flex;gap:6px;flex:none}
 .matches li:first-child{border-top:0;padding-top:0}
 .res{margin:0;padding-left:1.4em}.res li{margin:.25em 0}.res a{color:inherit}
 </style>
@@ -106,7 +107,7 @@ const I18N={
   j1Hint:"Le joueur 1 choisit sa place aux tables 1, 3 et 5 ; l'autre aux tables 2 et 4.",create:"Créer le match",madeT:"Match créé",invLink:"Lien d'invitation, à envoyer à votre adversaire",
   watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinBtn:"Rejoindre le match",
   watchT:"Suivre un match Mochalunt",watchFind:"Recherche de la table en cours…",watchNone:"Aucune table n'est ouverte pour l'instant : les joueurs ne sont pas encore à une table.",retry:"Réessayer",
-  resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",result:"Résultat",
+  resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",del:"Supprimer",delQ:"Supprimer le match contre {n} de cet appareil ?",result:"Résultat",
   drawn:"nulle",won:"{n} gagne",live:"à jouer",tableN:"table {k} / {n}",vs:"contre {n}",opp:"votre adversaire",you:"vous",
   j1Is:"Joueur 1 du match : {n}.",swap:"règle du swap",adv:"règle avancée",bad:"Ce lien de match n'est pas valide.",unknown:"Ce match n'est pas connu sur cet appareil.",noPeer:"Impossible de charger PeerJS : vérifiez la connexion."},
  en:{lede:"A match between two players, one game each, in the tournament's order.",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
@@ -114,7 +115,7 @@ const I18N={
   j1Hint:"Player 1 chooses their seat at tables 1, 3 and 5; the other at tables 2 and 4.",create:"Create the match",madeT:"Match created",invLink:"Invitation link, to send to your opponent",
   watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinBtn:"Join the match",
   watchT:"Follow a Mochalunt match",watchFind:"Looking for the table in play…",watchNone:"No table is open yet: the players are not at a table.",retry:"Try again",
-  resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",result:"Result",
+  resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",result:"Result",
   drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",vs:"against {n}",opp:"your opponent",you:"you",
   j1Is:"Match's Player 1: {n}.",swap:"swap rule",adv:"advanced rule",bad:"This match link is not valid.",unknown:"This match is not known on this device.",noPeer:"PeerJS could not be loaded: check the connection."}};
 const $=id=>document.getElementById(id);
@@ -147,7 +148,12 @@ function home(){show('vHome');history.replaceState(null,'',location.pathname);$(
   for(const r of recs){const P=plan(r.excl),k=nextK(r),sc=score(r),li=document.createElement('li'),sp=document.createElement('span');
     sp.textContent=t('vs',{n:nameOf(r,other(r.me))})+' · '+(k<P.length?t('tableN',{k:k+1,n:P.length})+' · '+P[k].name:t('result'))+' · '+num(sc[r.me])+'–'+num(sc[other(r.me)]);
     const b=document.createElement('button');b.type='button';b.className=k<P.length?'primary':'';b.textContent=k<P.length?t('resume'):t('result');b.onclick=()=>{location.href=tableUrl(r,k,'t');};
-    li.append(sp,b);ul.appendChild(li);}}
+    // removing a match: only from this device (its record and its tables' saved games); the other player keeps theirs
+    const d=document.createElement('button');d.type='button';d.textContent=t('del');d.onclick=()=>{if(!confirm(t('delQ',{n:nameOf(r,other(r.me))})))return;forget(r);home();};
+    const bx=document.createElement('span');bx.className='acts';bx.append(b,d);li.append(sp,bx);ul.appendChild(li);}}
+function forget(r){const ids=['mochalunt-'+r.code],tb=new RegExp('^'+r.code+'t\\d+$');
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||!/-p2p-(host|guest|pending)$/.test(k))continue;const v=LS.get(k,null);if(v&&typeof v.code==='string'&&tb.test(v.code))ids.push(k);}
+  for(const k of ids)try{localStorage.removeItem(k);}catch(e){}}
 $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('nName').value.trim().slice(0,24);if(!nm){$('nName').focus();return;}LS.set('games-name',nm);
   const team=$('nFmt').value==='team',jv=$('nJ1').value;
   const rec={code:rnd(6),wcode:rnd(8),excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now()};

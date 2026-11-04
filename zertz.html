@@ -144,7 +144,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
     <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
-      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
       <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
       <div id="linksBox" hidden>
         <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
@@ -183,7 +183,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=20"></script>
+<script src="common/core.js?v=21"></script>
 <script>
 function ZertzEngine(size){
   const B=size===48?[-3,4,-4,3,-3,4]:[-3,3,-3,3,-3,3],cells=[];

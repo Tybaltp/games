@@ -126,7 +126,7 @@ html.nocoords{--board-ar:388/552}
     <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
-      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
       <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
       <div id="linksBox" hidden>
         <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
@@ -164,7 +164,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=20"></script>
+<script src="common/core.js?v=21"></script>
 <script>
 function GygesEngine(){
   // 6×6 board, cell i = row*6+col, row 0 at the top. Seat 0 sits at the bottom (home row 5) and aims at the goal above row 0;

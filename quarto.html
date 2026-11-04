@@ -128,7 +128,7 @@
     <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
-      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
       <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
       <div id="linksBox" hidden>
         <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
@@ -168,7 +168,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=20"></script>
+<script src="common/core.js?v=21"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.

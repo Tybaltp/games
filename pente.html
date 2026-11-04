@@ -144,7 +144,7 @@ h1{font-weight:400;letter-spacing:0}
     <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
       <p class="hint" id="watchInfo"></p>
-      <div><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
+      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
       <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
       <div id="linksBox" hidden>
         <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
@@ -390,7 +390,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=20"></script>
+<script src="common/core.js?v=21"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
