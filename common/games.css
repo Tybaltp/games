@@ -150,8 +150,9 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .dot.c0{background:var(--s0);border:1.5px solid var(--s0e)}
 .dot.c1{background:var(--s1);border:1.5px solid var(--s1e)}
 .hint{font-size:.8rem;color:var(--muted);margin:0}
-ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:2px}
-ol.log li{display:grid;grid-template-columns:2.2em 4.2em 1fr;gap:4px;font-variant-numeric:tabular-nums}
+/* the list's columns shared by every row (subgrid): the names as wide as the widest one, shrunk only when space runs out */
+ol.log{margin:0;padding:0;list-style:none;font-family:var(--f-mono);font-size:.82rem;max-height:220px;overflow:auto;display:grid;grid-template-columns:2.2em minmax(0,max-content) minmax(0,1fr);column-gap:8px;row-gap:2px;align-content:start}
+ol.log li{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;font-variant-numeric:tabular-nums}
 ol.log li span:last-child{overflow-wrap:anywhere}
 ol.log .n{color:var(--muted)}
 ol.log li.go{cursor:pointer;border-radius:4px}ol.log li.go:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}

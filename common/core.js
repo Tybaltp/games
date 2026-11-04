@@ -35,6 +35,7 @@
 //  logDesc?(e)                   Extra description line under a move-list entry
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
 //  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
+//  drawOffer?                    true: the players may offer a draw (accepted: drawn by agreement)
 //  rich?(txt)                    status texts with pictures: txt holds U+2063…U+2063 marks; returns {node(), plain}
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
 //  home()                        draws the board shown on the home page (and again when the coordinates are switched)
@@ -75,7 +76,7 @@ const I18C={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- w_time:"temps écoulé",w_resign:"abandon",w_bad:"coup illisible",coords:"Coordonnées",
+ w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",options:"Options",drawOffer:"Proposer la nulle",drawCancel:"Retirer la proposition",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
  sgfLoad:"Charger une partie",sgfExport:"Exporter la partie (SGF)",st_file:"Partie chargée, en lecture seule : parcourez-la avec les flèches ou la liste des coups.",
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
@@ -102,7 +103,7 @@ const I18C={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- w_time:"time ran out",w_resign:"resignation",w_bad:"unreadable move",coords:"Coordinates",
+ w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",options:"Options",drawOffer:"Offer a draw",drawCancel:"Withdraw the offer",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
  sgfLoad:"Load a game",sgfExport:"Export the game (SGF)",st_file:"Game loaded, read only: go through it with the arrows or the list of moves.",
  sgfBad:"Unreadable SGF file.",sgfOther:"This file is a game of another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 }};
@@ -139,7 +140,7 @@ let flip=false;   // the board is turned so that a player's own side is at the b
 let memoKey='',memoVal=null;
 // rules: the game or view object (its rule fields); the result (time, resignation) ends the game when the moves do not
 function replay(rules,moves,result){const key=lang+'|'+JSON.stringify(GAME.rules(rules))+'|'+moves.join(',')+'|'+JSON.stringify(result);if(key===memoKey)return memoVal;
-  const v=GAME.replay(rules,moves);if(!v.over&&result)v.over={w:result.winner,why:result.reason==='time'?'w_time':'w_resign'};
+  const v=GAME.replay(rules,moves);if(!v.over&&result)v.over={w:result.winner,why:result.reason==='time'?'w_time':result.reason==='agree'?'w_agree':'w_resign'};
   memoKey=key;memoVal=v;return v;}
 const sameRules=(a,b)=>JSON.stringify(GAME.rules(a))===JSON.stringify(GAME.rules(b));
 
@@ -194,7 +195,7 @@ function hostHold(s,code){const g=H.game;if(!g.hold)g.hold=[null,null];if(g.hold
 const myHoldOf=s=>H.game.hold&&s>=0?H.game.hold[s]||null:null;
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,...GAME.rules(g),held:[0,1].map(q=>!!(g.hold&&g.hold[q])),tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
   running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
-  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null};}
+  started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,rematch:g.rematch||null,draw:g.draw||null};}
 // Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
 // sides swapped (the players exchange seats), same time control and same rule set.
 function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.result).over||!g.names[0]||!g.names[1])return;
@@ -202,11 +203,29 @@ function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.resu
   else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
   else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
   else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
-    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.hold=null;g.result=null;g.rematch=null;
+    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.hold=null;g.result=null;g.rematch=null;g.draw=null;
     g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
     mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
   else return;
   hostBroadcast();}
+// Draw offer (games with GAME.drawOffer): g.draw = {from (seat), st:'ask'|'no'}; the offer lapses with the next move, a
+// refusal stays shown until then (no new offer meanwhile); acceptance ends the game, drawn by agreement
+function drawOp(g,s,op){const dr=g.draw,r=replay(g,g.moves,g.result);if(r.over||!g.started)return false;
+  if(op==='ask'&&!dr)g.draw={from:s,st:'ask'};
+  else if(op==='cancel'&&dr&&dr.from===s&&dr.st==='ask')g.draw=null;
+  else if(op==='no'&&dr&&dr.from!==s&&dr.st==='ask')g.draw={from:dr.from,st:'no'};
+  else if(op==='yes'&&dr&&dr.from!==s&&dr.st==='ask'){g.draw=null;g.result={winner:-1,reason:'agree'};}
+  else return false;
+  return true;}
+function drawSend(op){if(!view)return;const r=replay(view,view.moves,view.result);
+  if(role==='host'){if(drawOp(H.game,mySeat,op))hostBroadcast();return;}
+  if(role==='guest'){if(C.conn&&C.conn.open)C.conn.send({t:'draw',op});return;}
+  if(role==='local'){const dr=view.draw,s=op==='ask'?r.st.turn:op==='cancel'?(dr?dr.from:0):(dr?1-dr.from:0);
+    if(op==='yes')localFreeze();if(drawOp(view,s,op))renderGame();return;}
+  // against the computer: an answer at once, yes when its last evaluation is not in its favour
+  if(role==='ai'&&op==='ask'&&!view.draw&&!r.over){const a=aiLast;
+    if(a&&!a.policy&&!a.forced&&typeof a.score==='number'&&a.score<.3){stopAI();hintMv=null;resetUi();view.draw=null;view.result={winner:-1,reason:'agree'};}
+    else view.draw={from:mySeat,st:'no'};renderGame();}}
 function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
@@ -264,7 +283,8 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
   if(d.t==='move')hostMove(s,d.n,d.code,conn);
   if(d.t==='start')hostReady(s);
   if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
-  if(d.t==='rematch')rematchOp(s,d.op);}
+  if(d.t==='rematch')rematchOp(s,d.op);
+  if(d.t==='draw'&&GAME.drawOffer&&drawOp(g,s,d.op))hostBroadcast();}
 function hostMove(s,n,code,conn){const g=H.game,pubFor=()=>({...hostPublic(),myHold:myHoldOf(s)});if(conn&&n===g.moves.length-1&&g.moves[n]===code){conn.send({t:'state',game:pubFor()});return false;}
   // a simultaneous move sent again once both are revealed: its place is the seat's index
   if(conn&&simMode(g)&&n===0&&g.moves.length>=2&&g.moves[s]===code){conn.send({t:'state',game:pubFor()});return false;}
@@ -277,7 +297,7 @@ function hostMove(s,n,code,conn){const g=H.game,pubFor=()=>({...hostPublic(),myH
   const cc=GAME.legal(r.st,code,g);if(!cc){conn&&conn.send({t:'nack'});return false;}
   const now=Date.now();
   if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
-  g.moves.push(cc);g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
+  g.moves.push(cc);g.draw=null;g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
 let saveTick=0;
 
 // --- guest / spectator ---
@@ -359,6 +379,8 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const idle=[undoB,hintB];
   if(role==='file'&&navAt!==null)status(t('st_file'));
   else if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);
+  else if(view.draw&&view.draw.st==='ask'&&navAt===null&&(role==='local'||(mySeat>=0&&view.draw.from!==mySeat)))
+    status(t('drawAsk',{n:nm(view.draw.from)}),'turn',[{label:t('decline'),on:()=>drawSend('no')},{label:t('accept'),primary:true,on:()=>drawSend('yes')}]);
   else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
   else if(role==='file')status(t('st_file'));   // the last position of an unfinished game
   else if(role==='ai'&&busy)status(t('st_aiThinking'));
@@ -390,7 +412,12 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   $('myCard').hidden=!(role==='ai'||solo()||sgfOk||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
   if($('aiBox'))$('aiBox').hidden=role!=='ai';
   $('resignBox').hidden=!!r.over||mySeat<0||!$('resignAsk').hidden;
-  if(role==='ai')$('aiInfo').textContent=aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';
+  if($('drawBtn')){const dv=view.draw,pl=!r.over&&!!view.started&&mySeat>=0&&navAt===null&&(role==='ai'||role==='local'||((role==='host'||role==='guest')&&!!view.names[1-mySeat]));
+    const myAsk=!!dv&&dv.st==='ask'&&dv.from===mySeat&&role!=='local';
+    $('drawBtn').hidden=!pl||(!!dv&&!myAsk);$('drawBtn').textContent=t(myAsk?'drawCancel':'drawOffer');
+    const note=!pl||!dv?'':myAsk?t('drawWait',{n:nm(1-mySeat)}):dv.st==='no'&&(role==='local'||dv.from===mySeat)?t('drawNo',{n:nm(1-dv.from)}):'';
+    $('drawNote').textContent=note;$('drawNote').hidden=!note;}
+  if(role==='ai'){$('aiInfo').textContent=aiInfo?t(aiInfo.k,{d:aiInfo.d}):'';$('aiInfo').hidden=!aiInfo;}   // no empty line under the level
   const showStart=mySeat>=0&&!r.over&&!view.started&&!!view.names[1-mySeat];$('startCard').hidden=!showStart;
   if(showStart){const rd=!!(view.ready&&view.ready[mySeat]);$('startBtn').disabled=rd;$('startBtn').textContent=rd?t('waitingOpp'):t('startBtn');
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
@@ -480,9 +507,9 @@ function pendClear(){C.pending=null;LS.del(K('p2p-pending'));}
 
 // ---------- computer opponent ----------
 // The search runs in a worker built from the game's source (GAME.aiSrc), so the page stays responsive.
-let worker=null,reqId=0,cbs={},busy='',aiInfo=null,hintMv=null;
+let worker=null,reqId=0,cbs={},busy='',aiInfo=null,hintMv=null,aiLast=null;   // aiLast: the computer's last search (draw offers)
 function makeWorker(){const src=GAME.aiSrc()+`
-self.onmessage=e=>{const m=e.data,r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced}});};`;
+self.onmessage=e=>{const m=e.data,r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}});};`;
   worker=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));worker.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data.r);};}
 function stopAI(){if(worker)worker.terminate();worker=null;cbs={};busy='';}
 function ask(st,opt,cb){opt={...opt,...(GAME.aiOpt?GAME.aiOpt(view):{})};const msg={st:GAME.aiPos(st),opt};
@@ -519,7 +546,7 @@ function localSave(){if(role!=='local'||!view)return;LS.set(LK(),{...view,clock:
 function localFreeze(){if(!view.tc)return;view.clock=remaining();view.running=false;view.elapsed=0;view.recvAt=Date.now();}
 function localPlay(code){if(view.result)return;const r=replay(view,view.moves,view.result);if(r.over)return;const s=r.st.turn;
   if(view.tc){const rem=remaining();if(view.running){if(rem[s]<=0){localFlag();return;}rem[s]+=view.tc.inc;}view.clock=rem;}
-  view.moves=view.moves.concat([code]);const r2=replay(view,view.moves,null);
+  view.draw=null;view.moves=view.moves.concat([code]);const r2=replay(view,view.moves,null);
   view.running=!r2.over&&localRuns(r2.st);view.elapsed=0;view.recvAt=Date.now();testTurn();}
 function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)return;const tt=r.st.turn;localFreeze();view.clock[tt]=0;
   view.result={winner:1-tt,reason:'time'};resetUi();renderGame();}
@@ -531,18 +558,18 @@ function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';if($('sgfLoad'))$('sgfLoa
   const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
 // An invitation link opens straight on the name to play under (the saved nickname by default)
 function invited(on){$('setup').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
-function aiPlay(code){if(view.result)return;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
+function aiPlay(code){if(view.result)return;view.draw=null;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
 function aiStep(){if(role!=='ai'||busy)return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
   ask(aiView(r.st),GAME.levels[level],res=>{const wait=Math.max(0,400-(Date.now()-t0));setTimeout(()=>{if(role!=='ai'||view.moves.length!==n||busy!=='ai')return;busy='';
-    if(!res||!res.move){renderGame();return;}aiInfo=GAME.evalInfo(res,r.st);view.moves=view.moves.concat([GAME.enc(res.move)]);renderGame();aiStep();},wait);});}
+    if(!res||!res.move){renderGame();return;}aiInfo=GAME.evalInfo(res,r.st);aiLast=res;view.draw=null;view.moves=view.moves.concat([GAME.enc(res.move)]);renderGame();aiStep();},wait);});}
 // Undo last move: free play takes back one move; against the computer, back to my last turn before my last move
 const undoOk=r=>role==='test'?view.moves.length>0:role==='ai'?r.log.some(e=>e.p===mySeat):false;
 function doUndo(){if(!view||!canUndo()||GAME.preparing())return;if(role==='test'){testUndo();return;}stopAI();const m=view.moves.slice();
   const turnAt=k=>replay(view,m.slice(0,k),null).st.turn;let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
   if(turnAt(k)!==mySeat)k=0;
-  view.moves=m.slice(0,k);view.result=null;resetUi();aiInfo=null;hintMv=null;renderGame();aiStep();}
+  view.moves=m.slice(0,k);view.result=null;view.draw=null;aiLast=null;resetUi();aiInfo=null;hintMv=null;renderGame();aiStep();}
 // Hint: looked for by the computer (GAME.hintLevel), then shown on the board like a move awaiting confirmation; Play
 // this move plays it at once, Dismiss (or a click on the board) drops it.
 const hintOn=()=>!!hintMv&&!busy;
@@ -607,7 +634,7 @@ function sgfLoad(txt){let nodes;try{nodes=sgfParse(String(txt).replace(/^\uFEFF/
   const body=nodes.slice(1);let codes;try{codes=G&&G.codes?G.codes(body):body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);}catch(e){return t('sgfBad');}
   const r=GAME.replay(rules,codes);if(r.over&&r.over.why==='w_bad')return t('sgfMove',{n:r.log.length+1});
   const bs=G&&G.black?G.black(r.st):0,names=[];names[bs]=v('PB')||t('p1');names[1-bs]=v('PW')||t('p2');
-  const re=/^([BW])\+([RT])/i.exec(v('RE')||''),result=!r.over&&re?{winner:re[1].toUpperCase()==='B'?bs:1-bs,reason:re[2].toUpperCase()==='T'?'time':'resign'}:null;
+  const re=/^([BW])\+([RT])/i.exec(v('RE')||''),result=r.over?null:re?{winner:re[1].toUpperCase()==='B'?bs:1-bs,reason:re[2].toUpperCase()==='T'?'time':'resign'}:/^(0|draw)$/i.test(v('RE')||'')?{winner:-1,reason:'agree'}:null;
   stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
   view={...soloView(rules,null),names,moves:codes,result,sgfDT:v('DT')||''};navAt=codes.length?0:null;
   resetUi();hintMv=null;showGame();renderGame();return '';}
@@ -615,9 +642,13 @@ function sgfPick(){const f=document.createElement('input');f.type='file';f.accep
   f.onchange=()=>{const x=f.files&&f.files[0];if(!x)return;x.text().then(txt=>{const e=sgfLoad(txt);if(e){$('joinErr').textContent=e;status(e);}});};f.click();}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
 function sgfUi(){if(!$('sgfLoad')&&$('newBtn')){const b=document.createElement('button');b.type='button';b.id='sgfLoad';b.className='sgfLoad';b.dataset.i18n='sgfLoad';b.textContent=t('sgfLoad');b.onclick=sgfPick;$('newBtn').after(b);}
-  // in the settings card, above the resignation
-  if(!$('sgfExp')&&$('resignBox')){const d=document.createElement('div');d.className='confirm';d.id='sgfExpBox';d.hidden=true;
-    const b=document.createElement('button');b.type='button';b.id='sgfExp';b.dataset.i18n='sgfExport';b.textContent=t('sgfExport');b.onclick=sgfExport;d.appendChild(b);$('resignBox').before(d);}}
+  // at the end of the options
+  if(!$('sgfExp')&&$('myCard')){const d=document.createElement('div');d.className='confirm';d.id='sgfExpBox';d.hidden=true;
+    const b=document.createElement('button');b.type='button';b.id='sgfExp';b.dataset.i18n='sgfExport';b.textContent=t('sgfExport');b.onclick=sgfExport;d.appendChild(b);$('myCard').appendChild(d);}
+  // the draw offer, beside Resign at the top of the options
+  if(GAME.drawOffer&&!$('drawBtn')&&$('resign')){const b=document.createElement('button');b.type='button';b.id='drawBtn';b.hidden=true;b.textContent=t('drawOffer');
+    b.onclick=()=>{const dv=view&&view.draw;drawSend(dv&&dv.st==='ask'&&dv.from===mySeat?'cancel':'ask');};$('resign').before(b);
+    const p=document.createElement('p');p.className='hint';p.id='drawNote';p.hidden=true;$('resignAsk').after(p);}}
 function init(){GAME.home();
   const saved=LS.get(K('p2p-host'),null),sg=LS.get(K('p2p-guest'),null);
   if(saved&&saved.code&&saved.game&&!saved.game.result){$('resumeCard').hidden=false;}

@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=12">
+<link rel="stylesheet" href="common/games.css?v=13">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
@@ -129,7 +129,9 @@
       <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
-    <div class="card" id="myCard" hidden>
+    <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
       <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
         <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
         <p class="hint" id="aiInfo"></p>
@@ -138,9 +140,7 @@
       <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
-      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
-      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
-    </div>
+    </details>
     <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
       <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt"></p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
@@ -152,7 +152,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=14"></script>
+<script src="common/core.js?v=15"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
@@ -215,13 +215,13 @@ const Q_I18N={fr:{
  m_aiTxt:"Cinq niveaux, pour s'entraîner.",
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_fort:"Fort",lv_expert:"Expert",
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
- traits:["claire","foncée","ronde","carrée","pleine","creuse","basse","haute"],
+ traits:["claire","foncée","ronde","carrée","pleine","creuse","petite","grande"],
  gives:"donne la {p}",givesM:"donne {p}",sep:" : ",toPlace:"à poser",
  st_give1:"choisissez la pièce que l'adversaire va poser.",
  st_giveNow:"choisissez la pièce suivante.",st_placeNow:"posez la pièce encadrée.",
  w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est rendue par la taille : grande (haute) ou petite (basse) ; le trou garde la même taille.</li>
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, petite ou grande.</li>
  <li><b>Tour</b> : on pose sur une case libre la pièce que l'adversaire a choisie (encadrée dans la réserve), puis on choisit dans la réserve la pièce que l'adversaire posera. Au premier coup, le premier joueur choisit seulement.</li>
  <li><b>Victoire</b> : gagne celui qui pose la pièce qui complète une ligne de quatre (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins une caractéristique. La ligne est reconnue d'elle-même.</li>
  <li><b>Variante avancée</b> (<span class="sqState"></span>) : quatre pièces en carré 2 × 2 qui partagent une caractéristique gagnent aussi.</li>
@@ -231,21 +231,21 @@ const Q_I18N={fr:{
  m_aiTxt:"Five levels, to practise.",
  lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_fort:"Strong",lv_expert:"Expert",
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
- traits:["light","dark","round","square","solid","hollow","short","tall"],
+ traits:["light","dark","round","square","solid","hollow","small","large"],
  gives:"gives the {p}",givesM:"gives {p}",sep:": ",toPlace:"to place",
  st_give1:"choose the piece your opponent will place.",
  st_giveNow:"choose the next piece.",st_placeNow:"place the framed piece.",
  w_full:"board full with no line",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, tall or short. In the 2D view, height is shown by size: large (tall) or small (short); the hollow keeps the same size.</li>
+ <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, small or large.</li>
  <li><b>Turn</b>: place on an empty cell the piece your opponent chose (framed in the reserve), then choose from the reserve the piece your opponent will place. On the first move, the first player only chooses.</li>
  <li><b>Winning</b>: the player who places the piece completing a line of four (row, column or diagonal) whose four pieces share at least one trait wins. The line is recognised by itself.</li>
  <li><b>Advanced variant</b> (<span class="sqState"></span>): four pieces in a 2 × 2 square sharing a trait win too.</li>
  <li><b>Draw</b>: all 16 pieces are placed with no winning line.</li></ul>`
 }};
 // The texts of a win: « four pieces in a line, all dark and hollow » (whyKey: the shape, the traits all have, none has)
-{const ADJ={fr:{all:["foncées","hautes","carrées","creuses"],none:["claires","basses","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
-  en:{all:["dark","tall","square","hollow"],none:["light","short","round","solid"],line:"four pieces in a line, all ",sq:"four pieces in a square, all ",and:" and "}};
+{const ADJ={fr:{all:["foncées","grandes","carrées","creuses"],none:["claires","petites","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
+  en:{all:["dark","large","square","hollow"],none:["light","small","round","solid"],line:"four pieces in a line, all ",sq:"four pieces in a square, all ",and:" and "}};
   for(const lg of ['fr','en'])for(const sq of [0,1])for(let all=0;all<16;all++)for(let none=0;none<16;none++){if(all&none||!(all|none))continue;
     const A=ADJ[lg],w=[];for(let k=0;k<4;k++){if(all>>k&1)w.push(A.all[k]);if(none>>k&1)w.push(A.none[k]);}
     Q_I18N[lg][whyKey(sq,all,none)]=(sq?A.sq:A.line)+(w.length>1?w.slice(0,-1).join(', ')+A.and+w[w.length-1]:w[0]);}}
