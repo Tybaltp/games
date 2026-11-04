@@ -354,7 +354,12 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   // cells (click targets and frames) under the pieces; pieces from the back to the front
   const cellPoly=(i,ins)=>{const x=cx(i),y=cy(i),h=.5-ins;return pts([P(x-h,y-h),P(x+h,y-h),P(x+h,y+h),P(x-h,y+h)]);};
   for(let i=0;i<16;i++){const k='c'+i;el('polygon',{points:cellPoly(i,0),fill:'transparent',...(sc.click.has(k)?{class:'cell','data-k':k}:{})},svg);
-    const fk=sc.cellFr[i];if(fk)el('polygon',{points:cellPoly(i,fk==='last'?.12:.07),'stroke-linejoin':'round',...fr(fk)},svg);}   // the last move: closer to the piece
+    const fk=sc.cellFr[i],c=sc.cells[i];
+    // the last move: close to the piece, of its shape (a square with rounded corners, a circle), in the board's plane
+    if(fk==='last'&&c){const h=.38,rr=c.p&4?.1:h,q=[],x0=cx(i),y0=cy(i);
+      for(const [sx,sy,a0] of [[1,1,0],[-1,1,90],[-1,-1,180],[1,-1,270]])for(let j=0;j<=6;j++){const t=(a0+15*j)*Math.PI/180;q.push(P(x0+sx*(h-rr)+rr*Math.cos(t),y0+sy*(h-rr)+rr*Math.sin(t)));}
+      el('polygon',{points:pts(q),'stroke-linejoin':'round',...fr(fk)},svg);}
+    else if(fk)el('polygon',{points:cellPoly(i,.07),'stroke-linejoin':'round',...fr(fk)},svg);}
   if(sc.win)el('polygon',{points:pts(winOutline(sc.win).map(([u,v])=>P(u,v))),'stroke-linejoin':'round',...fr('win')},svg);
   const order=[...Array(16).keys()].sort((a,b)=>(cx(a)+cy(a))-(cx(b)+cy(b))||cx(a)-cx(b));
   for(const i of order){const c=sc.cells[i];if(!c)continue;const q=P(cx(i),cy(i));pieceIso(svg,c.p,q[0],q[1],S,c.op);}
