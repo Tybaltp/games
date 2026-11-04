@@ -184,7 +184,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script>
 function ZertzEngine(size){
   const B=size===48?[-3,4,-4,3,-3,4]:[-3,3,-3,3,-3,3],cells=[];
@@ -301,22 +301,22 @@ const HINT=LEVELS.fort;
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{
  title:"Zèrtz",lede:"Des billes communes sur un plateau d'anneaux qui rétrécit.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
- pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
+ pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
  c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup",
- st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
- st_place:"Choisissez une couleur, puis un anneau vide.",st_placeN:"{n} : choisissez une couleur, puis un anneau vide.",
- st_placeOwn:"Réserve vide : posez une de vos billes capturées.",st_placeOwnN:"{n} : réserve vide, posez une de vos billes capturées.",
- draw:"Partie interrompue : {why}.",
+ st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
+ st_place:"Choisissez une couleur, puis un anneau vide.",st_placeN:"{n} : choisissez une couleur, puis un anneau vide.",
+ st_placeOwn:"Réserve vide : posez une de vos billes capturées.",st_placeOwnN:"{n} : réserve vide, posez une de vos billes capturées.",
+ draw:"Partie interrompue : {why}.",
  w_g0:"4 billes blanches",w_g1:"5 billes grises",w_g2:"6 billes noires",w_each:"3 billes de chaque couleur",w_nomove:"l'adversaire n'a plus de coup",
  rules:`<summary>Règles en bref</summary><ul>
  <li>Les billes sont communes aux deux joueurs. Si une prise est possible, elle est obligatoire.</li>
- <li><b>Poser</b> : posez une bille de la réserve sur un anneau vide, puis retirez un anneau libre (vide, au bord, qui peut glisser hors du plateau).</li>
- <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
- <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
- <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
- <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile, un seul toucher suffit). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Poser</b> : posez une bille de la réserve sur un anneau vide, puis retirez un anneau libre (vide, au bord, qui peut glisser hors du plateau).</li>
+ <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
+ <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
+ <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
+ <li><b>Jouer</b> : choisissez la couleur sous le plateau, cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile, un seul toucher suffit). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  title:"Zèrtz",lede:"Shared marbles on a shrinking board of rings.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",

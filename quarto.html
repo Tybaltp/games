@@ -172,7 +172,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
@@ -231,24 +231,24 @@ function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=
 
 // ---------- strings ----------
 const Q_I18N={fr:{
- title:"Quarto",lede:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
+ title:"Quarto",lede:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
  m_aiTxt:"Cinq niveaux, pour s'entraîner.",
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_fort:"Fort",lv_expert:"Expert",
- sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
+ sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
  traits:["claire","foncée","ronde","carrée","pleine","creuse","petite","grande"],
- gives:"donne la {p}",givesM:"donne {p}",sep:" : ",toPlace:"à poser",
+ gives:"donne la {p}",givesM:"donne {p}",sep:" : ",toPlace:"à poser",
  st_give1:"choisissez la pièce que l'adversaire va poser.",
  st_giveNow:"choisissez la pièce suivante.",st_placeNow:"posez la pièce encadrée.",
  w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces toutes différentes, communes aux deux joueurs : claires ou foncées, rondes ou carrées, creuses ou pleines, petites ou grandes.</li>
- <li><b>Tour</b> : on pose sur une case libre la pièce choisie par l'adversaire, puis on choisit celle qu'il posera. Au premier coup, le premier joueur choisit seulement.</li>
- <li><b>Victoire</b> : gagne celui qui complète une ligne de quatre pièces (rangée, colonne ou diagonale) partageant au moins une caractéristique.</li>
- <li><b>Variante avancée</b> (<span class="sqState"></span>) : un carré 2 × 2 de quatre pièces partageant une caractéristique gagne aussi.</li>
- <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li>
- <li><b>Jouer</b> : posez la pièce reçue en cliquant une case libre (au survol, elle s'affiche en transparence), puis cliquez dans la réserve la pièce que l'adversaire posera. Cliquer la case ou la pièce choisie l'abandonne. Vue 2D ou 3D dans les Options. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, cinq niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces toutes différentes, communes aux deux joueurs : claires ou foncées, rondes ou carrées, creuses ou pleines, petites ou grandes.</li>
+ <li><b>Tour</b> : on pose sur une case libre la pièce choisie par l'adversaire, puis on choisit celle qu'il posera. Au premier coup, le premier joueur choisit seulement.</li>
+ <li><b>Victoire</b> : gagne celui qui complète une ligne de quatre pièces (rangée, colonne ou diagonale) partageant au moins une caractéristique.</li>
+ <li><b>Variante avancée</b> (<span class="sqState"></span>) : un carré 2 × 2 de quatre pièces partageant une caractéristique gagne aussi.</li>
+ <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li>
+ <li><b>Jouer</b> : posez la pièce reçue en cliquant une case libre (au survol, elle s'affiche en transparence), puis cliquez dans la réserve la pièce que l'adversaire posera. Cliquer la case ou la pièce choisie l'abandonne. Vue 2D ou 3D dans les Options. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, cinq niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  title:"Quarto",lede:"Give your opponent the piece they will place; line up four pieces sharing a trait.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
  m_aiTxt:"Five levels, to practise.",

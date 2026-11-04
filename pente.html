@@ -389,7 +389,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -418,15 +418,15 @@ const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",
  lv_facile:"Facile",lv_confirme:"Confirmé",lv_expert:"Expert",m_aiTxt:"Six niveaux, pour s'entraîner.",
- firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
+ firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
- n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
- n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
- st_play:"À vous de jouer ({color}).",st_openOther:"{name} pose l'ouverture.",st_chooseOther:"{name} choisit : Noir, Blanc, ou 2 pierres de plus.",
+ n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
+ n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
+ st_play:"À vous de jouer ({color}).",st_openOther:"{name} pose l'ouverture.",st_chooseOther:"{name} choisit : Noir, Blanc, ou 2 pierres de plus.",
  st_choose1Other:"{name} choisit sa couleur.",st_turnC:"Au tour de {name} ({color}).",
- st_tentative:"Coup en {c} : validez pour le jouer.",pend_stones:"Pierres : {m}. Validez pour les jouer.",confirm1:"Valider le coup",confirmN:"Valider les pierres",
+ st_tentative:"Coup en {c} : validez pour le jouer.",pend_stones:"Pierres : {m}. Validez pour les jouer.",confirm1:"Valider le coup",confirmN:"Valider les pierres",
  bBlack:"Noir",bWhite:"Blanc",bAdd:"+2 pierres",takeBlack:"Prendre Noir",takeBlackSub:"Blanc joue le prochain coup.",takeWhite:"Prendre Blanc",takeWhiteSub:"Le prendre, c'est jouer le prochain coup.",
- add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",
+ add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",
  d_open:"noire {a}, blanche {b}, noire {c}",d_add:"2 pierres de plus, noire {a} et blanche {b}",d_B:"Prendre les noirs",d_W:"Prendre les blancs",d_Wn:"Prendre les blancs et jouer {c}",
  l_B:"prend Noir",l_W:"prend Blanc",
  w_five:"cinq alignées",w_caps:"cinq paires capturées",w_full:"plateau plein",
@@ -435,11 +435,11 @@ const PE_I18N={fr:{
  <li>Aligner 5 pierres ou plus gagne.</li>
  <li>Encadrer exactement deux pierres adverses (X O O X) les capture. Se poser entre deux pierres adverses est sans risque.</li>
  <li>Cinq paires capturées gagnent.</li>
- <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
- <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
- <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Valider, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Valider ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
+ <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
+ <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Valider, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Valider ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  title:"Pente",lede:"Five in a row, or capture five pairs. Swap2 opening.",
  lv_facile:"Easy",lv_confirme:"Advanced",lv_expert:"Expert",m_aiTxt:"Six levels, to practise.",

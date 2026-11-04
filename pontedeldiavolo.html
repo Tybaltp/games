@@ -187,7 +187,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
@@ -290,24 +290,24 @@ const PD_I18N={fr:{
  title:"Ponte del Diavolo",lede:"Bâtissez des îles de quatre tuiles et reliez-les par des ponts.",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  needConfirm:"Confirmer chaque coup",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Finir le tour",passEnd:"Passer et finir",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Finir",passEndS:"Passer",
  pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
- lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
- st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
- pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",
+ lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
+ st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
+ pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",
  w_score:"{w} à {l}{tb}",w_tie:"égalité parfaite, {w} à {l}{tb}",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
  rules:`<summary>Règles en bref</summary><ul>
  <li>À votre tour, posez <b>deux tuiles</b> de votre couleur, ou <b>un pont</b>.</li>
- <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
+ <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
  <li>Une île ne peut toucher aucune autre tuile de sa couleur, même en diagonale. Les couleurs différentes ne se gênent jamais.</li>
- <li>Pont : entre deux de vos tuiles, à deux cases d'écart (en ligne droite ou en diagonale) ou à un saut de cavalier. Les cases qu'il enjambe doivent être de l'eau.</li>
+ <li>Pont : entre deux de vos tuiles, à deux cases d'écart (en ligne droite ou en diagonale) ou à un saut de cavalier. Les cases qu'il enjambe doivent être de l'eau.</li>
  <li>Une tuile porte au plus un pont. Les ponts ne se croisent jamais. Rien ne se pose sous un pont.</li>
- <li>Ouverture : le premier joueur pose deux tuiles claires ; le second choisit sa couleur. Les foncés jouent ensuite.</li>
- <li>Fin : si les foncés passent, la partie s'arrête aussitôt. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. On ne peut passer que si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément.</li>
- <li>Chaque groupe d'îles reliées par des ponts (les bancs de sable servent de relais) rapporte :
- <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Départage : le plus d'îles, puis le plus de ponts.</li>
- <li><b>Jouer</b> : cliquez deux cases d'eau pour y poser vos deux tuiles (une seule s'il ne reste pas de place pour la seconde : Finir le tour) ; pour un pont, cliquez une de vos tuiles, puis l'autre extrémité parmi celles proposées. Au survol, la tuile ou le pont s'affiche en transparence ; cliquer une tuile posée ce tour la retire. Au choix de couleur, Prendre les clairs ou Jouer les foncés. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Finir le tour, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li>Ouverture : le premier joueur pose deux tuiles claires ; le second choisit sa couleur. Les foncés jouent ensuite.</li>
+ <li>Fin : si les foncés passent, la partie s'arrête aussitôt. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. On ne peut passer que si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément.</li>
+ <li>Chaque groupe d'îles reliées par des ponts (les bancs de sable servent de relais) rapporte :
+ <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
+ <li>Départage : le plus d'îles, puis le plus de ponts.</li>
+ <li><b>Jouer</b> : cliquez deux cases d'eau pour y poser vos deux tuiles (une seule s'il ne reste pas de place pour la seconde : Finir le tour) ; pour un pont, cliquez une de vos tuiles, puis l'autre extrémité parmi celles proposées. Au survol, la tuile ou le pont s'affiche en transparence ; cliquer une tuile posée ce tour la retire. Au choix de couleur, Prendre les clairs ou Jouer les foncés. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Finir le tour, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  title:"Ponte del Diavolo",lede:"Build islands of four tiles and link them with bridges.",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
  needConfirm:"Confirm each move",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",

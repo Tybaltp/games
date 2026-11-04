@@ -154,7 +154,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script>
 // ===== Arimaa rules engine =====
 // Board: 64 squares, index = row*8+col, row 0 = rank 1 (Gold's home), col 0 = file a.
@@ -230,29 +230,29 @@ function ArimaaEngine(){
 }
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
- mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
- title:"Arimaa",lede:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
- m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
- setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
- st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
- st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
- st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
+ mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
+ title:"Arimaa",lede:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
+ m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
+ setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
+ st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
+ st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
+ st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",
  pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",pull_t:"{A} {fa} tire {b} {fb} en {to}",
- st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
+ st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
- <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
- <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
- <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
- <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez la pièce adverse, puis la case d'arrivée : l'aperçu montre le résultat.</li>
- <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
- <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
- <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
- <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat ; sur écran tactile, un toucher joue le pas. Recliquer une pièce déjà déplacée dans le tour revient au moment où elle a été choisie. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
- <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
+ <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
+ <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
+ <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
+ <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
+ <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez la pièce adverse, puis la case d'arrivée : l'aperçu montre le résultat.</li>
+ <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
+ <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
+ <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
+ <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat ; sur écran tactile, un toucher joue le pas. Recliquer une pièce déjà déplacée dans le tour revient au moment où elle a été choisie. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
  mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_2:"Silver",
  title:"Arimaa",lede:"Get a rabbit to the far side: push, pull, traps.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",

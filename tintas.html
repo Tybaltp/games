@@ -178,7 +178,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function TintasEngine(){
@@ -231,25 +231,25 @@ function TintasEngine(){
 const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
- title:"Tintas",lede:"Un pion commun, sept couleurs : collectionnez-en une.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
+ title:"Tintas",lede:"Un pion commun, sept couleurs : collectionnez-en une.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
- t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
+ t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
  cb:"Daltonien",needConfirm:"Confirmer chaque coup",
  cols:["rouge","orange","jaune","vert","bleu ciel","bleu","violet"],colsF:["rouge","orange","jaune","verte","bleu ciel","bleue","violette"],
- tag_jump:"saut",draw:"Partie interrompue : {why}.",
- st_first:"Premier coup : posez le pion sur la pièce de votre choix et prenez-la.",st_jump:"Aucune pièce en ligne avec le pion : sautez-le sur la pièce de votre choix et prenez-la.",
+ tag_jump:"saut",draw:"Partie interrompue : {why}.",
+ st_first:"Premier coup : posez le pion sur la pièce de votre choix et prenez-la.",st_jump:"Aucune pièce en ligne avec le pion : sautez-le sur la pièce de votre choix et prenez-la.",
  w_seven:"les sept pièces d'une couleur",w_major:"au moins 4 pièces dans au moins 4 couleurs",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : 49 pièces, 7 de chacune des 7 couleurs, réparties au hasard (on retire si les 7 pièces d'une couleur forment un seul groupe), et un pion neutre commun aux deux joueurs.</li>
- <li><b>Premier coup</b> : posez le pion sur n'importe quelle pièce et prenez-la. Le tour s'arrête là.</li>
- <li><b>Tour normal</b> : poussez le pion en ligne droite dans l'une des 6 directions, par-dessus les cases vides, jusqu'à la première pièce ; prenez-la, le pion reste sur sa case. Vous pouvez enchaîner, dans n'importe quelle direction, tant que vous prenez des pièces de la même couleur que la première de ce tour ; arrêtez-vous quand vous voulez. Au moins une prise par tour.</li>
- <li><b>Saut</b> : si aucune pièce n'est en ligne avec le pion, posez-le sur la pièce de votre choix et prenez-la ; le tour s'arrête.</li>
- <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Quand chaque couleur a été prise au moins une fois par chacun, plus personne ne peut en compléter une : gagne alors celui qui a au moins 4 pièces dans au moins 4 couleurs (on continue tant que personne ne les a).</li>
- <li><b>Cartes joueurs</b> : pièces prises par couleur ; encadré = 4 ou plus (majorité), plein = 7.</li>
- <li><b>Jouer</b> : cliquez une pièce que le pion peut atteindre (au survol, elle s'affiche en transparence) : le pion s'y pousse et la prend. Tant qu'une pièce de la même couleur est atteignable, continuez, ou cliquez Terminer le tour ; un tour qui s'arrête de lui-même après plusieurs prises attend Confirmer. Cliquer la dernière pièce prise la rend. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
- <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
+ <li><b>Matériel</b> : 49 pièces, 7 de chacune des 7 couleurs, réparties au hasard (on retire si les 7 pièces d'une couleur forment un seul groupe), et un pion neutre commun aux deux joueurs.</li>
+ <li><b>Premier coup</b> : posez le pion sur n'importe quelle pièce et prenez-la. Le tour s'arrête là.</li>
+ <li><b>Tour normal</b> : poussez le pion en ligne droite dans l'une des 6 directions, par-dessus les cases vides, jusqu'à la première pièce ; prenez-la, le pion reste sur sa case. Vous pouvez enchaîner, dans n'importe quelle direction, tant que vous prenez des pièces de la même couleur que la première de ce tour ; arrêtez-vous quand vous voulez. Au moins une prise par tour.</li>
+ <li><b>Saut</b> : si aucune pièce n'est en ligne avec le pion, posez-le sur la pièce de votre choix et prenez-la ; le tour s'arrête.</li>
+ <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Quand chaque couleur a été prise au moins une fois par chacun, plus personne ne peut en compléter une : gagne alors celui qui a au moins 4 pièces dans au moins 4 couleurs (on continue tant que personne ne les a).</li>
+ <li><b>Cartes joueurs</b> : pièces prises par couleur ; encadré = 4 ou plus (majorité), plein = 7.</li>
+ <li><b>Jouer</b> : cliquez une pièce que le pion peut atteindre (au survol, elle s'affiche en transparence) : le pion s'y pousse et la prend. Tant qu'une pièce de la même couleur est atteignable, continuez, ou cliquez Terminer le tour ; un tour qui s'arrête de lui-même après plusieurs prises attend Confirmer. Cliquer la dernière pièce prise la rend. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
  title:"Tintas",lede:"One shared pawn, seven colours: collect a full set.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",

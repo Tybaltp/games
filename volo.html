@@ -167,7 +167,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=25"></script>
+<script src="common/core.js?v=26"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function VoloEngine(){
@@ -257,19 +257,19 @@ function VoloEngine(){
 }
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
- mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
- lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six niveaux, pour s'entraîner.",st_autoPass:"Aucun coup possible : vous passez.",
- needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
- <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
+ mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
+ lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six niveaux, pour s'entraîner.",st_autoPass:"Aucun coup possible : vous passez.",
+ needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
+ <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
- <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
- <li><b>Voler</b> : un oiseau seul, ou une ligne droite de vos oiseaux, avance en ligne droite (en file ou de front) sur des points vides seulement ; tout oiseau bloque le passage. Il doit se poser contre un autre de vos oiseaux de sorte que sa nuée grandisse, sans scinder aucune nuée.</li>
- <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
- <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
- <li><b>Jouer</b> : pour ajouter un oiseau, cliquez un point libre ; pour un vol, cliquez un oiseau (ou plusieurs alignés, un clic par oiseau), puis le point d'arrivée. Au survol, l'oiseau ajouté ou le vol s'affiche en transparence ; cliquer un oiseau provisoire revient en arrière ; cliquer ailleurs abandonne la sélection. Si le coup coupe les oiseaux adverses en régions, choisissez celle qui reste (Garder A, Garder B…, ou un clic sur un de ses oiseaux). Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
- <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",keepR:"Garder {r}"
+ <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de vos oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
+ <li><b>Voler</b> : un oiseau seul, ou une ligne droite de vos oiseaux, avance en ligne droite (en file ou de front) sur des points vides seulement ; tout oiseau bloque le passage. Il doit se poser contre un autre de vos oiseaux de sorte que sa nuée grandisse, sans scinder aucune nuée.</li>
+ <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
+ <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
+ <li><b>Jouer</b> : pour ajouter un oiseau, cliquez un point libre ; pour un vol, cliquez un oiseau (ou plusieurs alignés, un clic par oiseau), puis le point d'arrivée. Au survol, l'oiseau ajouté ou le vol s'affiche en transparence ; cliquer un oiseau provisoire revient en arrière ; cliquer ailleurs abandonne la sélection. Si le coup coupe les oiseaux adverses en régions, choisissez celle qui reste (Garder A, Garder B…, ou un clic sur un de ses oiseaux). Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",keepR:"Garder {r}"
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",
  lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six levels, to practise.",st_autoPass:"No move available: you pass.",
