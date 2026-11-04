@@ -28,6 +28,7 @@
 //                                returns the game's click state o, handed back to turnStatus/hintable
 //  turnStatus(c)                 my turn, nothing pending: calls status(); c={r,o,ms,prep,idle,undoB,RST}
 //  pendBtns(mv,ms)               optional: extra buttons between Reset and Confirm while a move awaits confirmation
+//  noReset?(mv)                  true: no Reset button while mv awaits confirmation (the game drops it otherwise)
 //  waitStatus?(c)                the opponent's turn, live: calls status() and returns true, or false for « X to move »
 //  pendText?(mv,st)              [message, confirm label] for a move awaiting confirmation
 //  hintable?(o), hintOk?(mv)     Hint offered now · a found move may be shown
@@ -448,7 +449,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   else if(!view.started)status(mySeat<0?t('st_waitBoth'):(view.ready&&view.ready[mySeat]?t('st_waitClick',{n:nm(1-mySeat)}):t('st_bothHere')));
   else if(mine&&hintOn())status(t('hint_move',{m:GAME.describe(hintMv,ms)}),'turn',[{label:t('hintPlay'),short:t('hintPlayS'),primary:true,on:hintPlay},{label:t('dismiss'),on:hintOff}]);
   else if(mine&&ui.pending){const [msg,ok]=GAME.pendText?GAME.pendText(ui.pending,ms):[t('pend_mv',{m:GAME.describe(ui.pending,ms)}),t('confirmMv')];
-    status(msg,'turn',[RST,...(GAME.pendBtns?GAME.pendBtns(ui.pending,ms):[]),{label:ok,primary:true,on:()=>{if(ui.pending)send(ui.pending);}}]);}
+    status(msg,'turn',[...(GAME.noReset&&GAME.noReset(ui.pending)?[]:[RST]),...(GAME.pendBtns?GAME.pendBtns(ui.pending,ms):[]),{label:ok,primary:true,on:()=>{if(ui.pending)send(ui.pending);}}]);}
   else if(sending)quiet();
   else if(ns&&mySeat>=0&&view.myHold)status(t('st_simWait'));
   else if(ns&&mySeat<0)status(t('st_simWatch'));

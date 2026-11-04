@@ -10,7 +10,7 @@
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
-  --bg:#E7EAE5;--panel:#F5F6F2;--ink:#1B211F;--muted:#5B6660;--line:#CBD2CB;
+  --bg:#e8d1d1;--panel:#f4e8e8;--ink:#1B211F;--muted:#5B6660;--line:#cdb8b8;
   --accent:#9C2E3A;--accent-ink:#FFFFFF;--danger:#B3261E;
   --ring-b:transparent;--ring-w:rgba(0,0,0,.55);
   --f-display:"Gloock",Georgia,"Times New Roman",serif;
@@ -390,7 +390,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=22"></script>
+<script src="common/core.js?v=23"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
