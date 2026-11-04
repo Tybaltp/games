@@ -27,6 +27,7 @@ details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;back
 details.how summary{cursor:pointer;font-weight:600}
 details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
 details.how li{margin:.35em 0}
+h2.sect{font-size:1.1rem;margin:28px 0 10px}
 details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
 </style>
 </head>
@@ -55,10 +56,14 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <li><a href="diagonalblocks.html"><span class="t">Diagonal Blocks Duo</span><span class="d" data-i18n="dblocks"></span></a></li>
 <li><a href="quarto.html"><span class="t">Quarto</span><span class="d" data-i18n="quarto"></span></a></li>
 </ul>
+<h2 class="sect" data-i18n="tourT"></h2>
+<ul class="games">
+<li><a href="mochalunt.html"><span class="t">Mochalunt</span><span class="d" data-i18n="mochalunt"></span></a></li>
+</ul>
 </main>
 <script>
 const I18N={
- fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
+ fr:{tourT:"Tournois",mochalunt:"Un match entre deux joueurs sur les jeux de la ronde, une table par jeu, avec observateurs.",title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
      howT:"Comment ça marche ?",
      how0:"<b>Quatre façons de jouer.</b> Inviter quelqu'un par un lien, affronter l'ordinateur (Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz), jouer face à face sur le même appareil, ou en mode libre pour essayer et analyser, avec annulation et suggestions.",
      how1:"<b>Pas d'hébergement.</b> Il n'y a pas de serveur de jeu : la partie tourne dans le navigateur de celui qui la crée. Un service public (PeerJS) sert seulement à mettre les deux navigateurs en relation grâce au code.",
@@ -71,7 +76,7 @@ const I18N={
      arimaa:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",gyges:"Des anneaux neutres qui rebondissent jusqu’au but adverse.",
      tintas:"Un pion commun, sept couleurs : collectionnez-en une.",dblocks:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",
      quarto:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique."},
- en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
+ en:{tourT:"Tournaments",mochalunt:"A match between two players over the round's games, one table per game, with spectators.",title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
      howT:"How does it work?",
      how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer (Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz), play face to face on the same device, or in free mode to try things and analyse, with undo and hints.",
      how1:"<b>No hosting.</b> There is no game server: the game runs in the browser of whoever creates it. A public service (PeerJS) is only used to put the two browsers in touch through the code.",
