@@ -9,7 +9,7 @@
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
-.qhand svg{width:34px;height:34px;flex:none}
+.qhand svg.qmini{width:auto;height:34px;margin:0;flex:none}
 :root{
   --bg:#f1efe9;--panel:#ffffff;--ink:#26231d;--muted:#6c675c;--line:#dcd7cb;
   --wood:#c9a273;--wood-s:#a47a4e;--wood-f:#8e6640;--grid:#8e6640;--lbl:#6f532f;--res:#e6d8bf;
@@ -35,7 +35,7 @@
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
-.qmini{height:2.1em;width:auto;vertical-align:middle;margin:-.45em 0}
+.qmini{height:1.9em;width:auto;vertical-align:middle;margin:-.35em 0}
 .notice .msg .qmini,.status .qmini{height:1.8em;margin:0}   /* the message clips what overflows its lines */
 </style>
 </head><body>
@@ -289,7 +289,9 @@ function pieceIso(par,p,bx,by,S,op){const k=PC(p),g=el('g',{'pointer-events':'no
   return g;}
 // The move list: the cell, then a small picture of the piece given (in the current view), its name as a tooltip
 function miniPiece(p){const iso=qView==='iso',svg=el('svg',{viewBox:iso?'-9 -18 18 25.5':'-11.5 -11.5 23 23',class:'qmini',role:'img','aria-label':pieceName(p)});
-  el('title',{},svg).textContent=pieceName(p);if(iso)pieceIso(svg,p,0,0,20);else piece2D(svg,p,0,0,8);return svg;}
+  el('title',{},svg).textContent=pieceName(p);
+  // 2D: a small cell of one size behind every piece, as a yardstick (a tall piece fills it, a short one leaves a margin)
+  if(iso)pieceIso(svg,p,0,0,20);else{el('rect',{x:-11,y:-11,width:22,height:22,rx:3,fill:'var(--wood)'},svg);piece2D(svg,p,0,0,8);}return svg;}
 // A move with the piece given as a picture (status texts: suggestion, move awaiting confirmation)
 const MK='\u2063';
 function richOfMv(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv.g>=0)parts.push(t('givesM',{p:MK+mv.g+MK}));return parts.join(', ');}
@@ -450,8 +452,7 @@ function qTurnStatus({r,o,idle,RST}){const st=o.st,who=solo()?seatName(st.turn)+
 // The player to move: the piece received, small, in their card (« to place »)
 function qCard(el,p,d){const st=d.st;if(d.over||st.turn!==p||st.hand<0)return;
   const w=document.createElement('div');w.className='qhand';
-  const svg=document.createElementNS(NS,'svg');svg.setAttribute('aria-hidden','true');
-  if(qView==='iso'){svg.setAttribute('viewBox','-14 -29 28 39');pieceIso(svg,st.hand,0,0,34);}else{svg.setAttribute('viewBox','-17 -17 34 34');piece2D(svg,st.hand,0,0,15);}
+  const svg=miniPiece(st.hand);svg.setAttribute('aria-hidden','true');   // the same picture as in the texts
   const tx=document.createElement('span');tx.textContent=t('toPlace');w.append(svg,tx);w.title=pieceName(st.hand);el.appendChild(w);}
 // the variant's state in the rules (« on in this game »)
 function sqLine(){document.querySelectorAll('.sqState').forEach(e=>e.textContent=t(view&&view.sq?'sqOn':'sqOff'));}
