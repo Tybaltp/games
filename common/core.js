@@ -34,6 +34,7 @@
 //  playerCard?(el,p,d)          Add game content to seat p's card (d: the position shown)
 //  logDesc?(e)                   Extra description line under a move-list entry
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
+//  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
 //  home()                        draws the board shown on the home page (and again when the coordinates are switched)
 //  simMode?(g), simHold?(g,r), holdLegal?(r,s,code,g)  simultaneous hidden first moves over the network: the rules use it ·
@@ -401,7 +402,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const nv=canNav(r),cur=navAt===null?r.log.length:navAt;
   r.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>navGo(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
-    const c=document.createElement('span');c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
+    const c=document.createElement('span'),cn=GAME.logNode&&GAME.logNode(e,r);if(cn)c.append(cn);else c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
   const ce=ol.querySelector('.cur');if(ce&&navAt!==null){const a=ce.getBoundingClientRect(),b=ol.getBoundingClientRect();if(a.top<b.top)ol.scrollTop+=a.top-b.top;else if(a.bottom>b.bottom)ol.scrollTop+=a.bottom-b.bottom;}else ol.scrollTop=ol.scrollHeight;sheetAttn();}
 // Players' cards in the side panel: wide screens, and landscape phones (board and panel side by side)
 const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';

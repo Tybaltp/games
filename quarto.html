@@ -18,7 +18,7 @@
   /* dark pieces */
   --pd:#8c4a28;--pd-l:#3a1c0c;--pd-g:#2e160a;--pd-a:#6e3a20;--pd-b:#552b16;
   --s0:#2c8a6e;--s0e:#1b5c49;--s1:#b9503d;--s1e:#7d3123;
-  --accent:#1f62c8;--accent-ink:#ffffff;--danger:#d24a35;--lastc:#2b1c0d;
+  --accent:#d98f1f;--accent-ink:#4f3200;--danger:#d24a35;--lastc:#2b1c0d;
   --board-ar:376/470;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -27,14 +27,15 @@
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
-  --accent:#6aa3ff;--accent-ink:#0b1a33;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}}
+  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#15130f;--panel:#1f1c17;--ink:#ebe5d8;--muted:#a19985;--line:#36312a;
   --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#2a241c;
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
-  --accent:#6aa3ff;--accent-ink:#0b1a33;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}
+  --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;--lastc:#f3e6cc;color-scheme:dark}
+.qmini{height:2.1em;width:auto;vertical-align:middle;margin:-.45em 0}
 </style>
 </head><body>
 <div class="wrap">
@@ -150,7 +151,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=11"></script>
+<script src="common/core.js?v=12"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
@@ -187,7 +188,7 @@ function QuartoEngine(){
     const give=nd.place?!lines.length&&free(st).length>0:true;
     if(give){if(mv.g<0||mv.g>15||!free(st).includes(mv.g))return null;}else if(mv.g>=0)return null;
     const s={b,hand:give?mv.g:-1,turn:1-st.turn,n:st.n+1};
-    let over=null;if(lines.length){const w=lines[0];over={w:st.turn,why:whyKey(w.sq,w.all,w.none),line:[...new Set(lines.flatMap(x=>x.cells))]};}
+    let over=null;if(lines.length){const w=lines[0];over={w:st.turn,why:whyKey(w.sq,w.all,w.none),line:[...new Set(lines.flatMap(x=>x.cells))],win:w.cells};}
     else if(b.every(x=>x>=0))over={w:-1,why:'w_full'};
     return {st:s,over};}
   return {LINES,SQUARES,init,placed,free,wins,dec,enc,needs,play};
@@ -285,6 +286,11 @@ function pieceIso(par,p,bx,by,S,op){const k=PC(p),g=el('g',{'pointer-events':'no
     el('ellipse',{cx:f1(c[0]),cy:f1(c[1]),rx:f1(ri*S),ry:f1(ri*S*SQ),fill:k.g},g);
     el('ellipse',{cx:f1(c[0]),cy:f1(c[1]+ri*S*SQ*.3),rx:f1(ri*S*.8),ry:f1(ri*S*SQ*.6),fill:'rgba(0,0,0,.28)'},g);}
   return g;}
+// The move list: the cell, then a small picture of the piece given (in the current view), its name as a tooltip
+function miniPiece(p){const iso=qView==='iso',svg=el('svg',{viewBox:iso?'-9 -18 18 25.5':'-10.5 -10.5 21 21',class:'qmini',role:'img','aria-label':pieceName(p)});
+  el('title',{},svg).textContent=pieceName(p);if(iso)pieceIso(svg,p,0,0,20);else piece2D(svg,p,0,0,8);return svg;}
+function qLogNode(e){const f=document.createDocumentFragment(),mv=e.mv;
+  if(mv.a>=0)f.append(cellName(mv.a));if(mv.g>=0){if(mv.a>=0)f.append(' ');f.append(miniPiece(mv.g));}return f;}
 function gradDefs(svg){const d=el('defs',{},svg);
   for(const [id,a,b] of [['qgl','--pl-a','--pl-b'],['qgd','--pd-a','--pd-b']]){const lg=el('linearGradient',{id,x1:0,x2:1,y1:0,y2:0},d);
     el('stop',{offset:0,style:`stop-color:var(${a})`},lg);el('stop',{offset:.45,style:`stop-color:var(${a})`},lg);el('stop',{offset:1,style:`stop-color:var(${b})`},lg);}}
@@ -296,6 +302,18 @@ const fr=(kind)=>({fill:'none','pointer-events':'none',...FR[kind]});
 
 // The scene to draw: cell contents and frames, reserve contents and frames
 // opt: {cells:[{p,op}], cellFr:{i:kind}, res:[{p,op}|null]×16, resFr:{p:kind}, resHov (reserve slot hovered), click (interactive keys)}
+// One frame around a winning four, in board units (cell centres at -1.5..1.5): a rectangle along the line (a pill
+// for a diagonal, so that it stays on the board), around the 2×2 square; its outline sampled for any projection
+function winOutline(cells){const X=i=>(i%4)-1.5,Y=i=>((i/4)|0)-1.5,mx=cells.reduce((a,i)=>a+X(i),0)/4,my=cells.reduce((a,i)=>a+Y(i),0)/4;
+  let a=cells[0],b=cells[0];for(const i of cells)for(const j of cells)if(Math.hypot(X(i)-X(j),Y(i)-Y(j))>Math.hypot(X(a)-X(b),Y(a)-Y(b))){a=i;b=j;}
+  const sq=new Set(cells.map(X)).size===2&&new Set(cells.map(Y)).size===2;
+  let ux=1,uy=0,L,w,r;
+  if(sq){L=w=.94;r=.2;}
+  else{const dx=X(b)-X(a),dy=Y(b)-Y(a),d=Math.hypot(dx,dy);ux=dx/d;uy=dy/d;w=.46;L=d/2+w;r=dx&&dy?w:.16;}
+  const pt=[],k=6;   // corners: centre of each rounded corner, then its arc
+  for(const [sx,sy,a0] of [[1,1,0],[-1,1,90],[-1,-1,180],[1,-1,270]]){const ex=sx*(L-r),ey=sy*(w-r);
+    for(let j=0;j<=k;j++){const t=(a0+90*j/k)*Math.PI/180,px=ex+r*Math.cos(t),py=ey+r*Math.sin(t);pt.push([mx+px*ux-py*uy,my+px*uy+py*ux]);}}
+  return pt;}
 function drawBoard(sc){const svg=$('svg');svg.textContent='';gradDefs(svg);if(qView==='iso')drawIso(svg,sc);else draw2D(svg,sc);}
 // 2D: board of 4×4 square cells with lines between them, the reserve (16 slots, each piece keeps its own) below
 function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?28:14,rs=B/8,rh=rs*1.05,Y0=B+gap;
@@ -308,6 +326,7 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?
   for(let i=0;i<16;i++){const x=m+(i%4)*S,y=m+((i/4)|0)*S,k='c'+i,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x,y,width:S,height:S,fill:'transparent'},g);const c=sc.cells[i];if(c)piece2D(g,c.p,x+S/2,y+S/2,S*.36,c.op);
     const fk=sc.cellFr[i];if(fk)el('rect',{x:x+4,y:y+4,width:S-8,height:S-8,rx:5,...fr(fk)},svg);}
+  if(sc.win)el('polygon',{points:winOutline(sc.win).map(([u,v])=>f1(m+(u+2)*S)+','+f1(m+(v+2)*S)).join(' '),'stroke-linejoin':'round',...fr('win')},svg);
   el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
   for(let p=0;p<16;p++){const x=(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x,y,width:rs,height:rh,fill:sc.resHov===p?'color-mix(in srgb,var(--accent) 22%,transparent)':'transparent',rx:6},g);
@@ -332,6 +351,7 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   const cellPoly=(i,ins)=>{const x=cx(i),y=cy(i),h=.5-ins;return pts([P(x-h,y-h),P(x+h,y-h),P(x+h,y+h),P(x-h,y+h)]);};
   for(let i=0;i<16;i++){const k='c'+i;el('polygon',{points:cellPoly(i,0),fill:'transparent',...(sc.click.has(k)?{class:'cell','data-k':k}:{})},svg);
     const fk=sc.cellFr[i];if(fk)el('polygon',{points:cellPoly(i,.07),'stroke-linejoin':'round',...fr(fk)},svg);}
+  if(sc.win)el('polygon',{points:pts(winOutline(sc.win).map(([u,v])=>P(u,v))),'stroke-linejoin':'round',...fr('win')},svg);
   const order=[...Array(16).keys()].sort((a,b)=>(cx(a)+cy(a))-(cx(b)+cy(b))||cx(a)-cx(b));
   for(const i of order){const c=sc.cells[i];if(!c)continue;const q=P(cx(i),cy(i));pieceIso(svg,c.p,q[0],q[1],S,c.op);}
   // reserve
@@ -395,7 +415,7 @@ function qBoard({r,d,mine}){
   // last move: its cell framed while no move is prepared
   const last=nav?d.last:r.last;
   if(last&&last.mv.a>=0&&!(mine&&(preparing()||hintOn())))sc.cellFr[last.mv.a]='last';
-  const ov=nav?d.over:r.over;if(ov&&ov.line)for(const i of ov.line)sc.cellFr[i]='win';
+  const ov=nav?d.over:r.over;if(ov&&ov.win)sc.win=ov.win;   // one frame, around the first winning four
   drawBoard(sc);sqLine();
   return {st};}
 // keep ui only while it is my turn (another player's turn, or a position shown from the list: nothing prepared)
@@ -492,7 +512,7 @@ const GAME={id:'quarto',size:16,codeTag:'QUARTO1',i18n:Q_I18N,
   rules:g=>({sq:!!(g&&g.sq)}),form:p=>({sq:$(p+'Sq').checked}),
   replay:qReplay,
   legal:(st,code,g)=>{const mv=E.dec(code);return mv&&E.play(st,mv,!!(g&&g.sq))?enc(mv):null;},
-  enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
+  enc,describe:mv=>txtOf(mv),logNode:qLogNode,newUi,preparing,cancel:cancelPrep,
   board:qBoard,turnStatus:qTurnStatus,
   applyStatic:()=>{viewSelects();sqLine();},
   levels:LEVELS,levelDefault:'moyen',hintLevel:LEVELS.expert,
