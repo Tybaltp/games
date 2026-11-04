@@ -126,7 +126,6 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
 .home button.big{padding:14px;font-size:1.05rem}
-.home button.sgfLoad{padding:11px;font-size:.95rem}
 .newHead{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .newHead button.back,.linkish{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:.85rem;cursor:pointer}
 .linkish{color:var(--ink)}
@@ -136,9 +135,22 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
 .home .err:empty{display:none}
 .inv-only{display:none}
-#setup.invited .home > :not(#joinCard){display:none}
+/* an invitation link: only the join part of the card (its form, opened, without its title line) */
+#setup.invited .home > :not(#newCard):not(#joinErr){display:none}
 #setup.invited .home > #joinErr:not(:empty){display:block}
+#setup.invited #newCard > :not(#homeMain),#setup.invited #homeMain > :not(#joinD),#setup.invited #joinD > summary{display:none}
+#setup.invited #joinD{border:none;padding:0;background:none}
 #setup.invited .inv-only{display:block}#setup.invited .noinv{display:none}
+/* home: Play, Analyse, the game to resume, the codes, in one card */
+.homeMain{display:flex;flex-direction:column;gap:10px}
+.homeMain[hidden]{display:none}
+.resumeIn{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.resumeIn[hidden]{display:none}
+.home details.sub{padding:8px 12px}.home details.sub summary{font-size:.9rem}
+.home details.sub > :not(summary){margin-top:8px}
+/* a player's name that can be renamed in place: only the text cursor shows it */
+.nmEdit{cursor:text;outline:none;border-radius:3px;min-width:2ch}
+.nmEdit:focus{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
 .home .card.primary-card{border-color:var(--ink);box-shadow:0 1px 0 var(--line)}
 .home .card.primary-card h2{color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
 .home details{padding:10px 14px}

@@ -55,7 +55,7 @@ const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.pa
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18C={fr:{
  fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début",nav_prev:"Précédent",nav_next:"Suivant",nav_last:"Aller à la fin",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
- sub:"pair à pair",create:"Créer une partie",nick:"Votre pseudo",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
+ sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
  haveCode:"Vous avez reçu un code ?",joinOpen:"Rejoindre une partie",invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
@@ -77,12 +77,12 @@ const I18C={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
- w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",options:"Options",drawOffer:"Proposer la nulle",drawCancel:"Retirer la proposition",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
+ w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",playGo:"Jouer",analyse:"Analyser",haveInvite:"J'ai un code d'invitation",haveResume:"J'ai un code de reprise",modeOpt:"Mode de jeu",a_free:"Créer une partie",a_freeTxt:"Les deux camps sur cet écran, avec annulation et suggestions : pour essayer et analyser.",a_load:"Charger une partie",a_loadTxt:"Un fichier SGF : une partie terminée à revoir, ou inachevée à poursuivre.",sgfFile:"Fichier SGF",sgfLoadBtn:"Charger la partie",sgfNoFile:"Choisissez d'abord un fichier.",sgfBranch:"Ce fichier contient des variantes : elles ne sont pas encore prises en charge.",editName:"Cliquez pour renommer",st_navTest:"Revenez au dernier coup pour jouer.",options:"Options",drawOffer:"Proposer la nulle",drawCancel:"Retirer la proposition",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
  sgfLoad:"Charger une partie",sgfExport:"Exporter la partie (SGF)",st_file:"Partie chargée, en lecture seule : parcourez-la avec les flèches ou la liste des coups.",
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
  fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"First",nav_prev:"Previous",nav_next:"Next",nav_last:"Go to end",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
- sub:"peer to peer",create:"Create a game",nick:"Your nickname",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
+ sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
  haveCode:"Received a code?",joinOpen:"Join a game",invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
@@ -104,7 +104,7 @@ const I18C={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
- w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",options:"Options",drawOffer:"Offer a draw",drawCancel:"Withdraw the offer",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
+ w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",playGo:"Play",analyse:"Analyse",haveInvite:"I have an invitation code",haveResume:"I have a resume code",modeOpt:"Game mode",a_free:"Create a game",a_freeTxt:"Both sides on this screen, with undo and hints: to try things and analyse.",a_load:"Load a game",a_loadTxt:"An SGF file: a finished game to replay, or an unfinished one to go on with.",sgfFile:"SGF file",sgfLoadBtn:"Load the game",sgfNoFile:"Choose a file first.",sgfBranch:"This file has variations: they are not supported yet.",editName:"Click to rename",st_navTest:"Go back to the last move to play.",options:"Options",drawOffer:"Offer a draw",drawCancel:"Withdraw the offer",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
  sgfLoad:"Load a game",sgfExport:"Export the game (SGF)",st_file:"Game loaded, read only: go through it with the arrows or the list of moves.",
  sgfBad:"Unreadable SGF file.",sgfOther:"This file is a game of another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 }};
@@ -354,12 +354,17 @@ function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&
 // Navigation through the moves: for everyone once the game is over, for spectators at any time.
 // navAt=null follows the game live; otherwise the board shows the position after navAt moves.
 let navAt=null,navKey=null,navVal=null;
-const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch')||role==='file');
+const canNav=r=>!!view&&(!!r.over||(mySeat<0&&role==='watch')||role==='file'||role==='test');
 function navPos(k){const key=view.moves.slice(0,k).join(',');if(key!==navKey){const keep=[memoKey,memoVal];navVal=replay(view,view.moves.slice(0,k),null);navKey=key;[memoKey,memoVal]=keep;}return navVal;}
 function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0,k);resetUi();renderGame();}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
-const seatName=s=>solo()?t(s===0?'p1':'p2'):role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+const seatName=s=>solo()?(role==='test'&&view.customNames&&view.names[s]||t(s===0?'p1':'p2')):role==='ai'?(s===mySeat?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
 
+// A player's name, editable in place (nothing shows it but the text cursor): Enter or leaving the field keeps it
+function nameEdit(sp,p){sp.className='nmEdit';sp.contentEditable='plaintext-only';sp.spellcheck=false;sp.title=t('editName');
+  sp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sp.blur();}if(e.key==='Escape'){sp.textContent=seatName(p);sp.blur();}};
+  sp.onblur=()=>{const v=sp.textContent.replace(/\s+/g,' ').trim().slice(0,24);if(!view)return;view.names=view.names.slice();view.names[p]=v||t(p?'p2':'p1');
+    if(role==='test')view.customNames=true;if(role==='test')LS.set(TK(),view);renderGame();};}
 function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});else if(role==='test')LS.set(TK(),view);else if(role==='local')localSave();const r=replay(view,view.moves,view.result);
   if(!canNav(r)||navAt!==null&&navAt>=view.moves.length)navAt=null;
   const d=navAt===null?r:navPos(navAt),turn=d.st.turn;
@@ -379,6 +384,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const hintB=canHint()&&!busy&&mine&&(!GAME.hintable||GAME.hintable(o))?{label:t('hint'),on:doHint}:null;
   const idle=[undoB,hintB];
   if(role==='file'&&navAt!==null)status(t('st_file'));
+  else if(role==='test'&&navAt!==null&&!r.over)status(t('st_navTest'));   // free play: moves are played from the last position only
   else if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
     status(r.over.w<0?t('draw'+q,{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin'+q,{why:t(r.over.why)}):t('wins'+q,{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);}
   else if(view.draw&&view.draw.st==='ask'&&navAt===null&&(role==='local'||(mySeat>=0&&view.draw.from!==mySeat)))
@@ -401,9 +407,11 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
   else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'),'',mine&&prep?[RST]:null);
   const wide=window.matchMedia(WIDE).matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
-  $('playersTop').textContent='';$('playersSide').textContent='';const host=wide?$('playersSide'):$('playersTop');
-  for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&(ns&&navAt===null?!(view.held&&view.held[p]):turn===p)?' active':'');el.id='pl'+p;
+  const editing=!!document.activeElement&&document.activeElement.classList.contains('nmEdit');   // a name being typed: the cards stay
+  if(!editing){$('playersTop').textContent='';$('playersSide').textContent='';}const host=wide?$('playersSide'):$('playersTop');
+  if(!editing)for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&(ns&&navAt===null?!(view.held&&view.held[p]):turn===p)?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="dot c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);
+    if(role==='test'||role==='file')nameEdit(nmx,p);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
     el.append(h,ck);if(GAME.playerCard)GAME.playerCard(el,p,d);host.appendChild(el);}
   tick();lockBoard();
@@ -555,11 +563,16 @@ function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)retur
 let localTick=0;
 // Home: "Create a game", then the opponent (link, computer, face to face, free play), then that choice's options
 let homeK='';
-function homeStep(k){homeK=k;$('newBtn').hidden=k!=='';if($('sgfLoad'))$('sgfLoad').hidden=k!=='';$('newHead').hidden=k==='';$('newPick').hidden=k!=='pick';
-  const F={link:'createForm',ai:'aiForm',face:'faceForm',free:'testForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=k!==x;
-  const h=$('newTitle');h.dataset.i18n=k==='pick'?'pickOpp':'m_'+k;h.textContent=t(h.dataset.i18n);}
+// Home, one card: '' (Play, Analyse, the game to resume, the codes) · 'play' (the game mode, then its options; the name for
+// a link or the computer) · 'ana' (create a game in free play, or load an SGF file) · 'free' · 'load'
+function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
+  $('homeMain').hidden=k!=='';$('newHead').hidden=k==='';$('anaPick').hidden=k!=='ana';
+  $('modeWrap').hidden=$('modeTxt').hidden=!play;$('modeTxt').textContent=t('m_'+mode+'Txt');$('nameWrap').hidden=!(play&&(mode==='link'||mode==='ai'));
+  const F={link:'createForm',ai:'aiForm',face:'faceForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=!(play&&mode===x);
+  $('testForm').hidden=k!=='free';$('loadForm').hidden=k!=='load';if(k==='load')$('sgfErr').textContent='';
+  const h=$('newTitle');h.dataset.i18n={play:'playGo',ana:'analyse',free:'a_free',load:'a_load'}[k]||'playGo';h.textContent=t(h.dataset.i18n);}
 // An invitation link opens straight on the name to play under (the saved nickname by default)
-function invited(on){$('setup').classList.toggle('invited',on);$('joinCard').hidden=!on;if(on){const n=$('jName');n.value=nickGet();n.focus();n.select();}}
+function invited(on){$('setup').classList.toggle('invited',on);$('joinD').open=on;if(on){homeStep('');const n=$('jName');n.value=nickGet();n.focus();n.select();}}
 function aiPlay(code){if(view.result)return;view.draw=null;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
 function aiStep(){if(role!=='ai'||busy)return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
@@ -624,12 +637,12 @@ function sgfParse(txt){let i=0;const n=txt.length,ws=()=>{while(i<n&&/\s/.test(t
           for(;;){ws();if(txt[i]!=='[')break;i++;let v='';while(i<n&&txt[i]!==']'){if(txt[i]==='\\'){i++;if(txt[i]==='\n'){i++;continue;}}v+=txt[i++];}if(i>=n)throw 'value';i++;vals.push(v);}
           if(id)nd[id]=vals;}
         if(sub===null)out.push(nd);}
-      else if(c==='('){const t=tree();if(sub===null)sub=t;}
+      else if(c==='('){if(sub!==null)throw 'branch';sub=tree();}
       else if(c===')'){i++;return sub?out.concat(sub):out;}
       else throw 'char';}}
   return tree();}
 // A file read: checked against the rules, then shown read only, from its first position
-function sgfLoad(txt){let nodes;try{nodes=sgfParse(String(txt).replace(/^\uFEFF/,''));}catch(e){return t('sgfBad');}
+function sgfLoad(txt){let nodes;try{nodes=sgfParse(String(txt).replace(/^\uFEFF/,''));}catch(e){return t(e==='branch'?'sgfBranch':'sgfBad');}
   const root=nodes[0]||{},v=k=>root[k]&&root[k][0],G=GAME.sgf;
   if(v('XG')?v('XG')!==GAME.id:!(G&&G.gm&&+v('GM')===G.gm))return v('XG')?t('sgfOther',{g:v('XG')}):t('sgfBad');
   let rules={};try{rules=JSON.parse(v('XR')||'{}');}catch(e){}rules=GAME.rules(rules);
@@ -637,13 +650,14 @@ function sgfLoad(txt){let nodes;try{nodes=sgfParse(String(txt).replace(/^\uFEFF/
   const r=GAME.replay(rules,codes);if(r.over&&r.over.why==='w_bad')return t('sgfMove',{n:r.log.length+1});
   const bs=G&&G.black?G.black(r.st):0,names=[];names[bs]=v('PB')||t('p1');names[1-bs]=v('PW')||t('p2');
   const re=/^([BW])\+([RT])/i.exec(v('RE')||''),result=r.over?null:re?{winner:re[1].toUpperCase()==='B'?bs:1-bs,reason:re[2].toUpperCase()==='T'?'time':'resign'}:/^(0|draw)$/i.test(v('RE')||'')?{winner:-1,reason:'agree'}:null;
+  // unfinished: free play from its last position (both sides, undo, hints); finished: read only, from the first position
+  if(!r.over&&!result){stopAI();navAt=null;role='test';C.stop=true;setHash('test');
+    view={...soloView(rules,null),names,customNames:true,moves:codes};LS.set(TK(),view);hintMv=null;showGame();testTurn();return '';}
   stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
   view={...soloView(rules,null),names,moves:codes,result,sgfDT:v('DT')||''};navAt=codes.length?0:null;
   resetUi();hintMv=null;showGame();renderGame();return '';}
-function sgfPick(){const f=document.createElement('input');f.type='file';f.accept='.sgf,application/x-go-sgf,text/plain';
-  f.onchange=()=>{const x=f.files&&f.files[0];if(!x)return;x.text().then(txt=>{const e=sgfLoad(txt);if(e){$('joinErr').textContent=e;status(e);}});};f.click();}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
-function sgfUi(){if(!$('sgfLoad')&&$('newBtn')){const b=document.createElement('button');b.type='button';b.id='sgfLoad';b.className='sgfLoad';b.dataset.i18n='sgfLoad';b.textContent=t('sgfLoad');b.onclick=sgfPick;$('newBtn').after(b);}
+function sgfUi(){
   // at the end of the options
   if(!$('sgfExp')&&$('myCard')){const d=document.createElement('div');d.className='confirm';d.id='sgfExpBox';d.hidden=true;
     const b=document.createElement('button');b.type='button';b.id='sgfExp';b.dataset.i18n='sgfExport';b.textContent=t('sgfExport');b.onclick=sgfExport;d.appendChild(b);$('myCard').appendChild(d);}
@@ -742,13 +756,18 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   if($('testForm'))$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest(GAME.form('t'));});
   if($('faceForm'))$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tcx=TCS.find(x=>x.id===$('fTc').value)||TCS[TCS.length-1];LS.set(K('local-tc'),tcx.id);
     startLocal(GAME.form('f'),tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc});});
-  $('newBtn').onclick=()=>homeStep('pick');
-  $('newBack').onclick=()=>homeStep(homeK==='pick'?'':'pick');
+  $('playBtn').onclick=()=>homeStep('play');$('anaBtn').onclick=()=>homeStep('ana');
+  $('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
   document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
-  $('joinOpen').onclick=()=>{$('joinCard').hidden=false;$('jCode').focus();};
+  // the game mode: the modes this game has (no computer without its AI), the last one chosen
+  {const ms=$('modeSel'),opts=()=>[...ms.children].map(o=>o.getAttribute('value'));if(!$('aiForm'))for(const o of [...ms.children])if(o.getAttribute('value')==='ai')ms.removeChild(o);
+    const lm=LS.get(K('mode'),'link');if(opts().includes(lm))ms.value=lm;
+    ms.onchange=()=>{LS.set(K('mode'),ms.value);homeStep('play');};}
+  $('loadForm').addEventListener('submit',e=>{e.preventDefault();const x=$('sgfFile').files&&$('sgfFile').files[0];if(!x){$('sgfErr').textContent=t('sgfNoFile');return;}
+    x.text().then(txt=>{const er=sgfLoad(txt);$('sgfErr').textContent=er||'';});});
   $('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';};
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
-    if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();startAI(aiFirst(),GAME.form('a'));});}
+    if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);startAI(aiFirst(),GAME.form('a'));});}
   document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
     const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
     try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
