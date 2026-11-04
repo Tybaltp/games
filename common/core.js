@@ -36,6 +36,7 @@
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
 //  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
 //  drawOffer?                    true: the players may offer a draw (accepted: drawn by agreement)
+//  quietWhy?(why)                true: the end of the game says only who wins (« Player 2 wins. »), not why
 //  rich?(txt)                    status texts with pictures: txt holds U+2063…U+2063 marks; returns {node(), plain}
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
 //  home()                        draws the board shown on the home page (and again when the coordinates are switched)
@@ -72,7 +73,7 @@ const I18C={fr:{
  st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
  t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre pseudo, puis cliquez Jouer.",
- draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
+ draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",drawQ:"Nulle.",youWinQ:"Vous gagnez.",winsQ:"{n} gagne.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  ready:"{n} est prêt. ",clocksStart:"Les pendules démarrent quand les deux ont cliqué.",waitingOpp:"En attente de l'adversaire…",
@@ -99,7 +100,7 @@ const I18C={fr:{
  st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
  t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
- draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",st_waitOpp:"Waiting for your opponent: send them the game code.",
+ draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",drawQ:"Draw.",youWinQ:"You win.",winsQ:"{n} wins.",st_waitOpp:"Waiting for your opponent: send them the game code.",
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  ready:"{n} is ready. ",clocksStart:"The clocks start once both players have clicked.",waitingOpp:"Waiting for your opponent…",
@@ -378,7 +379,8 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const hintB=canHint()&&!busy&&mine&&(!GAME.hintable||GAME.hintable(o))?{label:t('hint'),on:doHint}:null;
   const idle=[undoB,hintB];
   if(role==='file'&&navAt!==null)status(t('st_file'));
-  else if(r.over)status(r.over.w<0?t('draw',{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin',{why:t(r.over.why)}):t('wins',{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);
+  else if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
+    status(r.over.w<0?t('draw'+q,{why:t(r.over.why)}):r.over.w===mySeat&&!solo()?t('youWin'+q,{why:t(r.over.why)}):t('wins'+q,{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);}
   else if(view.draw&&view.draw.st==='ask'&&navAt===null&&(role==='local'||(mySeat>=0&&view.draw.from!==mySeat)))
     status(t('drawAsk',{n:nm(view.draw.from)}),'turn',[{label:t('decline'),on:()=>drawSend('no')},{label:t('accept'),primary:true,on:()=>drawSend('yes')}]);
   else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);

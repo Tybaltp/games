@@ -152,7 +152,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=15"></script>
+<script src="common/core.js?v=16"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
@@ -221,11 +221,11 @@ const Q_I18N={fr:{
  st_giveNow:"choisissez la pièce suivante.",st_placeNow:"posez la pièce encadrée.",
  w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, petite ou grande.</li>
- <li><b>Tour</b> : on pose sur une case libre la pièce que l'adversaire a choisie (encadrée dans la réserve), puis on choisit dans la réserve la pièce que l'adversaire posera. Au premier coup, le premier joueur choisit seulement.</li>
- <li><b>Victoire</b> : gagne celui qui pose la pièce qui complète une ligne de quatre (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins une caractéristique. La ligne est reconnue d'elle-même.</li>
- <li><b>Variante avancée</b> (<span class="sqState"></span>) : quatre pièces en carré 2 × 2 qui partagent une caractéristique gagnent aussi.</li>
- <li><b>Nulle</b> : les 16 pièces sont posées sans alignement gagnant.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces toutes différentes, communes aux deux joueurs : claires ou foncées, rondes ou carrées, creuses ou pleines, petites ou grandes.</li>
+ <li><b>Tour</b> : on pose sur une case libre la pièce choisie par l'adversaire, puis on choisit celle qu'il posera. Au premier coup, le premier joueur choisit seulement.</li>
+ <li><b>Victoire</b> : gagne celui qui complète une ligne de quatre pièces (rangée, colonne ou diagonale) partageant au moins une caractéristique.</li>
+ <li><b>Variante avancée</b> (<span class="sqState"></span>) : un carré 2 × 2 de quatre pièces partageant une caractéristique gagne aussi.</li>
+ <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li></ul>`
 },en:{
  title:"Quarto",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
  m_aiTxt:"Five levels, to practise.",
@@ -237,11 +237,11 @@ const Q_I18N={fr:{
  st_giveNow:"choose the next piece.",st_placeNow:"place the framed piece.",
  w_full:"board full with no line",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, small or large.</li>
- <li><b>Turn</b>: place on an empty cell the piece your opponent chose (framed in the reserve), then choose from the reserve the piece your opponent will place. On the first move, the first player only chooses.</li>
- <li><b>Winning</b>: the player who places the piece completing a line of four (row, column or diagonal) whose four pieces share at least one trait wins. The line is recognised by itself.</li>
- <li><b>Advanced variant</b> (<span class="sqState"></span>): four pieces in a 2 × 2 square sharing a trait win too.</li>
- <li><b>Draw</b>: all 16 pieces are placed with no winning line.</li></ul>`
+ <li><b>Material</b>: a 4 × 4 board and 16 different pieces shared by both players: light or dark, round or square, hollow or solid, small or large.</li>
+ <li><b>Turn</b>: place the piece your opponent chose on an empty cell, then choose the one they will place. On the first move, the first player only chooses.</li>
+ <li><b>Winning</b>: whoever completes a line of four pieces (row, column or diagonal) sharing at least one trait wins.</li>
+ <li><b>Advanced variant</b> (<span class="sqState"></span>): a 2 × 2 square of four pieces sharing a trait wins too.</li>
+ <li><b>Draw</b>: all 16 pieces are placed without a win.</li></ul>`
 }};
 // The texts of a win: « four pieces in a line, all dark and hollow » (whyKey: the shape, the traits all have, none has)
 {const ADJ={fr:{all:["foncées","grandes","carrées","creuses"],none:["claires","petites","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
@@ -532,7 +532,8 @@ function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null
   return r.score>=950?{k:'ai_win'}:r.score<=-950?{k:'ai_lost'}:{k:'ai_eq',d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'quarto',size:16,codeTag:'QUARTO1',i18n:Q_I18N,
+const GAME={id:'quarto',quietWhy:why=>!/^w_(time|resign|agree)$/.test(why),   // « Player 2 wins. »: no reason but the site's own
+  size:16,codeTag:'QUARTO1',i18n:Q_I18N,
   rules:g=>({sq:!!(g&&g.sq)}),form:p=>({sq:$(p+'Sq').checked}),
   replay:qReplay,
   legal:(st,code,g)=>{const mv=E.dec(code);return mv&&E.play(st,mv,!!(g&&g.sq))?enc(mv):null;},
