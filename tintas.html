@@ -158,7 +158,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
         <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
         <p class="hint" id="aiInfo"></p>
       </div>
-      <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
     </details>
     <!-- display settings: for spectators too -->
@@ -232,7 +232,7 @@ const TI_I18N={fr:{
  title:"Tintas",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
- cb:"Daltonien",needConfirm:"Confirmer chaque coup avant l'envoi",
+ cb:"Daltonien",needConfirm:"Confirmer chaque coup",
  cols:["rouge","orange","jaune","vert","bleu ciel","bleu","violet"],colsF:["rouge","orange","jaune","verte","bleu ciel","bleue","violette"],
  tag_jump:"saut",draw:"Partie interrompue : {why}.",
  st_first:"Premier coup : posez le pion sur la pièce de votre choix et prenez-la.",st_jump:"Aucune pièce en ligne avec le pion : sautez-le sur la pièce de votre choix et prenez-la.",
@@ -250,7 +250,7 @@ const TI_I18N={fr:{
  title:"Tintas",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
- cb:"Colorblind",needConfirm:"Confirm each move before sending",
+ cb:"Colorblind",needConfirm:"Confirm each move",
  cols:["red","orange","yellow","green","sky blue","blue","purple"],colsF:["red","orange","yellow","green","sky blue","blue","purple"],
  tag_jump:"jump",draw:"Game interrupted: {why}.",
  st_first:"First move: put the pawn on any piece you like and take it.",st_jump:"No piece in line with the pawn: jump it onto any piece you like and take it.",

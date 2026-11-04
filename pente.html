@@ -168,7 +168,7 @@ h1{font-weight:400;letter-spacing:0}
         <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
         <p class="hint" id="aiInfo"></p>
       </div>
-      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before playing it</span></label>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
@@ -419,7 +419,7 @@ const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Le jeu de Pente sur un plateau 15×15 : ouverture Swap2, cinq paires capturées gagnent, les lignes de six et plus gagnent.",
  lv_facile:"Facile",lv_confirme:"Confirmé",lv_expert:"Expert",m_aiTxt:"Six niveaux, pour s'entraîner.",
- firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup avant de le jouer",
+ firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
  n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
  n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
@@ -444,7 +444,7 @@ const PE_I18N={fr:{
 },en:{
  title:"Pente",lede:"Pente on a 15×15 board: Swap2 opening, five captured pairs win, lines of six or more win.",
  lv_facile:"Easy",lv_confirme:"Advanced",lv_expert:"Expert",m_aiTxt:"Six levels, to practise.",
- firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move before playing it",
+ firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
  n_open:"Place the opening: 2 black and 1 white ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",
  n_add2:"Add 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_openN:"{name} places the opening: 2 black and 1 white ({n}/3).",n_add2N:"{who} adds 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_choose1:"{name} added a black and a white stone: choose your colour.",

@@ -167,7 +167,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
         <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
         <p class="hint" id="aiInfo"></p>
       </div>
-      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move before sending</span></label>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
@@ -300,7 +300,7 @@ const HINT=LEVELS.fort;
 const ZZ_I18N={fr:{
  title:"Zèrtz",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
  pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
- c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup avant l'envoi",
+ c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
  st_place:"Choisissez une couleur, puis un anneau vide.",st_placeN:"{n} : choisissez une couleur, puis un anneau vide.",
  st_placeOwn:"Réserve vide : posez une de vos billes capturées.",st_placeOwnN:"{n} : réserve vide, posez une de vos billes capturées.",
@@ -318,7 +318,7 @@ const ZZ_I18N={fr:{
 },en:{
  title:"Zèrtz",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
- c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move before sending",
+ c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
  st_place:"Choose a colour, then an empty ring.",st_placeN:"{n}: choose a colour, then an empty ring.",
  st_placeOwn:"Pool empty: place one of your captured marbles.",st_placeOwnN:"{n}: pool empty, place one of your captured marbles.",
