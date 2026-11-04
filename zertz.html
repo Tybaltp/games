@@ -46,10 +46,11 @@ html.ingame:not(.wide) .board{border-radius:14px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mb.c2{box-shadow:0 0 0 1.5px var(--muted)}}:root[data-theme="dark"] .mb.c2{box-shadow:0 0 0 1.5px var(--muted)}
 .near{color:var(--danger);font-weight:600}
 /* the shared pool and the colour to place, under the board */
-.poolbar{display:flex;align-items:center;gap:8px;flex:none;min-width:0}
+.poolbar{display:flex;align-items:center;justify-content:center;gap:10px;flex:none;min-width:0}
 .poolbar .plabel{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
-.colors{display:flex;gap:6px;flex:1 1 auto;min-width:0;max-width:340px;margin-left:auto}
-.colors button{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding:5px 8px;min-width:0}
+.colors{display:flex;gap:8px;flex:0 1 420px;min-width:0}
+.colors button{display:flex;align-items:center;gap:8px;flex:1;justify-content:center;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:1.05rem;padding:9px 12px;min-width:0}
+.colors .mb{width:18px;height:18px}
 .colors button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
 </style>
 </head><body>
@@ -398,9 +399,10 @@ function zzBoard({r,d,mine}){setBoard(ringsOf(view));if(ui.hover==null)ui.hover=
   drawBoard(d.st,legal,mine&&!ui.pending&&busy!=='hint'&&!hintOn(),live&&mine&&(prepared()||hintOn())?null:d.last,live?preview(r.st,legal,mine):null);
   shownSt=d.st;poolBar(d.st,r,mine,caps);
   return {caps};}
-// The shared pool (once empty, the marbles each player captured) and the colour to place: under the board, always in view
+// The shared pool (once empty, the marbles each player captured) and the colour to place: under the board, always in view,
+// centred; the label only shows once the pool is empty (each player then places their own captured marbles)
 function poolBar(st,r,mine,caps){const pool=[st[POOL],st[POOL+1],st[POOL+2]],n=pool[0]+pool[1]+pool[2],fromCap=n===0,cols=r.over?[]:E.colors(r.st);
-  const lb=$('poolLbl');lb.textContent=fromCap?t('poolLblE'):t('poolLbl',{n});lb.title=fromCap?t('h_empty'):t('pool')+' · '+t('poolN',{n});
+  const lb=$('poolLbl');lb.hidden=!fromCap;lb.textContent=fromCap?t('poolLblE'):t('poolLbl',{n});lb.title=fromCap?t('h_empty'):t('pool')+' · '+t('poolN',{n});
   const hc=mine&&hintOn()&&hintMv.t===0?hintMv.c:-1,cb=$('colors');cb.textContent='';cb.setAttribute('aria-label',t('pool'));
   for(let k=0;k<3;k++){const b=document.createElement('button');b.type='button';b.id='col'+k;
     const v=fromCap&&mySeat>=0?st[CAP+mySeat*3+k]:pool[k];b.innerHTML=`<span class="mb c${k}"></span>${v}`;
