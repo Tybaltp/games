@@ -153,7 +153,7 @@
 <script src="common/core.js?v=11"></script>
 <script>
 // ===== Quarto: rules =====
-// 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: crossed), 4 square, 8 hollow.
+// 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
 // Advanced variant (sq): the nine 2×2 squares win too.
 // Cell i = row*4+col, row 0 at the top (rank 4), column 0 on the left (file a).
 // A move: place the piece received on an empty cell, then choose the piece the opponent will place. The first move of the
@@ -196,10 +196,10 @@ function QuartoEngine(){
 function whyKey(sq,all,none){return 'wq'+(sq?'s':'l')+all+'_'+none;}
 const E=QuartoEngine();
 const enc=E.enc;
-// View: '2d' (top view, cross for tall) or 'iso' (3D isometric, the default), kept for all Quarto games on this device
+// View: '2d' (top view, tall pieces larger) or 'iso' (3D isometric, the default), kept for all Quarto games on this device
 let qView=LS.get('quarto-view','iso')==='2d'?'2d':'iso';
 const cellName=i=>'abcd'[i%4]+(4-((i/4)|0));
-function pieceName(p){const L=t('traits');return [L[p&1?1:0],L[p&4?3:2],L[p&8?5:4],qView==='iso'?L[p&2?9:8]:L[p&2?7:6]].join(' ');}
+function pieceName(p){const L=t('traits');return [L[p&1?1:0],L[p&4?3:2],L[p&8?5:4],L[p&2?7:6]].join(' ');}
 function txtOf(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv.g>=0)parts.push(t('gives',{p:pieceName(mv.g)}));return parts.join(', ');}
 function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=null,over=null;const log=[];
   for(const code of moves){if(over)break;const mv=E.dec(code),res=mv&&E.play(st,mv,sq);
@@ -213,13 +213,13 @@ const Q_I18N={fr:{
  m_aiTxt:"Cinq niveaux, pour s'entraîner.",
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_fort:"Fort",lv_expert:"Expert",
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
- traits:["claire","foncée","ronde","carrée","pleine","creuse","sans croix","à croix","basse","haute"],
+ traits:["claire","foncée","ronde","carrée","pleine","creuse","basse","haute"],
  gives:"donne la {p}",sep:" : ",toPlace:"à poser",
  st_give1:"choisissez la pièce que l'adversaire va poser.",st_place:"posez la pièce encadrée, puis choisissez celle que l'adversaire posera.",
  st_giveNow:"choisissez la pièce que l'adversaire posera.",st_placeNow:"posez la pièce encadrée.",
  w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est remplacée par une croix : à croix (haute) ou sans croix (basse).</li>
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces communes aux deux joueurs, toutes différentes. Chaque pièce a quatre caractéristiques : claire ou foncée, ronde ou carrée, creuse ou pleine, haute ou basse. En vue 2D, la hauteur est rendue par la taille : grande (haute) ou petite (basse) ; le trou garde la même taille.</li>
  <li><b>Tour</b> : on pose sur une case libre la pièce que l'adversaire a choisie (encadrée dans la réserve), puis on choisit dans la réserve la pièce que l'adversaire posera. Au premier coup, le premier joueur choisit seulement.</li>
  <li><b>Victoire</b> : gagne celui qui pose la pièce qui complète une ligne de quatre (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins une caractéristique. La ligne est reconnue d'elle-même.</li>
  <li><b>Variante avancée</b> (<span class="sqState"></span>) : quatre pièces en carré 2 × 2 qui partagent une caractéristique gagnent aussi.</li>
@@ -229,13 +229,13 @@ const Q_I18N={fr:{
  m_aiTxt:"Five levels, to practise.",
  lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_fort:"Strong",lv_expert:"Expert",
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
- traits:["light","dark","round","square","solid","hollow","plain","crossed","short","tall"],
+ traits:["light","dark","round","square","solid","hollow","short","tall"],
  gives:"gives the {p}",sep:": ",toPlace:"to place",
  st_give1:"choose the piece your opponent will place.",st_place:"place the framed piece, then choose the one your opponent will place.",
  st_giveNow:"choose the piece your opponent will place.",st_placeNow:"place the framed piece.",
  w_full:"board full with no line",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, tall or short. In the 2D view, height is replaced by a cross: crossed (tall) or plain (short).</li>
+ <li><b>Material</b>: a 4 × 4 board and 16 pieces shared by both players, all different. Each piece has four traits: light or dark, round or square, hollow or solid, tall or short. In the 2D view, height is shown by size: large (tall) or small (short); the hollow keeps the same size.</li>
  <li><b>Turn</b>: place on an empty cell the piece your opponent chose (framed in the reserve), then choose from the reserve the piece your opponent will place. On the first move, the first player only chooses.</li>
  <li><b>Winning</b>: the player who places the piece completing a line of four (row, column or diagonal) whose four pieces share at least one trait wins. The line is recognised by itself.</li>
  <li><b>Advanced variant</b> (<span class="sqState"></span>): four pieces in a 2 × 2 square sharing a trait win too.</li>
@@ -254,15 +254,14 @@ function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.s
 const f1=n=>Math.round(n*10)/10;
 const PC=p=>p&1?{f:'var(--pd)',l:'var(--pd-l)',g:'var(--pd-g)',a:'var(--pd-a)',b:'var(--pd-b)',grad:'qgd'}:{f:'var(--pl)',l:'var(--pl-l)',g:'var(--pl-g)',a:'var(--pl-a)',b:'var(--pl-b)',grad:'qgl'};
 let uid=0;
-// A piece seen from above, centred at (cx,cy), radius R: round or square, a hollow (round dip) and/or a cross along the
-// diagonals cut edge to edge, both in one carved colour
-function piece2D(par,p,cx,cy,R,op){const k=PC(p),g=el('g',{'pointer-events':'none',...(op?{opacity:op}:{})},par),id='qc'+(uid++),a=R*.9;
+// A piece seen from above, centred at (cx,cy), base radius R0: round or square, tall pieces larger (×1.22) and short ones
+// smaller (×.87), a hollow as a round dip of one size for all, in a carved colour
+function piece2D(par,p,cx,cy,R0,op){const k=PC(p),g=el('g',{'pointer-events':'none',...(op?{opacity:op}:{})},par),id='qc'+(uid++),hr=R0*.47,R=p&2?R0*1.22:R0*.87,a=R*.9;
   const shape=()=>p&4?el('rect',{x:f1(cx-a),y:f1(cy-a),width:f1(2*a),height:f1(2*a),rx:f1(R*.08)}):el('circle',{cx:f1(cx),cy:f1(cy),r:f1(R)});
   const cp=el('clipPath',{id},g);cp.appendChild(shape());
   const body=shape();body.setAttribute('fill',k.f);g.appendChild(body);
   const gr=el('g',{'clip-path':`url(#${id})`},g);
-  if(p&2){const L=R*1.5,w=R*.32;el('line',{x1:f1(cx-L),y1:f1(cy-L),x2:f1(cx+L),y2:f1(cy+L),stroke:k.g,'stroke-width':f1(w)},gr);el('line',{x1:f1(cx-L),y1:f1(cy+L),x2:f1(cx+L),y2:f1(cy-L),stroke:k.g,'stroke-width':f1(w)},gr);}
-  if(p&8)el('circle',{cx:f1(cx),cy:f1(cy),r:f1(R*.47),fill:k.g},gr);
+  if(p&8)el('circle',{cx:f1(cx),cy:f1(cy),r:f1(hr),fill:k.g},gr);
   const ol=shape();ol.setAttribute('fill','none');ol.setAttribute('stroke',k.l);ol.setAttribute('stroke-width',1.8);g.appendChild(ol);
   return g;}
 // Isometric projection: the board turned by 45°, seen from ELEV degrees above (high enough for every empty cell to stay
