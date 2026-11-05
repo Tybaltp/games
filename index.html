@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jeux</title>
+<script src="common/theme.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="common/cards.css?v=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
 <style>
 :root{--bg:#f2f0ec;--ink:#1d1c1a;--muted:#6b6862;--line:#e3dfd6;--panel:#f9f8f5;--accent:#9C2E3A;--warn:#fff4e5;--warn-line:#e8c48a}
-@media (prefers-color-scheme:dark){:root{--bg:#11100f;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--panel:#181715;--accent:#E1737D;--warn:#2a2116;--warn-line:#6b5530}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11100f;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--panel:#181715;--accent:#E1737D;--warn:#2a2116;--warn-line:#6b5530}}
+:root[data-theme="dark"]{--bg:#11100f;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--panel:#181715;--accent:#E1737D;--warn:#2a2116;--warn-line:#6b5530}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
 main{max-width:64rem;margin:0 auto;padding:8vh 16px 48px}
@@ -18,30 +21,9 @@ h1{font-size:1.8rem;margin:0 0 4px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;margin-top:6px}
 .seg button{font:inherit;font-size:.8rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-/* game cards: the game's name top left, a piece of its board bottom right behind an oblique cut underlined in the
-   game's accent; each card takes the game page's tint, ink and accent (dark: its panel tint); images in img/cartes/ */
+.seg .themeBtn{border-right:1px solid var(--line);min-width:2.4em}
+/* game cards: common/cards.css; here their grid */
 .cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:14px}
-.card{position:relative;display:block;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:var(--gbg);color:var(--gink);text-decoration:none;isolation:isolate}
-.card .ct{position:absolute;left:18px;top:14px;z-index:3;max-width:50%;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:2.15rem;line-height:1.05;letter-spacing:-.01em;transition:color .2s}
-.card .ct em{font-style:italic}
-.c-ponte .ct{font-size:1.9rem}
-.card:hover .ct,.card:focus-visible .ct{color:var(--gacc)}
-.card:focus-visible{outline:2px solid var(--gacc);outline-offset:3px}
-/* the image fills the right 76 % exactly (it has that box's proportions); cut from 52 % at the top to the box's left edge
-   at the bottom, with a 6 px bar in the accent along the cut */
-.card .art,.card .bar{position:absolute;right:0;top:0;bottom:0;width:76%}
-.card .art{background:var(--img) center/cover no-repeat;clip-path:polygon(calc(52% + 6px) 0,100% 0,100% 100%,6px 100%)}
-.card .bar{background:var(--gacc);clip-path:polygon(52% 0,calc(52% + 6px) 0,6px 100%,0 100%)}
-.c-pente{--gbg:#e8d1d1;--gink:#1B211F;--gacc:#9C2E3A;--img:url(img/cartes/pente.svg)}
-.c-ponte{--gbg:#ece4d9;--gink:#1d2729;--gacc:#a8761c;--img:url(img/cartes/ponte.svg)}
-.c-zertz{--gbg:#c5dce2;--gink:#1c282d;--gacc:#5b8792;--img:url(img/cartes/zertz.svg)}
-.c-volo{--gbg:#ccd9e9;--gink:#1c282d;--gacc:#2f6fd6;--img:url(img/cartes/volo.svg)}
-.c-arimaa{--gbg:#c5dce2;--gink:#26231d;--gacc:#2f7d8c;--img:url(img/cartes/arimaa.svg)}
-.c-gyges{--gbg:#ede4d9;--gink:#26231d;--gacc:#d98f1f;--img:url(img/cartes/gyges.svg)}
-.c-tintas{--gbg:#dbd4e6;--gink:#1d2629;--gacc:#6a3790;--img:url(img/cartes/tintas.svg)}
-.c-dblocks{--gbg:#f0e1e5;--gink:#22231f;--gacc:#9c2457;--img:url(img/cartes/dblocks.svg)}
-.c-quarto{--gbg:#cad4bb;--gink:#26231d;--gacc:#6f8f66;--img:url(img/cartes/quarto.svg)}
-@media (prefers-color-scheme:dark){.c-pente{--gbg:#251b1b;--gink:#E5EAE6;--gacc:#b8434f;--img:url(img/cartes/pente-dark.svg)}.c-ponte{--gbg:#29241c;--gink:#e3e8e6;--gacc:#e0a94a;--img:url(img/cartes/ponte-dark.svg)}.c-zertz{--gbg:#152023;--gink:#e2e9eb;--gacc:#5d8a98;--img:url(img/cartes/zertz-dark.svg)}.c-volo{--gbg:#1a1e26;--gink:#e2e9eb;--gacc:#6aa2f5;--img:url(img/cartes/volo-dark.svg)}.c-arimaa{--gbg:#201e19;--gink:#ebe6db;--gacc:#3f95a5;--img:url(img/cartes/arimaa-dark.svg)}.c-gyges{--gbg:#2d261f;--gink:#ebe5d8;--gacc:#efa93c;--img:url(img/cartes/gyges-dark.svg)}.c-tintas{--gbg:#201c24;--gink:#e2e9eb;--gacc:#a676d4;--img:url(img/cartes/tintas-dark.svg)}.c-dblocks{--gbg:#251b1e;--gink:#e6e8e3;--gacc:#d4588a;--img:url(img/cartes/dblocks-dark.svg)}.c-quarto{--gbg:#1d2f21;--gink:#ebe5d8;--gacc:#9cb894;--img:url(img/cartes/quarto-dark.svg)}}
 details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 16px;max-width:42rem}
 details.how summary{cursor:pointer;font-weight:600}
 details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
@@ -64,15 +46,15 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
   <p class="warn" data-i18n-html="warn"></p>
 </details>
 <ul class="cards">
-<li><a class="card c-pente" href="pente.html"><span class="ct">Pente</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-ponte" href="pontedeldiavolo.html"><span class="ct">Ponte <em>del</em> Diavolo</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-zertz" href="zertz.html"><span class="ct">Zèrtz</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-volo" href="volo.html"><span class="ct">Volo</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-arimaa" href="arimaa.html"><span class="ct">Arimaa</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-gyges" href="gyges.html"><span class="ct">Gygès</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-tintas" href="tintas.html"><span class="ct">Tintas</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-dblocks" href="diagonalblocks.html"><span class="ct">Diagonal Blocks</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="card c-quarto" href="quarto.html"><span class="ct">Quarto</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-pente" href="pente.html"><span class="ct">Pente</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-ponte" href="pontedeldiavolo.html"><span class="ct">Ponte <em>del</em> Diavolo</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-zertz" href="zertz.html"><span class="ct">Zèrtz</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-volo" href="volo.html"><span class="ct">Volo</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-arimaa" href="arimaa.html"><span class="ct">Arimaa</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-gyges" href="gyges.html"><span class="ct">Gygès</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-tintas" href="tintas.html"><span class="ct">Tintas</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-dblocks" href="diagonalblocks.html"><span class="ct">Diagonal Blocks</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-quarto" href="quarto.html"><span class="ct">Quarto</span><span class="bar"></span><span class="art"></span></a></li>
 </ul>
 </main>
 <script>

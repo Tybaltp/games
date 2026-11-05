@@ -35,7 +35,7 @@ header .seg{margin-left:auto}
 .optbtn.attn::after{content:"";position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
 html.ingame:not(.wide) .optbtn{display:inline-block}
 .fsbtn{line-height:0;padding:6px 9px}.fsbtn.on{color:var(--accent);border-color:var(--accent)}
-.boardwrap{grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+.boardwrap{position:relative;grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
 /* The board fits its area in both dimensions, keeping its proportions (--board-ar, set by the page), centred */
 .boardarea{flex:1 1 0;min-height:0;min-width:0;container-type:size;display:flex;align-items:center;justify-content:center}
 .board{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px;min-width:0;width:100%;height:100%}
@@ -124,6 +124,7 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg .themeBtn{border-right:1px solid var(--line);min-width:2.4em}
 .home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
 .home button.big{padding:14px;font-size:1.05rem}
 .lede{color:var(--muted);margin:0;font-size:.95rem}   /* the game in one line, above the home card */
@@ -135,13 +136,6 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
 .joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
 .home .err:empty{display:none}
-.inv-only{display:none}
-/* an invitation link: only the join part of the card (its form, opened, without its title line) */
-#setup.invited .home > :not(#newCard):not(#joinErr){display:none}
-#setup.invited .home > #joinErr:not(:empty){display:block}
-#setup.invited #newCard > :not(#homeMain),#setup.invited #homeMain > :not(#joinD),#setup.invited #joinD > summary{display:none}
-#setup.invited #joinD{border:none;padding:0;background:none}
-#setup.invited .inv-only{display:block}#setup.invited .noinv{display:none}
 /* home: Play, Analyse, the game to resume, the codes, in one card */
 .homeMain{display:flex;flex-direction:column;gap:10px}
 .homeMain[hidden]{display:none}
@@ -225,3 +219,12 @@ h1 a.gname{color:inherit;text-decoration:none}
 .mlist li.cur{font-weight:650}
 .mlist a{color:inherit}
 .mlist .mres{color:var(--muted);text-align:right}
+/* the name asked over the board on arriving by a link (a player: the name the opponent sees; a spectator: a name or none) */
+.nameov{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 60%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.nameov[hidden]{display:none}
+.nameov .card{width:min(22rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22)}
+.nameov h2{margin:0;font-size:1.05rem}.nameov .hint{margin:0}
+.nameov .confirm{justify-content:flex-start}
+/* the spectators, listed in their section of the side column */
+.wlist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:.88rem}
+.wlist .hint{font-size:.85rem}

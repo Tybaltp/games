@@ -59,7 +59,7 @@ const I18C={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
- invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",invOther:"Autres choix",
+ invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",watchT:"Vous êtes invité à observer une partie",watchTxt:"Choisissez le nom que verront les joueurs, puis cliquez Observer, ou restez anonyme.",anon:"Anonyme",watchersT:"Observateurs ({n})",
  inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  cancel:"Annuler",confirmMv:"Confirmer",
@@ -73,7 +73,7 @@ const I18C={fr:{
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_noTable:"Table introuvable : l'hôte n'a pas la page ouverte. Nouvel essai…",st_nack:"Coup refusé par l'hôte : la position a changé. Rejouez.",st_noHost:"Pas de connexion à l'hôte : le coup n'a pas été envoyé.",st_noHost2:"Pas de connexion à l'hôte.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",invited:"Vous êtes invité à jouer : saisissez votre nom, puis cliquez Jouer.",
+ t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",
  draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",drawQ:"Nulle.",youWinQ:"Vous gagnez.",winsQ:"{n} gagne.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Hôte injoignable, reconnexion… Les pendules sont arrêtées.",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
@@ -86,7 +86,7 @@ const I18C={fr:{
  sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
- invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",invOther:"Other choices",
+ invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",watchT:"You are invited to watch a game",watchTxt:"Choose the name the players will see, then click Watch, or stay anonymous.",anon:"Anonymous",watchersT:"Spectators ({n})",
  inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  cancel:"Cancel",confirmMv:"Confirm",
@@ -100,7 +100,7 @@ const I18C={fr:{
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
  st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_noTable:"Table not found: the host does not have the page open. Retrying…",st_nack:"Move rejected by the host: the position has changed. Play again.",st_noHost:"No connection to the host: the move was not sent.",st_noHost2:"No connection to the host.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",invited:"You are invited to play: enter your nickname, then click Play.",
+ t_refused:"Two players are already in this game. You can still watch it: click Watch.",
  draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",drawQ:"Draw.",youWinQ:"You win.",winsQ:"{n} wins.",st_waitOpp:"Waiting for your opponent: send them the game code.",
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Host unreachable, reconnecting… The clocks are stopped.",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
@@ -196,7 +196,7 @@ function hostHold(s,code){const g=H.game;if(!g.hold)g.hold=[null,null];if(g.hold
   g.hold[s]=code;if(g.hold[0]&&g.hold[1]){g.moves=[g.hold[0],g.hold[1]];g.hold=null;g.running=true;H.turnStart=Date.now();g.ver=(g.ver||0)+1;}return 'ok';}
 const myHoldOf=s=>H.game.hold&&s>=0?H.game.hold[s]||null:null;
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,...GAME.rules(g),held:[0,1].map(q=>!!(g.hold&&g.hold[q])),tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
-  running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,
+  running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,wnames:[...H.watchers].map(c=>c.wname||''),
   started:!!g.started,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,wcode:H.wcode||null,rematch:g.rematch||null,draw:g.draw||null,match:g.match?{...g.match,res:MATCH?MATCH.res:{}}:null};}
 // Rematch: either player offers it once the game is over; on acceptance a new game starts at once under the same code,
 // sides swapped (the players exchange seats), same time control and same rule set.
@@ -279,7 +279,7 @@ function becomeHost(){if(!view)return;if(C.pending){pendClear();delete view.runS
 function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;}hostBroadcast();}
 function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping')return;const g=H.game;
   if(d.t==='hello'){if(conn.watchOnly)d={...d,role:'watch'};
-    const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;
+    const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;const known=s>=0;   // known: this player already had the seat (they come back)
     if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
     if(d.role==='play'&&s>=0&&s!==mySeat){
       if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
@@ -288,10 +288,13 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
         g.moves=o.moves.slice();g.clock=o.clock.slice();g.result=o.result||null;g.started=!!o.started;g.running=!!o.started;g.paused=true;H.turnStart=Date.now();}
       // a move the guest validated in a simultaneous phase that this host does not have (the host took over, or reloaded without it)
       else if(o&&typeof o==='object'&&typeof o.myHold==='string'&&!g.moves.length&&simMode(o)===simMode(g))hostHold(s,o.myHold);
-      conn.send({t:'welcome',role:'guest',seat:s});hostBroadcast();return;}
+      conn.send({t:'welcome',role:'guest',seat:s,known});hostBroadcast();return;}
     if(d.role==='play'){conn.send({t:'reject',why:'t_refused'});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
-    H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
+    conn.wname=nmClean(d.name);H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
+  // a name chosen once connected (the frame over the board): a spectator's (empty: anonymous), the guest's
+  if(d.t==='wname'){if(H.watchers.has(conn)){conn.wname=nmClean(d.name);hostBroadcast();}return;}
   if(conn!==H.guestConn)return;
+  if(d.t==='name'){const v=nmClean(d.name);if(v&&conn.seat>=0){g.names[conn.seat]=v;hostBroadcast();}return;}
   const s=conn.seat;
   if(d.t==='move')hostMove(s,d.n,d.code,conn);
   if(d.t==='start')hostReady(s);
@@ -313,6 +316,7 @@ function hostMove(s,n,code,conn){const g=H.game,pubFor=()=>({...hostPublic(),myH
   if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
   g.moves.push(cc);g.draw=null;g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
 let saveTick=0;
+const nmClean=v=>String(v||'').replace(/\s+/g,' ').trim().slice(0,24);
 
 // --- guest / spectator ---
 let C={};   // {code,cid,name,conn,retry}
@@ -340,7 +344,7 @@ function clientRetry(){if(C.stop||C.t)return;C.t=setTimeout(()=>{C.t=null;if(C.s
   if(role==='guest'&&mySeat>=0&&view&&C.lostSince&&Date.now()-C.lostSince>8000){becomeHost();return;}
   if(peer&&peer.open)clientConnect();else{if(peer&&!peer.destroyed){try{peer.reconnect();}catch(e){}}clientLost();}},3500);}
 function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now();if(d.t==='ping')return;
-  if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);}
+  if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);if(C.ask&&role==='guest'){C.ask=false;if(!d.known)nameOv('play');}}
   else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
   else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();
     if(C.hold&&(d.game.myHold===C.hold.code||d.game.moves.length))C.hold=null;
@@ -349,7 +353,7 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
 
 // ---------- game view ----------
 function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
-function showSetup(msg){role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
+function showSetup(msg){nameOv('');role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
 function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'',prevSeat=view?view.mySeatSeen:-2;
   view={...g,recvAt:Date.now(),mySeatSeen:mySeat};
   guestSave();
@@ -358,7 +362,7 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
 // The guest's copy of the game (every state received, and every second while the clocks run): shown at once on return,
 // and used to take over if the host does not come back
 function guestSave(){if(role!=='guest'||mySeat<0||!view)return;const g=view;
-  if(g.result&&!g.match)LS.del(K('p2p-guest'));else LS.set(K('p2p-guest'),{code:C.code,seat:mySeat,name:C.name,savedAt:Date.now(),view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0}});}
+  if(g.result&&!g.match)LS.del(K('p2p-guest'));else LS.set(K('p2p-guest'),{code:C.code,seat:mySeat,name:C.name,savedAt:Date.now(),view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0,wnames:[]}});}
 function resetUi(){ui=GAME.newUi();}
 // Simultaneous phase between two devices: both players choose at once (the moves list is still empty)
 const netSim=r=>(role==='host'||role==='guest'||role==='watch')&&simHold(view,r);
@@ -490,8 +494,13 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     if(!ib.hidden){if(view.match)fillMatch();else if(role==='watch')fillWatch(C.code);else if(role!=='host'&&C.code)fillCodes(C.code,true);}
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('rcBoxD'))$('rcBoxD').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
-  $('watchInfo').textContent=view.watchers?t(view.watchers>1?'spects':'spect',{n:view.watchers}):t('noSpect');
+    if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('watchBox'))$('watchBox').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
+  {const wb=$('watchBox'),net=role==='host'||role==='guest'||role==='watch';wb.hidden=!net;
+    if(net){const ws=Array.isArray(view.wnames)?view.wnames:[],n=view.watchers||0,ul=$('watchList');$('watchSum').textContent=t('watchersT',{n});
+      const items=n?ws.map(x=>x||t('anon')).sort((a,b)=>a.localeCompare(b)):[];const key=n+'|'+items.join('|')+'|'+lang;
+      if(ul.dataset.k!==key){ul.dataset.k=key;ul.textContent='';
+        if(!items.length){const li=document.createElement('li');li.className='hint';li.textContent=t(n?(n>1?'spects':'spect'):'noSpect',{n});ul.appendChild(li);}
+        for(const x of items){const li=document.createElement('li');li.textContent=x;ul.appendChild(li);}}}}
   $('endCard').hidden=!r.over&&role!=='file'&&!(A&&(role==='local'||role==='ai'));   // the analysis of a game over keeps the way to a new one   // a game read from a file: always the way back home
   {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
@@ -529,7 +538,7 @@ function lockBoard(){const ba=document.querySelector('.boardwrap .boardarea'),bw
   if(GAME.ownLayout||isWide()||$('game').hidden||n.parentNode!==bw||!bw.clientHeight){if(ba.style.height){ba.style.height='';ba.style.flex='';}return;}
   const gap=parseFloat(getComputedStyle(bw).rowGap)||0,max=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--barMax'))||112;
   let h=bw.clientHeight-max,k=0;
-  for(const c of bw.children){if(c===ba||c.hidden||getComputedStyle(c).display==='none')continue;k++;if(c!==n)h-=c.offsetHeight;}
+  for(const c of bw.children){if(c===ba||c.hidden||getComputedStyle(c).display==='none'||getComputedStyle(c).position==='absolute')continue;k++;if(c!==n)h-=c.offsetHeight;}
   const px=Math.max(120,Math.floor(h-gap*k))+'px';if(ba.style.height!==px){ba.style.flex='none';ba.style.height=px;}}
 // Board coordinates, shared by all the games (games-coords, default on): html.nocoords when off. The game reads coordsOn
 // when it draws (labels left out, a tighter viewBox) and sets --board-ar for html.nocoords.
@@ -541,6 +550,7 @@ function coordsSet(on){coordsOn=!!on;document.documentElement.classList.toggle('
 // is what matters then. A sheet the player opened or closed is left alone (sheet() clears the flag on close).
 function sheetAttn(){const ids=['inviteBox','startCard','endCard'].filter(id=>!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
   $('optBtn').classList.toggle('attn',ids.length>0);
+  if(!$('nameOv').hidden)return;   // the name first: the sheet would cover the frame over the board
   const prev=sheetAttn.prev||[],fresh=ids.filter(id=>!prev.includes(id));sheetAttn.prev=ids;
   if(isWide())return;
   if(!ids.length&&prev.length&&sheetAttn.auto){sheet(false);return;}
@@ -636,8 +646,18 @@ function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
   const F={link:'createForm',ai:'aiForm',face:'faceForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=!(play&&mode===x);
   $('testForm').hidden=k!=='free';$('loadForm').hidden=k!=='load';if(k==='load')$('sgfErr').textContent='';
   const h=$('newTitle');h.dataset.i18n={play:'playGo',ana:'analyse',free:'a_free',load:'a_load'}[k]||'playGo';h.textContent=t(h.dataset.i18n);}
-// An invitation link opens straight on the name to play under (the saved nickname by default)
-function invited(on){$('setup').classList.toggle('invited',on);$('joinD').open=on;if(on){homeStep('');const n=$('jName');n.value=nickGet();n.focus();n.select();}}
+// Arriving by a link for the first time: the page connects at once and a frame over the board asks for a name, the
+// saved one by default ('play': the name the opponent sees, sent to the host once chosen; 'watch': a name or none,
+// remembered so that a reload comes back straight to the game). '' hides it.
+function nameOv(kind){const ov=$('nameOv');ov.dataset.k=kind;ov.hidden=!kind;if(!kind)return;const w=kind==='watch';
+  const set=(id,k)=>{$(id).dataset.i18n=k;$(id).textContent=t(k);};
+  set('nameOvT',w?'watchT':'invitedT');set('nameOvTxt',w?'watchTxt':'invitedTxt');set('nameOvGo',w?'watch':'play');$('nameOvAnon').hidden=!w;
+  const n=$('nameOvIn');n.value=nickGet();n.focus();n.select();}
+function nameOvDone(anon){const ov=$('nameOv'),w=ov.dataset.k==='watch',v=anon?'':nmClean($('nameOvIn').value);ov.hidden=true;
+  if(v)nickSet(v);
+  if(w){C.name=v;LS.set(K('p2p-watch'),{code:C.code,name:v});if(C.conn&&C.conn.open)C.conn.send({t:'wname',name:v});}
+  else if(v){C.name=v;if(C.conn&&C.conn.open)C.conn.send({t:'name',name:v});guestSave();}
+  if(view)renderGame();}
 function aiPlay(code){if(view.result)return;view.draw=null;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
 function aiStep(){if(role!=='ai'||busy||ana())return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
@@ -681,7 +701,7 @@ function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));re
   // a whole link pasted: its kind and code; a code alone: the spectators' have 8 characters
   const raw=$('jCode').value,lk=/#(join|watch)-([a-z0-9]+)/i.exec(raw),code=lk?lk[2].toLowerCase():cleanCode(raw);
   const w=asWatch||(lk?lk[1].toLowerCase()==='watch':code.length===8);
-  const nm=$('jName').value.trim().slice(0,24);if(nm)nickSet(nm);clientStart(code,nm||t('p2'),w);}
+  const nm=nmClean($('jName').value);if(nm)nickSet(nm);clientStart(code,w?nm:nm||t('p2'),w);if(w&&C.code)LS.set(K('p2p-watch'),{code:C.code,name:nm});}
 function exportCode(){const v=view,c=remaining();const p={size:v.size,...GAME.rules(v),tc:v.tc||null,first:v.first,names:v.names,moves:v.moves,clock:c,result:v.result,started:!!v.started};
   return GAME.codeTag+'.'+btoa(unescape(encodeURIComponent(JSON.stringify(p))));}
 function importCode(t){const tag=GAME.codeTag+'.';t=String(t||'').replace(/\s+/g,'');if(t.indexOf(tag)!==0)throw 0;
@@ -775,9 +795,11 @@ function init(){GAME.home();
   {const mm=/^#m([twv])-([a-z0-9]+)-(\d+)$/.exec(location.hash);if(mm&&mStart(mm[1],mm[2],+mm[3]))return;}
   const m=/^#(join|watch|host)-([a-z0-9]+)$/.exec(location.hash);if(!m)return;
   if(m[1]==='host'){if(saved&&saved.code===m[2]&&saved.game){hostStart(saved);return;}m[1]='join';}
-  $('jCode').value=m[2];
-  if(m[1]==='join'){invited(true);return;}
-  joinClick(m[1]==='watch');}
+  $('jCode').value=m[2];if(typeof Peer==='undefined'){status(t('noPeer'));return;}
+  // a player comes back to their game at once; on a first visit the name is asked over the board (known to the host: not asked)
+  if(m[1]==='join'){const back=!!(sg&&sg.code===m[2]);clientStart(m[2],back&&sg.name||nickGet()||t('p2'),false);if(!back)C.ask=true;return;}
+  const wr=LS.get(K('p2p-watch'),null);if(wr&&wr.code===m[2]){clientStart(m[2],wr.name||'',true);return;}
+  clientStart(m[2],'',true);nameOv('watch');}
 
 // ---------- Mochalunt matches (see mochalunt.html) ----------
 // A match: the same two players over the tables of the plan, one game each, played in order. Its record is kept on each
@@ -952,7 +974,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     ms.onchange=()=>{LS.set(K('mode'),ms.value);homeStep('play');};}
   $('loadForm').addEventListener('submit',e=>{e.preventDefault();const x=$('sgfFile').files&&$('sgfFile').files[0];if(!x){$('sgfErr').textContent=t('sgfNoFile');return;}
     x.text().then(txt=>{const er=sgfLoad(txt);$('sgfErr').textContent=er||'';});});
-  $('invOther').onclick=()=>{invited(false);setHash('');$('jCode').value='';};
+  $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
     if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);startAI(aiFirst(),GAME.form('a'));});}
   document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();

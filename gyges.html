@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gyges</title>
+<title>Gygès</title>
+<script src="common/theme.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=17">
+<link rel="stylesheet" href="common/games.css?v=19">
 <style>
 /* Gyges palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -34,7 +35,7 @@ html.nocoords{--board-ar:388/552}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gyges</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gygès</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -47,15 +48,12 @@ html.nocoords{--board-ar:388/552}
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
         <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
-          <h2 class="inv-only" data-i18n="invitedT">You are invited to a game</h2>
-          <p class="hint inv-only" data-i18n="invitedTxt">Choose the name your opponent will see, then click Play.</p>
           <form class="form" id="joinForm">
             <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
             <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
             <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
           </form>
           <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-          <p class="inv-only"><button type="button" class="linkish" id="invOther" data-i18n="invOther">Other choices</button></p>
         </details>
         <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
           <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="GYGES1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
@@ -118,16 +116,16 @@ html.nocoords{--board-ar:388/552}
 <main>
   <div class="boardwrap">
     <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
-    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-34 -96 408 573" role="img" aria-label="Gyges board"></svg></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="-34 -96 408 573" role="img" aria-label="Gygès board"></svg></div></div>
     <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
     <div class="notice" id="notice"></div>
+    <form class="nameov" id="nameOv" hidden><div class="card"><h2 id="nameOvT"></h2><p class="hint" id="nameOvTxt"></p><div class="form"><label for="nameOvIn"><span data-i18n="nick">Your name</span><input id="nameOvIn" maxlength="24" autocomplete="nickname" class="txt"></label></div><div class="confirm"><button type="submit" class="primary" id="nameOvGo"></button><button type="button" id="nameOvAnon" data-i18n="anon" hidden>Anonymous</button></div></div></form>
   </div>
   <aside class="side" id="side" tabindex="-1">
     <div class="players side-only" id="playersSide"></div>
     <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
     <div class="sidescroll" id="sideScroll">
     <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
-      <p class="hint" id="watchInfo"></p>
       <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
       <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
       <div id="linksBox" hidden>
@@ -155,6 +153,7 @@ html.nocoords{--board-ar:388/552}
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
+    <details id="watchBox" hidden><summary id="watchSum"></summary><ul class="wlist" id="watchList"></ul></details>
     <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
       <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
@@ -166,7 +165,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=28"></script>
+<script src="common/core.js?v=30"></script>
 <script>
 function GygesEngine(){
   // 6×6 board, cell i = row*6+col, row 0 at the top. Seat 0 sits at the bottom (home row 5) and aims at the goal above row 0;
@@ -379,7 +378,7 @@ const GY_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Gygès est un jeu de Claude Leroy (1985).</p>`
 },en:{
  mq_q:"Do you want to place the first piece, or let your opponent place it?",mq_1:"I place it",mq_2:"My opponent does",
- title:"Gyges",lede:"Neutral rings bounce their way to the opponent's goal.",pend_block:"Arrangement: {m}",firstIs:"Who starts (places the first piece)",advOpt:"Advanced rule (replacement)",setupOpt:"Setup",su_piece:"Piece by piece",su_simul:"Whole row, simultaneous",su_seq:"Whole row, in turn",suIn:"“{m}” in this game",sud_piece:"The players take turns placing one piece from their reserve on their row. P1 places the first; P2 places the last and makes the first move.",sud_simul:"Both players choose their starting positions at the same time. The pieces become visible once the board is validated. P1 starts.",sud_seq:"In order: P1 places their 6 pieces, they become visible to P2, P2 places their 6 pieces, P1 makes the first move.",st_block:"Arrange your 6 pieces: a piece from the reserve, then a square of your row. Click a placed piece to take it back.",st_blockSim:"Arrange your 6 pieces: a piece from the reserve, then a square of your row. Your opponent will only see them once both arrangements are validated.",st_simWait:"Arrangement validated. Waiting for your opponent…",st_simWatch:"Both players are arranging their pieces in secret.",st_blockOpp:"{n} is arranging their pieces.",hiddenBlock:"hidden arrangement",hiddenRow:"pieces hidden",validBlock:"Validate the arrangement",st_place:"Setup: pick a piece from your reserve, then an empty square of your row.",st_blockS:"Arrange your 6 pieces: a piece from the reserve, then a square of your row.",st_blockSimS:"Arrange your 6 pieces in secret: reserve piece, then a square of your row.",st_placeS:"Setup: a piece from the reserve, then a square of your row.",st_land:"Landing on a piece: bounce, or replace it?",st_bad:"The piece cannot stop there.",st_sel:"Choose where the piece goes, or click it to put it back.",st_bounce:"Bounce: play on, or click the piece to go back.",st_stuck:"No way on from this bounce: click the piece to go back.",bounce:"Bounce",replace:"Replace",st_drop:"Put the displaced piece on a highlighted empty square.",st_mustPass:"No move available: you must pass.",st_theyPass:"{n} has no move available and must pass.",w_goal:"a piece entered the opponent's goal",w_pass:"neither player can move",goalW:"goal",passW:"pass",advOn:"on in this game",advOff:"off in this game",rules:`<summary>Rules in brief</summary><ul>
+ title:"Gygès",lede:"Neutral rings bounce their way to the opponent's goal.",pend_block:"Arrangement: {m}",firstIs:"Who starts (places the first piece)",advOpt:"Advanced rule (replacement)",setupOpt:"Setup",su_piece:"Piece by piece",su_simul:"Whole row, simultaneous",su_seq:"Whole row, in turn",suIn:"“{m}” in this game",sud_piece:"The players take turns placing one piece from their reserve on their row. P1 places the first; P2 places the last and makes the first move.",sud_simul:"Both players choose their starting positions at the same time. The pieces become visible once the board is validated. P1 starts.",sud_seq:"In order: P1 places their 6 pieces, they become visible to P2, P2 places their 6 pieces, P1 makes the first move.",st_block:"Arrange your 6 pieces: a piece from the reserve, then a square of your row. Click a placed piece to take it back.",st_blockSim:"Arrange your 6 pieces: a piece from the reserve, then a square of your row. Your opponent will only see them once both arrangements are validated.",st_simWait:"Arrangement validated. Waiting for your opponent…",st_simWatch:"Both players are arranging their pieces in secret.",st_blockOpp:"{n} is arranging their pieces.",hiddenBlock:"hidden arrangement",hiddenRow:"pieces hidden",validBlock:"Validate the arrangement",st_place:"Setup: pick a piece from your reserve, then an empty square of your row.",st_blockS:"Arrange your 6 pieces: a piece from the reserve, then a square of your row.",st_blockSimS:"Arrange your 6 pieces in secret: reserve piece, then a square of your row.",st_placeS:"Setup: a piece from the reserve, then a square of your row.",st_land:"Landing on a piece: bounce, or replace it?",st_bad:"The piece cannot stop there.",st_sel:"Choose where the piece goes, or click it to put it back.",st_bounce:"Bounce: play on, or click the piece to go back.",st_stuck:"No way on from this bounce: click the piece to go back.",bounce:"Bounce",replace:"Replace",st_drop:"Put the displaced piece on a highlighted empty square.",st_mustPass:"No move available: you must pass.",st_theyPass:"{n} has no move available and must pass.",w_goal:"a piece entered the opponent's goal",w_pass:"neither player can move",goalW:"goal",passW:"pass",advOn:"on in this game",advOff:"off in this game",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: get a piece into the opponent's goal, the single square behind the opponent's back row.</li>
  <li><b>Pieces</b>: 12 neutral pieces that belong to nobody: 4 singles, 4 doubles, 4 triples (1, 2 or 3 rings). Each player gets 2 of each and places them on the 6 squares of their own row, as the chosen setup says.</li>
  <li><b>Setup</b> (<span class="setupState"></span>), chosen when the game is created; P1 is the player who starts. <i>Piece by piece</i>: one piece at a time, in turn, P1 first; P2 places the last and makes the first move; clicking the square places the piece, without confirmation. <i>Whole row, simultaneous</i>: both players choose their starting positions at the same time; the pieces become visible once the board is validated; P1 starts. <i>Whole row, in turn</i>: P1 places their 6 pieces, they become visible to P2, P2 places their 6 pieces, P1 makes the first move. With a whole row, pick a piece from the reserve, then a square of your row; click a placed piece to take it back; Reset clears the whole arrangement; Validate the arrangement sends it.</li>
@@ -392,7 +391,7 @@ const GY_I18N={fr:{
  <li><b>Playing</b>: click a playable piece (ringed), then the square where it stops, or the piece it bounces on, and so on, one click per bounce. Hovering a square reached directly shows the movement in transparency. Clicking the current position goes back one step; clicking an earlier step goes back to it. The move commands are in the bar under the board: Reset, Bounce, Replace, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once. The increment is added on each confirmed move; at zero, the game is lost on time. No clock runs during a simultaneous setup.</li></ul>
- <p class="hint" style="margin-top:.6em">Gyges was designed by Claude Leroy (1985).</p>`
+ <p class="hint" style="margin-top:.6em">Gygès was designed by Claude Leroy (1985).</p>`
 }};
 // ===== Gyges: the page's side of common/core.js =====
 const E=GygesEngine(),G=E.G;
