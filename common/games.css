@@ -228,3 +228,14 @@ h1 a.gname{color:inherit;text-decoration:none}
 /* the spectators, listed in their section of the side column */
 .wlist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:.88rem}
 .wlist .hint{font-size:.85rem}
+/* the chat (online games), in the side column: messages scroll in a box of their own, the field under them */
+.chatlist{list-style:none;margin:8px 0 0;padding:0 2px;max-height:180px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:3px;font-size:.88rem;overflow-wrap:anywhere}
+details .chatlist li{margin:0}
+.chatlist b{font-weight:700;color:var(--ink)}
+.chatlist li.w b{color:var(--muted);font-weight:600}
+.chatlist .hint{font-size:.85rem}
+#chatHint{margin:6px 0 0;font-size:.8rem}
+.chatform{display:flex;gap:6px;margin-top:8px}
+.chatform .txt{flex:1 1 auto;padding:6px 9px}
+.chatform button{flex:none}
+#chatName{margin-top:8px;width:100%}
