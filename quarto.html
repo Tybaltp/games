@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=20">
+<link rel="stylesheet" href="common/games.css?v=21">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
@@ -147,7 +147,7 @@
       <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
-    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button></details>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><div class="voice" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button></details>
     <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -172,7 +172,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=33"></script>
+<script src="common/core.js?v=34"></script>
 <script src="common/codes.js?v=2"></script>
 <script>
 // ===== Quarto: rules =====

@@ -239,3 +239,12 @@ details .chatlist li{margin:0}
 .chatform .txt{flex:1 1 auto;padding:6px 9px}
 .chatform button{flex:none}
 #chatName{margin-top:8px;width:100%}
+/* voice chat between the two players, at the top of the chat block */
+.voice{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.voice .hint{margin:0;font-size:.85rem}
+.voice .confirm{justify-content:flex-start}
+.voicectl{display:flex;align-items:center;gap:8px}
+.voicectl input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
+#voiceMute{flex:none;padding:5px 10px;line-height:1}#voiceMute.on{border-color:var(--danger);color:var(--danger)}
+#voiceHang{flex:none}
+.player .vmic{margin-left:.35em;font-size:.85em}
