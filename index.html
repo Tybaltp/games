@@ -28,6 +28,12 @@ details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;back
 details.how summary{cursor:pointer;font-weight:600}
 details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
 details.how li{margin:.35em 0}
+/* a code received: straight to its game, as a player (6 characters) or a spectator (8) */
+.code{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;max-width:42rem}
+.code label{font-weight:600;font-size:.95rem}
+.code input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:9.5em;min-width:0;letter-spacing:.04em}
+.code button{font:inherit;font-size:.9rem;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer}
+.code .err{flex-basis:100%;margin:0;font-size:.88rem;color:var(--accent)}
 details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
 </style>
 </head>
@@ -35,6 +41,7 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <main>
 <header><div><h1 data-i18n="title">Jeux</h1><p class="lede" data-i18n="lede"></p></div>
 <div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<form class="code" id="codeForm"><label for="codeIn" data-i18n="codeL"></label><input id="codeIn" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="k7m2qp"><button type="submit" data-i18n="codeGo"></button><p class="err" id="codeErr" hidden></p></form>
 <details class="how"><summary data-i18n="howT"></summary>
   <ul>
     <li data-i18n-html="how0"></li>
@@ -57,9 +64,11 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <li><a class="gc c-quarto" href="quarto.html"><span class="ct">Quarto</span><span class="bar"></span><span class="art"></span></a></li>
 </ul>
 </main>
+<script src="common/codes.js?v=1"></script>
 <script>
 const I18N={
  fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
+     codeL:"Vous avez reçu un code ?",codeGo:"Rejoindre",codeBad:"Ce code ne mène à aucun jeu. Ouvrez la page du jeu et saisissez-le sous « J'ai un code d'invitation ».",
      howT:"Comment ça marche ?",
      how0:"<b>Quatre façons de jouer.</b> Inviter quelqu'un par un lien, affronter l'ordinateur (Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz), jouer face à face sur le même appareil, ou en mode libre pour essayer et analyser, avec annulation et suggestions.",
      how1:"<b>Pas d'hébergement.</b> Il n'y a pas de serveur de jeu : la partie tourne dans le navigateur de celui qui la crée. Un service public (PeerJS) sert seulement à mettre les deux navigateurs en relation grâce au code.",
@@ -68,6 +77,7 @@ const I18N={
      how4:"<b>En dernier recours</b>, un code de reprise, copié pendant la partie, permet de la relancer depuis la page d'accueil du jeu.",
      warn:"<b>Important :</b> ne fermez pas l'onglet et ne quittez pas le navigateur pendant une partie. C'est votre navigateur qui la fait vivre. Sur téléphone, évitez de rester longtemps dans une autre application."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
+     codeL:"Received a code?",codeGo:"Join",codeBad:"This code leads to no game. Open the game's page and enter it under “I have an invitation code”.",
      howT:"How does it work?",
      how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer (Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz), play face to face on the same device, or in free mode to try things and analyse, with undo and hints.",
      how1:"<b>No hosting.</b> There is no game server: the game runs in the browser of whoever creates it. A public service (PeerJS) is only used to put the two browsers in touch through the code.",
@@ -82,6 +92,9 @@ function apply(){document.documentElement.lang=lang;document.title=I18N[lang].ti
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));}
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));localStorage.setItem('pente-lang',lang);}catch(e){}apply();});
 apply();
+// a code (or a whole invitation link): to its game's page, which connects at once (common/codes.js)
+document.getElementById('codeForm').onsubmit=e=>{e.preventDefault();const v=document.getElementById('codeIn').value,to=codeTarget(v),er=document.getElementById('codeErr');
+  er.hidden=!!to||!v.trim();er.textContent=I18N[lang].codeBad;if(to)location.href=to;};
 </script>
 </body>
 </html>

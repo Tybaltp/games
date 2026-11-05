@@ -235,6 +235,8 @@ function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;
   if(want&&!g.paused){if(g.running&&!r.over){const tt=r.st.turn;g.clock[tt]=Math.max(0,g.clock[tt]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
   else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
 const PID=c=>GAME.id+'-p2p-'+c;
+// a new game's codes begin with the game's letter (common/codes.js), so that the home page knows which page opens them
+const newCode=n=>{const l=typeof CODE_GAMES==='object'?Object.keys(CODE_GAMES).find(k=>CODE_GAMES[k].id===GAME.id):'';return l?l+rnd(n-1):rnd(n);};
 const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+MATCH.code+'-'+MTK;   // a match table keeps its own address
   try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
@@ -255,7 +257,7 @@ function hostWatchPeer(){wpeerStop();if(!H.wcode)return;const wp=newPeer(PID(H.w
   wp.on('error',()=>{});}
 function hostStart(saved){role='host';H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
   if(saved){Object.assign(H,{code:saved.code,wcode:saved.wcode,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
-  if(!H.wcode)H.wcode=rnd(8);
+  if(!H.wcode)H.wcode=newCode(8);
   H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);Object.assign(g0,GAME.rules(g0));
   if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
   mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
@@ -272,7 +274,7 @@ function becomeClient(){const pub={...hostPublic(),myHold:myHoldOf(mySeat)},code
   clientStart(code,nm,false);role='guest';mySeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
 function becomeHost(){if(!view)return;if(C.pending){pendClear();delete view.runSeat;}LS.del(K('p2p-guest'));C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
   const rem=remaining(),v=view;
-  H.code=C.code;H.wcode=v.wcode||rnd(8);H.guestCid=null;H.game={size:v.size,...GAME.rules(v),hold:v.myHold&&!v.moves.length?(mySeat===0?[v.myHold,null]:[null,v.myHold]):null,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
+  H.code=C.code;H.wcode=v.wcode||newCode(8);H.guestCid=null;H.game={size:v.size,...GAME.rules(v),hold:v.myHold&&!v.moves.length?(mySeat===0?[v.myHold,null]:[null,v.myHold]):null,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
     ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0,match:v.match?{...v.match}:null};
   if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
   H.turnStart=Date.now();hostStart(null);}
@@ -708,7 +710,7 @@ function importCode(t){const tag=GAME.codeTag+'.';t=String(t||'').replace(/\s+/g
   const p=JSON.parse(decodeURIComponent(escape(atob(t.slice(tag.length)))));if(!p||!Array.isArray(p.moves)||!Array.isArray(p.clock)||!Array.isArray(p.names))throw 0;const rr=GAME.rules(p);p.size=GAME.size;Object.assign(p,rr);return p;}
 function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));return;}
   const th=[null,null];th[seat]=hh(MYID);
-  Object.assign(H,{code:rnd(6),wcode:rnd(8),guestCid:null,game:{size:GAME.size,...GAME.rules(p),hold:null,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
+  Object.assign(H,{code:newCode(6),wcode:newCode(8),guestCid:null,game:{size:GAME.size,...GAME.rules(p),hold:null,tc:p.tc||null,first:p.first,names:p.names.slice(),moves:p.moves.slice(),clock:p.clock.slice(),running:!!p.started,result:p.result||null,
     started:!!p.started,ready:[!!p.started,!!p.started],th,paused:!!p.started&&!p.result,ver:0}});H.turnStart=Date.now();hostStart(null);}
 // ---------- SGF: export of the game shown, reading of a file (read only) ----------
 // The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XR[rules, JSON] ;B[…];W[…]…). B and W are
@@ -986,7 +988,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     const fv=$('cFirst').value,first=fv==='me'?'host':fv==='opp'?'guest':(Math.random()<.5?'host':'guest');const tcx=TCS.find(x=>x.id===$('cTc').value)||TCS[0];LS.set(K('tc'),tcx.id);const tc=tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc};
     const names=first==='host'?[nm,'']:['',nm];
     const th=[null,null];th[first==='host'?0:1]=hh(MYID);
-    Object.assign(H,{code:rnd(6),wcode:rnd(8),guestCid:null,game:{size:GAME.size,...GAME.form('c'),hold:null,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
+    Object.assign(H,{code:newCode(6),wcode:newCode(8),guestCid:null,game:{size:GAME.size,...GAME.form('c'),hold:null,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
     H.turnStart=Date.now();hostStart(null);});
   $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
   $('jWatch').onclick=()=>joinClick(true);
