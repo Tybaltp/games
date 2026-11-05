@@ -206,11 +206,12 @@ function TintasEngine(){
   function ray(s,d){let x=s.pawn;for(;;){x=NB[x*6+d];if(x<0)return -1;if(s.b[x]>=0)return x;}}
   function lineTargets(s){if(s.pawn<0)return [];const o=[];for(let d=0;d<6;d++){const x=ray(s,d);if(x>=0)o.push(x);}return o;}
   function occupied(s){const o=[];for(let i=0;i<N;i++)if(s.b[i]>=0)o.push(i);return o;}
-  // Win: 7 pieces of one colour at once; otherwise, once every colour has been taken by both players (no one can complete
-  // a colour any more), the player with at least 4 pieces in at least 4 colours.
+  // Win: 7 pieces of one colour at once; otherwise the player with at least 4 pieces in at least 4 colours, as soon as the
+  // opponent can no longer complete a colour (the player holds a piece of each). The rules play on until no one can
+  // complete one, but the result is then certain: the opponent can neither take 7 of a colour nor have 4 in 4 colours
+  // (at most 3 in the player's four), and the player wins either way.
   function outcome(s){for(const p of [0,1])if(s.cap[p].some(x=>x>=K))return {w:p,why:'w_seven'};
-    for(let c=0;c<K;c++)if(!s.cap[0][c]||!s.cap[1][c])return null;
-    for(const p of [0,1])if(s.cap[p].filter(x=>x>=4).length>=4)return {w:p,why:'w_major'};
+    for(const p of [0,1])if(s.cap[p].every(x=>x>0)&&s.cap[p].filter(x=>x>=4).length>=4)return {w:p,why:'w_major'};
     return null;}
   const locked=s=>{for(let c=0;c<K;c++)if(!s.cap[0][c]||!s.cap[1][c])return false;return true;};
   // Turn context: s = position after the captures made so far this turn, n = their number, first = colour of the first one,
@@ -244,7 +245,7 @@ const TI_I18N={fr:{
  <li><b>Premier coup</b> : posez le pion sur n'importe quelle pièce et prenez-la. Le tour s'arrête là.</li>
  <li><b>Tour normal</b> : poussez le pion en ligne droite dans l'une des 6 directions, par-dessus les cases vides, jusqu'à la première pièce ; prenez-la, le pion reste sur sa case. Vous pouvez enchaîner, dans n'importe quelle direction, tant que vous prenez des pièces de la même couleur que la première de ce tour ; arrêtez-vous quand vous voulez. Au moins une prise par tour.</li>
  <li><b>Saut</b> : si aucune pièce n'est en ligne avec le pion, posez-le sur la pièce de votre choix et prenez-la ; le tour s'arrête.</li>
- <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Quand chaque couleur a été prise au moins une fois par chacun, plus personne ne peut en compléter une : gagne alors celui qui a au moins 4 pièces dans au moins 4 couleurs (on continue tant que personne ne les a).</li>
+ <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Sinon, gagne celui qui a au moins 4 pièces dans au moins 4 couleurs, dès que l'adversaire ne peut plus compléter de couleur (il en a pris au moins une de chacune) : l'issue est alors certaine. Sans cela, on continue.</li>
  <li><b>Cartes joueurs</b> : pièces prises par couleur ; encadré = 4 ou plus (majorité), plein = 7.</li>
  <li><b>Jouer</b> : cliquez une pièce que le pion peut atteindre (au survol, elle s'affiche en transparence) : le pion s'y pousse et la prend. Tant qu'une pièce de la même couleur est atteignable, continuez, ou cliquez Terminer le tour ; un tour qui s'arrête de lui-même après plusieurs prises attend Confirmer. Cliquer la dernière pièce prise la rend. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
@@ -264,7 +265,7 @@ const TI_I18N={fr:{
  <li><b>First move</b>: put the pawn on any piece and take that piece. Your turn ends.</li>
  <li><b>Normal turn</b>: push the pawn in a straight line in one of the 6 directions, over empty cells, up to the first piece; take it, the pawn stays on its cell. You may go on, in any direction, as long as you take pieces of the same colour as the first one of this turn; stop whenever you like. At least one capture per turn.</li>
  <li><b>Jump</b>: if no piece is in line with the pawn, put it on any piece you like and take it; your turn ends.</li>
- <li><b>Winning</b>: all 7 pieces of one colour win at once. Once every colour has been taken at least once by each player, no one can complete a colour any more: the player with at least 4 pieces in at least 4 colours then wins (play goes on until someone has them).</li>
+ <li><b>Winning</b>: all 7 pieces of one colour win at once. Otherwise, a player with at least 4 pieces in at least 4 colours wins as soon as the opponent can no longer complete a colour (the player has taken at least one of each): the result is then certain. Until then, play goes on.</li>
  <li><b>Player cards</b>: pieces taken per colour; outlined = 4 or more (majority), filled = 7.</li>
  <li><b>Playing</b>: click a piece the pawn can reach (hovering shows it in transparency): the pawn is pushed onto it and takes it. As long as a piece of the same colour can be reached, go on, or click End turn; a turn that ends by itself after several captures waits for Confirm. Clicking the last piece taken puts it back. The turn's commands are in the bar under the board: Reset, End turn, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
