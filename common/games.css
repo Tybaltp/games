@@ -228,21 +228,26 @@ h1 a.gname{color:inherit;text-decoration:none}
 /* the spectators, listed in their section of the side column */
 .wlist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:.88rem}
 .wlist .hint{font-size:.85rem}
-/* the chat (online games), in the side column: messages scroll in a box of their own, the field under them */
-.chatlist{list-style:none;margin:8px 0 0;padding:0 2px;max-height:180px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:3px;font-size:.88rem;overflow-wrap:anywhere}
+/* the chat (online games), in the side column: a framed area of its own (kept even when empty, so one sees where the
+   messages and the game's log go), the field under it; each name in its own colour (--nh, a hue), then « : » */
+.chatlist{list-style:none;margin:8px 0 0;padding:6px 8px;min-height:7.5em;max-height:200px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:3px;font-size:.88rem;overflow-wrap:anywhere;
+  background:var(--bg);border:1px solid var(--line);border-radius:8px}
 details .chatlist li{margin:0}
-.chatlist b{font-weight:700;color:var(--ink)}
-.chatlist li.w b{color:var(--muted);font-weight:600}
+.chatlist .nm{font-weight:700;color:hsl(var(--nh,210) 62% 36%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chatlist .nm{color:hsl(var(--nh,210) 75% 72%)}}
+:root[data-theme="dark"] .chatlist .nm{color:hsl(var(--nh,210) 75% 72%)}
+.chatlist .obs{color:var(--muted);font-size:.85em}
+.chatlist li.log{color:var(--muted);font-style:italic;font-size:.82rem}
 .chatlist .hint{font-size:.85rem}
 #chatHint{margin:6px 0 0;font-size:.8rem}
 .chatform{display:flex;gap:6px;margin-top:8px}
 .chatform .txt{flex:1 1 auto;padding:6px 9px}
 .chatform button{flex:none}
 #chatName{margin-top:8px;width:100%}
-/* voice chat between the two players, at the top of the chat block */
-.voice{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.voice .hint{margin:0;font-size:.85rem}
-.voice .confirm{justify-content:flex-start}
+/* voice chat between the two players: a section of its own, under the chat */
+.voicein{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.voicein .hint{margin:0;font-size:.85rem}
+.voicein .confirm{justify-content:flex-start}
 .voicectl{display:flex;align-items:center;gap:8px}
 .voicectl input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
 #voiceMute{flex:none;padding:5px 10px;line-height:1}#voiceMute.on{border-color:var(--danger);color:var(--danger)}
