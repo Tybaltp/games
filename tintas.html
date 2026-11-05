@@ -232,6 +232,7 @@ function TintasEngine(){
 const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
+ lv_n0:"0 (au hasard)",lv_n1:"1",lv_n2:"2",lv_n3:"3",lv_n4:"4",lv_n5:"5",lv_n6:"6",lv_n7:"7",lv_n8:"8",lv_n9:"9",lv_n10:"10",lv_n11:"11 (le plus fort)",m_aiTxt:"Douze niveaux, de 0 (au hasard) à 11, pour s'entraîner.",
  title:"Tintas",lede:"Un pion commun, sept couleurs : collectionnez-en une.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
@@ -252,6 +253,7 @@ const TI_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
+ lv_n0:"0 (random)",lv_n1:"1",lv_n2:"2",lv_n3:"3",lv_n4:"4",lv_n5:"5",lv_n6:"6",lv_n7:"7",lv_n8:"8",lv_n9:"9",lv_n10:"10",lv_n11:"11 (strongest)",m_aiTxt:"Twelve levels, from 0 (random) to 11, to practise.",
  title:"Tintas",lede:"One shared pawn, seven colours: collect a full set.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
@@ -491,31 +493,66 @@ function playout(S,o){const cut=o.cut||0,rnd=o.rand||0,nz=o.nz===undefined?.15:o
         if(!m||(stp&&Math.random()<stp))break;take(S,PT[(Math.random()*m)|0],p);}}
     S[TM]=1-p;}
   return t;}
+// ----- the low levels: random turns, or alpha-beta on the distance to a win -----
+// dist(S,p): the fewest pieces p still needs, for 7 of a colour the opponent has none of, or for 4 colours at 4+ where the
+// opponent has fewer than 4 plus one piece of each colour p has none of yet (approximate); 99 when neither is possible
+function dist(S,p){const q=1-p;let seven=99,zero=0,dead=false;const need=[];
+  for(let c=0;c<K;c++){const a=S[CAP+K*p+c],b=S[CAP+K*q+c];if(b===0&&7-a<seven)seven=7-a;if(b<4)need.push(a>=4?0:4-a);
+    if(a===0){zero++;if(b===7)dead=true;}}
+  let maj=99;if(need.length>=4&&!dead){need.sort((x,y)=>x-y);let z=zero;for(let k=0;k<4;k++)if(need[k]===4)z--;
+    maj=need[0]+need[1]+need[2]+need[3]+Math.max(0,z);}
+  return Math.min(seven,maj);}
+let abN=0;
+function nega(S,d,al,be){const p=S[TM];if(S[WN]>=0)return result(S,p);if(d===0)return dist(S,1-p)-dist(S,p);
+  abN++;const C=gen(S);let best=-1e9;
+  for(const x of C){const v=-nega(play(S,x.m),d-1,-be,-al);if(v>best){best=v;if(v>al){al=v;if(al>=be)break;}}}
+  return best;}
+// o.depth turns read; the exact value of every root turn within o.margin (default max(.5, 6·temp)) of the best, then one
+// drawn by exp((v−best)/temp) (temp 0: one of the best, at random). Score for tiEvalInfo: a win ±5, else 0.3 per piece.
+function ab(S,C,o){const T=o.temp||0,mg=o.margin!==undefined?o.margin:Math.max(.5,6*T),vals=[];let best=-1e9;abN=0;
+  for(const x of C){const v=-nega(play(S,x.m),o.depth-1,-1e9,-(best-mg));vals.push(v);if(v>best)best=v;}
+  const w=vals.map(v=>v<best-mg-1e-9?0:T>0?Math.exp((v-best)/T):(v>=best-1e-9?1:0));let tot=0;for(const x of w)tot+=x;
+  let r=Math.random()*tot,k=vals.indexOf(best);for(let i=0;i<C.length;i++){r-=w[i];if(w[i]>0&&r<=0){k=i;break;}}
+  const v=vals[k];return {m:C[k].m,s:v>500?5:v<-500?-5:Math.max(-2.5,Math.min(2.5,.3*v)),depth:o.depth,nodes:abN};}
+function rnd(S,C){return {m:C[(Math.random()*C.length)|0].m,s:0,depth:0,nodes:0};}
 // ----- the searches, on Tintas' interface -----
 const PS=new Int8Array(LEN);
 const KS=AISearch({moves:gen,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,
   playout,scratch:S=>{PS.set(S);return PS;}});
 function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
   KS.start(opt.time);const C=gen(S);if(!C.length)return null;let r;
-  if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};else r=KS[opt.algo](S,C,opt);
-  return {move:dec(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:KS.nodes()};}
-return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,K:KS,LEN,
+  if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
+  else r=opt.algo==='ab'?ab(S,C,opt):opt.algo==='random'?rnd(S,C):KS[opt.algo](S,C,opt);
+  return {move:dec(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.nodes!==undefined?r.nodes:KS.nodes()};}
+return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dist,K:KS,LEN,
   setEV:o=>{EV={...EV,...o};mkV();},EV:()=>EV};
 }
 /*AIEND*/
-// Levels: plain parameters for TintasAI().search (tune or add levels here). algo: 'mcts' UCT with short playouts (see
-// common/ai.js) · 'greedy' one ply (a softmax over the turns: pick, temp) and 'beam' work too, but lost to mcts.
-// mcts: sims, playouts (time is only a cap, so the strength does not depend on the machine) · time, the cap (ms) ·
-// cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration · scale, evaluation
-// points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout turns whose colour
-// is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening · temp (default 0),
-// final choice by visits^(1/temp).
+// Levels: plain parameters for TintasAI().search. Twelve steps, each winning about 70-78 % of its games against the one
+// below and 82-92 % against the one two below (400 games per pair, same boards both ways, first player alternated;
+// tournaments and tool: Dropbox outils/tintas_niveaux, 05.11.2026). algo: 'random' · 'ab' alpha-beta on the distance to a
+// win (depth in turns; temp, a softmax over the root turns, fills the gaps between depths) · 'mcts' UCT with short
+// playouts (see common/ai.js): sims (time is only a cap, so the strength does not depend on the machine) · time, the cap
+// (ms) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration · scale,
+// evaluation points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout turns whose
+// colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening · temp
+// (default 0), final choice by visits^(1/temp). The former levels sit at about n6 (Débutant, 300 sims) and n8 (Moyen,
+// 2000); the hints keep the former Fort (100000).
+const MC={algo:'mcts',time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
 const LEVELS={
-  debutant:{algo:'mcts',sims:300,time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1,temp:.5},
-  moyen:{algo:'mcts',sims:2000,time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1},
-  // MCTS beat the iterative-deepening alpha-beta (beam) 83 % at equal time (~0.4 s), so Fort is MCTS
-  fort:{algo:'mcts',sims:100000,time:2500,cellsIn:16,c:.4,scale:.7,cut:4,rand:1}};
-const HINT=LEVELS.fort;
+  n0:{algo:'random'},
+  n1:{algo:'ab',depth:1,temp:2},
+  n2:{algo:'ab',depth:1},
+  n3:{algo:'ab',depth:2,temp:.9},
+  n4:{algo:'ab',depth:2},
+  n5:{algo:'ab',depth:4},
+  n6:{...MC,sims:150},
+  n7:{...MC,sims:500},
+  n8:{...MC,sims:1500},
+  n9:{...MC,sims:5000},
+  n10:{...MC,sims:15000},
+  n11:{...MC,sims:50000,time:2500}};
+const HINT={...MC,sims:100000,time:2500};
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: its score is a logit (×scale) of its winning chances, or a sure result
@@ -530,7 +567,7 @@ const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   enc:encT,describe:txtOf,newUi,preparing,cancel:cancelPrep,
   board:tiBoard,turnStatus:tiTurnStatus,
   pendText:()=>[t('t_pending'),t('confirmTurn')],
-  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  levels:LEVELS,levelDefault:'n4',hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+TintasEngine.toString()+'\n'+TintasAI.toString()+'\nconst TA=TintasAI(TintasEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TintasAI(E)).search(aiPos(st),opt),
   evalInfo:tiEvalInfo,
