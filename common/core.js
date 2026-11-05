@@ -236,7 +236,7 @@ function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;
   else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
 const PID=c=>GAME.id+'-p2p-'+c;
 // a new game's codes begin with the game's letter (common/codes.js), so that the home page knows which page opens them
-const newCode=n=>{const l=typeof CODE_GAMES==='object'?Object.keys(CODE_GAMES).find(k=>CODE_GAMES[k].id===GAME.id):'';return l?l+rnd(n-1):rnd(n);};
+const newCode=n=>Object.keys(CODE_GAMES).find(k=>CODE_GAMES[k].id===GAME.id)+rnd(n-1);
 const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+MATCH.code+'-'+MTK;   // a match table keeps its own address
   try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
