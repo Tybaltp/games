@@ -659,7 +659,8 @@ function layoutMode(){const w=isWide();chatDock(w);document.documentElement.clas
 // (GAME.ownLayout) are left alone.
 function lockBoard(){const ba=document.querySelector('.boardwrap .boardarea'),bw=ba&&ba.parentNode,n=$('notice'),cb=$('chatBox'),R=document.documentElement;
   if(!ba||!n||typeof getComputedStyle!=='function')return;
-  if(GAME.ownLayout||isWide()||$('game').hidden||n.parentNode!==bw||!bw.clientHeight){if(ba.style.height){ba.style.height='';ba.style.flex='';}R.classList.remove('pchat');chatMode();return;}
+  if(GAME.ownLayout){chatMode();return;}   // (the page sets the board's area and html.pchat itself)
+  if(isWide()||$('game').hidden||n.parentNode!==bw||!bw.clientHeight){if(ba.style.height){ba.style.height='';ba.style.flex='';}R.classList.remove('pchat');chatMode();return;}
   const gap=parseFloat(getComputedStyle(bw).rowGap)||0,max=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--barMax'))||112;
   let h=bw.clientHeight-max,k=0;
   for(const c of bw.children){if(c===ba||c===cb||c.hidden||getComputedStyle(c).display==='none'||getComputedStyle(c).position==='absolute')continue;k++;if(c!==n)h-=c.offsetHeight;}

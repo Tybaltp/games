@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=33">
+<link rel="stylesheet" href="common/games.css?v=34">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -221,7 +221,7 @@ html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop 
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=49"></script>
+<script src="common/core.js?v=50"></script>
 <script src="common/codes.js?v=2"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
@@ -434,15 +434,19 @@ const myColour=()=>view&&mySeat>=0?E.colorOf(replay(view,view.moves,view.result)
 const sideOf=k=>{const o=E.P[k].wide;return Math.max(3,1+Math.max(...o.map(x=>x[0])),1+Math.max(...o.map(x=>x[1])))+1;};
 const ORDER=E.P.map((_,k)=>k).sort((a,b)=>sideOf(b)-sideOf(a)||a-b);
 // Height of a full reserve at the tray's width for a cell size (measured on a hidden copy, cached), and its number of rows
+// Phones in portrait, a network game (the chat under the board): the pieces closer, without the cell of margin, at the
+// cell size they would have with it; the height saved goes to the chat
+const tight=()=>!isWide()&&typeof chatNet==='function'&&chatNet()&&!!$('chatBox')&&!$('chatBox').hidden;
+const slotN=(k,tg)=>sideOf(k)-(tg?1:0);
 const fit={};
-function fullTray(box,cell){const w=box.clientWidth,key=w+'/'+cell;if(fit[key])return fit[key];
+function fullTray(box,cell,tg){const w=box.clientWidth,key=w+'/'+cell+'/'+(tg?1:0);if(fit[key])return fit[key];
   const t=document.createElement('div');t.className=box.className;t.style.cssText=`position:absolute;visibility:hidden;width:${w}px`;t.style.setProperty('--cell',cell+'px');
-  for(const k of ORDER){const e=document.createElement('span');e.className='slot';e.style.setProperty('--n',sideOf(k));t.appendChild(e);}
+  for(const k of ORDER){const e=document.createElement('span');e.className='slot';e.style.setProperty('--n',slotN(k,tg));t.appendChild(e);}
   box.parentNode.appendChild(t);const h=t.offsetHeight,rows=new Set([...t.children].map(e=>Math.round(e.offsetTop+e.offsetHeight/2))).size;t.remove();   // a row's squares share their centre
   return fit[key]={h,rows};}
-function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);
+function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);const tg=tight();
   for(const k of ORDER){const p=E.P[k];if(st.used[c]>>k&1)continue;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
-    const o=sel&&ui.cur?ui.cur:oriOf(c,k),n=sideOf(k);b.className='slot'+(sel?' sel':'');b.style.setProperty('--n',n);
+    const o=sel&&ui.cur?ui.cur:oriOf(c,k),n=slotN(k,tg);b.className='slot'+(sel?' sel':'');b.dataset.k=k;b.style.setProperty('--n',n);
     b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live;b.appendChild(miniSvg(o,c,n,n));
     // a piece placed but not confirmed is taken off the board when another one (or none) is picked
     if(live)b.onclick=()=>{ui.pending=null;ui.hover=-1;selectPiece(k===ui.piece?-1:k);};box.appendChild(b);}}
@@ -475,27 +479,38 @@ function placeBand(){const ob=$('oppBlock'),mb=$('myBlock'),ow=$('oppWrap'),mw=$
 function holdHeights(w){const pairs=[['oppWrap','oppBlock','oppTray'],['myWrap','myBlock','myTray']].map(([a,b,c])=>[$(a),$(b),$(c)]);
   if(pairs.some(([W_,B,T])=>!W_||!T.clientWidth))return;
   // a block's height for a cell size: its frame and action bar (if inside), plus the taller of the card and the full reserve
-  const blockH=(B,T,cell)=>{const pr=B.querySelector('.prow'),inf=B.querySelector('.pinfo');return B.offsetHeight-pr.offsetHeight+Math.max(inf.offsetHeight,fullTray(T,cell).h);};
-  let cell=16;
+  const blockH=(B,T,cell,tg)=>{const pr=B.querySelector('.prow'),inf=B.querySelector('.pinfo');return B.offsetHeight-pr.offsetHeight+Math.max(inf.offsetHeight,fullTray(T,cell,tg).h);};
+  let cell=16,on=false;const tg=!w&&tight(),bw=document.querySelector('.boardwrap'),ba=bw&&bw.querySelector('.boardarea'),cb=$('chatBox');
   if(w){for(;cell>6;cell-=.5)if(pairs.every(([,,T])=>fullTray(T,cell).rows<=3))break;}
-  else{const bw=document.querySelector('.boardwrap'),ba=bw.querySelector('.boardarea'),A=bw.clientHeight,gap=parseFloat(getComputedStyle(bw).rowGap)||8;
-    const vis=[...bw.children].filter(e=>!e.hidden&&e.offsetHeight+e.offsetWidth>0&&e!==ba),sep=solo()?$('notice').offsetHeight:0;
+  else{const A=bw.clientHeight,gap=parseFloat(getComputedStyle(bw).rowGap)||8;
+    const vis=[...bw.children].filter(e=>!e.hidden&&e!==ba&&e!==cb&&e.offsetHeight+e.offsetWidth>0),sep=solo()?$('notice').offsetHeight:0;
     const room=A-Math.min(.5*A,ba.clientWidth)-gap*vis.length-sep;
-    for(;cell>5;cell-=.5)if(pairs.reduce((s,[,B,T])=>s+blockH(B,T,cell),0)<=room)break;}
+    for(;cell>5;cell-=.5)if(pairs.reduce((s,[,B,T])=>s+blockH(B,T,cell),0)<=room)break;
+    // the chat: the board's area keeps the height it has with the pieces spaced out, the chat takes what the closer
+    // pieces leave (one line at least; « 💬 » in the header otherwise)
+    if(tg){const others=vis.filter(e=>!pairs.some(([W_])=>W_===e)).reduce((s,e)=>s+e.getBoundingClientRect().height,0),
+        old=pairs.reduce((s,[,B,T])=>s+blockH(B,T,cell),0),now=pairs.reduce((s,[,B,T])=>s+blockH(B,T,cell,true),0),
+        hb=bw.getBoundingClientRect().height-gap*vis.length-others-old;
+      if(old-now-gap>=CHAT_LINE&&hb>0){on=true;const px=hb+'px';if(ba.style.height!==px){ba.style.flex='none';ba.style.height=px;}}}}
+  if(!on&&ba&&ba.style.height){ba.style.height='';ba.style.flex='';}
   for(const [W_,B,T] of pairs){if(B.style.getPropertyValue('--cell')!==cell+'px')B.style.setProperty('--cell',cell+'px');
-    W_.style.minHeight=w?'':blockH(B,T,cell)+'px';}}
+    for(const e of T.children){const n=String(slotN(+e.dataset.k,tg));if(e.style.getPropertyValue('--n')!==n)e.style.setProperty('--n',n);}   // (the trays drawn before the chat showed)
+    W_.style.minHeight=w?'':blockH(B,T,cell,tg)+'px';}
+  dbChat(on);}
+// html.pchat (core: the chat under the board, its look from its height) is this page's to set
+function dbChat(on){const R=document.documentElement;if(R.classList.contains('pchat')!==on){R.classList.toggle('pchat',on);}if(typeof chatMode==='function')chatMode();}
 // The two reserves, pieces left only: the opponent's (read only) and mine; a spectator sees the side to move as « mine ».
 // Both sides on one screen (free play, face to face): the blocks stay put, Player 2 above and Player 1 below, and the
 // pieces are picked in the block of the side to move.
 const seatsShown=r=>{if(solo())return {top:1,bot:0};const bot=mySeat>=0?mySeat:r.st.turn;return {top:1-bot,bot};};
 function renderTrays(st,live){const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
-  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,$('myTray').clientWidth,ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
+  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,$('myTray').clientWidth,tight(),ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
   if(key===trayKey)return;trayKey=key;
   fillTray($('oppTray'),st,E.colorOf(st,top),mySeat===top&&live);fillTray($('myTray'),st,E.colorOf(st,bot),mySeat===bot&&live);}
 // After core's render: the players' cards go into the blocks (opponent above, player below), the action bar into mine
 // (both sides on one screen: in a frame of its own under the blocks); phones: the opponent's block above the board, mine
 // under it; wide screens: both at the top of the side panel
-function placeBlocks(){if(!view||$('game').hidden)return;if(BAND&&isWide()){placeBand();return;}
+function placeBlocks(){if(!view||$('game').hidden){dbChat(false);return;}if(BAND&&isWide()){const ba=document.querySelector('.boardwrap .boardarea');if(ba&&ba.style.height){ba.style.height='';ba.style.flex='';}dbChat(false);placeBand();return;}
   {const col=$('dbSide');if(col)col.replaceWith(...col.childNodes);const row=$('dbRow');if(row)row.replaceWith(...row.childNodes);}   // back from the band layout: the reserves and the board out of the row
   const ob=$('oppBlock'),mb=$('myBlock'),n=$('notice'),w=isWide();
   if(!ob||!mb||!n||!ob.querySelector||!ob.querySelector('.pinfo'))return;   // (the test harness's minimal DOM)

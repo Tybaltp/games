@@ -314,6 +314,14 @@ html.ingame:not(.wide) .chatbtn:not([hidden]){display:inline-block}
 html.ingame:not(.wide) .boardwrap > #chatBox{display:none}
 html.ingame.pchat:not(.wide) .boardwrap > #chatBox:not([hidden]){display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow:hidden;margin:0;padding:0;border:0;border-radius:0;background:none;cursor:pointer}
 html.ingame:not(.wide) .boardwrap > #chatBox > :where(summary,.wline,#chatHint,.voicein,.chatgrip){display:none}
+/* its title on the frame of the messages, like a legend (7 px of the chat's height) */
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox:not([hidden]){position:relative;padding-top:7px}
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox:not([data-cm="none"]) > summary{display:block;position:absolute;top:1px;left:10px;z-index:1;list-style:none;margin:0;padding:0 5px;font-size:.7rem;line-height:12px;font-weight:600;color:var(--muted);background:var(--bg);pointer-events:none}
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox > summary::-webkit-details-marker{display:none}
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox[data-cm="line"]{padding-top:6px}
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox[data-cm="line"] > summary{top:0}
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox[data-cm="line"] .chatlist{padding-block:2px;line-height:1.2}
+html.ingame.pchat:not(.wide):not(.chatup) .boardwrap > #chatBox[data-cm="full"] .chatlist{padding-top:9px;-webkit-mask-image:linear-gradient(transparent 7px,#000 13px);mask-image:linear-gradient(transparent 7px,#000 13px)}
 html.ingame:not(.wide) .boardwrap > #chatBox .chatlist{flex:1 1 0;min-height:0;max-height:none;margin:0;padding:4px 8px;gap:2px}
 html.ingame:not(.wide) .boardwrap > #chatBox .chatform,html.ingame:not(.wide) .boardwrap > #chatBox #chatName{margin-top:5px;flex:none}
 html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="line"] :is(.chatform,#chatName){display:none}
