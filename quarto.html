@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quarto</title>
 <script src="common/theme.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=22">
+<link rel="stylesheet" href="common/games.css?v=32">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
@@ -129,15 +129,16 @@
   <aside class="side" id="side" tabindex="-1">
     <div class="players side-only" id="playersSide"></div>
     <div class="sidescroll" id="sideScroll">
-    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
-      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
-      <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
-      <div id="linksBox" hidden>
-        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
-        <div id="watchLinkBox"><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+    <details id="inviteBox" hidden><summary id="inviteSum" data-i18n="invite">Invite</summary>
+      <div id="invPart">
+      <!-- one row per code: the code in clear, then « copy the code » and « copy the link » (the links stay in hidden fields) -->
+      <div id="linksBox" class="vh" hidden><div id="oppLink"><input id="codeP" readonly tabindex="-1" aria-hidden="true"></div><div id="watchLinkBox"><input id="codeW" readonly tabindex="-1" aria-hidden="true"></div></div>
+      <div class="coderow" id="codePBox"><span class="hint" data-i18n="cGame">Opponent</span><input class="codetxt" id="codeC" readonly aria-label="Game code"><span class="cbtns"><button type="button" data-copy="codeC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeP" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <div class="coderow" id="codeWBox"><span class="hint" data-i18n="cWatch">Spectators</span><input class="codetxt" id="codeWC" readonly aria-label="Code for spectators"><span class="cbtns"><button type="button" data-copy="codeWC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeW" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <p class="hint" id="fileNote" hidden data-i18n="fileNote"></p>
-      <p class="hint" id="hostNote" data-i18n="hostNote"></p>
+      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -147,8 +148,7 @@
       <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
-    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button></details>
-    <details class="voice" id="voiceBox" hidden open><summary data-i18n="voice">Voice</summary><div class="voicein"><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><p class="wline" id="watchLine"></p><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button><div class="voicein" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
     <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -161,11 +161,7 @@
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
-    <details id="watchBox" hidden><summary id="watchSum"></summary><ul class="wlist" id="watchList"></ul></details>
-    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
-      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt"></p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
-    </details>
-    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
     </div>
   </aside>
@@ -173,7 +169,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=35"></script>
+<script src="common/core.js?v=48"></script>
 <script src="common/codes.js?v=2"></script>
 <script>
 // ===== Quarto: rules =====
@@ -359,8 +355,13 @@ function drawBoard(sc){const svg=$('svg');svg.textContent='';gradDefs(svg);if(qV
 function ring2D(svg,p,X,Y,R0,kind){const R=R0*1.05,a=R*.9,st={...fr(kind),...(p&2&&!(p&1)?{stroke:'#d49a00'}:{})};
   if(p&4)el('rect',{x:f1(X-a),y:f1(Y-a),width:f1(2*a),height:f1(2*a),rx:f1(R*.08),...st},svg);else el('circle',{cx:f1(X),cy:f1(Y),r:f1(R),...st},svg);}
 // 2D: board of 4×4 square cells with lines between them, the reserve (16 slots, each piece keeps its own) below
-function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?28:14,rs=B/8,rh=rs*1.05,Y0=B+gap;
-  const W=B+lw+4,H=Y0+2*rh+4;svg.setAttribute('viewBox',`${-lw} 0 ${W} ${H}`);document.documentElement.style.setProperty('--board-ar',`${W}/${H}`);
+// Band layout (wide screens), view from above: the reserve in a column left of the board (2×8); in 3D the
+// board is wider than tall and the reserve stays under it
+const qBandOn=()=>typeof BAND!=='undefined'&&!!BAND&&isWide();
+window.addEventListener('resize',()=>{if(qBandOn()!==!!qBandOn.was&&view&&!$('game').hidden)renderGame();});
+function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,band=qBandOn.was=qBandOn(),gap=coordsOn?28:14;
+  const C=band?2:8,rs=band?B/8:B/8,rh=band?B/8:rs*1.05,X0=band?-lw-14-2*rs:0,Y0=band?0:B+gap;
+  const x0=band?X0-4:-lw,W=band?B+4-x0:B+lw+4,H=band?B+(coordsOn?24:4):Y0+2*rh+4;svg.setAttribute('viewBox',`${x0} 0 ${W} ${H}`);document.documentElement.style.setProperty('--board-ar',`${W}/${H}`);
   el('rect',{x:0,y:0,width:B,height:B,rx:6,fill:'var(--wood)'},svg);
   const L=[];for(let i=0;i<=4;i++){const q=m+i*S;L.push(`M${m},${q}H${m+4*S}`,`M${q},${m}V${m+4*S}`);}
   el('path',{d:L.join(''),stroke:'var(--grid)','stroke-width':2,fill:'none','stroke-linecap':'square'},svg);
@@ -371,8 +372,8 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,gap=coordsOn?
     const fk=sc.cellFr[i];
     if(fk&&c)ring2D(svg,c.p,x+S/2,y+S/2,S*.36,fk);else if(fk)el('rect',{x:x+4,y:y+4,width:S-8,height:S-8,rx:5,...fr(fk)},svg);}
   if(sc.win)el('polygon',{points:winOutline(sc.win).map(([u,v])=>f1(m+(u+2)*S)+','+f1(m+(v+2)*S)).join(' '),'stroke-linejoin':'round',...fr('win')},svg);
-  el('rect',{x:0,y:Y0-4,width:B,height:2*rh+8,rx:8,fill:'var(--res)'},svg);
-  for(let p=0;p<16;p++){const x=(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
+  // the reserve's pieces straight on the background, no frame
+  for(let p=0;p<16;p++){const x=X0+(p%C)*rs,y=Y0+((p/C)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x,y,width:rs,height:rh,fill:sc.resHov===p?'var(--hov)':'transparent',rx:6},g);
     const c=sc.res[p];if(c){piece2D(g,c.p,x+rs/2,y+rh/2,rs*.36,c.op);el('title',{},g).textContent=pieceName(p);}
     const fk=sc.resFr[p];if(fk&&c)ring2D(svg,c.p,x+rs/2,y+rh/2,rs*.36,fk);else if(fk)el('rect',{x:x+2,y:y+2,width:rs-4,height:rh-4,rx:6,...fr(fk)},svg);}}
@@ -385,9 +386,10 @@ function ringPts(P,x0,y0,p){const h=.38,rr=p&4?.1:h,q=[];
 function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   const cx=i=>(i%4)-1.5,cy=i=>((i/4)|0)-1.5;
   const left=P(-hb,hb)[0],right=P(hb,-hb)[0],top=Math.min(P(-hb,-hb)[1],P(-1.5,-1.5,TALL)[1]-PR*1.3*S*SQ)-4,bot=P(hb,hb,-T)[1];
-  const lbl=coordsOn?22:0,Bw=right-left,gap=lbl+12,rs=Bw/8,rh=rs*1.25,Y0=bot+gap;
-  const W=Bw+2*lbl+8,H=(Y0-top)+2*rh+6;
-  svg.setAttribute('viewBox',`${f1(left-lbl-4)} ${f1(top)} ${f1(W)} ${f1(H)}`);document.documentElement.style.setProperty('--board-ar',`${f1(W)}/${f1(H)}`);
+  const lbl=coordsOn?22:0,Bw=right-left,gap=lbl+12,rs=Bw/8,rh=rs*1.25,band=false,RC=8;   // 3D: the board is wider than tall, the reserve stays under it
+  const X0=band?left-lbl-12-4*rs:left,Y0=band?top+Math.max(0,(bot+lbl-top-4*rh)/2):bot+gap;
+  const vx=band?X0-4:left-lbl-4,vy=top,W=band?right+lbl+4-vx:Bw+2*lbl+8,H=band?Math.max(bot+lbl+8,Y0+4*rh+6)-vy:(Y0-top)+2*rh+6;
+  svg.setAttribute('viewBox',`${f1(vx)} ${f1(vy)} ${f1(W)} ${f1(H)}`);document.documentElement.style.setProperty('--board-ar',`${f1(W)}/${f1(H)}`);
   const pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' '),dn=q=>[q[0],q[1]+T*S*HF];
   const A=P(-hb,-hb),B=P(hb,-hb),C=P(hb,hb),D=P(-hb,hb);
   el('polygon',{points:pts([D,C,dn(C),dn(D)]),fill:'var(--wood-s)'},svg);el('polygon',{points:pts([C,B,dn(B),dn(C)]),fill:'var(--wood-f)'},svg);
@@ -407,8 +409,8 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
   const order=[...Array(16).keys()].sort((a,b)=>(cx(a)+cy(a))-(cx(b)+cy(b))||cx(a)-cx(b));
   for(const i of order){const c=sc.cells[i];if(!c)continue;const q=P(cx(i),cy(i));pieceIso(svg,c.p,q[0],q[1],S,c.op);}
   // reserve
-  const rS=S*.82;el('rect',{x:f1(left),y:f1(Y0-4),width:f1(Bw),height:f1(2*rh+8),rx:8,fill:'var(--res)'},svg);
-  for(let p=0;p<16;p++){const x=left+(p%8)*rs,y=Y0+((p/8)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
+  const rS=S*.82;   // the reserve's pieces straight on the background, no frame
+  for(let p=0;p<16;p++){const x=X0+(p%RC)*rs,y=Y0+((p/RC)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x:f1(x),y:f1(y),width:f1(rs),height:f1(rh),fill:sc.resHov===p?'var(--hov)':'transparent',rx:6},g);
     // the piece to place, the piece chosen: the board's ring around its base (dashed while provisional), under the piece
     const c=sc.res[p],fk=sc.resFr[p],bx=x+rs/2,by=y+rh-PR*rS*SQ*1.25-3;

@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Diagonal Blocks Duo</title>
 <script src="common/theme.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=22">
+<link rel="stylesheet" href="common/games.css?v=32">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -69,6 +69,24 @@ html.ingame.wide .pblock{--cell:9px}html.ingame.wide .pblock .tray{width:100%}
 @media (min-width:821px){html.ingame.wide .wrap{grid-template-columns:minmax(0,1fr) clamp(320px,36vw,520px)}html.ingame.wide .pblock{--cell:clamp(10px,1.1vw,15px)}}
 html.ingame.wide .side .pblock .notice{height:var(--barW)}
 .tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:4px}
+/* band layout (wide screens): both reserves in a column left of the board, the opponent's above, mine below */
+html.ingame.band .dbrow{flex:1 1 0;min-height:0;display:flex;gap:10px;align-items:stretch}
+html.ingame.band .dbrow > .boardarea{flex:1 1 0;min-width:0;min-height:0}
+html.ingame.band .dbside{flex:none;display:flex;flex-direction:column;gap:8px;min-height:0}
+/* each reserve takes half the height, its pieces centred in it */
+html.ingame.band .dbside > .pwrap{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+html.ingame.band .dbside .pblock{flex:1 1 auto;min-height:0;padding:6px;justify-content:center}
+html.ingame.band .dbside .pblock .prow{justify-content:center}
+/* the side column at the shared width (this page widens it elsewhere for its reserves, which are now by the board) */
+html.ingame.band.wide .wrap{grid-template-columns:minmax(0,1fr) 300px}
+html.ingame.band .dbside .pblock .pinfo{display:none}
+/* the reserves on a regular grid: each piece centred, across and down, in a track as long as the longest piece */
+html.ingame.band .dbside .pblock .tray{flex:none;display:grid;grid-template-columns:repeat(var(--cols,3),calc(var(--cell) * 5));grid-auto-rows:calc(var(--cell) * 5);place-items:center;justify-content:center;gap:0;width:calc(var(--cell) * 5 * var(--cols,3))}
+/* tracks of 5 cells (the longest piece): a square's empty margin may spill over its neighbours' */
+html.ingame.band .dbside .pblock .slot{overflow:visible}html.ingame.band .dbside .pblock .slot svg{overflow:visible}
+html.ingame.band #oppBlock{opacity:.7}html.ingame.band #oppBlock.active{opacity:.9}
+/* cards in the band: when the name does not fit, cells and pieces go on two lines */
+html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop > .player.fit2 .tally{flex-direction:column;gap:0}
 .slot{padding:3px;border:1.5px solid transparent;border-radius:7px;background:transparent;line-height:0}
 .slot svg{width:100%;height:auto;display:block}
 .tray.live .slot:not(.used){cursor:pointer}
@@ -164,15 +182,16 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
     <div class="players side-only" id="playersSide"></div>
     <!-- wide screens: the action bar (#notice) and the tray are moved here, under the players; the rest scrolls -->
     <div class="sidescroll" id="sideScroll">
-    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
-      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
-      <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
-      <div id="linksBox" hidden>
-        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
-        <div id="watchLinkBox"><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
+    <details id="inviteBox" hidden><summary id="inviteSum" data-i18n="invite">Invite</summary>
+      <div id="invPart">
+      <!-- one row per code: the code in clear, then « copy the code » and « copy the link » (the links stay in hidden fields) -->
+      <div id="linksBox" class="vh" hidden><div id="oppLink"><input id="codeP" readonly tabindex="-1" aria-hidden="true"></div><div id="watchLinkBox"><input id="codeW" readonly tabindex="-1" aria-hidden="true"></div></div>
+      <div class="coderow" id="codePBox"><span class="hint" data-i18n="cGame">Opponent</span><input class="codetxt" id="codeC" readonly aria-label="Game code"><span class="cbtns"><button type="button" data-copy="codeC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeP" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <div class="coderow" id="codeWBox"><span class="hint" data-i18n="cWatch">Spectators</span><input class="codetxt" id="codeWC" readonly aria-label="Code for spectators"><span class="cbtns"><button type="button" data-copy="codeWC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeW" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else.</p>
-      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser.</p>
+      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -182,8 +201,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
       <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
-    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button></details>
-    <details class="voice" id="voiceBox" hidden open><summary data-i18n="voice">Voice</summary><div class="voicein"><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><p class="wline" id="watchLine"></p><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button><div class="voicein" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
     <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -195,11 +213,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
-    <details id="watchBox" hidden><summary id="watchSum"></summary><ul class="wlist" id="watchList"></ul></details>
-    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
-      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
-    </details>
-    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
     </div>
   </aside>
@@ -207,7 +221,7 @@ html.ingame.wide .side .pblock .notice{height:var(--barW)}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=35"></script>
+<script src="common/core.js?v=48"></script>
 <script src="common/codes.js?v=2"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
@@ -391,7 +405,7 @@ renderGame=function(){coreRender();if(view&&!$('game').hidden){dbDecorate();plac
 // core's layoutMode puts the action bar back under the board or in the side panel: here it stays in my block
 const coreLayout=layoutMode;layoutMode=function(){coreLayout();placeBlocks();};
 function dbDecorate(){const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt),pad=n=>String(n).padStart(2,' ');
-  const host=$(isWide()?'playersSide':'playersTop');
+  const host=$($('playersTop').hidden?'playersSide':'playersTop');
   for(const p of [0,1]){const el=host.children[p];if(!el)continue;const c=E.colorOf(d.st,p),dot=el.querySelector('.dot');if(dot)dot.className='dot sw c'+c;
     const ty=document.createElement('div');ty.className='tally';
     ty.innerHTML=`<span title="${t('cells')}">${pad(d.st.cnt[c])}</span><span title="${t('pcs')}">${pad(E.left(d.st,c))}</span>`;el.appendChild(ty);}
@@ -435,6 +449,29 @@ function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',
 // The cell size of both reserves, the largest (16 px at most) that leaves the board its room: phones, at least 50 % of the
 // height under the header (less when the width limits the board anyway); wide screens, a full reserve in 3 rows at most.
 // Phones: each block's wrapper keeps the height the block has with a full reserve, so the board never changes size.
+// Band layout (wide screens): the cards stay in the band above the board, each reserve becomes a column on
+// the left of the board, one above the other: the opponent's above, mine below (as seen by each player), same size.
+function placeBand(){const ob=$('oppBlock'),mb=$('myBlock'),ow=$('oppWrap'),mw=$('myWrap'),n=$('notice'),nv=$('nav'),
+    ba=document.querySelector('.boardwrap .boardarea');if(!ob||!mb||!ba||!nv)return;
+  const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
+  let row=$('dbRow');if(!row){row=document.createElement('div');row.id='dbRow';row.className='dbrow';}
+  let col=$('dbSide');if(!col){col=document.createElement('div');col.id='dbSide';col.className='dbside';}
+  if(ba.parentNode!==row)ba.before(row);
+  if(col.children[0]!==ow||col.children[1]!==mw)col.append(ow,mw);
+  if(row.children[0]!==col||row.children[1]!==ba)row.append(col,ba);
+  for(const [b,p] of [[ob,top],[mb,bot]]){b.hidden=false;const c=$('pl'+p);b.classList.toggle('active',!!(c&&c.classList.contains('active')));}
+  if(n.parentNode!==nv.parentNode||n.previousElementSibling!==nv)nv.after(n);
+  for(const W_ of [ow,mw])W_.style.minHeight='';
+  // one cell size for both reserves, chosen on the full reserves (21 pieces each) so that it changes only when the
+  // screen does: each in half the height, 1 to 4 pieces wide, the cell (8 to 16 px) that leaves the board the most room (within 2 %: the
+  // larger pieces)
+  const H=row.clientHeight,Wd=row.clientWidth;if(H<=0||Wd<=0)return;const key=[H,Wd].join('/');
+  if(placeBand.key!==key){placeBand.key=key;let best=null;const T=$('myTray'),Hh=(H-8)/2-16;   // each reserve: half the height
+    for(const cols of [1,2,3,4])for(let cell=16;cell>=8;cell-=.5){for(const B of [mb,ob]){B.style.setProperty('--cols',cols);B.style.setProperty('--cell',cell+'px');}
+      if(fullTray(T,cell).h>Hh)continue;const side=Math.min(H,Wd-cols*5*cell-28);
+      if(!best||side>best.side*1.02||(side>=best.side/1.02&&cell>best.cell))best={cols,cell,side};break;}
+    placeBand.best=best||{cols:4,cell:8};}
+  const b=placeBand.best;for(const B of [mb,ob]){B.style.setProperty('--cols',b.cols);B.style.setProperty('--cell',b.cell+'px');}}
 function holdHeights(w){const pairs=[['oppWrap','oppBlock','oppTray'],['myWrap','myBlock','myTray']].map(([a,b,c])=>[$(a),$(b),$(c)]);
   if(pairs.some(([W_,B,T])=>!W_||!T.clientWidth))return;
   // a block's height for a cell size: its frame and action bar (if inside), plus the taller of the card and the full reserve
@@ -458,7 +495,9 @@ function renderTrays(st,live){const r=replay(view,view.moves,view.result),{top,b
 // After core's render: the players' cards go into the blocks (opponent above, player below), the action bar into mine
 // (both sides on one screen: in a frame of its own under the blocks); phones: the opponent's block above the board, mine
 // under it; wide screens: both at the top of the side panel
-function placeBlocks(){if(!view||$('game').hidden)return;const ob=$('oppBlock'),mb=$('myBlock'),n=$('notice'),w=isWide();
+function placeBlocks(){if(!view||$('game').hidden)return;if(BAND&&isWide()){placeBand();return;}
+  {const col=$('dbSide');if(col)col.replaceWith(...col.childNodes);const row=$('dbRow');if(row)row.replaceWith(...row.childNodes);}   // back from the band layout: the reserves and the board out of the row
+  const ob=$('oppBlock'),mb=$('myBlock'),n=$('notice'),w=isWide();
   if(!ob||!mb||!n||!ob.querySelector||!ob.querySelector('.pinfo'))return;   // (the test harness's minimal DOM)
   const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
   for(const [b,p] of [[ob,top],[mb,bot]]){const slot=b.querySelector('.pinfo'),c=$('pl'+p);if(c&&c.parentNode!==slot){slot.textContent='';slot.appendChild(c);}

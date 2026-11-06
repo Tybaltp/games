@@ -244,7 +244,7 @@ details .chatlist li{margin:0}
 .chatform .txt{flex:1 1 auto;padding:6px 9px}
 .chatform button{flex:none}
 #chatName{margin-top:8px;width:100%}
-/* voice chat between the two players: a section of its own, under the chat */
+/* voice chat between the two players: at the bottom of the chat frame */
 .voicein{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .voicein .hint{margin:0;font-size:.85rem}
 .voicein .confirm{justify-content:flex-start}
@@ -253,3 +253,54 @@ details .chatlist li{margin:0}
 #voiceMute{flex:none;padding:5px 10px;line-height:1}#voiceMute.on{border-color:var(--danger);color:var(--danger)}
 #voiceHang{flex:none}
 .player .vmic{margin-left:.35em;font-size:.85em}
+
+/* spectators present: one line at the top of the chat frame; resume code under the invitation, in the same frame */
+.wline{margin:6px 0 0;font-size:.85rem;color:var(--muted)}
+#invPart:not([hidden])+.rcpart{margin-top:4px}
+.voicein{padding-top:8px;border-top:1px solid var(--line)}
+
+/* Band layout (<html data-band>): on wide screens the players' cards form a band above the board. Each
+   card: name over clock on the outer side, the game's own information (Tintas: the colours taken) towards the middle */
+html.ingame.band .boardwrap > .players{gap:10px;align-items:stretch}
+html.ingame.band #playersTop > .player{display:grid;grid-template-columns:minmax(0,max-content) minmax(min-content,1fr);grid-template-areas:"who x" "clock x";column-gap:14px;row-gap:0;align-items:center;padding:6px 12px}
+html.ingame.band #playersTop > .player > *{grid-area:x;min-width:0}
+html.ingame.band #playersTop > .player > .who{grid-area:who}
+html.ingame.band #playersTop > .player > .clock{grid-area:clock;font-size:1.2rem}
+html.ingame.band #playersTop > .player.c1{grid-template-columns:minmax(min-content,1fr) minmax(0,max-content);grid-template-areas:"x who" "x clock";text-align:right}
+html.ingame.band #playersTop > .player.c1 > :not(.who):not(.clock){justify-self:start}
+html.ingame.band #playersTop > .player.c0 > :not(.who):not(.clock){justify-self:end}
+html.ingame.band #playersTop > .player > .clock[hidden]+*{grid-row:1 / span 2}
+/* « haut »: the status sentence between the two cards; its buttons stay in the bar under the board */
+.bandmsg{order:1;flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px 10px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-weight:500;font-size:.9rem;line-height:1.3}
+.bandmsg .msg{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;overflow-wrap:anywhere}
+.bandmsg.turn{border-color:var(--accent)}.bandmsg.win{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+html.ingame.band .boardwrap > .notice.empty{visibility:hidden}
+html.ingame.band #playersTop > .player.c1{order:2}
+/* the bar under the board, once its sentence has gone up: buttons only, no frame */
+html.ingame.band[data-band="haut"] .boardwrap > .notice{background:none;border-color:transparent;box-shadow:none}
+/* wide screens: the chat docked at the bottom of the side column (chatDock), its height dragged from the top edge;
+   the other frames scroll in what is left above it */
+.chatgrip{display:none}
+html.ingame.wide .side > #chatBox{position:relative;flex:none;margin-top:0}
+html.ingame.wide .side > #chatBox .chatlist{min-height:0;max-height:none}
+html.ingame.wide .side > #chatBox[open] > .chatgrip{display:block;position:absolute;left:0;right:0;top:-7px;height:12px;margin:0;cursor:ns-resize;touch-action:none;z-index:2}
+html.ingame.wide .side > #chatBox[open] > .chatgrip::after{content:"";position:absolute;left:50%;top:4px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}
+html.ingame.wide .side > #chatBox[open] > .chatgrip:hover::after{background:var(--muted)}
+html.ingame.band #playersTop > .player .tally{min-width:150px}
+/* Codes frame: one compact row per code: label, the code in clear, two small buttons (code, link; « copy … » on hover) */
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.coderow{display:grid;grid-template-columns:6.2em minmax(0,1fr) auto;align-items:center;column-gap:8px}
+.side details .coderow{margin-top:4px}
+.side details #invPart > .coderow:first-of-type{margin-top:8px}
+.coderow > .hint{margin:0!important;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coderow .codetxt{min-width:0;width:100%;border:none;background:none;padding:0;font-family:var(--f-mono);font-size:.9rem;color:var(--ink);text-overflow:ellipsis}
+.coderow .cbtns{display:flex;gap:4px}
+.coderow .cbtns button{padding:2px 8px;font-size:.78rem;line-height:1.4;min-width:3.6em}
+#invPart:has(#linksBox[hidden]) .lnk,#invPart:has(#oppLink[hidden]) #codePBox .lnk,#invPart:has(#watchLinkBox[hidden]) #codeWBox .lnk{visibility:hidden}
+#rcCard #rcBox{grid-column:1 / -1;margin-top:4px}
+/* a match: links only, no code */
+.coderow.linkonly .codetxt,.coderow.linkonly .cbtns button:not(.lnk){display:none}.coderow.linkonly .cbtns{grid-column:3}
+/* the host's note only while waiting for the opponent */
+#inviteBox:not(.prominent) #hostNote{display:none}
+/* band: names at the top, the command bar at the bottom, the board centred in the room between */
+html.ingame.band .boardarea{align-items:center}

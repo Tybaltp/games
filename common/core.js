@@ -64,9 +64,9 @@ const I18C={fr:{
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  cancel:"Annuler",confirmMv:"Confirmer",
  start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
- invite:"Inviter",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les observateurs",
+ invite:"Inviter",codes:"Codes d’invitation",copy:"Copier",copied:"Copié",linkOpp:"Lien pour votre adversaire",linkWatch:"Lien pour les observateurs",
  fileNote:"Ce fichier est ouvert depuis votre disque : les liens ne marcheront pour personne d'autre. Envoyez ce fichier HTML et le code : la personne l'ouvre, saisit le code et choisit Jouer ou Observer.",
- hostNote:"La partie tourne dans votre navigateur. Si vous décrochez, votre adversaire prend le relais après quelques secondes ; les pendules s'arrêtent pendant l'absence d'un joueur.",
+ hostNote:"La partie tourne dans votre navigateur ; si vous décrochez, votre adversaire prend le relais.",cGame:"Adversaire",cWatch:"Observateurs",cResume:"Reprise",copyCode:"Copier le code",copyLink:"Copier le lien",cCode:"Code",cLink:"Lien",
  rcTxt:"Dernier recours si la connexion ne revient pas : l'un ou l'autre colle ce code dans « Reprendre une partie » sur la page d'accueil.",rcCopy:"Copier le code de reprise",sounds:"Sons",moves:"Coups",
  noSpect:"Aucun observateur",spect:"{n} observateur",spects:"{n} observateurs",you:"Vous",p1:"Joueur 1",p2:"Joueur 2",
  iam:"Je suis {n}",badResume:"Ce code de reprise n'est pas valide.",codeLen:"Saisissez le code reçu.",codeWatch:"Code pour les observateurs",
@@ -91,9 +91,9 @@ const I18C={fr:{
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  cancel:"Cancel",confirmMv:"Confirm",
  start:"Start",startBtn:"Start the game",pass:"Pass",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
- invite:"Invite",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
+ invite:"Invite",codes:"Invitation codes",copy:"Copy",copied:"Copied",linkOpp:"Link for your opponent",linkWatch:"Link for spectators",
  fileNote:"This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.",
- hostNote:"The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.",
+ hostNote:"The game runs in your browser; if you drop out, your opponent takes over.",cGame:"Opponent",cWatch:"Spectators",cResume:"Resume",copyCode:"Copy the code",copyLink:"Copy the link",cCode:"Code",cLink:"Link",
  rcTxt:"Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.",rcCopy:"Copy the resume code",sounds:"Sounds",moves:"Moves",
  noSpect:"No spectators",spect:"{n} spectator",spects:"{n} spectators",you:"You",p1:"Player 1",p2:"Player 2",
  iam:"I am {n}",badResume:"This resume code is not valid.",codeLen:"Enter the code you received.",codeWatch:"Code for spectators",
@@ -170,7 +170,7 @@ function status(txt,cls,btns){const s=$('status'),rt=richOf(txt);s.className='st
       // b.short: a shorter label, used only when the buttons don't fit in the bar
       if(b.short){const l=document.createElement('span'),k=document.createElement('span');l.className='bl';l.textContent=b.label;k.className='bs';k.textContent=b.short;e.append(l,k);}else e.textContent=b.label;
       if(b.hover){e.onpointerenter=ev=>{if(ev.pointerType!=='touch')b.hover(true);};e.onpointerleave=()=>b.hover(false);}bx.appendChild(e);}}
-  fitBtns();}
+  fitBtns();bandSync(true);}
 // Short labels when the full ones overflow the bar; if the buttons still overflow, they wrap onto a second row and the
 // bar grows (checked again whenever the bar changes size)
 function fitBtns(){const n=$('notice'),bx=n&&n.querySelector('.btns');if(!bx)return;n.classList.remove('short','rows2');
@@ -180,7 +180,7 @@ function fitBtns(){const n=$('notice'),bx=n&&n.querySelector('.btns');if(!bx)ret
   if(bx.querySelector('.bs')){n.classList.add('short');if(!over())return;}
   n.classList.add('rows2');}
 
-function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}}
+function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}bandSync(true);}
 function peerOpts(){return {debug:1};}
 function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
 
@@ -336,7 +336,7 @@ function chatReveal(){const g=H.game;if(!g||!g.chat)return;const o=replay(g,g.mo
   if(!o){g.endLog=false;return;}
   if(!g.endLog){g.endLog=true;hostLog(o.w<0?'draw':'wins',o.w<0?{why:o.why}:{n:g.names[o.w]||'',why:o.why},true);}
   for(const x of g.chat)if(x.w)x.v=1;}
-function hostChat(n,w,m){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return;if(!g.chat)g.chat=[];g.chat.push({n,w:w?1:0,m});
+function hostChat(n,w,m){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return;if(!g.chat)g.chat=[];let c;if(!w)c=Math.max(0,g.names.indexOf(n));else{const o=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=o?o.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push({n,w:w?1:0,m,c});
   if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);hostBroadcast();}
 function chatSend(){const i=$('chatIn'),m=chatClean(i.value);if(!m||!view)return;
   if(role==='host')hostChat(view.names[mySeat]||nickGet()||t('p1'),false,m);
@@ -406,7 +406,7 @@ function chatRender(){const b=$('chatBox'),net=role==='host'||role==='guest'||ro
   if(!L.length){const li=document.createElement('li');li.className='hint';li.textContent=t('chatEmpty');ul.appendChild(li);}
   for(const x of L){const li=document.createElement('li');
     if(x.k){const a={...(x.a||{})};if(a.why)a.why=t(a.why);li.className='log';li.textContent=t(x.k,a);ul.appendChild(li);continue;}
-    const a=document.createElement('b');a.className='nm';a.style.setProperty('--nh',chatHue(x.n));a.textContent=x.n;li.appendChild(a);
+    const a=document.createElement('b');a.className='nm';a.style.setProperty('--nh',x.c!=null?CHATHUES[x.c%CHATHUES.length]:chatHue(x.n));a.textContent=x.n;li.appendChild(a);
     if(x.w){const o=document.createElement('span');o.className='obs';o.textContent=' ('+t('chatW')+')';li.appendChild(o);li.className='w';}
     li.append(lang==='fr'?'\u00a0: ':': ',x.m);ul.appendChild(li);}
   ul.scrollTop=ul.scrollHeight;}
@@ -504,7 +504,7 @@ function anaPlay(code){const n=anaNode(view.moves);if(!n)return;if(!n.c.some(x=>
 // The main line (the first child at each branching)
 function anaMainLine(){const p=[];let n=view.tree;while(n.c.length){n=n.c[0];p.push(n.m);}return p;}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
-const seatName=s=>solo()?(role==='test'&&view.customNames&&view.names[s]||t(s===0?'p1':'p2')):role==='ai'?(s===meS()?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'))+(s===mySeat?' ('+t('you').toLowerCase()+')':'');
+const seatName=s=>solo()?(role==='test'&&view.customNames&&view.names[s]||t(s===0?'p1':'p2')):role==='ai'?(s===meS()?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'));
 
 // A player's name, editable in place (nothing shows it but the text cursor): Enter or leaving the field keeps it
 function nameEdit(sp,p){sp.className='nmEdit';sp.contentEditable='plaintext-only';sp.spellcheck=false;sp.title=t('editName');
@@ -558,7 +558,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
   else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'),'',mine&&prep?[RST]:null);
   if(V.st==='in'&&mySeat>=0)status(t('vInvite',{n:vNm()}),'turn',[{label:t('decline'),on:()=>voiceAnswer(false)},{label:t('accept'),primary:true,on:()=>voiceAnswer(true)}]);
-  const wide=window.matchMedia(WIDE).matches;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
+  const wide=window.matchMedia(WIDE).matches&&!BAND;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
   const editing=!!document.activeElement&&document.activeElement.classList.contains('nmEdit');   // a name being typed: the cards stay
   if(!editing){$('playersTop').textContent='';$('playersSide').textContent='';}const host=wide?$('playersSide'):$('playersTop');
   if(!editing)for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&(ns&&navAt===null?!(view.held&&view.held[p]):turn===p)?' active':'');el.id='pl'+p;
@@ -566,12 +566,14 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     if(role==='test'||role==='file')nameEdit(nmx,p);
     const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
     el.append(h,ck);if(GAME.playerCard)GAME.playerCard(el,p,d);host.appendChild(el);}
+  if(BAND)requestAnimationFrame(fitCards);
+  if(BAND==='haut'){if(bandOn()){if(bandMsg.parentNode!==host||bandMsg.nextElementSibling)host.appendChild(bandMsg);}else bandMsg.remove();bandSync();}
   tick();lockBoard();
   // side panel: settings only (level of the computer and its opinion, against the computer only: hints use GAME.hintLevel)
   // SGF export: always against the computer, in Libre play and for a loaded game; in a competitive game (face to face,
   // by link) only once it is over
   const sgfOk=role==='ai'||role==='test'||role==='file'||A||!!r.over;if($('sgfExpBox'))$('sgfExpBox').hidden=!sgfOk;
-  $('myCard').hidden=!(role==='ai'||solo()||sgfOk||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
+  $('myCard').hidden=!($('myCard').querySelector('#cbOn')||role==='ai'||solo()||sgfOk||(mySeat>=0&&!r.over&&view.names[1-mySeat]&&view.started));
   if($('aiBox'))$('aiBox').hidden=role!=='ai';
   $('resignBox').hidden=A||!!r.over||mySeat<0||!$('resignAsk').hidden;
   if($('drawBtn')){const dv=view.draw,pl=!A&&!r.over&&!!view.started&&mySeat>=0&&navAt===null&&(role==='ai'||role==='local'||((role==='host'||role==='guest')&&!!view.names[1-mySeat]));
@@ -586,18 +588,16 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     $('startTxt').textContent=(view.ready&&view.ready[1-mySeat]?t('ready',{n:nm(1-mySeat)}):'')+(view.tc?t('clocksStart'):'');}
   {const ib=$('inviteBox'),waiting=mySeat>=0&&(!view.names[1-mySeat]||!view.started),wC=role==='watch'&&!!C.code&&C.code.length===8;
     // always there in a network game, folded once it has started: a match gives its own pages' links, a spectator only the spectators' link
-    ib.hidden=role==='ai'||solo()||role==='file'||(view.match?MTW==='v':!(role==='host'||(mySeat>=0&&C.code)||wC));
-    if(!ib.hidden){if(view.match)fillMatch();else if(role==='watch')fillWatch(C.code);else if(role!=='host'&&C.code)fillCodes(C.code,true);}
+    const invOn=!(role==='ai'||solo()||role==='file'||(view.match?MTW==='v':!(role==='host'||(mySeat>=0&&C.code)||wC))),rcOn=!(role==='ai'||solo()||!(mySeat>=0&&view.started));ib.hidden=!invOn&&!rcOn;$('invPart').hidden=!invOn;$('rcCard').hidden=!rcOn;{const k=!invOn?'resumeCode':waiting?'invite':'codes',sm=$('inviteSum');if(sm.dataset.i18n!==k||sm.textContent!==t(k)){sm.dataset.i18n=k;sm.textContent=t(k);}}
+    if(invOn){if(view.match)fillMatch();else if(role==='watch')fillWatch(C.code);else if(role!=='host'&&C.code)fillCodes(C.code,true);}
     if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('watchBox'))$('watchBox').before(ib);}$('rcCard').hidden=false;$('rcBoxD').hidden=role==='ai'||solo()||!(mySeat>=0&&view.started);
-  {const wb=$('watchBox'),net=role==='host'||role==='guest'||role==='watch';wb.hidden=!net;
-    if(net){const ws=Array.isArray(view.wnames)?view.wnames:[],n=view.watchers||0,ul=$('watchList');$('watchSum').textContent=t('watchersT',{n});
-      const items=n?ws.map(x=>x||t('anon')).sort((a,b)=>a.localeCompare(b)):[];const key=n+'|'+items.join('|')+'|'+lang;
-      if(ul.dataset.k!==key){ul.dataset.k=key;ul.textContent='';
-        if(!items.length){const li=document.createElement('li');li.className='hint';li.textContent=t(n?(n>1?'spects':'spect'):'noSpect',{n});ul.appendChild(li);}
-        for(const x of items){const li=document.createElement('li');li.textContent=x;ul.appendChild(li);}}}}
-  chatRender();voiceRender();
+    if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('movesBox'))$('movesBox').before(ib);}
+  {const wl=$('watchLine'),net=role==='host'||role==='guest'||role==='watch';
+    if(net){const ws=Array.isArray(view.wnames)?view.wnames:[],n=view.watchers||0;
+      const items=n?ws.map(x=>x||t('anon')).sort((a,b)=>a.localeCompare(b)):[];
+      const txt=!n?t('noSpect'):t('watchersT',{n})+(lang==='fr'?'\u00a0: ':': ')+items.join(', ');if(wl.textContent!==txt)wl.textContent=txt;}}
+  chatRender();voiceRender();chatFit();
   $('endCard').hidden=!r.over&&role!=='file'&&!(A&&(role==='local'||role==='ai'));   // the analysis of a game over keeps the way to a new one   // a game read from a file: always the way back home
   {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
@@ -615,6 +615,12 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   const ce=ol.querySelector('.cur');if(ce&&(navAt!==null||A)){const a=ce.getBoundingClientRect(),b=ol.getBoundingClientRect();if(a.top<b.top)ol.scrollTop+=a.top-b.top;else if(a.bottom>b.bottom)ol.scrollTop+=a.bottom-b.bottom;}else ol.scrollTop=ol.scrollHeight;sheetAttn();}
 // Players' cards in the side panel: wide screens, and landscape phones (board and panel side by side)
 const WIDE='(min-width:821px), (orientation:landscape) and (max-height:500px)';
+const BAND=document.documentElement.dataset.band||'',bandOn=()=>!!BAND&&window.matchMedia(WIDE).matches;
+const bandMsg=document.createElement('div');bandMsg.className='bandmsg';bandMsg.setAttribute('aria-live','polite');
+function bandSync(fresh){const n=$('notice');if(!n||BAND!=='haut')return;const on=bandOn(),m=n.querySelector('.msg');
+  if(!on){if(bandMsg.firstChild&&!m){const x=bandMsg.firstChild;n.prepend(x);}bandMsg.textContent='';return;}
+  bandMsg.className='bandmsg '+[...n.classList].filter(c=>c!=='notice'&&c!=='has-btns'&&c!=='rows2'&&c!=='short').join(' ');
+  if(m||fresh){bandMsg.textContent='';if(m)bandMsg.appendChild(m);}n.classList.toggle('empty',!n.querySelector('.btns'));}
 // Game view layout: html.ingame = a fixed-height app (no page scroll); html.wide = two columns (the WIDE query). Otherwise
 // (phones, portrait) the side panel is a bottom sheet, opened with « ⋯ » (html.sheet), closed by the backdrop, Escape,
 // « ⋯ » again or a swipe down.
@@ -626,8 +632,25 @@ function sheet(on){const R=document.documentElement,was=R.classList.contains('sh
   if(!on&&was&&$('side').contains(document.activeElement))$('optBtn').focus({preventScroll:true});}
 // Wide: the action bar (#notice) goes into the side panel under the players' cards (the panel's fixed top part); otherwise
 // back under the board (after the move navigation). The same element moves, nothing is duplicated.
-function layoutMode(){const w=isWide();document.documentElement.classList.toggle('wide',w);if(w)sheet(false);
-  const n=$('notice'),at=w?$('playersSide'):$('nav');if(n&&at&&n.previousElementSibling!==at)at.after(n);}
+function chatDock(w){const b=$('chatBox'),sd=$('side'),sc=$('sideScroll');if(!b||!sd||!sc)return;
+  if(!b.querySelector('.chatgrip')){const g=document.createElement('div');g.className='chatgrip';g.setAttribute('aria-hidden','true');b.prepend(g);
+    g.onpointerdown=e=>{if(!isWide())return;e.preventDefault();g.setPointerCapture(e.pointerId);const y0=e.clientY,h0=b.offsetHeight;
+      g.onpointermove=ev=>{CH.h=h0+(y0-ev.clientY);chatFit();};
+      g.onpointerup=g.onpointercancel=()=>{g.onpointermove=null;LS.set('games-chath',Math.round(CH.h));};};}
+  if(w){if(b.parentNode!==sd)sd.appendChild(b);}else if(b.parentNode!==sc)$('myCard').before(b);chatFit();}
+// the list takes what the docked frame's height leaves
+function chatFit(){const b=$('chatBox'),l=$('chatList');if(!b||!l)return;
+  if(!isWide()||!b.open||b.hidden){if(l.style.height)l.style.height='';return;}
+  const sd=$('side'),mx=Math.max(180,(sd?sd.clientHeight:600)-110);if(CH.h==null)CH.h=+LS.get('games-chath',0)||Math.round((sd?sd.clientHeight:600)*.5);
+  const H=CH.h=Math.min(mx,Math.max(260,CH.h)),st=l.scrollTop,end=l.scrollHeight-l.clientHeight-st<4;
+  const rest=b.offsetHeight-l.offsetHeight,px=Math.max(110,H-rest)+'px';if(l.style.height!==px)l.style.height=px;l.scrollTop=end?l.scrollHeight:st;}
+// cards in the band: when a name does not fit, the game's information gets more compact, step by step (classes fit1,
+// fit2, drawn by the game's CSS), until the name fits or the steps run out
+function fitCards(){for(const el of document.querySelectorAll('#playersTop > .player')){const w=el.querySelector('.who');if(!w)continue;
+  el.classList.remove('fit1','fit2');for(const k of ['fit1','fit2']){if(w.scrollWidth<=w.clientWidth+1)break;el.classList.add(k);}}}
+window.addEventListener('resize',()=>{if(BAND)fitCards();});
+function layoutMode(){const w=isWide();chatDock(w);document.documentElement.classList.toggle('wide',w);if(w)sheet(false);
+  const n=$('notice'),at=w&&!BAND?$('playersSide'):$('nav');document.documentElement.classList.toggle('band',w&&!!BAND);if(n&&at&&n.previousElementSibling!==at)at.after(n);}
 // Not wide: the board's area gets a fixed height, so that the action bar can grow up to --barMax under it without the
 // board ever changing size (the room the bar does not use stays empty). Games that lay out the board themselves
 // (GAME.ownLayout) are left alone.
@@ -778,19 +801,22 @@ function hintPlay(){const mv=hintMv;if(!mv||busy)return;hintMv=null;resetUi();se
 const aiFirst=()=>{const v=$('aFirst').value;return v==='me'?0:v==='ai'?1:Math.random()<.5?0:1;};   // seat of the player
 
 // ---------- invitation codes ----------
-function fillCodes(code,guest){code=code||H.code;const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
+function fillCodes(code,guest){code=code||H.code;linkOnly(false);const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
   if($('codePBox'))$('codePBox').hidden=false;$('codeC').value=code;$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
   const wc=guest?view&&view.wcode:H.wcode;
   if($('codeWC')){$('codeWC').value=wc||'';$('codeWBox').hidden=!wc;}
   if(web){$('codeP').value=base+'#join-'+code;$('codeW').value=wc?base+'#watch-'+wc:'';if($('watchLinkBox'))$('watchLinkBox').hidden=!wc;}}
 // a spectator: the code they came with, if it is the spectators' one (an older link gave the players' code: nothing shown)
-function fillWatch(wc){const web=/^https?:$/.test(location.protocol);if($('codePBox'))$('codePBox').hidden=true;$('oppLink').hidden=true;$('hostNote').hidden=true;
+function fillWatch(wc){const web=/^https?:$/.test(location.protocol);linkOnly(false);if($('codePBox'))$('codePBox').hidden=true;$('oppLink').hidden=true;$('hostNote').hidden=true;
   if($('codeWC')){$('codeWC').value=wc;$('codeWBox').hidden=false;}$('linksBox').hidden=!web;$('fileNote').hidden=web;
   if(web){$('codeW').value=location.href.split('#')[0]+'#watch-'+wc;if($('watchLinkBox'))$('watchLinkBox').hidden=false;}}
 // a Mochalunt table: the match's links (mochalunt.html), not the table's codes; a spectator only gets the spectators' one
+function linkOnly(on){for(const id of ['codePBox','codeWBox'])if($(id))$(id).classList.toggle('linkonly',on);}
 function fillMatch(){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0].replace(/[^/]*$/,'')+'mochalunt.html';
   const tl=(MATCH.excl<0?'a':String(MATCH.excl))+MATCH.j1,pl=!!MATCH.me,wc=pl?MATCH.wcode:MATCH.code;
-  if($('codePBox'))$('codePBox').hidden=true;if($('codeWBox'))$('codeWBox').hidden=true;$('hostNote').hidden=true;$('linksBox').hidden=!web;$('fileNote').hidden=web;
+  // a match: its pages' links only (no code to type): the rows show their « Link » button alone
+  for(const [id,on] of [['codePBox',pl],['codeWBox',!!wc]])if($(id)){$(id).hidden=!(on&&web);$(id).classList.add('linkonly');}
+  $('hostNote').hidden=true;$('linksBox').hidden=!web;$('fileNote').hidden=web;
   $('oppLink').hidden=!pl;$('codeP').value=pl?base+'#join-'+MATCH.code+'-'+tl+(MATCH.wcode?'-'+MATCH.wcode:''):'';
   $('codeW').value=wc?base+'#watch-'+wc+'-'+tl:'';if($('watchLinkBox'))$('watchLinkBox').hidden=!wc;}
 
@@ -1076,12 +1102,12 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
   $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>voiceStop(t('vEnd'),true);
   {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
-  $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}});
+  $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});window.addEventListener('resize',()=>chatFit());
   $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
     if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);startAI(aiFirst(),GAME.form('a'));});}
   document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
-    const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t('copy'),1500);};
+    const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t(b.dataset.i18n||'copy'),1500);};
     try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
   $('hName').value=nickGet();$('jName').value=nickGet();
   $('createForm').addEventListener('submit',e=>{e.preventDefault();if(typeof Peer==='undefined'){status(t('noPeer'));return;}
@@ -1094,8 +1120,8 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});
   $('jWatch').onclick=()=>joinClick(true);
   $('resumeBtn').onclick=()=>{const s=LS.get(K('p2p-host'),null);if(s&&unfinished(s.game)){hostStart(s);return;}const sg=LS.get(K('p2p-guest'),null);if(sg)clientStart(sg.code,sg.name||nickGet()||t('p2'),false);};
-  $('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=false;inp.select();
-    try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('rcCopy'),1500);},()=>{});}catch(e){}};
+  $('rcCopy').onclick=()=>{if(!view)return;const inp=$('rcTxt');inp.value=exportCode();$('rcBox').hidden=true;
+    try{navigator.clipboard.writeText(inp.value).then(()=>{$('rcCopy').textContent=t('copied');setTimeout(()=>$('rcCopy').textContent=t('cCode'),1500);},()=>{$('rcBox').hidden=false;inp.select();});}catch(e){$('rcBox').hidden=false;inp.select();}};
   $('rForm').addEventListener('submit',e=>{e.preventDefault();let p;try{p=importCode($('rIn').value);}catch(x){$('joinErr').textContent=t('badResume');$('rSeats').innerHTML='';return;}
     const box=$('rSeats');box.innerHTML=[0,1].map(k=>`<button type="button" class="primary" data-rseat="${k}">${t('iam',{n:String(p.names[k]||t(k?'p2':'p1')).replace(/[&<>"']/g,'')})}</button>`).join('');
     box.querySelectorAll('[data-rseat]').forEach(b=>b.onclick=()=>resumeAs(+b.dataset.rseat,p));});

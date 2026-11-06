@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Zèrtz</title>
 <script src="common/theme.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=22">
+<link rel="stylesheet" href="common/games.css?v=32">
 <style>
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
@@ -37,6 +37,10 @@ html.ingame:not(.wide) .board{border-radius:14px}
 .tally{display:flex;gap:10px;font-family:var(--f-mono);font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;overflow:hidden}
 .tally div{display:flex;align-items:center;gap:3px}
 .tally .goal{color:var(--muted)}
+/* band layout (wide screens): in the cards above the board, each count under its marble */
+html.ingame.band #playersTop .tally{gap:14px}
+html.ingame.band #playersTop .tally div{display:grid;grid-template-columns:auto auto;justify-items:center;align-items:baseline;row-gap:3px;column-gap:0}
+html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 .mb{width:14px;height:14px;border-radius:50%;flex:none;display:inline-block}
 .mb.c0{background:var(--m0);border:1.5px solid var(--m0e)}
 .mb.c1{background:var(--m1);border:1.5px solid var(--m1e)}
@@ -142,15 +146,16 @@ html.ingame:not(.wide) .board{border-radius:14px}
     <div class="players side-only" id="playersSide"></div>
     <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
     <div class="sidescroll" id="sideScroll">
-    <details id="inviteBox" hidden><summary data-i18n="invite">Invite</summary>
-      <div id="codePBox"><p class="hint" data-i18n="code">Game code</p><div class="link"><input id="codeC" readonly><button type="button" data-copy="codeC" data-i18n="copy">Copy</button></div></div>
-      <div id="codeWBox"><p class="hint" data-i18n="codeWatch">Code for spectators</p><div class="link"><input id="codeWC" readonly><button type="button" data-copy="codeWC" data-i18n="copy">Copy</button></div></div>
-      <div id="linksBox" hidden>
-        <div id="oppLink"><p class="hint" data-i18n="linkOpp">Link for your opponent</p><div class="link"><input id="codeP" readonly><button type="button" data-copy="codeP" data-i18n="copy">Copy</button></div></div>
-        <div id="watchLinkBox"><p class="hint" data-i18n="linkWatch">Link for spectators</p><div class="link"><input id="codeW" readonly><button type="button" data-copy="codeW" data-i18n="copy">Copy</button></div></div>
-      </div>
+    <details id="inviteBox" hidden><summary id="inviteSum" data-i18n="invite">Invite</summary>
+      <div id="invPart">
+      <!-- one row per code: the code in clear, then « copy the code » and « copy the link » (the links stay in hidden fields) -->
+      <div id="linksBox" class="vh" hidden><div id="oppLink"><input id="codeP" readonly tabindex="-1" aria-hidden="true"></div><div id="watchLinkBox"><input id="codeW" readonly tabindex="-1" aria-hidden="true"></div></div>
+      <div class="coderow" id="codePBox"><span class="hint" data-i18n="cGame">Opponent</span><input class="codetxt" id="codeC" readonly aria-label="Game code"><span class="cbtns"><button type="button" data-copy="codeC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeP" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <div class="coderow" id="codeWBox"><span class="hint" data-i18n="cWatch">Spectators</span><input class="codetxt" id="codeWC" readonly aria-label="Code for spectators"><span class="cbtns"><button type="button" data-copy="codeWC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeW" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
-      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser. If you drop out, your opponent takes over after a few seconds; the clocks stop while a player is away.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
+      </div>
+      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -160,8 +165,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
       <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
       <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
     </div>
-    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button></details>
-    <details class="voice" id="voiceBox" hidden open><summary data-i18n="voice">Voice</summary><div class="voicein"><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><p class="wline" id="watchLine"></p><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button><div class="voicein" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
     <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
@@ -173,11 +177,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
-    <details id="watchBox" hidden><summary id="watchSum"></summary><ul class="wlist" id="watchList"></ul></details>
-    <details id="rcBoxD" hidden><summary data-i18n="resumeCode">Resume code</summary>
-      <div id="rcCard" hidden><p class="hint" data-i18n="rcTxt">Last resort if the connection cannot be restored: either player can paste this code into “Resume a game” on the home page.</p><button type="button" id="rcCopy" data-i18n="rcCopy">Copy the resume code</button><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
-    </details>
-    <details><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
     </div>
   </aside>
@@ -185,7 +185,7 @@ html.ingame:not(.wide) .board{border-radius:14px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=35"></script>
+<script src="common/core.js?v=48"></script>
 <script src="common/codes.js?v=2"></script>
 <script>
 function ZertzEngine(size){
@@ -406,11 +406,28 @@ function zzBoard({r,d,mine}){setBoard(ringsOf(view));if(ui.hover==null)ui.hover=
 function poolBar(st,r,mine,caps){const pool=[st[POOL],st[POOL+1],st[POOL+2]],n=pool[0]+pool[1]+pool[2],fromCap=n===0,cols=r.over?[]:E.colors(r.st);
   const lb=$('poolLbl');lb.hidden=!fromCap;lb.textContent=fromCap?t('poolLblE'):t('poolLbl',{n});lb.title=fromCap?t('h_empty'):t('pool')+' · '+t('poolN',{n});
   const hc=mine&&hintOn()&&hintMv.t===0?hintMv.c:-1,cb=$('colors');cb.textContent='';cb.setAttribute('aria-label',t('pool'));
-  for(let k=0;k<3;k++){const b=document.createElement('button');b.type='button';b.id='col'+k;
-    const v=fromCap&&mySeat>=0?st[CAP+mySeat*3+k]:pool[k];b.innerHTML=`<span class="mb c${k}"></span>${v}`;
-    b.setAttribute('aria-pressed',String(hc>=0?hc===k:mine&&ui.color===k));b.setAttribute('aria-label',CN(k)+', '+v);b.title=CN(k);
-    b.disabled=!(mine&&!ui.pending&&!caps&&cols.includes(k));
-    b.onclick=()=>{if(busy==='hint')stopAI();hintMv=null;ui.color=k;ui.at=null;ui.hover=-1;ui.tap=-1;renderGame();};cb.appendChild(b);}}
+  const items=[0,1,2].map(k=>({k,v:fromCap&&mySeat>=0?st[CAP+mySeat*3+k]:pool[k],on:hc>=0?hc===k:mine&&ui.color===k,
+    ok:mine&&!ui.pending&&!caps&&cols.includes(k),pick:()=>{if(busy==='hint')stopAI();hintMv=null;ui.color=k;ui.at=null;ui.hover=-1;ui.tap=-1;renderGame();}}));
+  const band=zBandOn();$('poolBar').hidden=band;
+  if(band){poolSvg(items,fromCap);return;}
+  document.documentElement.style.removeProperty('--board-ar');
+  for(const it of items){const b=document.createElement('button');b.type='button';b.id='col'+it.k;
+    b.innerHTML=`<span class="mb c${it.k}"></span>${it.v}`;
+    b.setAttribute('aria-pressed',String(it.on));b.setAttribute('aria-label',CN(it.k)+', '+it.v);b.title=CN(it.k);
+    b.disabled=!it.ok;b.onclick=it.pick;cb.appendChild(b);}}
+// Band layout (wide screens): the pool inside the board's frame, a column on the left of the rings: three
+// framed buttons, each a marble and its count under it; the colour picked has the accent frame
+const zBandOn=()=>typeof BAND!=='undefined'&&!!BAND&&isWide();
+function poolSvg(items,fromCap){const svg=$('svg'),vb=svg.getAttribute('viewBox').split(' ').map(Number),PW=120,x0=vb[0]-PW,h=vb[3];
+  svg.setAttribute('viewBox',`${x0} ${vb[1]} ${vb[2]+PW} ${h}`);document.documentElement.style.setProperty('--board-ar',`${vb[2]+PW}/${h}`);
+  const bh=Math.min(150,(h-60)/3),gap=14,top=vb[1]+(h-3*bh-2*gap)/2,bw=PW-24,bx=x0+12;
+  if(fromCap){const tx=el('text',{x:bx+bw/2,y:top-14,'text-anchor':'middle','font-size':14,fill:'var(--ghost)'},svg);tx.textContent=t('poolLblE');}
+  items.forEach((it,j)=>{const y=top+j*(bh+gap),g=el('g',{role:'button','aria-label':CN(it.k)+', '+it.v,opacity:it.ok||it.on?1:.45,style:it.ok?'cursor:pointer':''},svg);
+    el('rect',{x:bx,y,width:bw,height:bh,rx:14,fill:'transparent',stroke:it.on?'var(--accent)':'var(--ghost)','stroke-width':it.on?3.5:1.5},g);
+    marble(g,bx+bw/2,y+bh*.42,it.k);
+    const tx=el('text',{x:bx+bw/2,y:y+bh*.42+48,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':22,fill:'var(--ring)'},g);tx.textContent=String(it.v);
+    el('title',{},g).textContent=CN(it.k);if(it.ok)g.addEventListener('click',it.pick);});}
+window.addEventListener('resize',()=>{if(zBandOn()===$('poolBar').hidden||!view||$('game').hidden)return;renderGame();});
 // Nothing engaged: Undo last move / Hint · something engaged (a marble placed, a capture started, a first tap): Reset
 function zzTurnStatus({r,o,prep,idle,RST}){
   if(o.caps)status(t(ui.path?'st_capPath':'st_capStart'),'turn',prep?[RST]:idle);
@@ -486,39 +503,40 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
   if(interactive&&caps){if(!ui.path)legal.forEach(m=>starters.add(m.path[0]));else{const P=ui.path;legal.filter(m=>P.every((x,k)=>m.path[k]===x)).forEach(m=>{if(m.path[P.length]!==undefined)targets.add(m.path[P.length]);});}}
   if(interactive&&!caps&&ui.at!==null)legal.forEach(m=>{if(m.c===ui.color&&m.at===ui.at&&m.rm>=0)removable.add(m.rm);});
   // frames are drawn inside the ring (r 27, between the marble and the ring's edge): solid for the last move and the
-  // selected marble, dashed for what is provisional; what the pointer previews has no frame, only transparency
+  // selected marble, dashed for what is provisional (a move prepared or previewed by the pointer); no transparency
   const fr=(g,x,y,col,o)=>el('circle',Object.assign({cx:x,cy:y,r:27,fill:'none',stroke:col,'stroke-width':3},o||{}),g),DASH={'stroke-dasharray':'4 4'};
   const lmLand=lm&&(lm.t===1?lm.path[lm.path.length-1]:lm.at);
   const pmv=pv&&pv.mv,land=pmv?pmv.t===1?pmv.path[pmv.path.length-1]:pmv.at:-1,from=pmv&&pmv.t===1?pmv.path[0]:-1;
   for(let i=0;i<N;i++){const x=X(i),y=Y(i),g=el('g',{class:'ring','data-i':i},svg);
-    if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1.2,'stroke-dasharray':'3 5',opacity:wasRm?.9:.55},g);g.style.cursor='default';continue;}
-    // Hover and prepared move share one drawing (the hover: no frame on the arriving marble, a dotted path): the rings
-    // removed and the marbles taken in a dashed red frame, the marble that leaves and the one that arrives translucent
+    if(!st[i]){const wasRm=lm&&lm.t===0&&(lm.rm===i||last.removed.includes(i));el('circle',{cx:x,cy:y,r:26,fill:'none',stroke:wasRm?'var(--danger)':'var(--ghost)','stroke-width':wasRm?2:1},g);g.style.cursor='default';continue;}
+    // Hover and prepared move share one drawing, all of it dashed (provisional), nothing translucent: the rings removed
+    // and the marbles taken in a dashed red frame, the marble that leaves and the one that arrives in a dashed gold frame
     const fade=pv&&pv.gone.includes(i),prep=pv&&(pv.prov||pv.atProv);
-    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)',opacity:fade?.88:1},g);
+    el('circle',{cx:x,cy:y,r:30,fill:'var(--ring)'},g);
     el('circle',{cx:x,cy:y,r:15,fill:'var(--ring-hole)'},g);
     if(removable.has(i)&&!fade){fr(g,x,y,'var(--danger)');const d=7;el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g);}
     if(targets.has(i))fr(g,x,y,'var(--accent)');
     const c=st[M+i];
-    if(c)marble(g,x,y,c-1,i===from?.88:0);
+    if(c)marble(g,x,y,c-1);
+    if(c&&i===from)fr(g,x,y,'var(--accent)',DASH);
     if(lm&&lmLand===i&&c&&!starters.has(i))fr(g,x,y,'var(--accent)');   // (a marble that must jump: its own frame only)
     if(pv){
       if(fade||c&&pv.taken.includes(i))fr(g,x,y,'var(--danger)',DASH);
-      if(land===i){marble(g,x,y,pmv.t===1?st[M+pmv.path[0]]-1:pmv.c,.88);if(prep)fr(g,x,y,'var(--accent)');}}
+      if(land===i){marble(g,x,y,pmv.t===1?st[M+pmv.path[0]]-1:pmv.c);fr(g,x,y,'var(--accent)',DASH);}}
     if(starters.has(i))fr(g,x,y,'var(--accent)');
     // the jumping marble picked (path not started yet): the element to click again to drop it
     if(ui.path&&ui.path.length===1&&ui.path[0]===i&&interactive)fr(g,x,y,'var(--accent)');}
-  const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'',opacity:.9,'pointer-events':'none'},svg);};
-  // a line from the starting ring to the landing marble: solid up to its frame (the last capture, a capture prepared),
-  // dotted up to the marble's edge (a capture hovered)
-  const capLine=(Q,dot)=>{const P=Q.map(i=>[X(i),Y(i)]),a=P[P.length-2],b=P[P.length-1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),k=dot?22:27;
+  const path=(P,dash)=>{if(!P||P.length<2)return;el('polyline',{points:P.map(i=>X(i)+','+Y(i)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-dasharray':dash||'6 6','pointer-events':'none'},svg);};
+  // a line from the starting ring to the landing marble's frame: solid for the last capture (played), dashed for a capture
+  // prepared or hovered (provisional)
+  const capLine=(Q,dot)=>{const P=Q.map(i=>[X(i),Y(i)]),a=P[P.length-2],b=P[P.length-1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),k=27;
     P[P.length-1]=[b[0]-(b[0]-a[0])/L*k,b[1]-(b[1]-a[1])/L*k];
-    el('polyline',Object.assign({points:P.map(p=>p.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},dot?{'stroke-dasharray':'1 6'}:{}),svg);};
+    el('polyline',Object.assign({points:P.map(p=>p.join(',')).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},dot?{'stroke-dasharray':'6 6'}:{}),svg);};
   // the last capture: that line, and a red cross on each marble taken (the middle of each jump)
   if(lm&&lm.t===1&&lm.path.length>1){capLine(lm.path);
     for(let k=1;k<lm.path.length;k++){const x=(X(lm.path[k-1])+X(lm.path[k]))/2,y=(Y(lm.path[k-1])+Y(lm.path[k]))/2,d=7;
       el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round','pointer-events':'none'},svg);}}
-  if(pv&&pv.mv.t===1){if(pv.mv.path.length>1)capLine(pv.mv.path,!(pv.prov||pv.atProv));}else if(ui.path)path(ui.path);}
+  if(pv&&pv.mv.t===1){if(pv.mv.path.length>1)capLine(pv.mv.path,true);}else if(ui.path)path(ui.path);}
 
 // ---------- the interface with common/core.js ----------
 const GAME={id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
