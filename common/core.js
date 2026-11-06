@@ -391,18 +391,19 @@ function voiceRender(){const b=$('voiceBox'),pl=mySeat>=0&&(role==='host'||role=
   $('voiceCtl').hidden=!(st==='conn'||st==='on');$('voiceMute').disabled=!V.stream;
   $('voiceMute').textContent=V.muted?'🔇':'🎙';$('voiceMute').title=t(V.muted?'vUnmute':'vMute');$('voiceMute').setAttribute('aria-label',$('voiceMute').title);
   $('voiceMute').classList.toggle('on',!!V.muted);$('voiceVol').setAttribute('aria-label',t('vVol'));$('voiceVol').title=t('vVol');}
-const chatShown=()=>!$('chatBox').hidden&&$('chatBox').open&&(isWide()||document.documentElement.classList.contains('sheet'));
+const chatShown=()=>{const b=$('chatBox'),R=document.documentElement;if(b.hidden)return false;if(isWide())return b.open;
+  return R.classList.contains('chatup')||R.classList.contains('pchat')&&!!b.dataset.cm&&b.dataset.cm!=='none';};
 const chatMsgs=()=>view&&Array.isArray(view.chat)?view.chat.filter(x=>x.m).length:0;
 const chatUnread=()=>CH.seen<0?0:Math.max(0,chatMsgs()-CH.seen);
 const CHATHUES=[210,12,140,275,35,330,180,95];
 const chatHue=n=>{let h=0;for(const c of String(n))h=(h*31+c.charCodeAt(0))>>>0;return CHATHUES[h%CHATHUES.length];};
-function chatRender(){const b=$('chatBox'),net=role==='host'||role==='guest'||role==='watch';b.hidden=!net||!view;if(b.hidden)return;
+function chatRender(){const b=$('chatBox'),net=role==='host'||role==='guest'||role==='watch';b.hidden=!net||!view;if(b.hidden){chatUp(false);chatBtnSync();return;}
   const L=Array.isArray(view.chat)?view.chat:[],ul=$('chatList'),anonW=role==='watch'&&!C.name,r=replay(view,view.moves,view.result);
   if(CH.seen<0||chatShown())CH.seen=chatMsgs();
   const u=chatUnread();$('chatSum').textContent=u?t('chatN',{n:u}):t('chat');
   $('chatForm').hidden=anonW;$('chatName').hidden=!anonW;$('chatIn').placeholder=t('chatPh');
   const h=$('chatHint'),hk=role==='watch'?(r.over?'':'chatHintW'):(r.over?'':'chatHintP');h.hidden=!hk;if(hk)h.textContent=t(hk);
-  const key=L.length+'|'+(L.length?JSON.stringify(L[L.length-1]):'')+'|'+lang;if(CH.key===key)return;CH.key=key;ul.textContent='';
+  chatBtnSync();const key=L.length+'|'+(L.length?JSON.stringify(L[L.length-1]):'')+'|'+lang;if(CH.key===key)return;CH.key=key;ul.textContent='';
   if(!L.length){const li=document.createElement('li');li.className='hint';li.textContent=t('chatEmpty');ul.appendChild(li);}
   for(const x of L){const li=document.createElement('li');
     if(x.k){const a={...(x.a||{})};if(a.why)a.why=t(a.why);li.className='log';li.textContent=t(x.k,a);ul.appendChild(li);continue;}
@@ -597,7 +598,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     if(net){const ws=Array.isArray(view.wnames)?view.wnames:[],n=view.watchers||0;
       const items=n?ws.map(x=>x||t('anon')).sort((a,b)=>a.localeCompare(b)):[];
       const txt=!n?t('noSpect'):t('watchersT',{n})+(lang==='fr'?'\u00a0: ':': ')+items.join(', ');if(wl.textContent!==txt)wl.textContent=txt;}}
-  chatRender();voiceRender();chatFit();
+  chatRender();voiceRender();chatFit();chatMode();
   $('endCard').hidden=!r.over&&role!=='file'&&!(A&&(role==='local'||role==='ai'));   // the analysis of a game over keeps the way to a new one   // a game read from a file: always the way back home
   {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):'';
@@ -626,6 +627,7 @@ function bandSync(fresh){const n=$('notice');if(!n||BAND!=='haut')return;const o
 // « ⋯ » again or a swipe down.
 const mqWide=window.matchMedia(WIDE),isWide=()=>mqWide.matches;
 function sheet(on){const R=document.documentElement,was=R.classList.contains('sheet');on=!!on&&!isWide()&&!$('game').hidden;
+  if(on)chatUp(false);
   R.classList.toggle('sheet',on);$('sheetBg').hidden=!on;$('optBtn').setAttribute('aria-expanded',on?'true':'false');if(!on)sheetAttn.auto=false;
   if(on!==was&&view&&!$('chatBox').hidden){chatRender();sheetAttn();}
   if(on&&!was){$('side').scrollTop=0;$('side').focus({preventScroll:true});}
@@ -637,10 +639,11 @@ function chatDock(w){const b=$('chatBox'),sd=$('side'),sc=$('sideScroll');if(!b|
     g.onpointerdown=e=>{if(!isWide())return;e.preventDefault();g.setPointerCapture(e.pointerId);const y0=e.clientY,h0=b.offsetHeight;
       g.onpointermove=ev=>{CH.h=h0+(y0-ev.clientY);chatFit();};
       g.onpointerup=g.onpointercancel=()=>{g.onpointermove=null;LS.set('games-chath',Math.round(CH.h));};};}
-  if(w){if(b.parentNode!==sd)sd.appendChild(b);}else if(b.parentNode!==sc)$('myCard').before(b);chatFit();}
+  if(w){if(b.parentNode!==sd)sd.appendChild(b);}else{const bw=document.querySelector('.boardwrap');if(bw&&b.parentNode!==bw)bw.appendChild(b);b.open=true;}chatFit();}
 // the list takes what the docked frame's height leaves
 function chatFit(){const b=$('chatBox'),l=$('chatList');if(!b||!l)return;
-  if(!isWide()||!b.open||b.hidden){if(l.style.height)l.style.height='';return;}
+  if(!isWide())return;   // phones: chatSize
+  if(!b.open||b.hidden){if(l.style.height)l.style.height='';return;}
   const sd=$('side'),mx=Math.max(180,(sd?sd.clientHeight:600)-110);if(CH.h==null)CH.h=+LS.get('games-chath',0)||Math.round((sd?sd.clientHeight:600)*.5);
   const H=CH.h=Math.min(mx,Math.max(260,CH.h)),st=l.scrollTop,end=l.scrollHeight-l.clientHeight-st<4;
   const rest=b.offsetHeight-l.offsetHeight,px=Math.max(110,H-rest)+'px';if(l.style.height!==px)l.style.height=px;l.scrollTop=end?l.scrollHeight:st;}
@@ -649,18 +652,45 @@ function chatFit(){const b=$('chatBox'),l=$('chatList');if(!b||!l)return;
 function fitCards(){for(const el of document.querySelectorAll('#playersTop > .player')){const w=el.querySelector('.who');if(!w)continue;
   el.classList.remove('fit1','fit2');for(const k of ['fit1','fit2']){if(w.scrollWidth<=w.clientWidth+1)break;el.classList.add(k);}}}
 window.addEventListener('resize',()=>{if(BAND)fitCards();});
-function layoutMode(){const w=isWide();chatDock(w);document.documentElement.classList.toggle('wide',w);if(w)sheet(false);
+function layoutMode(){const w=isWide();chatDock(w);document.documentElement.classList.toggle('wide',w);if(w){sheet(false);chatUp(false);}
   const n=$('notice'),at=w&&!BAND?$('playersSide'):$('nav');document.documentElement.classList.toggle('band',w&&!!BAND);if(n&&at&&n.previousElementSibling!==at)at.after(n);}
 // Not wide: the board's area gets a fixed height, so that the action bar can grow up to --barMax under it without the
 // board ever changing size (the room the bar does not use stays empty). Games that lay out the board themselves
 // (GAME.ownLayout) are left alone.
-function lockBoard(){const ba=document.querySelector('.boardwrap .boardarea'),bw=ba&&ba.parentNode,n=$('notice');
+function lockBoard(){const ba=document.querySelector('.boardwrap .boardarea'),bw=ba&&ba.parentNode,n=$('notice'),cb=$('chatBox'),R=document.documentElement;
   if(!ba||!n||typeof getComputedStyle!=='function')return;
-  if(GAME.ownLayout||isWide()||$('game').hidden||n.parentNode!==bw||!bw.clientHeight){if(ba.style.height){ba.style.height='';ba.style.flex='';}return;}
+  if(GAME.ownLayout||isWide()||$('game').hidden||n.parentNode!==bw||!bw.clientHeight){if(ba.style.height){ba.style.height='';ba.style.flex='';}R.classList.remove('pchat');chatMode();return;}
   const gap=parseFloat(getComputedStyle(bw).rowGap)||0,max=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--barMax'))||112;
   let h=bw.clientHeight-max,k=0;
-  for(const c of bw.children){if(c===ba||c.hidden||getComputedStyle(c).display==='none'||getComputedStyle(c).position==='absolute')continue;k++;if(c!==n)h-=c.offsetHeight;}
-  const px=Math.max(120,Math.floor(h-gap*k))+'px';if(ba.style.height!==px){ba.style.flex='none';ba.style.height=px;}}
+  for(const c of bw.children){if(c===ba||c===cb||c.hidden||getComputedStyle(c).display==='none'||getComputedStyle(c).position==='absolute')continue;k++;if(c!==n)h-=c.offsetHeight;}
+  const hpx=Math.max(120,Math.floor(h-gap*k));let px=hpx+'px';if(ba.style.height!==px){ba.style.flex='none';ba.style.height=px;}
+  // the chat (phones in portrait, a network game): the board's area shrinks to the board itself, the chat takes the rest
+  // under the action bar; the board keeps exactly its size. No room for one line: « 💬 » in the header instead.
+  let on=false;
+  if(chatNet()&&cb&&cb.parentNode===bw){const bd=ba.querySelector('.board'),bh=bd?Math.ceil(bd.getBoundingClientRect().height):hpx;
+    if(bh<=hpx&&hpx-bh+max-n.offsetHeight-gap>=CHAT_LINE){on=true;px=bh+'px';if(ba.style.height!==px)ba.style.height=px;}}
+  R.classList.toggle('pchat',on);chatMode();}
+// Phones in portrait: the chat's look follows the room it has (data-cm: full, line or none), « 💬 » in the header when it
+// is not seen; opened over the board with a touch (chatUp)
+const CHAT_LINE=30,CHAT_FULL=90;
+const chatNet=()=>(role==='host'||role==='guest'||role==='watch')&&!!view;
+function chatMode(){const b=$('chatBox');if(!b)return;const R=document.documentElement,was=b.dataset.cm||'';
+  const h=R.classList.contains('pchat')&&!b.hidden&&!isWide()?b.clientHeight:0,m=h>=CHAT_FULL?'full':h>=CHAT_LINE?'line':'none';
+  chatSize();if(m===was)return;b.dataset.cm=m;chatSize();if(view&&!b.hidden&&!isWide()){chatRender();sheetAttn();}chatBtnSync();
+  if(m!=='none'){const l=$('chatList');l.scrollTop=l.scrollHeight;}}
+// the list takes the frame's height less the rest (the children of a <details> are not flex items, so it is measured)
+function chatSize(){const b=$('chatBox'),l=$('chatList');if(!b||!l||isWide())return;const R=document.documentElement;let px='';
+  if(!b.hidden&&(R.classList.contains('chatup')||R.classList.contains('pchat')&&b.dataset.cm==='full')){const cs=getComputedStyle(b);let h=b.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    for(const c of b.children){if(c===l||c.hidden||getComputedStyle(c).display==='none')continue;const m=getComputedStyle(c);h-=c.offsetHeight+parseFloat(m.marginTop)+parseFloat(m.marginBottom);}
+    px=Math.max(0,Math.floor(h))+'px';}
+  if(l.style.height!==px){const end=l.scrollHeight-l.clientHeight-l.scrollTop<4;l.style.height=px;if(end)l.scrollTop=l.scrollHeight;}}
+function chatBtnSync(){const c=$('chatBtn'),b=$('chatBox');if(!c||!b)return;const R=document.documentElement;
+  const on=!isWide()&&!$('game').hidden&&!b.hidden&&!R.classList.contains('chatup')&&(!R.classList.contains('pchat')||b.dataset.cm==='none');
+  c.hidden=!on;const u=on?chatUnread():0;c.dataset.n=u?String(u):'';c.title=u?t('chatN',{n:u}):t('chat');c.setAttribute('aria-label',c.title);}
+function chatUp(on){const R=document.documentElement,b=$('chatBox');on=!!on&&!!b&&!b.hidden&&!isWide()&&!!$('game')&&!$('game').hidden;
+  if(on===R.classList.contains('chatup'))return;R.classList.toggle('chatup',on);if($('chatBg'))$('chatBg').hidden=!on;
+  if(on)sheet(false);chatRender();sheetAttn();chatBtnSync();chatSize();const l=$('chatList');if(l)l.scrollTop=l.scrollHeight;
+  if(!on&&b.contains(document.activeElement))document.activeElement.blur();}
 // Board coordinates, shared by all the games (games-coords, default on): html.nocoords when off. The game reads coordsOn
 // when it draws (labels left out, a tighter viewBox) and sets --board-ar for html.nocoords.
 let coordsOn=LS.get('games-coords',true)!==false;
@@ -670,7 +700,7 @@ function coordsSet(on){coordsOn=!!on;document.documentElement.classList.toggle('
 // A sheet opened this way closes by itself once those cards are all gone (the game starts, a rematch begins): the board
 // is what matters then. A sheet the player opened or closed is left alone (sheet() clears the flag on close).
 function sheetAttn(){const ids=['inviteBox','startCard','endCard'].filter(id=>!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
-  $('optBtn').classList.toggle('attn',ids.length>0||chatUnread()>0||V.st==='in');
+  $('optBtn').classList.toggle('attn',ids.length>0||V.st==='in');
   if(!$('nameOv').hidden)return;   // the name first: the sheet would cover the frame over the board
   const prev=sheetAttn.prev||[],fresh=ids.filter(id=>!prev.includes(id));sheetAttn.prev=ids;
   if(isWide())return;
@@ -1098,11 +1128,17 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     ms.onchange=()=>{LS.set(K('mode'),ms.value);homeStep('play');};}
   $('loadForm').addEventListener('submit',e=>{e.preventDefault();const x=$('sgfFile').files&&$('sgfFile').files[0];if(!x){$('sgfErr').textContent=t('sgfNoFile');return;}
     x.text().then(txt=>{const er=sgfLoad(txt);$('sgfErr').textContent=er||'';});});
-  $('chatForm').onsubmit=e=>{e.preventDefault();chatSend();};$('chatName').onclick=()=>{sheet(false);nameOv('watch');};
+  $('chatForm').onsubmit=e=>{e.preventDefault();chatSend();};$('chatName').onclick=()=>{sheet(false);chatUp(false);nameOv('watch');};
   $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
   $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>voiceStop(t('vEnd'),true);
   {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
-  $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});window.addEventListener('resize',()=>chatFit());
+  $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});
+  {const cb=document.createElement('button');cb.type='button';cb.id='chatBtn';cb.className='chatbtn';cb.textContent='💬';cb.hidden=true;$('optBtn').before(cb);cb.onclick=()=>chatUp(true);
+    const bg=document.createElement('div');bg.className='sheetbg chatbg';bg.id='chatBg';bg.hidden=true;bg.onclick=()=>chatUp(false);document.body.appendChild(bg);
+    const b=$('chatBox');$('chatSum').addEventListener('click',e=>{if(isWide())return;e.preventDefault();chatUp(!document.documentElement.classList.contains('chatup'));});
+    b.addEventListener('click',e=>{if(isWide()||document.documentElement.classList.contains('chatup')||e.target.closest('summary,form,button,input'))return;chatUp(true);});
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('chatup')){e.preventDefault();e.stopImmediatePropagation();chatUp(false);}},true);
+    if(typeof ResizeObserver==='function')new ResizeObserver(()=>chatMode()).observe(b);}window.addEventListener('resize',()=>chatFit());
   $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
     if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);startAI(aiFirst(),GAME.form('a'));});}

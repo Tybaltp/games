@@ -304,3 +304,34 @@ html.ingame.band #playersTop > .player .tally{min-width:150px}
 #inviteBox:not(.prominent) #hostNote{display:none}
 /* band: names at the top, the command bar at the bottom, the board centred in the room between */
 html.ingame.band .boardarea{align-items:center}
+/* Phones in portrait, a network game: the chat in the game view, under the action bar, in the room the board does not
+   use (core: lockBoard puts html.pchat when there is room, chatMode sets data-cm from the frame's height): « full » the
+   messages and the field, « line » the last message only; otherwise « 💬 » in the header (.chatbtn). A touch opens it
+   over the board (html.chatup), with the observers, the voice chat and the hint. */
+.chatbtn{display:none;position:relative;flex-shrink:0;font-size:1rem;line-height:1;padding:5px 9px}
+html.ingame:not(.wide) .chatbtn:not([hidden]){display:inline-block}
+.chatbtn[data-n]:not([data-n=""])::after{content:attr(data-n);position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font-size:.7rem;font-weight:700;line-height:17px;text-align:center}
+html.ingame:not(.wide) .boardwrap > #chatBox{display:none}
+html.ingame.pchat:not(.wide) .boardwrap > #chatBox:not([hidden]){display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow:hidden;margin:0;padding:0;border:0;border-radius:0;background:none;cursor:pointer}
+html.ingame:not(.wide) .boardwrap > #chatBox > :where(summary,.wline,#chatHint,.voicein,.chatgrip){display:none}
+html.ingame:not(.wide) .boardwrap > #chatBox .chatlist{flex:1 1 0;min-height:0;max-height:none;margin:0;padding:4px 8px;gap:2px}
+html.ingame:not(.wide) .boardwrap > #chatBox .chatform,html.ingame:not(.wide) .boardwrap > #chatBox #chatName{margin-top:5px;flex:none}
+html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="line"] :is(.chatform,#chatName){display:none}
+html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="line"] .chatlist{overflow:hidden;justify-content:center}
+html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="line"] .chatlist li{display:none}
+html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="line"] .chatlist li:last-child{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="none"] > *{visibility:hidden}
+/* opened over the board: a bottom sheet of its own, the board under it keeps its size */
+.chatbg{z-index:31}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox:not([hidden]){display:flex;flex-direction:column;position:fixed;z-index:32;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;height:min(70vh,560px);height:min(70dvh,560px);
+  padding:10px max(12px,env(safe-area-inset-right,0px)) max(12px,var(--sab)) max(12px,env(safe-area-inset-left,0px));border:0;border-radius:16px 16px 0 0;background:var(--bg);box-shadow:0 -10px 30px rgba(0,0,0,.3);cursor:auto}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > :is(summary,.wline){display:block;flex:none}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary{list-style:none;cursor:pointer;font-weight:600;padding:2px 0 6px;text-align:center}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary::-webkit-details-marker{display:none}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > .wline{margin:0 0 6px;font-size:.82rem;color:var(--muted)}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > #chatHint:not([hidden]){display:block;flex:none}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > .voicein:not([hidden]){display:flex;flex:none}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox .chatlist{padding:6px 8px;gap:3px}
+html.ingame.chatup:not(.wide) .boardwrap > #chatBox > .voicein{margin-top:8px}
+html.ingame:not(.wide) .boardwrap > #chatBox .chatlist > li:first-child{margin-top:auto}
