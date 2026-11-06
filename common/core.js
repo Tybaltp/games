@@ -1141,7 +1141,15 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     const b=$('chatBox');$('chatSum').addEventListener('click',e=>{if(isWide())return;e.preventDefault();chatUp(!document.documentElement.classList.contains('chatup'));});
     b.addEventListener('click',e=>{if(isWide()||document.documentElement.classList.contains('chatup')||e.target.closest('summary,form,button,input'))return;chatUp(true);});
     window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('chatup')){e.preventDefault();e.stopImmediatePropagation();chatUp(false);}},true);
-    if(typeof ResizeObserver==='function')new ResizeObserver(()=>chatMode()).observe(b);}window.addEventListener('resize',()=>chatFit());
+    if(typeof ResizeObserver==='function')new ResizeObserver(()=>chatMode()).observe(b);
+    // phones: writing opens the chat over the board (the field under the board would be under the keyboard), and the
+    // open chat sits on the keyboard: --kb (the keyboard's height) and --vvh (the visible height), from the visual viewport
+    const up=()=>{if(!isWide()&&!document.documentElement.classList.contains('chatup'))chatUp(true);};
+    $('chatIn').addEventListener('pointerdown',up);$('chatIn').addEventListener('focus',up);
+    $('chatIn').addEventListener('blur',()=>setTimeout(()=>{if(!isWide()&&document.activeElement!==$('chatIn')&&(scrollX||scrollY))scrollTo(0,0);},150));
+    const vv=window.visualViewport;if(vv){const kb=()=>{const R=document.documentElement,k=Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop));
+      R.style.setProperty('--kb',k+'px');R.style.setProperty('--vvh',Math.round(vv.height)+'px');if(R.classList.contains('chatup')){chatSize();const l=$('chatList');if(l&&k)l.scrollTop=l.scrollHeight;}};
+      vv.addEventListener('resize',kb);vv.addEventListener('scroll',kb);kb();}}window.addEventListener('resize',()=>chatFit());
   $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
     if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);startAI(aiFirst(),GAME.form('a'));});}

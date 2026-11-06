@@ -332,10 +332,13 @@ html.ingame:not(.chatup) .boardwrap > #chatBox[data-cm="none"] > *{visibility:hi
 /* opened over the board: a bottom sheet of its own, the board under it keeps its size */
 .chatbg{z-index:31}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox:not([hidden]){display:flex;flex-direction:column;position:fixed;z-index:32;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;height:min(70vh,560px);height:min(70dvh,560px);
+  bottom:var(--kb,0px);max-height:calc(var(--vvh,100vh) - 8px);
   padding:10px max(12px,env(safe-area-inset-right,0px)) max(12px,var(--sab)) max(12px,env(safe-area-inset-left,0px));border:0;border-radius:16px 16px 0 0;background:var(--bg);box-shadow:0 -10px 30px rgba(0,0,0,.3);cursor:auto}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > :is(summary,.wline){display:block;flex:none}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary{list-style:none;cursor:pointer;font-weight:600;padding:2px 0 6px;text-align:center}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary::-webkit-details-marker{display:none}
+/* 16 px at least: a phone does not zoom on the field when it gets the focus */
+html.ingame:not(.wide) .boardwrap > #chatBox #chatIn{font-size:16px}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > .wline{margin:0 0 6px;font-size:.82rem;color:var(--muted)}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > #chatHint:not([hidden]){display:block;flex:none}
