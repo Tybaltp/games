@@ -20,6 +20,8 @@ common/games.css      styles communs : accueil, écran de jeu fixe, barre d'acti
 common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS),
                       interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks Duo et Volo
 CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
+volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau », bloc /*NN*/ de volo.html), produits par
+                      ~/volo-ia ; le worker charge onnxruntime-web depuis jsDelivr (repli unpkg, puis MCTS 3 s hors ligne)
 ```
 
 ### Ce que fait le socle commun (`common/core.js`)

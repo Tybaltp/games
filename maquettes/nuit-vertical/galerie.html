@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>Galerie téléphone</title>
+<style>body{margin:0;padding:12px;font:14px system-ui;background:#888}form{position:sticky;top:0;z-index:2;background:#888;padding:6px 0 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.g{display:flex;flex-wrap:wrap;gap:16px}.c{display:flex;flex-direction:column;gap:4px}.c b{font-weight:600}iframe{border:0;background:#000;box-shadow:0 2px 8px #0006}</style>
+<form id="f">
+ Taille <select name="s"><option>360x780</option><option>375x667</option><option selected>390x844</option><option>430x932</option></select>
+ Thème <select name="th"><option value="">sombre</option><option value="light">clair</option></select>
+ État <select name="p"><option value="chat">partie en ligne, chat</option><option value="open">chat ouvert</option><option value="chat0">en ligne, aucun message</option><option value="none">partie locale (sans chat)</option></select>
+ Échelle <select name="k"><option>1</option><option selected>0.75</option><option>0.5</option></select>
+</form><div class="g" id="g"></div>
+<script>
+const G=['arimaa','diagonalblocks','gyges','pente','pontedeldiavolo','quarto','tintas','volo','zertz'],f=document.getElementById('f');
+function draw(){const q=new FormData(f),[w,h]=q.get('s').split('x').map(Number),k=+q.get('k');
+  document.getElementById('g').innerHTML=G.map(g=>`<div class="c"><b>${g}</b><div style="width:${w*k}px;height:${h*k}px;overflow:hidden"><iframe style="width:${w}px;height:${h}px;transform:scale(${k});transform-origin:0 0" src="cap.html?w=${w}&hh=${h}&g=${g}&p=${q.get('p')}&th=${q.get('th')}&z=${Date.now()}"></iframe></div></div>`).join('');}
+f.onchange=draw;draw();
+</script>

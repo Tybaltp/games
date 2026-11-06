@@ -164,7 +164,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=54"></script>
+<script src="common/core.js?v=55"></script>
 <script src="common/codes.js?v=2"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
@@ -256,7 +256,7 @@ function VoloEngine(){
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
- lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six niveaux, pour s'entraîner.",st_autoPass:"Aucun coup possible : vous passez.",
+ lv_debutant:"0 (débutant)",lv_moyen:"1 (moyen)",lv_nn64:"2",lv_nn150:"3",lv_nn400:"4",lv_nn1000:"5",lv_nn1700:"6",lv_reseau:"7 (le plus fort)",m_aiTxt:"Huit niveaux, de 0 à 7, pour s'entraîner ; à partir de 2, un réseau de neurones.",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
@@ -265,12 +265,12 @@ const VO_I18N={fr:{
  <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
  <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
  <li><b>Jouer</b> : pour ajouter un oiseau, cliquez un point libre ; pour un vol, cliquez un oiseau (ou plusieurs alignés, un clic par oiseau), puis le point d'arrivée. Au survol, l'oiseau ajouté ou le vol s'affiche en transparence ; cliquer un oiseau provisoire revient en arrière ; cliquer ailleurs abandonne la sélection. Si le coup coupe les oiseaux adverses en régions, choisissez celle qui reste (Garder A, Garder B…, ou un clic sur un de ses oiseaux). Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, huit niveaux, de 0 à 7 (un réseau de neurones à partir de 2), avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",
- lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",m_aiTxt:"Six levels, to practise.",st_autoPass:"No move available: you pass.",
+ lv_debutant:"0 (beginner)",lv_moyen:"1 (medium)",lv_nn64:"2",lv_nn150:"3",lv_nn400:"4",lv_nn1000:"5",lv_nn1700:"6",lv_reseau:"7 (strongest)",m_aiTxt:"Eight levels, from 0 to 7, to practise; from 2 on, a neural network.",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Birds are unlimited; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
@@ -279,7 +279,7 @@ const VO_I18N={fr:{
  <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
  <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
  <li><b>Playing</b>: to add a bird, click an empty point; for a flight, click a bird (or several in line, one click per bird), then the landing point. Hovering shows the bird added or the flight in transparency; clicking a provisional bird goes back one step; clicking elsewhere drops the selection. If the move splits the opponent's birds into regions, choose the one that stays (Keep A, Keep B…, or a click on one of its birds). The move commands are in the bar under the board: Reset, Pass, Confirm; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, six levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eight levels, from 0 to 7 (a neural network from 2 on), with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
 }};
@@ -734,35 +734,323 @@ return {N,LEN,TM,PS,WN,RAYS,fromPos,flocks,count,connected,flights,placements,ar
   feats,evalS,result,moves,rootMoves,playout,search,K:KS,setEV:o=>{EV={...EV,...o};},setPW:o=>{PW={...PW,...o};},EV:()=>EV,PW:()=>PW};
 }
 /*AIEND*/
+/*NN*/
+// GENERATED by ~/volo-ia/site/build.js from engine/encode.js and lib/mcts.js — do not edit here.
+// The neural network computer (AlphaZero-style PUCT): VoloNN(VoloEngine(), VoloAI(...), page URL).search(pos, opt) is
+// async; opt: {algo:'nn', sims (1: the network's intuition, no search), temp (choice temperature, every move: variety),
+// time (ms, optional cap), net (weights URL, relative to the page), cpuct, fpu; from the page: oppStuck (the
+// opponent had to pass twice running), noProgress (our flocks no fewer than 5 of our moves ago)}. onnxruntime-web (onnxruntime-web@1.20.1, WASM,
+// one thread) and the weights are loaded on the first search of the worker.
+function VoloNN(E, A, base) {
+const M = {}, req = p => M[p.split('/').pop().replace(/\.js$/, '')];
+M.volo = {E, A};
+(function (module, require) {
+// Encodage d'une position de Volo pour le réseau, codage des coups sur 121 cases, symétries du plateau.
+//
+// Grille : le plateau (120 points, coordonnées axiales q, r de -6 à 6) dans une grille 13×13, case (r+6)*13 + (q+6) ;
+// les 49 cases hors plateau (centre, coins, hors de l'hexagone) sont masquées (plan 0 à zéro).
+// Tout est vu du camp qui joue (« moi ») : la valeur, la politique et la propriété aussi.
+// Plans (C = 12), valeurs dans [0, 1] :
+//   0 sur le plateau        1 mes oiseaux             2 oiseaux adverses        3 le camp qui joue est Bleu (plan constant)
+//   4 ma mobilité : nombre de vols légaux où cet oiseau vole, /8 plafonné à 1     5 la même chose pour l'adversaire
+//   6 point vide d'une zone close par mes seuls oiseaux   7 … par les seuls oiseaux adverses   8 … mixte (ou sans oiseau)
+//   9 je peux ajouter ici   10 l'adversaire pourrait ajouter ici   11 le coup précédent était une passe (constant)
+// Politique : 121 cases, les 120 points (indices du moteur) et 120 = passer. Un ajout vaut sa case ; un vol, ses cases
+// d'arrivée ; les variantes d'un coup qui coupe l'adversaire en régions se partagent son score (la région gardée est
+// laissée à la valeur).
+// Symétries : les 12 du plateau (6 rotations, avec ou sans réflexion). Une rotation de 60° envoie les nids orange sur
+// les nids bleus : la position image a les couleurs échangées (et l'autre camp au trait), ce qui, vu du camp qui joue,
+// ne change que le plan 3. Les règles ne dépendent pas de la couleur en cours de partie.
+const {E, A} = require('./volo.js');
+const N = E.N, G = 13, HW = G * G, C = 12, NPOL = N + 1, PASS = N;
+const PLANES = ['plateau', 'mes oiseaux', 'oiseaux adverses', 'Bleu joue', 'ma mobilité', 'mobilité adverse',
+  'vide clos par moi', 'vide clos par l\'adversaire', 'vide mixte', 'mes ajouts', 'ajouts adverses', 'passe avant'];
+const CELL = new Int16Array(N);   // point → case de la grille
+for (let i = 0; i < N; i++) CELL[i] = (E.R[i] + 6) * G + (E.Q[i] + 6);
+const MOB = 8;
+
+// ----- position → plans -----
+const FLB = [], PLB = [];
+// S : position rapide (Int8Array de VoloAI). out : Float32Array(C*HW), remis à zéro ici.
+function encode(S, out) {
+  out = out || new Float32Array(C * HW); out.fill(0);
+  const me = S[A.TM], op = 1 - me, cm = me + 1, co = op + 1;
+  const put = (pl, i, v) => { out[pl * HW + CELL[i]] = v; };
+  for (let i = 0; i < N; i++) { put(0, i, 1); if (S[A.TM] === 1) put(3, i, 1); if (S[A.PS] > 0) put(11, i, 1);
+    if (S[i] === cm) put(1, i, 1); else if (S[i] === co) put(2, i, 1); }
+  for (const [p, pl] of [[me, 4], [op, 5]]) {
+    A.flocks(S, p); FLB.length = 0; A.flights(S, p, FLB);
+    const cnt = new Uint8Array(N); for (const m of FLB) for (const z of m.cells) cnt[z]++;
+    for (let i = 0; i < N; i++) if (cnt[i]) put(pl, i, Math.min(1, cnt[i] / MOB));
+    PLB.length = 0; A.placements(S, p, PLB); for (const m of PLB) put(pl === 4 ? 9 : 10, m.at, 1);
+  }
+  const {EL, EC} = areasOf(S, me);   // EC : 1 mes oiseaux seuls autour, 2 l'adversaire seul, 3 les deux, 0 aucun
+  for (let i = 0; i < N; i++) if (S[i] === 0) { const k = EC[EL[i]]; put(k === 1 ? 6 : k === 2 ? 7 : 8, i, 1); }
+  return out;
+}
+// les zones vides vues de p (même définition que areas de VoloAI, dont les tableaux sont privés)
+const _EL = new Int16Array(N), _EC = new Uint8Array(N + 1), _STK = new Int16Array(N);
+function areasOf(S, p) { const c = p + 1; _EL.fill(-1); let k = 0;
+  for (let i = 0; i < N; i++) { if (S[i] !== 0 || _EL[i] >= 0) continue; let cl = 0, sp = 0; _STK[sp++] = i; _EL[i] = k;
+    while (sp) { const x = _STK[--sp]; for (let d = 0; d < 6; d++) { const y = E.NB[x * 6 + d]; if (y < 0) continue; const v = S[y];
+      if (v === 0) { if (_EL[y] < 0) { _EL[y] = k; _STK[sp++] = y; } } else cl |= v === c ? 1 : 2; } }
+    _EC[k++] = cl; }
+  return {EL: _EL, EC: _EC}; }
+
+// ----- coups ↔ 121 cases -----
+// les cases d'un coup (un ajout : 1 ; un vol : ses cases d'arrivée ; passer : 120)
+function moveIdx(m) { return m.t === 'x' ? [PASS] : m.t === 'p' ? [m.at] : m.cells.map(z => E.dest(m, z)); }
+const baseKey = m => m.t === 'x' ? 'x' : m.t === 'p' ? 'p' + m.at : 'f' + m.cells.join('.') + '>' + m.d + '.' + m.k;
+// distribution cible depuis les visites de la racine : chaque coup verse ses visites sur ses cases, à parts égales
+function policyTarget(moves, visits, out) {
+  out = out || new Float32Array(NPOL); out.fill(0); let t = 0;
+  moves.forEach((m, j) => { const v = visits[j]; if (!v) return; const ix = moveIdx(m); for (const k of ix) out[k] += v / ix.length; t += v; });
+  if (t > 0) for (let k = 0; k < NPOL; k++) out[k] /= t;
+  return out;
+}
+// décodage : probabilités des coups légaux depuis les 121 logits (log-softmax du réseau ou non). Le score d'un coup est
+// la moyenne des logits de ses cases ; les variantes de régions d'un même coup se partagent sa probabilité.
+function movePriors(moves, logits, out) {
+  out = out || new Float32Array(moves.length);
+  const nv = new Map(); for (const m of moves) { const k = baseKey(m); nv.set(k, (nv.get(k) || 0) + 1); }
+  let mx = -Infinity;
+  moves.forEach((m, j) => { const ix = moveIdx(m); let s = 0; for (const k of ix) s += logits[k]; s /= ix.length;
+    s -= Math.log(nv.get(baseKey(m))); out[j] = s; if (s > mx) mx = s; });
+  let t = 0; for (let j = 0; j < moves.length; j++) { out[j] = Math.exp(out[j] - mx); t += out[j]; }
+  for (let j = 0; j < moves.length; j++) out[j] /= t;
+  return out;
+}
+
+// ----- symétries -----
+// en coordonnées cubiques (x = q, z = r, y = -q-r) : rotation de 60° (q, r) → (-r, q+r) ; réflexion (q, r) → (q, -q-r)
+const rot = ([q, r]) => [-r, q + r], refl = ([q, r]) => [q, -q - r];
+const DQ = [1, 1, 0, -1, -1, 0], DR = [0, -1, -1, 0, 1, 1];
+const SYM = [];   // {perm: point → point image, dir: direction → direction image, swap: couleurs échangées}
+for (let f = 0; f < 2; f++) for (let k = 0; k < 6; k++) {
+  const tf = v => { let w = f ? refl(v) : v; for (let j = 0; j < k; j++) w = rot(w); return w; };
+  const perm = new Int16Array(N); for (let i = 0; i < N; i++) { const [q, r] = tf([E.Q[i], E.R[i]]); perm[i] = E.AT[q + ',' + r]; }
+  const dir = new Int8Array(6); for (let d = 0; d < 6; d++) { const [q, r] = tf([DQ[d], DR[d]]); dir[d] = DQ.findIndex((x, e) => x === q && DR[e] === r); }
+  const n0 = E.NEST.indexOf(perm[E.NEST[0]]);
+  SYM.push({k, f, perm, dir, swap: (n0 & 1) === 1});
+}
+// position image (couleurs et trait échangés si la symétrie envoie les nids d'une couleur sur ceux de l'autre)
+function symPos(S, s) { const T = S.slice(); const P = SYM[s];
+  for (let i = 0; i < N; i++) { let v = S[i]; if (P.swap && v) v = 3 - v; T[P.perm[i]] = v; }
+  if (P.swap) { T[A.TM] = 1 - S[A.TM]; if (S[A.WN] === 0 || S[A.WN] === 1) T[A.WN] = 1 - S[A.WN]; }
+  return T; }
+// coup image ; avec T (la position image), la région gardée est redésignée comme le fait le moteur (son oiseau adverse
+// d'indice le plus petit), pour retrouver l'objet exact que A.gen(T) produit
+function symMove(m, s, T) { const P = SYM[s];
+  if (m.t === 'x') return m; let keep = m.keep >= 0 ? P.perm[m.keep] : -1;
+  const mm = m.t === 'p' ? {...m, at: P.perm[m.at], keep} : {...m, cells: m.cells.map(z => P.perm[z]), d: P.dir[m.d], keep};
+  if (T && keep >= 0) mm.keep = keepRep(T, mm);
+  return mm; }
+function keepRep(T, m) { const p = T[A.TM], t = E.base(T, m), rg = E.regions(t, 1 - p), oc = 2 - p;
+  for (let i = 0; i < N; i++) if (rg.lab[i] === rg.lab[m.keep] && t[i] === oc) return i;
+  return m.keep; }
+// clé d'un coup indépendante de l'ordre des oiseaux d'une ligne (pour comparer des listes de coups)
+const canon = m => m.t === 'x' ? 'x' : m.t === 'p' ? 'p' + m.at + 'k' + m.keep : 'f' + m.cells.slice().sort((a, b) => a - b).join('.') + '>' + m.d + '.' + m.k + 'k' + m.keep;
+// permutation des cases de la grille (pour les plans) ; -1 hors plateau
+function gridPerm(s) { const g = new Int16Array(HW).fill(-1); for (let i = 0; i < N; i++) g[CELL[i]] = CELL[SYM[s].perm[i]]; return g; }
+
+// ----- enregistrement d'une position pour l'entraînement (binaire, petit-boutiste, taille fixe) -----
+// planes uint8 [C*HW] (valeur × 255) · pi float32 [121] · z float32 (résultat pour le camp qui joue : 1, 0, -1)
+// · own int8 [120] (fin de partie : 1 mon oiseau, -1 adverse, 0 vide) · ply uint16 · pad uint16
+const REC = {planes: [0, C * HW], pi: [C * HW, NPOL * 4], z: [C * HW + NPOL * 4, 4], own: [C * HW + NPOL * 4 + 4, N],
+  ply: [C * HW + NPOL * 4 + 4 + N, 2]};
+// alignement : la taille totale arrondie à 4
+REC.bytes = Math.ceil((REC.ply[0] + 4) / 4) * 4;
+function writeRecord(buf, off, planes, pi, z, own, ply) {
+  for (let k = 0; k < C * HW; k++) buf[off + k] = Math.round(planes[k] * 255);
+  for (let k = 0; k < NPOL; k++) buf.writeFloatLE(pi[k], off + REC.pi[0] + 4 * k);
+  buf.writeFloatLE(z, off + REC.z[0]);
+  for (let k = 0; k < N; k++) buf.writeInt8(own[k], off + REC.own[0] + k);
+  buf.writeUInt16LE(Math.min(65535, ply), off + REC.ply[0]);
+}
+// géométrie partagée avec Python (train/) : écrite par « node engine/encode.js » dans engine/geometry.json
+function geometry() {
+  return {N, G, C, NPOL, PASS, planes: PLANES, cell: Array.from(CELL), colorPlane: 3,
+    sym: SYM.map((P, s) => ({rot: P.k, refl: P.f, swap: P.swap, perm: Array.from(P.perm), grid: Array.from(gridPerm(s))})),
+    record: REC};
+}
+module.exports = {N, G, HW, C, NPOL, PASS, PLANES, CELL, encode, moveIdx, policyTarget, movePriors, SYM, symPos, symMove, keepRep, canon, gridPerm, REC, writeRecord, geometry};
+if (require.main === module) {
+  const fs = require('fs'), path = require('path');
+  fs.writeFileSync(path.join(__dirname, 'geometry.json'), JSON.stringify(geometry()));
+  console.log('écrit engine/geometry.json : C', C, 'enregistrement', REC.bytes, 'octets, symétries', SYM.length, 'dont', SYM.filter(s => s.swap).length, 'qui échangent les couleurs');
+}
+
+})(M._e = {exports: {}}, req); M.encode = M._e.exports;
+(function (module, require) {
+// PUCT (AlphaZero) sur les règles rapides de VoloAI, avec un réseau évalué par lots : step() descend jusqu'à une
+// feuille et la rend (à évaluer) ou la règle seule (fin de partie) ; deliver() développe la feuille avec la sortie du
+// réseau et remonte la valeur. Le trait alterne toujours dans Volo : la valeur change de signe à chaque niveau.
+// Valeurs du point de vue du camp au trait du nœud, dans [-1, 1].
+const {A} = require('../engine/volo.js');
+const X = require('../engine/encode.js');
+
+class Node {
+  constructor(S) { this.S = S; this.moves = null; this.P = null; this.N = null; this.W = null; this.ch = null; this.n = 0; this.v = 0; }
+}
+const termValue = S => { const w = S[A.WN]; return w === 2 ? 0 : w === S[A.TM] ? 1 : -1; };
+
+// Γ(a) par Marsaglia-Tsang (a < 1 : Γ(a+1)·U^(1/a))
+function gamma(a) {
+  if (a < 1) return gamma(a + 1) * Math.pow(Math.random(), 1 / a);
+  const d = a - 1 / 3, c = 1 / Math.sqrt(9 * d);
+  for (;;) { let x, v; do { const u1 = Math.random(), u2 = Math.random(); x = Math.sqrt(-2 * Math.log(u1 || 1e-12)) * Math.cos(2 * Math.PI * u2); v = 1 + c * x; } while (v <= 0);
+    v = v * v * v; const u = Math.random(); if (u < 1 - .0331 * x ** 4 || Math.log(u) < .5 * x * x + d * (1 - v + Math.log(v))) return d * v; }
+}
+
+class Search {
+  // o : {sims, cpuct, fpu, noise: {total, eps} | null}
+  constructor(S, o) { this.root = new Node(S); this.o = o; this.sims = 0; this.pending = null; }
+  done() { return this.root.moves !== null && this.sims >= this.o.sims; }
+  step() {
+    const root = this.root;
+    if (!root.moves) { this.pending = {node: root, path: []}; return root.S; }
+    let node = root; const path = [];
+    for (;;) {
+      if (node.S[A.WN] >= 0) { this.backup(path, termValue(node.S)); this.sims++; return null; }
+      if (!node.moves) { this.pending = {node, path}; return node.S; }
+      const a = this.select(node); path.push([node, a]);
+      if (!node.ch[a]) node.ch[a] = new Node(A.play(node.S, node.moves[a]));
+      node = node.ch[a];
+    }
+  }
+  select(node) {
+    const {cpuct, fpu} = this.o, sq = Math.sqrt(Math.max(1, node.n)), q0 = node.v - fpu;
+    let best = 0, bv = -Infinity;
+    for (let a = 0; a < node.moves.length; a++) { const n = node.N[a], q = n ? node.W[a] / n : q0, u = q + cpuct * node.P[a] * sq / (1 + n);
+      if (u > bv) { bv = u; best = a; } }
+    return best;
+  }
+  deliver(out) {
+    const {node, path} = this.pending; this.pending = null;
+    node.moves = A.gen(node.S); const L = node.moves.length;
+    node.P = X.movePriors(node.moves, out.logits); node.N = new Int32Array(L); node.W = new Float32Array(L); node.ch = new Array(L).fill(null);
+    node.v = out.value;
+    if (node === this.root && this.o.noise && L > 1) {   // bruit de Dirichlet à la racine
+      const al = Math.min(1, this.o.noise.total / L), g = []; let t = 0;
+      for (let a = 0; a < L; a++) { g.push(gamma(al)); t += g[a]; }
+      for (let a = 0; a < L; a++) node.P[a] = (1 - this.o.noise.eps) * node.P[a] + this.o.noise.eps * g[a] / t;
+    }
+    this.backup(path, out.value); this.sims++;
+  }
+  backup(path, v) { for (let i = path.length - 1; i >= 0; i--) { v = -v; const [p, a] = path[i]; p.N[a]++; p.W[a] += v; p.n++; } if (!path.length) this.root.n++; }
+  // le coup : tiré selon les visites (temp > 0) ou le plus visité ; sans visite (une seule simulation : le réseau à
+  // l'intuition), selon la politique
+  pick(temp) {
+    const r = this.root; let N = r.N, a = 0;
+    if (!N.some(n => n > 0)) N = r.P;
+    if (temp > 0) { let t = 0; const w = Array.from(N, n => Math.pow(n, 1 / temp)); for (const x of w) t += x;
+      let u = Math.random() * t; for (a = 0; a < w.length - 1; a++) { u -= w[a]; if (u <= 0) break; } }
+    else for (let k = 1; k < N.length; k++) if (N[k] > N[a]) a = k;
+    return a;
+  }
+  // valeur de la racine après la recherche (camp qui joue)
+  value() { const r = this.root; let n = 0, w = 0; for (let a = 0; a < r.moves.length; a++) { n += r.N[a]; w += r.W[a]; } return n ? w / n : r.v; }
+}
+module.exports = {Search, termValue};
+
+})(M._m = {exports: {}}, req);
+const X = M.encode, {Search} = M._m.exports;
+const CDN = ['https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/', 'https://unpkg.com/onnxruntime-web@1.20.1/dist/'];
+let sess = null, loading = null, ortLib = null;
+function load(opt) {
+  if (!loading) loading = (async () => {
+    let dir = null;
+    for (const d of CDN) { try { importScripts(d + 'ort.wasm.min.js'); dir = d; break; } catch (e) {} }
+    if (!dir) throw new Error('onnxruntime-web unavailable');
+    ortLib = self.ort; ortLib.env.wasm.numThreads = 1; ortLib.env.wasm.wasmPaths = self.NN_WASM || dir;   // NN_WASM : tests (Node)
+    const r = await fetch(new URL(opt.net, base)); if (!r.ok) throw new Error('weights: HTTP ' + r.status);
+    sess = await ortLib.InferenceSession.create(new Uint8Array(await r.arrayBuffer()), {executionProviders: ['wasm'], graphOptimizationLevel: 'all'});
+  })().catch(e => { loading = null; throw e; });
+  return loading;
+}
+const xbuf = new Float32Array(X.C * X.HW);
+async function evalNet(S) {
+  X.encode(S, xbuf);
+  const o = await sess.run({x: new ortLib.Tensor('float32', xbuf, [1, X.C, X.G, X.G])});
+  return {logits: o.policy.data, value: o.value.data[0]};
+}
+const out = m => m.t === 'x' ? {t: 'x', keep: -1} : m.t === 'p' ? {t: 'p', at: m.at, keep: m.keep} : {t: 'f', cells: m.cells, d: m.d, k: m.k, keep: m.keep};
+// the score as the MCTS levels give it: a logit of the winning chances; depth: the main line's length
+const logit = v => { v = Math.max(-.999, Math.min(.999, v)); return Math.log((1 + v) / (1 - v)); };
+async function search(P, opt) {
+  const S = A.fromPos(P); if (S[A.WN] >= 0) return null;
+  const L = A.gen(S); if (!L.length) return null;
+  if (L.length === 1) return {move: out(L[0]), score: 0, depth: 0, forced: true, policy: false, nodes: 0};
+  await load(opt);
+  const s = new Search(S, {sims: opt.sims, cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null});
+  const t0 = Date.now();   // opt.time (ms): a cap for slow machines, the search stops there even short of its sims
+  while (!s.done() && !(opt.time && s.root.moves && Date.now() - t0 > opt.time)) if (s.step()) s.deliver(await evalNet(s.pending.node.S));
+  const a = s.pick(opt.temp || 0); let d = 0, n = s.root;
+  while (n && n.N) { let b = 0; for (let k = 1; k < n.N.length; k++) if (n.N[k] > n.N[b]) b = k; if (!n.N[b]) break; d++; n = n.ch[b]; }
+  // a blocked game (opt from the page, GAME.aiOpt): the opponent had to pass twice running and our flocks have not got
+  // fewer in our last 5 moves: no better than even, so a draw offer is accepted. On 1600 self-play games (06.11.2026):
+  // 8 % of the games reach it, and the side to move went on to win from 11 % of those positions.
+  // The network overrates such positions (a group shut in for good), and a player with flights may not pass: without
+  // this, a blocked game could go on for ever.
+  const sc = opt.oppStuck && opt.noProgress ? Math.min(0, logit(s.value())) : logit(s.value());
+  return {move: out(s.root.moves[a]), score: sc, depth: d, forced: false, policy: false, nodes: s.sims};
+}
+return {search, load, X, Search};
+}
+/*NNEND*/
 /*LEVELS*/
 // Levels: plain parameters for VoloAI().search (tune or add levels here; tournaments: outils/aitools, adapter volo.js).
 // algo 'greedy': one ply; exact: candidates ordered by the evaluation after them (without: by the policy alone, which
 // is cheaper and weaker); temp, softmax temperature in moves of advance. algo 'mcts' (common/ai.js): sims, simulations
 // (the MCTS levels set no real limit: they think for `time` ms, so their strength depends on the machine) · time (ms) · cut, playout moves before
 // the evaluation (0: none; shorter was better in tournaments) · cellsIn, candidates kept (best by the policy) at each
-// node below the root · c, UCT exploration · scale, evaluation moves per logit.
+// node below the root · c, UCT exploration · scale, evaluation moves per logit. algo 'nn' (VoloNN, /*NN*/ above): the
+// neural network of ~/volo-ia with a PUCT search of `sims` simulations (same strength wherever it finishes them: about
+// 500 to 1000 network evaluations a second on a recent computer) · time, a cap in ms for slower devices, which stop
+// short of `sims` · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
+const NN_NET='volo-net.onnx?v=37';
+// The ladder (06.11.2026, network n° 26, 30 games a pair, ~/volo-ia/site/ladder.sh): each level beats the one below
+// by about 70-80 % (debutant→moyen 83-88 %, moyen→nn64 63 %). The network levels play with a little randomness
+// (temp .3) for variety, except the strongest. MCTS3, the former 3 s level: what answers when the network cannot load.
+const MCTS3={algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5};
 const LEVELS={
   debutant:{algo:'greedy',temp:.6},
   moyen:{algo:'greedy',exact:1},
-  mcts3:{algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5},
-  mcts6:{algo:'mcts',sims:1e7,time:6000,cut:0,cellsIn:12,scale:1,c:.5},
-  mcts10:{algo:'mcts',sims:1e7,time:10000,cut:0,cellsIn:12,scale:1,c:.5},
-  mcts15:{algo:'mcts',sims:1e7,time:15000,cut:0,cellsIn:12,scale:1,c:.5}};
-const HINT=LEVELS.mcts3;
+  nn64:{algo:'nn',sims:64,temp:.3,time:10000,net:NN_NET},
+  nn150:{algo:'nn',sims:150,temp:.3,time:10000,net:NN_NET},
+  nn400:{algo:'nn',sims:400,temp:.3,time:10000,net:NN_NET},
+  nn1000:{algo:'nn',sims:1000,temp:.3,time:10000,net:NN_NET},
+  nn1700:{algo:'nn',sims:1700,temp:.3,time:10000,net:NN_NET},
+  reseau:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
+const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
 function voEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(r.policy)return null;if(s>=1000||s>4)return {k:'ai_win'};if(s<=-1000||s<-4)return {k:'ai_lost'};
   return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
+// A blocked game, for the network levels (VoloNN): oppStuck, the opponent had to pass twice running (a pass is only
+// allowed without any other move); noProgress, the side to move's flocks are no fewer than 5 of its moves ago. Both:
+// the computer accepts a draw (without this, a group shut in for good could make the game go on for ever).
+function voProgress(v){const ms=v.moves||[],n=ms.length,me=n%2;let st=E.init();const fl=[];
+  for(let k=0;k<n;k++){const mv=E.gen(st).find(m=>enc(m)===ms[k]);if(!mv)break;st=E.apply(st,mv).st;if(k%2===me)fl.push(E.flockCount(st,me));}
+  return {oppStuck:n>=3&&ms[n-1]==='x'&&ms[n-3]==='x',noProgress:fl.length>=6&&fl[fl.length-1]>=fl[fl.length-6]};}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   rules:()=>({}),form:()=>({}),
+  // against the computer, its level and the options it plays with (the network's version among them), in the SGF only
+  sgfHead:()=>{const o=role==='ai'&&LEVELS[level];return o?{XA:JSON.stringify({level,...o})}:{};},
   replay:voReplay,
   legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,
   enc,describe,newUi,preparing,cancel:cancelPrep,
   board:voBoard,turnStatus:voTurnStatus,
   levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
-  aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\nconst VA=VoloAI(VoloEngine());function aiSearch(pos,opt){return VA.search(pos,opt);}',
-  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>(pageAI=pageAI||VoloAI(E)).search(Array.from(st),opt),
+  aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\n'+VoloNN.toString()+'\nconst VA=VoloAI(VoloEngine());function aiSearch(pos,opt){return VA.search(pos,opt);}'+
+    // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
+    // if the network cannot load (offline, old browser), the MCTS 3 s level answers instead
+    '\nconst VN=VoloNN(VoloEngine(),VoloAI(VoloEngine()),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(MCTS3)+';'+
+    '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
+    'VN.search(m.st,m.opt).catch(()=>VA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
+  aiOpt:voProgress,
+  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>(pageAI=pageAI||VoloAI(E)).search(Array.from(st),opt.algo==='nn'?MCTS3:opt),   // no worker: no network either
   evalInfo:voEvalInfo,
   home:()=>{drawBoard(E.init(),{});}};
 coreStart();

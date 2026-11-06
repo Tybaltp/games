@@ -47,6 +47,7 @@
 //  sgf?                          {gm, sz: the game's SGF number and size · nodes?(r,view) → [{B|W|other prop: value}],
 //                                codes?(nodes) → move codes: a notation of its own · black?(st) → the seat of B};
 //                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value
+//  sgfHead?(v)                   extra private properties of the file's header {XA: …}: not shown in the game
 //  levels, levelDefault, hintLevel  computer levels {key:opt} (labels lv_key), the default key, the options of hints
 //  aiSrc(), aiPos(st), aiSearch(st,opt), aiOpt?(v), aiView?(st), evalInfo(res,st)  worker source defining
 //                                aiSearch(pos,opt) on the aiPos() form · page fallback search · extra search options ·
@@ -870,7 +871,7 @@ function resumeAs(seat,p){if(typeof Peer==='undefined'){status(t('noPeer'));retu
 // ---------- SGF: export of the game shown, reading of a file (read only) ----------
 // The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XR[rules, JSON] ;B[…];W[…]…). B and W are
 // seat 0 and seat 1 (Pente: the stone colours), their values the page's move codes unless the game has a notation of
-// its own (GAME.sgf). XG and XR are private properties (the SGF lets readers skip them).
+// its own (GAME.sgf). XG and XR are private properties (the SGF lets readers skip them), and so are the page's own (GAME.sgfHead).
 const AP='tybaltp.github.io/games';
 const sgfEsc=v=>String(v).replace(/\\/g,'\\\\').replace(/\]/g,'\\]');
 function sgfName(s){if(role==='ai')return s===meS()?nickGet()||t('you'):t('computer')+' ('+t('lv_'+level)+')';return view.names[s]||t(s===0?'p1':'p2');}
@@ -881,7 +882,7 @@ function sgfText(){const A=ana(),main=A?anaMainLine():view.moves,r=replay(view,m
   const pad=n=>String(n).padStart(2,'0'),d=new Date(),dt=view.sgfDT||d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const col=s=>s===bs?'B':'W',o=r.over;
   const re=!o?'':o.w<0?'0':col(o.w)+'+'+(o.why==='w_resign'?'R':o.why==='w_time'?'T':'');
-  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&G.sz,GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XR:JSON.stringify(GAME.rules(view))};
+  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&G.sz,GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XR:JSON.stringify(GAME.rules(view)),...(GAME.sgfHead?GAME.sgfHead(view):{})};
   const node=o=>';'+Object.keys(o).filter(k=>o[k]!==undefined&&o[k]!=='').map(k=>k+'['+sgfEsc(o[k])+']').join('');
   const nodesOf=p=>{const rr=GAME.replay(view,p);return G&&G.nodes?G.nodes(rr,{...view,moves:p}):rr.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:p[j]}));};
   const cnt=new Map(),count=p=>{const k=p.join(',');if(!cnt.has(k))cnt.set(k,nodesOf(p).length);return cnt.get(k);};

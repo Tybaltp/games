@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;height:100%;overflow:hidden}iframe{border:0;display:block}</style>
+<iframe id="f"></iframe><script>
+const q=new URLSearchParams(location.search),g=q.get('g'),p=q.get('p')||'',th=q.get('th')||'';
+const f=document.getElementById("f");f.style.width=q.get("w")+"px";f.style.height=q.get("hh")+"px";
+f.onload=()=>{const w=f.contentWindow;
+  if(th)w.document.documentElement.dataset.theme=th;
+  if(w.document.getElementById('game').hidden)w.eval('startLocal(GAME.rules({}))');
+  if(p==='chat'||p==='chat0'||p==='open')w.eval(`role='host';mySeat=0;view.names=['Thibault','Camille'];view.guestOn=true;view.started=true;
+    view.chat=${p==='chat0'?'[]':`[{k:'lg_join',a:{n:'Camille'}},{n:'Camille',m:'Salut ! Bonne partie',c:1},{n:'Thibault',m:'Merci, à toi aussi',c:0},{n:'Camille',m:'Joli coup, je ne l’avais pas vu venir…',c:1}]`};
+    renderGame();layoutMode();lockBoard();`);
+  if(p==='open')w.eval(`chatUp(true)`);
+};
+f.src='/'+g+'.html?t='+Date.now()+(q.get('h')||'');
+</script>
