@@ -337,6 +337,9 @@ html.ingame.chatup:not(.wide) .boardwrap > #chatBox:not([hidden]){display:flex;f
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > :is(summary,.wline){display:block;flex:none}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary{list-style:none;cursor:pointer;font-weight:600;padding:2px 0 6px;text-align:center}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary::-webkit-details-marker{display:none}
+/* where the browser tells what is seen (visual viewport): the open chat stands on its bottom, the top of the keyboard
+   when it is out, whatever the browser does with its own bars */
+html.ingame.chatup.vv:not(.wide) .boardwrap > #chatBox:not([hidden]){top:var(--vvb);bottom:auto;transform:translateY(-100%)}
 /* 16 px at least: a phone does not zoom on the field when it gets the focus */
 html.ingame:not(.wide) .boardwrap > #chatBox #chatIn{font-size:16px}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > summary::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}

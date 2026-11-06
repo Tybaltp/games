@@ -1148,7 +1148,9 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     $('chatIn').addEventListener('pointerdown',up);$('chatIn').addEventListener('focus',up);
     $('chatIn').addEventListener('blur',()=>setTimeout(()=>{if(!isWide()&&document.activeElement!==$('chatIn')&&(scrollX||scrollY))scrollTo(0,0);},150));
     const vv=window.visualViewport;if(vv){const kb=()=>{const R=document.documentElement,k=Math.max(0,Math.round(R.clientHeight-vv.height-vv.offsetTop));   // (the layout viewport: Chrome on Android shrinks innerHeight with the keyboard)
-      R.style.setProperty('--kb',k+'px');R.style.setProperty('--vvh',Math.round(vv.height)+'px');if(R.classList.contains('chatup')){chatSize();const l=$('chatList');if(l&&k)l.scrollTop=l.scrollHeight;}};
+      R.style.setProperty('--kb',k+'px');R.style.setProperty('--vvh',Math.round(vv.height)+'px');
+      R.style.setProperty('--vvb',Math.round(vv.offsetTop+vv.height)+'px');R.classList.add('vv');   // the bottom of what is seen: the open chat stands on it
+      if(R.classList.contains('chatup')){chatSize();const l=$('chatList');if(l&&k)l.scrollTop=l.scrollHeight;}};
       vv.addEventListener('resize',kb);vv.addEventListener('scroll',kb);kb();}}window.addEventListener('resize',()=>chatFit());
   $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
