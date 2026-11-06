@@ -1008,7 +1008,7 @@ return {search, load, X, Search};
 // neural network of ~/volo-ia with a PUCT search of `sims` simulations (same strength wherever it finishes them: about
 // 500 to 1000 network evaluations a second on a recent computer) · time, a cap in ms for slower devices, which stop
 // short of `sims` · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
-const NN_NET='volo-net.onnx?v=35';
+const NN_NET='volo-net.onnx?v=37';
 // The ladder (06.11.2026, network n° 26, 30 games a pair, ~/volo-ia/site/ladder.sh): each level beats the one below
 // by about 70-80 % (debutant→moyen 83-88 %, moyen→nn64 63 %). The network levels play with a little randomness
 // (temp .3) for variety, except the strongest. MCTS3, the former 3 s level: what answers when the network cannot load.
