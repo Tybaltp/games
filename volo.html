@@ -256,7 +256,7 @@ function VoloEngine(){
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
- lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",lv_reseau:"Réseau de neurones (le plus fort)",m_aiTxt:"Sept niveaux, pour s'entraîner.",st_autoPass:"Aucun coup possible : vous passez.",
+ lv_debutant:"0 (débutant)",lv_moyen:"1 (moyen)",lv_nn64:"2",lv_nn150:"3",lv_nn400:"4",lv_nn1000:"5",lv_nn1700:"6",lv_reseau:"7 (le plus fort)",m_aiTxt:"Huit niveaux, de 0 à 7, pour s'entraîner ; à partir de 2, un réseau de neurones.",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
@@ -265,12 +265,12 @@ const VO_I18N={fr:{
  <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
  <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
  <li><b>Jouer</b> : pour ajouter un oiseau, cliquez un point libre ; pour un vol, cliquez un oiseau (ou plusieurs alignés, un clic par oiseau), puis le point d'arrivée. Au survol, l'oiseau ajouté ou le vol s'affiche en transparence ; cliquer un oiseau provisoire revient en arrière ; cliquer ailleurs abandonne la sélection. Si le coup coupe les oiseaux adverses en régions, choisissez celle qui reste (Garder A, Garder B…, ou un clic sur un de ses oiseaux). Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, sept niveaux, dont un réseau de neurones, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, huit niveaux, de 0 à 7 (un réseau de neurones à partir de 2), avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",
- lv_mcts3:"MCTS (3 s)",lv_mcts6:"MCTS (6 s)",lv_mcts10:"MCTS (10 s)",lv_mcts15:"MCTS (15 s)",lv_reseau:"Neural network (strongest)",m_aiTxt:"Seven levels, to practise.",st_autoPass:"No move available: you pass.",
+ lv_debutant:"0 (beginner)",lv_moyen:"1 (medium)",lv_nn64:"2",lv_nn150:"3",lv_nn400:"4",lv_nn1000:"5",lv_nn1700:"6",lv_reseau:"7 (strongest)",m_aiTxt:"Eight levels, from 0 to 7, to practise; from 2 on, a neural network.",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Birds are unlimited; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
@@ -279,7 +279,7 @@ const VO_I18N={fr:{
  <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
  <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
  <li><b>Playing</b>: to add a bird, click an empty point; for a flight, click a bird (or several in line, one click per bird), then the landing point. Hovering shows the bird added or the flight in transparency; clicking a provisional bird goes back one step; clicking elsewhere drops the selection. If the move splits the opponent's birds into regions, choose the one that stays (Keep A, Keep B…, or a click on one of its birds). The move commands are in the bar under the board: Reset, Pass, Confirm; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, seven levels, including a neural network, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eight levels, from 0 to 7 (a neural network from 2 on), with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
 }};
@@ -1002,15 +1002,20 @@ return {search, load, X, Search};
 // 500 to 1000 network evaluations a second on a recent computer) · time, a cap in ms for slower devices, which stop
 // short of `sims` · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
 const NN_NET='volo-net.onnx?v=26';
+// The ladder (06.11.2026, network n° 26, 30 games a pair, ~/volo-ia/site/ladder.sh): each level beats the one below
+// by about 70-80 % (debutant→moyen 83-88 %, moyen→nn64 63 %). The network levels play with a little randomness
+// (temp .3) for variety, except the strongest. MCTS3, the former 3 s level: what answers when the network cannot load.
+const MCTS3={algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5};
 const LEVELS={
   debutant:{algo:'greedy',temp:.6},
   moyen:{algo:'greedy',exact:1},
-  mcts3:{algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5},
-  mcts6:{algo:'mcts',sims:1e7,time:6000,cut:0,cellsIn:12,scale:1,c:.5},
-  mcts10:{algo:'mcts',sims:1e7,time:10000,cut:0,cellsIn:12,scale:1,c:.5},
-  mcts15:{algo:'mcts',sims:1e7,time:15000,cut:0,cellsIn:12,scale:1,c:.5},
+  nn64:{algo:'nn',sims:64,temp:.3,time:10000,net:NN_NET},
+  nn150:{algo:'nn',sims:150,temp:.3,time:10000,net:NN_NET},
+  nn400:{algo:'nn',sims:400,temp:.3,time:10000,net:NN_NET},
+  nn1000:{algo:'nn',sims:1000,temp:.3,time:10000,net:NN_NET},
+  nn1700:{algo:'nn',sims:1700,temp:.3,time:10000,net:NN_NET},
   reseau:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
-const HINT=LEVELS.mcts3;
+const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
 function voEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(r.policy)return null;if(s>=1000||s>4)return {k:'ai_win'};if(s<=-1000||s<-4)return {k:'ai_lost'};
@@ -1026,10 +1031,10 @@ const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\n'+VoloNN.toString()+'\nconst VA=VoloAI(VoloEngine());function aiSearch(pos,opt){return VA.search(pos,opt);}'+
     // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
     // if the network cannot load (offline, old browser), the MCTS 3 s level answers instead
-    '\nconst VN=VoloNN(VoloEngine(),VoloAI(VoloEngine()),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(LEVELS.mcts3)+';'+
+    '\nconst VN=VoloNN(VoloEngine(),VoloAI(VoloEngine()),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(MCTS3)+';'+
     '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
     'VN.search(m.st,m.opt).catch(()=>VA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
-  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>(pageAI=pageAI||VoloAI(E)).search(Array.from(st),opt.algo==='nn'?LEVELS.mcts3:opt),   // no worker: no network either
+  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>(pageAI=pageAI||VoloAI(E)).search(Array.from(st),opt.algo==='nn'?MCTS3:opt),   // no worker: no network either
   evalInfo:voEvalInfo,
   home:()=>{drawBoard(E.init(),{});}};
 coreStart();
