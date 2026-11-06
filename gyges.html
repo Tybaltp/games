@@ -163,7 +163,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=50"></script>
+<script src="common/core.js?v=51"></script>
 <script src="common/codes.js?v=2"></script>
 <script>
 function GygesEngine(){
@@ -732,7 +732,8 @@ function nodeEdges(par,spots){const th=PR*.26,gap=PR*.055,hole=PR-3*th-2*gap;
 function nodeDots(par,spots){for(const n of spots)el('circle',{cx:X(n.i),cy:Y(n.i),r:n.r,fill:'var(--accent)'},par);}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'gyges',size:36,codeTag:'GYGES1',i18n:GY_I18N,
+const GAME={id:'gyges',size:36,chatBoard:.8,   // phones in portrait, network game: the board gives 20 % of its height to the chat
+  codeTag:'GYGES1',i18n:GY_I18N,
   rules:g=>({adv:!!(g&&g.adv),setup:smOf(g)}),
   form:p=>({adv:$(p+'Adv').checked,setup:smOf({setup:$(p+'Setup').value})}),
   replay:gyReplay,

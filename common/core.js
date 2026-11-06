@@ -669,7 +669,9 @@ function lockBoard(){const ba=document.querySelector('.boardwrap .boardarea'),bw
   // under the action bar; the board keeps exactly its size. No room for one line: « 💬 » in the header instead.
   let on=false;
   if(chatNet()&&cb&&cb.parentNode===bw){const bd=ba.querySelector('.board'),bh=bd?Math.ceil(bd.getBoundingClientRect().height):hpx;
-    if(bh<=hpx&&hpx-bh+max-n.offsetHeight-gap>=CHAT_LINE){on=true;px=bh+'px';if(ba.style.height!==px)ba.style.height=px;}}
+    // GAME.chatBoard (below 1): the board may give up that share of its height to the chat (a board with few, large cells)
+    const k=Math.min(1,GAME.chatBoard||1),bk=Math.floor(bh*k);
+    if(bh<=hpx&&hpx-bk+max-n.offsetHeight-gap>=CHAT_LINE){on=true;px=bk+'px';if(ba.style.height!==px)ba.style.height=px;}}
   R.classList.toggle('pchat',on);chatMode();}
 // Phones in portrait: the chat's look follows the room it has (data-cm: full, line or none), « 💬 » in the header when it
 // is not seen; opened over the board with a touch (chatUp)
