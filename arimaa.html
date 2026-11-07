@@ -82,6 +82,11 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label for="aFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
         <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
@@ -140,6 +145,11 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
     <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
       <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
       <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+        <p class="hint"><span data-i18n="sharpBy">The computer is Sharp, by David Wu (2015).</span> <a href="sharp/LICENSE.txt" target="_blank" rel="noopener" data-i18n="sharpLic">Licence</a></p>
+      </div>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
@@ -231,6 +241,7 @@ const AR_I18N={fr:{
  mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
  title:"Arimaa",lede:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
+ m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
  setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
  st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
  st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
@@ -248,13 +259,14 @@ const AR_I18N={fr:{
  <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
  <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat ; sur écran tactile, un toucher joue le pas. Recliquer une pièce déjà déplacée dans le tour revient au moment où elle a été choisie. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i> (Sharp), trois niveaux, avec annulation ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
  mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_2:"Silver",
  title:"Arimaa",lede:"Get a rabbit to the far side: push, pull, traps.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
+ m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
  setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
  st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",st_soloTurn:"{n} to move.",
  st_steps:"Step {k}/4: go on, or end the turn.",st_steps4:"Step 4/4: end the turn.",
@@ -272,7 +284,7 @@ const AR_I18N={fr:{
  <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
  <li><b>Playing</b>: click one of your pieces, then its arrival square; hovering a square previews the result; on a touch screen, a tap plays the step. Clicking again a piece already moved in this turn goes back to the moment it was chosen. The turn's commands are in the bar under the board: Reset, Undo step, End turn; in free play, Undo last move. Setup: click two of your squares to swap their pieces, then Confirm the setup.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i> (Sharp), three levels, with undo; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 }};
@@ -526,6 +538,46 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
     const bx=X(H.to)+S-11,by=Y(H.to)+11;el('circle',{cx:bx,cy:by,r:9,fill:'var(--accent)','pointer-events':'none'},lay);
     const tx=el('text',{x:bx,y:by+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'var(--bg)','pointer-events':'none'},lay);tx.textContent=H.n;}}
 
+// ---------- the computer: Sharp ----------
+// Sharp (bot_sharp, David Wu « lightvector », 2015; BSD-style licence in sharp/LICENSE.txt), its alpha-beta search
+// compiled to WebAssembly without threads (build: ~/Jeux/outils/sharp_wasm). It runs in the worker of common/core.js:
+// the worker source loads sharp/sharp.wasm synchronously, writes the game so far in Sharp's move-list notation
+// (« 1g Ra1 … », one line per turn, the last line only the turn to play) to Sharp's virtual file system, runs Sharp
+// for a set time, and turns the steps Sharp prints back into this page's codes (setup S…, actions m/P/L).
+// Levels: thinking time in seconds; the first level also caps the search at 4 steps (one turn, no look-ahead).
+const SHARP_V=1;
+const LEVELS={debutant:{t:1,d:4},moyen:{t:3},fort:{t:10}};
+// Sharp's setup tokens (« Ra1 … ») -> 'S' + the 16 letters in E.SETUP_SQ order
+function sharpSetup(E,toks,s){const at={};for(const t of toks){const m=/^([RCDHME])([a-h][1-8])$/i.exec(t);if(m)at[m[2]]=m[1].toUpperCase();}
+  const L=E.SETUP_SQ[s].map(i=>at[E.sq(i)]);return L.every(Boolean)?'S'+L.join(''):null;}
+// Sharp's steps (« Ed5n md6w … », captures left out) -> the actions that make them, a push or pull being one action of
+// two steps; searched depth first, so a step that could begin a push or a pull is tried both ways
+function sharpTurn(E,b,s,steps){const out=[];
+  const rec=(cur,i,left)=>{if(i===steps.length)return out.length>0;
+    for(const a of E.actions(cur,s,left)){const r=E.apply(cur,a),tk=r.toks.filter(x=>!/x$/.test(x));
+      if(tk.every((x,j)=>x===steps[i+j])){out.push(E.code(a));if(rec(r.b,i+tk.length,left-r.n))return true;out.pop();}}
+    return false;};
+  return rec(b,0,4)?out.join(','):null;}
+function sharpSearch(pos,opt){OUT=[];Module.FS.writeFile('/g.txt',opt.hist+'\n');
+  const a=['-movefile','/g.txt','-t',String(opt.t),'-hashmem','64MB','-no-output-files'];if(opt.d)a.push('-d',String(opt.d));
+  try{Module.callMain(a);}catch(e){}
+  const line=OUT.filter(l=>l&&/^[RCDHMErcdhme][a-h][1-8]/.test(l.trim())).pop()||'',toks=line.trim().split(/\s+/),b=Int8Array.from(pos.b);
+  const move=pos.n<2?sharpSetup(E,toks,pos.turn):sharpTurn(E,b,pos.turn,toks.filter(x=>!/x$/.test(x)));
+  return move?{move}:null;}
+function aiSrc(){const u=f=>JSON.stringify(new URL('sharp/'+f+'?v='+SHARP_V,location.href).href);
+  return `const E=(${ArimaaEngine})();
+${sharpSetup}
+${sharpTurn}
+let OUT=[];
+var Module={print:s=>OUT.push(s),printErr:()=>{},noInitialRun:true};
+{const x=new XMLHttpRequest();x.open('GET',${u('sharp.wasm')},false);x.responseType='arraybuffer';x.send();Module.wasmBinary=x.response;}
+importScripts(${u('sharp.js')});
+const aiSearch=${sharpSearch};
+`;}
+// The game so far, in Sharp's notation (the log's step tokens, captures included)
+function sharpHist(v){const r=arReplay(v,v.moves),k=v.moves.length,tag=k=>(Math.floor(k/2)+1)+(k%2?'s':'g');
+  return r.log.map((e,i)=>tag(i)+' '+e.txt).concat([tag(k)]).join('\n');}
+
 // ---------- the interface with common/core.js ----------
 const GAME={id:'arimaa',size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
   rules:()=>({}),form:()=>({}),
@@ -533,7 +585,11 @@ const GAME={id:'arimaa',size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
   legal:(st,code)=>legalCode(st,code)?code:null,
   enc:c=>c,describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:arBoard,turnStatus:arTurnStatus,waitStatus:arWaitStatus,
-  hintable:()=>false,   // no computer: no Hint button (core offers it in free play otherwise)
+  hintable:()=>false,   // no Hint button (core offers it otherwise, now that there is a computer)
+  levels:LEVELS,levelDefault:'moyen',hintLevel:LEVELS.moyen,
+  aiSrc,aiPos:st=>({b:Array.from(st.b),turn:st.turn,n:st.n}),aiOpt:v=>({hist:sharpHist(v)}),
+  aiSearch:()=>null,    // no worker (some file:// setups): no computer move
+  evalInfo:()=>null,
   playerCard:arPlayerCard,logDesc:e=>turnPhrase(e.det),
   home:()=>drawBoard({real:new Int8Array(64),shown:new Int8Array(64)})};
 coreStart();
