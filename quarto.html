@@ -216,8 +216,10 @@ function QuartoEngine(){
 function whyKey(sq,all,none){return 'wq'+(sq?'s':'l')+all+'_'+none;}
 const E=QuartoEngine();
 const enc=E.enc;
-// View: '2d' (top view, tall pieces larger) or 'iso' (3D isometric, the default), kept for all Quarto games on this device
-let qView=LS.get('quarto-view','iso')==='2d'?'2d':'iso';
+// View: '2d' (top view, tall pieces larger), 'iso' (3D isometric, the default) or 'persp' (3D with a slight vanishing
+// point), kept for all Quarto games on this device
+const QVIEWS=['2d','iso','persp'],qViewOf=v=>QVIEWS.includes(v)?v:'iso';
+let qView=qViewOf(LS.get('quarto-view','iso'));
 const cellName=i=>'abcd'[i%4]+(4-((i/4)|0));
 function pieceName(p){const L=t('traits');return [L[p&1?1:0],L[p&4?3:2],L[p&8?5:4],L[p&2?7:6]].join(' ');}
 function txtOf(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv.g>=0)parts.push(t('gives',{p:pieceName(mv.g)}));return parts.join(', ');}
@@ -229,7 +231,7 @@ function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=
 
 // ---------- strings ----------
 const Q_I18N={fr:{
- title:"Quarto",lede:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",needConfirm:"Confirmer chaque coup",
+ title:"Quarto",lede:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",v_persp:"3D en perspective",needConfirm:"Confirmer chaque coup",
  m_aiTxt:"Cinq niveaux, pour s'entraîner.",
  lv_debutant:"Débutant",lv_facile:"Facile",lv_moyen:"Moyen",lv_fort:"Fort",lv_expert:"Expert",
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
@@ -248,7 +250,7 @@ const Q_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, cinq niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
- title:"Quarto",lede:"Give your opponent the piece they will place; line up four pieces sharing a trait.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",needConfirm:"Confirm each move",
+ title:"Quarto",lede:"Give your opponent the piece they will place; line up four pieces sharing a trait.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",v_persp:"3D perspective",needConfirm:"Confirm each move",
  m_aiTxt:"Five levels, to practise.",
  lv_debutant:"Beginner",lv_facile:"Easy",lv_moyen:"Medium",lv_fort:"Strong",lv_expert:"Expert",
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
@@ -290,11 +292,17 @@ function piece2D(par,p,cx,cy,R0,op){const k=PC(p),g=el('g',{'pointer-events':'no
   if(p&8)el('circle',{cx:f1(cx),cy:f1(cy),r:f1(hr),fill:k.g},gr);
   const ol=shape();ol.setAttribute('fill','none');ol.setAttribute('stroke',k.l);ol.setAttribute('stroke-width',1.8);g.appendChild(ol);
   return g;}
-// Isometric projection: the board turned by 45°, seen from ELEV degrees above (high enough for every empty cell to stay
-// visible behind tall pieces). Board units: cells of 1, origin at the board's centre, z up.
-const ELEV=52*Math.PI/180,SQ=Math.sin(ELEV),HF=Math.cos(ELEV),R2=Math.SQRT1_2;
-const TALL=.86,SHORT=.48,PR=.30;
+// 3D projection: the board turned by 45°, seen from some degrees above (high enough for every empty cell, or a short
+// piece, to stay visible behind tall pieces). Board units: cells of 1, origin at the board's centre, z up. prj: parallel
+// projection (the isometric view; the reserve and the move list in both 3D views); prjP: the board in perspective, the
+// eye CAM cells from the board's centre (a slight vanishing point). The perspective view is seen from higher, its tall
+// pieces taller and its short ones lower, for the heights to stay apart.
+const R2=Math.SQRT1_2,PR=.30;
+let SQ,HF,TALL,SHORT,CAM;
+function geo3D(){const p=qView==='persp',e=(p?62:52)*Math.PI/180;SQ=Math.sin(e);HF=Math.cos(e);TALL=p?1.2:.86;SHORT=p?.42:.48;CAM=p?11:Infinity;}
+geo3D();
 const prj=(S,x,y,z)=>[(x-y)*R2*S,(x+y)*R2*S*SQ-(z||0)*S*HF];
+const prjP=(S,x,y,z)=>{z=z||0;const r=(x-y)*R2,g=(x+y)*R2,f=isFinite(CAM)?CAM/(CAM-g*HF-z*SQ):1;return [r*f*S,(g*SQ-z*HF)*f*S];};
 // An isometric piece with its base centre at screen (bx,by), cell size S
 function pieceIso(par,p,bx,by,S,op){const k=PC(p),g=el('g',{'pointer-events':'none',...(op?{opacity:op}:{})},par);
   const h=p&2?TALL:SHORT,r=PR,P=(x,y,z)=>{const q=prj(S,x,y,z);return [bx+q[0],by+q[1]];},pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' ');
@@ -311,8 +319,29 @@ function pieceIso(par,p,bx,by,S,op){const k=PC(p),g=el('g',{'pointer-events':'no
     el('ellipse',{cx:f1(c[0]),cy:f1(c[1]),rx:f1(ri*S),ry:f1(ri*S*SQ),fill:k.g},g);
     el('ellipse',{cx:f1(c[0]),cy:f1(c[1]+ri*S*SQ*.3),rx:f1(ri*S*.8),ry:f1(ri*S*SQ*.6),fill:'rgba(0,0,0,.28)'},g);}
   return g;}
+// A piece on the board in perspective: P projects the piece's own coordinates (base centre at 0,0,0); the round ones
+// as polygons (a circle seen in perspective), the side of a round one from its leftmost point to its rightmost one
+// through the front half of the base
+function piecePersp(par,p,P,op){const k=PC(p),g=el('g',{'pointer-events':'none',...(op?{opacity:op}:{})},par);
+  const h=p&2?TALL:SHORT,r=PR,pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' ');
+  const st={stroke:k.l,'stroke-width':1.2,'stroke-linejoin':'round'},N=48;
+  const circ=(rad,z)=>{const a=[];for(let j=0;j<N;j++){const t=2*Math.PI*j/N;a.push(P(rad*Math.cos(t),rad*Math.sin(t),z));}return a;};
+  if(p&4){const a=r*.92,c=(dx,dy,z)=>P(dx*a,dy*a,z);
+    el('polygon',{points:pts([c(-1,1,0),c(1,1,0),c(1,1,h),c(-1,1,h)]),fill:k.a,...st},g);
+    el('polygon',{points:pts([c(1,1,0),c(1,-1,0),c(1,-1,h),c(1,1,h)]),fill:k.b,...st},g);
+    el('polygon',{points:pts([c(-1,-1,h),c(1,-1,h),c(1,1,h),c(-1,1,h)]),fill:k.f,...st},g);}
+  else{const B=circ(r,0),T=circ(r,h),ext=a=>{let l=0,m=0;a.forEach((q,j)=>{if(q[0]<a[l][0])l=j;if(q[0]>a[m][0])m=j;});return [l,m];};
+    const [iL,iR]=ext(B),[jL,jR]=ext(T),sgn=B[(iL+N/4)%N][1]>B[(iL+3*N/4)%N][1]?1:-1,arc=[];
+    for(let j=iL;;j=(j+sgn+N)%N){arc.push(B[j]);if(j===iR)break;}
+    el('polygon',{points:pts([T[jL],...arc,T[jR]]),fill:`url(#${k.grad})`,...st},g);
+    el('polygon',{points:pts(T),fill:k.f,...st},g);}
+  if(p&8){const H=circ(r*.5,h),xs=H.map(q=>q[0]),ys=H.map(q=>q[1]),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2,
+      rx=(Math.max(...xs)-Math.min(...xs))/2,ry=(Math.max(...ys)-Math.min(...ys))/2;
+    el('ellipse',{cx:f1(cx),cy:f1(cy),rx:f1(rx),ry:f1(ry),fill:k.g},g);
+    el('ellipse',{cx:f1(cx),cy:f1(cy+ry*.3),rx:f1(rx*.8),ry:f1(ry*.6),fill:'rgba(0,0,0,.28)'},g);}
+  return g;}
 // The move list: the cell, then a small picture of the piece given (in the current view), its name as a tooltip
-function miniPiece(p){const iso=qView==='iso',svg=el('svg',{viewBox:iso?'-9 -18 18 25.5':'-11.5 -11.5 23 23',class:'qmini',role:'img','aria-label':pieceName(p)});
+function miniPiece(p){const iso=qView!=='2d',svg=el('svg',{viewBox:iso?'-9 -18 18 25.5':'-11.5 -11.5 23 23',class:'qmini',role:'img','aria-label':pieceName(p)});
   el('title',{},svg).textContent=pieceName(p);
   // 2D: a small cell of one size behind every piece, as a yardstick (a tall piece fills it, a short one leaves a margin)
   if(iso)pieceIso(svg,p,0,0,20);else{el('rect',{x:-11,y:-11,width:22,height:22,rx:3,fill:'var(--wood)'},svg);piece2D(svg,p,0,0,8);}return svg;}
@@ -348,7 +377,7 @@ function winOutline(cells){const X=i=>(i%4)-1.5,Y=i=>((i/4)|0)-1.5,mx=cells.redu
   for(const [sx,sy,a0] of [[1,1,0],[-1,1,90],[-1,-1,180],[1,-1,270]]){const ex=sx*(L-r),ey=sy*(w-r);
     for(let j=0;j<=k;j++){const t=(a0+90*j/k)*Math.PI/180,px=ex+r*Math.cos(t),py=ey+r*Math.sin(t);pt.push([mx+px*ux-py*uy,my+px*uy+py*ux]);}}
   return pt;}
-function drawBoard(sc){const svg=$('svg');svg.textContent='';gradDefs(svg);if(qView==='iso')drawIso(svg,sc);else draw2D(svg,sc);}
+function drawBoard(sc){const svg=$('svg');svg.textContent='';gradDefs(svg);if(qView!=='2d')drawIso(svg,sc);else draw2D(svg,sc);}
 // 2D marker (last move, piece to place, move being prepared: dashed): a ring of the piece's shape, of one size between
 // short and tall (inside a tall piece, around a short one), R0 the piece's base radius; inside a tall light piece a
 // deeper yellow for the contrast
@@ -382,17 +411,21 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,band=qBandOn.
 function ringPts(P,x0,y0,p){const h=.38,rr=p&4?.1:h,q=[];
   for(const [sx,sy,a0] of [[1,1,0],[-1,1,90],[-1,-1,180],[1,-1,270]])for(let j=0;j<=6;j++){const t=(a0+15*j)*Math.PI/180;q.push(P(x0+sx*(h-rr)+rr*Math.cos(t),y0+sy*(h-rr)+rr*Math.sin(t)));}
   return q;}
-// 3D isometric: same layout, the board in projection; the reserve as a row of pieces, also in projection
-function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
+// 3D (isometric or in perspective): same layout, the board in projection; the reserve as a row of pieces, in parallel projection
+function drawIso(svg,sc){const S=60,hb=2.18,T=.16,persp=qView==='persp',P=(x,y,z)=>persp?prjP(S,x,y,z):prj(S,x,y,z);
   const cx=i=>(i%4)-1.5,cy=i=>((i/4)|0)-1.5;
-  const left=P(-hb,hb)[0],right=P(hb,-hb)[0],top=Math.min(P(-hb,-hb)[1],P(-1.5,-1.5,TALL)[1]-PR*1.3*S*SQ)-4,bot=P(hb,hb,-T)[1];
+  // the frame: the board's corners (top and bottom faces) and the tops of tall pieces on every cell
+  const ex=[];for(const u of [-hb,hb])for(const v of [-hb,hb])for(const z of [0,-T])ex.push(P(u,v,z));
+  for(let i=0;i<16;i++)for(const [u,v] of [[1,1],[1,-1],[-1,1],[-1,-1]])ex.push(P(cx(i)+u*PR,cy(i)+v*PR,TALL));
+  const left=Math.min(...ex.map(q=>q[0])),right=Math.max(...ex.map(q=>q[0])),bot=Math.max(...ex.map(q=>q[1]));
+  const top=persp?Math.min(...ex.map(q=>q[1]))-4:Math.min(P(-hb,-hb)[1],P(-1.5,-1.5,TALL)[1]-PR*1.3*S*SQ)-4;
   const lbl=coordsOn?22:0,Bw=right-left,gap=lbl+12,rs=Bw/8,rh=rs*1.25,band=false,RC=8;   // 3D: the board is wider than tall, the reserve stays under it
   const X0=band?left-lbl-12-4*rs:left,Y0=band?top+Math.max(0,(bot+lbl-top-4*rh)/2):bot+gap;
   const vx=band?X0-4:left-lbl-4,vy=top,W=band?right+lbl+4-vx:Bw+2*lbl+8,H=band?Math.max(bot+lbl+8,Y0+4*rh+6)-vy:(Y0-top)+2*rh+6;
   svg.setAttribute('viewBox',`${f1(vx)} ${f1(vy)} ${f1(W)} ${f1(H)}`);document.documentElement.style.setProperty('--board-ar',`${f1(W)}/${f1(H)}`);
-  const pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' '),dn=q=>[q[0],q[1]+T*S*HF];
+  const pts=a=>a.map(q=>f1(q[0])+','+f1(q[1])).join(' ');
   const A=P(-hb,-hb),B=P(hb,-hb),C=P(hb,hb),D=P(-hb,hb);
-  el('polygon',{points:pts([D,C,dn(C),dn(D)]),fill:'var(--wood-s)'},svg);el('polygon',{points:pts([C,B,dn(B),dn(C)]),fill:'var(--wood-f)'},svg);
+  el('polygon',{points:pts([D,C,P(hb,hb,-T),P(-hb,hb,-T)]),fill:'var(--wood-s)'},svg);el('polygon',{points:pts([C,B,P(hb,-hb,-T),P(hb,hb,-T)]),fill:'var(--wood-f)'},svg);
   el('polygon',{points:pts([A,B,C,D]),fill:'var(--wood)'},svg);
   const L=[];for(let k=0;k<=4;k++){const v=k-2;const a=P(v,-2),b=P(v,2),c=P(-2,v),d=P(2,v);L.push(`M${f1(a[0])},${f1(a[1])}L${f1(b[0])},${f1(b[1])}M${f1(c[0])},${f1(c[1])}L${f1(d[0])},${f1(d[1])}`);}
   el('path',{d:L.join(''),stroke:'var(--grid)','stroke-width':1.8,fill:'none'},svg);
@@ -407,7 +440,7 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,P=(x,y,z)=>prj(S,x,y,z);
     else if(fk)el('polygon',{points:cellPoly(i,.07),'stroke-linejoin':'round',...fr(fk)},svg);}
   if(sc.win)el('polygon',{points:pts(winOutline(sc.win).map(([u,v])=>P(u,v))),'stroke-linejoin':'round',...fr('win')},svg);
   const order=[...Array(16).keys()].sort((a,b)=>(cx(a)+cy(a))-(cx(b)+cy(b))||cx(a)-cx(b));
-  for(const i of order){const c=sc.cells[i];if(!c)continue;const q=P(cx(i),cy(i));pieceIso(svg,c.p,q[0],q[1],S,c.op);}
+  for(const i of order){const c=sc.cells[i];if(!c)continue;const X=cx(i),Y=cy(i);if(persp)piecePersp(svg,c.p,(x,y,z)=>P(X+x,Y+y,z),c.op);else{const q=P(X,Y);pieceIso(svg,c.p,q[0],q[1],S,c.op);}}
   // reserve
   const rS=S*.82;   // the reserve's pieces straight on the background, no frame
   for(let p=0;p<16;p++){const x=X0+(p%RC)*rs,y=Y0+((p/RC)|0)*rh,k='r'+p,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
@@ -489,8 +522,8 @@ function qCard(el,p,d){const st=d.st;if(d.over||st.turn!==p||st.hand<0)return;
 function sqLine(){document.querySelectorAll('.sqState').forEach(e=>e.textContent=t(view&&view.sq?'sqOn':'sqOff'));}
 
 // ---------- view choice (2D / 3D), in the panel ----------
-function viewSelects(){document.querySelectorAll('select.qview').forEach(s=>{s.innerHTML=['2d','iso'].map(v=>`<option value="${v}">${t('v_'+v)}</option>`).join('');s.value=qView;});}
-document.querySelectorAll('select.qview').forEach(s=>s.addEventListener('change',e=>{qView=e.target.value==='iso'?'iso':'2d';LS.set('quarto-view',qView);
+function viewSelects(){document.querySelectorAll('select.qview').forEach(s=>{s.innerHTML=QVIEWS.map(v=>`<option value="${v}">${t('v_'+v)}</option>`).join('');s.value=qView;});}
+document.querySelectorAll('select.qview').forEach(s=>s.addEventListener('change',e=>{qView=qViewOf(e.target.value);geo3D();LS.set('quarto-view',qView);
   document.querySelectorAll('select.qview').forEach(x=>x.value=qView);if(view)renderGame();else GAME.home();}));
 $('needConfirm').checked=LS.get('quarto-confirm',true);
 $('needConfirm').onchange=e=>{LS.set('quarto-confirm',e.target.checked);if(view)renderGame();};
