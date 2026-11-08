@@ -256,7 +256,7 @@ function VoloEngine(){
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
- lv_debutant:"0 (débutant)",lv_moyen:"1 (moyen)",lv_nn64:"2",lv_nn150:"3",lv_nn400:"4",lv_nn1000:"5",lv_nn1700:"6",lv_reseau:"7 (le plus fort)",m_aiTxt:"Huit niveaux, de 0 à 7, pour s'entraîner ; à partir de 2, un réseau de neurones.",st_autoPass:"Aucun coup possible : vous passez.",
+ lv_debutant:"0 (débutant)",lv_moyen:"1 (moyen)",lv_nn16:"2",lv_nn32:"3",lv_nn64:"4",lv_nn150:"5",lv_nn400:"6",lv_nn1000:"7",lv_reseau:"8 (le plus fort)",m_aiTxt:"Neuf niveaux, de 0 à 8, pour s'entraîner ; à partir de 2, un réseau de neurones.",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
@@ -270,7 +270,7 @@ const VO_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",
- lv_debutant:"0 (beginner)",lv_moyen:"1 (medium)",lv_nn64:"2",lv_nn150:"3",lv_nn400:"4",lv_nn1000:"5",lv_nn1700:"6",lv_reseau:"7 (strongest)",m_aiTxt:"Eight levels, from 0 to 7, to practise; from 2 on, a neural network.",st_autoPass:"No move available: you pass.",
+ lv_debutant:"0 (beginner)",lv_moyen:"1 (medium)",lv_nn16:"2",lv_nn32:"3",lv_nn64:"4",lv_nn150:"5",lv_nn400:"6",lv_nn1000:"7",lv_reseau:"8 (strongest)",m_aiTxt:"Nine levels, from 0 to 8, to practise; from 2 on, a neural network.",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Birds are unlimited; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
@@ -1009,18 +1009,22 @@ return {search, load, X, Search};
 // 500 to 1000 network evaluations a second on a recent computer) · time, a cap in ms for slower devices, which stop
 // short of `sims` · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
 const NN_NET='volo-net.onnx?v=78';
-// The ladder (06.11.2026, network n° 26, 30 games a pair, ~/volo-ia/site/ladder.sh): each level beats the one below
-// by about 70-80 % (debutant→moyen 83-88 %, moyen→nn64 63 %). The network levels play with a little randomness
+// The ladder (08.11.2026, network n° 78, 60 games a pair, ~/volo-ia/site/ladder.sh, runs/ref/ladder4 and 5): each
+// level beats the one below by 66-82 % (moyen→nn16 66 %, nn16→nn32 73 %, nn32→nn64 69 %, nn64→nn150 77 %, nn150→nn400
+// 78 %, nn400→nn1000 80 %, nn1000→reseau 82 %; debutant→moyen 83-88 % on 06.11). With this network 1700 simulations
+// no longer beat 1000 (49 %): that level is gone, and nn16 and nn32 fill the gap above moyen (moyen→nn64 was 88 %).
+// The network levels play with a little randomness
 // (temp .3) for variety, except the strongest. MCTS3, the former 3 s level: what answers when the network cannot load.
 const MCTS3={algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5};
 const LEVELS={
   debutant:{algo:'greedy',temp:.6},
   moyen:{algo:'greedy',exact:1},
+  nn16:{algo:'nn',sims:16,temp:.3,time:10000,net:NN_NET},
+  nn32:{algo:'nn',sims:32,temp:.3,time:10000,net:NN_NET},
   nn64:{algo:'nn',sims:64,temp:.3,time:10000,net:NN_NET},
   nn150:{algo:'nn',sims:150,temp:.3,time:10000,net:NN_NET},
   nn400:{algo:'nn',sims:400,temp:.3,time:10000,net:NN_NET},
   nn1000:{algo:'nn',sims:1000,temp:.3,time:10000,net:NN_NET},
-  nn1700:{algo:'nn',sims:1700,temp:.3,time:10000,net:NN_NET},
   reseau:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
 const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
 let pageAI=null;   // the search on the page itself, when no worker can be made
