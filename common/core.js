@@ -60,7 +60,7 @@ const I18C={fr:{
  sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
- invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",watchT:"Vous êtes invité à observer une partie",watchTxt:"Choisissez le nom que verront les joueurs, puis cliquez Observer, ou restez anonyme.",anon:"Anonyme",watchersT:"Observateurs ({n})",chat:"Discussion",chatN:"Discussion ({n})",chatPh:"Votre message",chatSend:"Envoyer",chatName:"Choisir un nom pour écrire",chatEmpty:"Aucun message.",chatW:"obs.",chatHintP:"Les messages des observateurs s'affichent à la fin de la partie.",chatHintW:"Les joueurs ne verront vos messages qu'à la fin de la partie.",voice:"Vocal",lg_join:"{n} a rejoint la partie.",lg_watch:"{n} a rejoint la partie en observateur.",lg_start:"La partie commence.",lg_rematch:"Revanche : la partie recommence, camps échangés.",vAsk:"🎙 Proposer le vocal",vOut:"Vocal proposé à {n}…",vInvite:"{n} propose de parler à voix haute.",vConn:"Connexion du vocal…",vOn:"Vocal avec {n}",vMute:"Couper le micro",vUnmute:"Rétablir le micro",vVol:"Volume de la voix",vHang:"Raccrocher",vNo:"{n} a refusé le vocal.",vEnd:"Vocal terminé.",vMic:"Micro inaccessible : le vocal n'a pas démarré.",vFail:"Le vocal n'a pas pu se connecter (réseau).",
+ invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",watchT:"Vous êtes invité à observer une partie",watchTxt:"Choisissez le nom que verront les joueurs, puis cliquez Observer, ou restez anonyme.",anon:"Anonyme",watchersT:"Observateurs ({n})",chat:"Discussion",chatN:"Discussion ({n})",chatPh:"Votre message",chatSend:"Envoyer",chatName:"Choisir un nom pour écrire",chatEmpty:"Aucun message.",chatW:"obs.",chatHintP:"Les messages des observateurs s'affichent à la fin de la partie.",chatHintW:"Les joueurs ne verront vos messages qu'à la fin de la partie.",voice:"Vocal",lg_join:"{n} a rejoint la partie.",lg_watch:"{n} a rejoint la partie en observateur.",lg_start:"La partie commence.",lg_rematch:"Revanche : la partie recommence, camps échangés.",lg_table:"Table {k} : {g}.",vAsk:"🎙 Proposer le vocal",vOut:"Vocal proposé à {n}…",vInvite:"{n} propose de parler à voix haute.",vConn:"Connexion du vocal…",vOn:"Vocal avec {n}",vMute:"Couper le micro",vUnmute:"Rétablir le micro",vVol:"Volume de la voix",vHang:"Raccrocher",vNo:"{n} a refusé le vocal.",vEnd:"Vocal terminé.",vMic:"Micro inaccessible : le vocal n'a pas démarré.",vFail:"Le vocal n'a pas pu se connecter (réseau).",
  inProgressTxt:"Vous hébergiez une partie inachevée.",inProgressGuest:"Vous jouiez une partie inachevée sur l'invitation d'un autre joueur.",resumeBtn:"Reprendre la partie",resume:"Reprendre une partie",resumeCode:"Code de reprise",load:"Charger",
  resumeHint:"Si une partie n'a pas pu être rétablie, collez le code de reprise copié pendant la partie. Vous l'hébergez à nouveau et envoyez le nouveau code à votre adversaire.",
  cancel:"Annuler",confirmMv:"Confirmer",
@@ -87,7 +87,7 @@ const I18C={fr:{
  sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
- invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",watchT:"You are invited to watch a game",watchTxt:"Choose the name the players will see, then click Watch, or stay anonymous.",anon:"Anonymous",watchersT:"Spectators ({n})",chat:"Chat",chatN:"Chat ({n})",chatPh:"Your message",chatSend:"Send",chatName:"Choose a name to write",chatEmpty:"No messages yet.",chatW:"spect.",chatHintP:"Spectators' messages are shown once the game is over.",chatHintW:"The players will only see your messages once the game is over.",voice:"Voice",lg_join:"{n} joined the game.",lg_watch:"{n} joined as a spectator.",lg_start:"The game begins.",lg_rematch:"Rematch: a new game begins, sides swapped.",vAsk:"🎙 Offer voice chat",vOut:"Voice chat offered to {n}…",vInvite:"{n} offers to talk out loud.",vConn:"Connecting voice…",vOn:"Voice with {n}",vMute:"Mute the mic",vUnmute:"Unmute the mic",vVol:"Voice volume",vHang:"Hang up",vNo:"{n} declined voice chat.",vEnd:"Voice chat ended.",vMic:"Microphone unavailable: voice chat did not start.",vFail:"Voice chat could not connect (network).",
+ invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",watchT:"You are invited to watch a game",watchTxt:"Choose the name the players will see, then click Watch, or stay anonymous.",anon:"Anonymous",watchersT:"Spectators ({n})",chat:"Chat",chatN:"Chat ({n})",chatPh:"Your message",chatSend:"Send",chatName:"Choose a name to write",chatEmpty:"No messages yet.",chatW:"spect.",chatHintP:"Spectators' messages are shown once the game is over.",chatHintW:"The players will only see your messages once the game is over.",voice:"Voice",lg_join:"{n} joined the game.",lg_watch:"{n} joined as a spectator.",lg_start:"The game begins.",lg_rematch:"Rematch: a new game begins, sides swapped.",lg_table:"Table {k}: {g}.",vAsk:"🎙 Offer voice chat",vOut:"Voice chat offered to {n}…",vInvite:"{n} offers to talk out loud.",vConn:"Connecting voice…",vOn:"Voice with {n}",vMute:"Mute the mic",vUnmute:"Unmute the mic",vVol:"Voice volume",vHang:"Hang up",vNo:"{n} declined voice chat.",vEnd:"Voice chat ended.",vMic:"Microphone unavailable: voice chat did not start.",vFail:"Voice chat could not connect (network).",
  inProgressTxt:"You were hosting an unfinished game.",inProgressGuest:"You were playing an unfinished game at another player's invitation.",resumeBtn:"Resume game",resume:"Resume a game",resumeCode:"Resume code",load:"Load",
  resumeHint:"If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.",
  cancel:"Cancel",confirmMv:"Confirm",
@@ -333,11 +333,12 @@ const CHATMAX=100,chatClean=v=>String(v||'').replace(/\s+/g,' ').trim().slice(0,
 // one's language): a player or a named spectator joins, the game starts, a rematch, the result.
 function hostLog(k,a,quiet){const g=H.game;if(!g.chat)g.chat=[];g.chat.push({k,a:a||{}});if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);if(!quiet)hostBroadcast();}
 function hostJoinLog(conn){if(conn&&conn.jpend&&conn.seat>=0){conn.jpend=false;hostLog('lg_join',{n:H.game.names[conn.seat]},true);}}
+// A Mochalunt table (its chat goes on from the previous one) also shows them before its game starts.
 function chatReveal(){const g=H.game;if(!g||!g.chat)return;const o=replay(g,g.moves,g.result).over;
-  if(!o){g.endLog=false;return;}
-  if(!g.endLog){g.endLog=true;hostLog(o.w<0?'draw':'wins',o.w<0?{why:o.why}:{n:g.names[o.w]||'',why:o.why},true);}
+  if(!o){g.endLog=false;if(!(g.match&&!g.started))return;}
+  else if(!g.endLog){g.endLog=true;hostLog(o.w<0?'draw':'wins',o.w<0?{why:o.why}:{n:g.names[o.w]||'',why:o.why},true);}
   for(const x of g.chat)if(x.w)x.v=1;}
-function hostChat(n,w,m){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return;if(!g.chat)g.chat=[];let c;if(!w)c=Math.max(0,g.names.indexOf(n));else{const o=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=o?o.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push({n,w:w?1:0,m,c});
+function hostChat(n,w,m){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return;if(!g.chat)g.chat=[];let c;if(!w){c=Math.max(0,g.names.indexOf(n));if(g.match&&g.match.seats)c=g.match.seats[c]==='c'?0:1;}else{const o=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=o?o.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push({n,w:w?1:0,m,c});
   if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);hostBroadcast();}
 function chatSend(){const i=$('chatIn'),m=chatClean(i.value);if(!m||!view)return;
   if(role==='host')hostChat(view.names[mySeat]||nickGet()||t('p1'),false,m);
@@ -355,7 +356,7 @@ const voiceOk=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia
 const voiceNet=()=>(role==='host'&&!!H.guestConn&&H.guestConn.open)||(role==='guest'&&!!C.conn&&C.conn.open);
 function voiceSend(op){try{if(role==='host'&&H.guestConn)H.guestConn.send({t:'voice',op});else if(role==='guest'&&C.conn)C.conn.send({t:'voice',op});}catch(e){}}
 function voiceUi(){if(view&&!$('game').hidden)renderGame();}
-function voiceStop(note,tell){const v=V;if(tell&&v.st!=='off')voiceSend('bye');clearTimeout(v.to);
+function voiceStop(note,tell){const v=V;if(v.st==='on')mVoiceSet(true);if(tell&&v.st!=='off')voiceSend('bye');clearTimeout(v.to);
   try{v.call&&v.call.close();}catch(e){}try{v.stream&&v.stream.getTracks().forEach(k=>k.stop());}catch(e){}
   if(v.audio){try{v.audio.srcObject=null;v.audio.remove();}catch(e){}}
   V={st:'off',note:note||''};voiceUi();}
@@ -365,21 +366,23 @@ function voiceConnect(){clearTimeout(V.to);V.to=setTimeout(()=>{if(V.st==='conn'
   if(role==='guest'&&peer&&V.stream){const c=peer.call(C.host,V.stream);voiceCall(c);}}
 function voiceCall(c){V.call=c;c.on('stream',rs=>{if(V.call!==c)return;clearTimeout(V.to);
     if(!V.audio){const a=document.createElement('audio');a.autoplay=true;a.setAttribute('playsinline','');a.hidden=true;document.body.appendChild(a);V.audio=a;}
-    V.audio.srcObject=rs;V.audio.volume=voiceVol()/100;const pl=V.audio.play&&V.audio.play();if(pl&&pl.catch)pl.catch(()=>{});V.st='on';voiceUi();});
+    V.audio.srcObject=rs;V.audio.volume=voiceVol()/100;const pl=V.audio.play&&V.audio.play();
+    if(pl&&pl.catch)pl.catch(()=>{const f=()=>{if(V.audio&&V.audio.paused)V.audio.play().catch(()=>{});};document.addEventListener('pointerdown',f,{once:true});document.addEventListener('keydown',f,{once:true});});   // autoplay refused (a call started by itself): at the first touch
+    V.st='on';mVoiceSet(true);voiceUi();});
   c.on('close',()=>{if(V.call===c)voiceStop(t('vEnd'),false);});c.on('error',()=>{if(V.call===c)voiceStop(t('vFail'),true);});}
 function voiceIncoming(c){if(role!=='host'||V.st!=='conn'||!V.stream||!H.guestConn||c.peer!==H.guestConn.peer){try{c.close();}catch(e){}return;}
   c.answer(V.stream);voiceCall(c);}
 function voiceAsk(){if(V.st!=='off'||!voiceNet())return;V={st:'out',note:''};voiceSend('ask');voiceUi();}
-function voiceAnswer(yes){if(V.st!=='in')return;if(!yes){voiceSend('no');V={st:'off',note:''};voiceUi();return;}
+function voiceAnswer(yes){if(V.st!=='in')return;if(!yes){mVoiceSet(false);voiceSend('no');V={st:'off',note:''};voiceUi();return;}
   V.st='conn';voiceUi();voiceMic().then(st=>{if(!st)return;voiceSend('yes');voiceConnect();},()=>voiceStop(t('vMic'),true));}
 function voiceOnMsg(op){
-  if(op==='ask'){if(V.st==='out'&&role==='guest')V={st:'off',note:''};   // both offered at once: the host's offer stands
-    if(V.st!=='off')return;V={st:'in',note:''};tone(520,.12,.05);voiceUi();}
+  if(op==='ask'||op==='reask'){if(V.st==='out'&&role==='guest')V={st:'off',note:''};   // both offered at once: the host's offer stands
+    if(V.st!=='off')return;V={st:'in',note:''};if(op==='reask'&&mVoiceFresh()){voiceAnswer(true);return;}tone(520,.12,.05);voiceUi();}
   else if(op==='cancel'&&V.st==='in'){V={st:'off',note:''};voiceUi();}
-  else if(op==='no'&&V.st==='out'){V={st:'off',note:t('vNo',{n:vNm()})};voiceUi();}
+  else if(op==='no'&&V.st==='out'){mVoiceSet(false);V={st:'off',note:t('vNo',{n:vNm()})};voiceUi();}
   else if(op==='yes'&&V.st==='out'){V.st='conn';voiceUi();voiceMic().then(st=>{if(!st)return;if(role==='host')voiceSend('go');voiceConnect();},()=>voiceStop(t('vMic'),true));}
   else if(op==='go'&&V.st==='conn'&&V.stream)voiceConnect();
-  else if(op==='bye'&&V.st!=='off')voiceStop(t('vEnd'),false);}
+  else if(op==='bye'){if(V.st!=='off')voiceStop(t('vEnd'),false);mVoiceSet(false);}}
 const voiceVol=()=>{const v=LS.get('games-voicevol',80);return typeof v==='number'?v:80;};
 function voiceMute(){if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
 function voiceRender(){const b=$('voiceBox'),pl=mySeat>=0&&(role==='host'||role==='guest')&&voiceOk();b.hidden=!pl;if(!pl)return;
@@ -403,7 +406,7 @@ function chatRender(){const b=$('chatBox'),net=role==='host'||role==='guest'||ro
   if(CH.seen<0||chatShown())CH.seen=chatMsgs();
   const u=chatUnread();$('chatSum').textContent=u?t('chatN',{n:u}):t('chat');
   $('chatForm').hidden=anonW;$('chatName').hidden=!anonW;$('chatIn').placeholder=t('chatPh');
-  const h=$('chatHint'),hk=role==='watch'?(r.over?'':'chatHintW'):(r.over?'':'chatHintP');h.hidden=!hk;if(hk)h.textContent=t(hk);
+  const op=r.over||(view.match&&!view.started),h=$('chatHint'),hk=op?'':role==='watch'?'chatHintW':'chatHintP';h.hidden=!hk;if(hk)h.textContent=t(hk);
   chatBtnSync();const key=L.length+'|'+(L.length?JSON.stringify(L[L.length-1]):'')+'|'+lang;if(CH.key===key)return;CH.key=key;ul.textContent='';
   if(!L.length){const li=document.createElement('li');li.className='hint';li.textContent=t('chatEmpty');ul.appendChild(li);}
   for(const x of L){const li=document.createElement('li');
@@ -445,7 +448,7 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
   else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
   else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();
     if(C.hold&&(d.game.myHold===C.hold.code||d.game.moves.length))C.hold=null;
-    showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}}
+    showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}mVoiceAuto();}
   else if(d.t==='nack'){sending=false;if(C.hold){C.hold=null;if(view)view.myHold=null;resetUi();}if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
 
 // ---------- game view ----------
@@ -978,12 +981,20 @@ const mSave=()=>{if(MATCH)LS.set('mochalunt-'+MATCH.code,MATCH);};
 // the score, by role: 1 a win, ½ a draw
 function mScore(rec){const p={c:0,i:0};for(const k in rec.res||{}){const w=rec.res[k].w;if(w==='d'){p.c+=.5;p.i+=.5;}else if(w)p[w]+=1;}return p;}
 const mNum=x=>String(x).replace('.',lang==='fr'?',':'.');
-function mGo(k,kind){const P=mPlan(MATCH);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
+function mGo(k,kind){const P=mPlan(MATCH);if(V.st==='on'||MATCH.vc&&MATCH.vc.k===MTK)mVoiceSet(true);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
   location.href=k>=P.length?'mochalunt.html#res-'+MATCH.code:P[k].page+'.html#m'+kind+'-'+MATCH.code+'-'+k;}
+// The voice between the two players goes on from table to table: on, it is noted in the record ({k: the table, at});
+// at the next table (or the same one, reloaded) within 15 min, the guest offers it again by itself ('reask') and the
+// host, which has the same note, accepts it by itself. Hanging up, declining or a 'bye' removes the note.
+const mVoiceFresh=()=>!!(MATCH&&MATCH.me&&MTW==='t'&&MATCH.vc&&(MATCH.vc.k===MTK||MATCH.vc.k===MTK-1)&&Date.now()-MATCH.vc.at<15*60e3);
+function mVoiceSet(on){if(!MATCH||!MATCH.me||MTW!=='t')return;if(on)MATCH.vc={k:MTK,at:Date.now()};else if(MATCH.vc)delete MATCH.vc;else return;mSave();}
+let mVoiceTried=false;
+function mVoiceAuto(){if(mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!voiceOk()||!voiceNet()||!mVoiceFresh())return;
+  mVoiceTried=true;V={st:'out',note:''};voiceSend('reask');voiceUi();}
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
   return {size:GAME.size,...GAME.rules(G.rules||{}),hold:null,tc,first:'host',names:[MATCH.name,''],moves:[],clock:[tc.base,tc.base],running:false,result:null,started:false,
-    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
+    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
 // The chooser takes the first seat or the second (c: 1 first, 2 second); the seats are swapped when needed
 function mChoose(s,c){const g=H.game,m=g.match;if(!m||m.chosen||g.started||!g.names[0]||!g.names[1])return;if(m.seats[s]!==mChooser(m,m.k))return;
   if((s===0)!==(c===1)){g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();m.seats.reverse();g.ready.reverse();mySeat=1-mySeat;
@@ -996,6 +1007,7 @@ function mSync(r){const m=view&&view.match;if(!m||!MATCH)return;let ch=false;
   if(MATCH.me&&MATCH.cur!==MTK&&MTW==='t'){MATCH.cur=MTK;ch=true;}
   for(const k in m.res||{})if(!MATCH.res[k]){MATCH.res[k]=m.res[k];ch=true;}
   const nm={};m.seats.forEach((ro,s)=>{if(view.names[s])nm[ro]=view.names[s];});if(JSON.stringify({...MATCH.names,...nm})!==JSON.stringify(MATCH.names||{})){MATCH.names={...MATCH.names,...nm};ch=true;}
+  if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length&&JSON.stringify(view.chat)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=view.chat.slice(-CHATMAX);ch=true;}
   if(r.over&&!MATCH.res[MTK]){MATCH.res[MTK]={w:r.over.w<0?'d':m.seats[r.over.w],why:r.over.why,moves:view.moves.slice(),names:{...MATCH.names},seats:m.seats.slice(),rules:GAME.rules(view)};ch=true;}
   if(ch)mSave();}
 // The match card (side panel): the table, the score, the seat choice, the tables (finished ones open read only)
@@ -1134,7 +1146,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     x.text().then(txt=>{const er=sgfLoad(txt);$('sgfErr').textContent=er||'';});});
   $('chatForm').onsubmit=e=>{e.preventDefault();chatSend();};$('chatName').onclick=()=>{sheet(false);chatUp(false);nameOv('watch');};
   $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
-  $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>voiceStop(t('vEnd'),true);
+  $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>{voiceStop(t('vEnd'),true);mVoiceSet(false);};
   {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
   $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});
   {const cb=document.createElement('button');cb.type='button';cb.id='chatBtn';cb.className='chatbtn';cb.textContent='💬';cb.hidden=true;$('optBtn').before(cb);cb.onclick=()=>chatUp(true);
