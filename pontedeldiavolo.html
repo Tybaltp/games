@@ -290,15 +290,21 @@ function canPass(st,p){for(let c=0;c<NN;c++) if(canPlace(st,p,c)) return false; 
 // islands never grow, and a square where a colour may legally place a tile can only stop being so (every rule adds
 // constraints as tiles arrive: groups grow, islands stay, squares get filled or covered), whoever plays. Hence any tile
 // p will ever place lies in L = legalCells(st,p) today, and any sequence of p's placements that is legal in the future
-// is legal today, in the same order, from the same position. The result (points, islands, bridges) is frozen for p when:
+// is legal today, in the same order, from the same position. The result is points, then islands, then bridges; the
+// points of p change only when a new island appears or two networks that both hold islands get joined (a bridge or a
+// tile joining a network that holds no island changes nothing). So the result is frozen for p when:
 //  (1) no new island can ever appear: in each 4-connected component of (p's sandbank tiles ∪ L), no order of placing
 //      some of its free squares ever makes a group of four (searched exhaustively; a component with more than
 //      FIX_MAX free squares is simply deemed open, so the game goes on);
-//  (2) no bridge can ever be built: for each span whose ends are p's unbridged tiles or squares of L, over free water
-//      today and crossing no bridge on the board, placing the free end(s) in either order then bridging is illegal;
-//  (3) no two networks can ever be joined by tiles (sandbanks link the islands they are bridged to, so a tile joining two
-//      sandbanks can merge two networks): in each component above, all of p's tiles already belong to one network.
-// Frozen for both colours ⇒ no legal move, now or after any sequence of moves, changes the count: the game ends (w_fixed).
+//  (2) no two networks holding islands can ever be joined: the joins still possible are the components above (a
+//      component holding tiles of two networks is a possible join by tiles) and the bridges still buildable (a span
+//      whose ends are p's unbridged tiles or squares of L, over free water today, crossing no bridge on the board, and
+//      such that placing the free end(s) in either order then bridging is legal). Networks, and tile-less components
+//      (future sandbanks), are the nodes of a graph with those joins as edges: no connected part may hold two networks
+//      with islands. A bridge between two squares of one network is redundant: it never changes the count;
+//  (3) only when points and islands are tied between the two colours, the bridge count decides: then any bridge still
+//      buildable keeps the game going.
+// Frozen for both colours ⇒ no legal move, now or after any sequence of moves, changes the result: the game ends (w_fixed).
 const FIX_MAX=12;
 function islandReachable(st,p,fr){const w=cloneState(st),seen=new Set();
   const rec=mask=>{if(seen.has(mask))return false;seen.add(mask);
@@ -312,21 +318,30 @@ function bridgeReachable(st,p,a,e){
     if(ok&&canBridge(w,p,a,e))return true;}
   return false;}
 function scoreFixed(st){
+  const S1=score(st,1),S2=score(st,2),tied=S1.pts===S2.pts&&S1.islands===S2.islands;
   for(const p of [1,2]){
-    const L=legalCells(st,p),free=new Uint8Array(NN),pot=new Uint8Array(NN),seen=new Uint8Array(NN);
+    const L=legalCells(st,p),free=new Uint8Array(NN),pot=new Uint8Array(NN),comp=new Int16Array(NN).fill(-1);
     for(const c of L){free[c]=1;pot[c]=1;}
-    const {gid,groups}=analyze(st,p),par=new Int16Array(groups.length).map((_,i)=>i);   // networks: groups joined by bridges
+    const {gid,groups}=analyze(st,p),G=groups.length,par=new Int16Array(G).map((_,i)=>i);   // networks: groups joined by bridges
     for(const B of st.bridges) if(B.o===p) union(par,gid[B.a],gid[B.b]);
-    for(const g of groups) if(g.length<4) for(const c of g) pot[c]=1;
-    for(let c=0;c<NN;c++) if(pot[c]&&!seen[c]){
-      const q=[c]; seen[c]=1;
-      for(let k=0;k<q.length;k++) for(const n of NB4[q[k]]) if(pot[n]&&!seen[n]){seen[n]=1;q.push(n);}
-      let net=-1; for(const x of q) if(st.cells[x]){const r=find(par,gid[x]);if(net>=0&&r!==net) return false;net=r;}   // (3)
+    const isl=new Int16Array(G); for(const g of groups){if(g.length<4) for(const c of g) pot[c]=1; else isl[find(par,gid[g[0]])]++;}
+    const compNet=[];   // per component: the network of its tiles (-1: none)
+    for(let c=0;c<NN;c++) if(pot[c]&&comp[c]<0){
+      const k=compNet.length,q=[c]; comp[c]=k;
+      for(let i=0;i<q.length;i++) for(const n of NB4[q[i]]) if(pot[n]&&comp[n]<0){comp[n]=k;q.push(n);}
+      let net=-1; for(const x of q) if(st.cells[x]){const r=find(par,gid[x]);if(net>=0&&r!==net) return false;net=r;}   // (2) join by tiles
+      compNet.push(net);
       if(q.length<4) continue;
       const fr=q.filter(x=>!st.cells[x]); if(fr.length>FIX_MAX||islandReachable(st,p,fr)) return false;}   // (1)
-    const end=c=>free[c]||(st.cells[c]===p&&!st.bridged[c]);
+    // graph of possible joins: nodes = networks (0..G-1) and tile-less components (G+k)
+    const node=c=>st.cells[c]?find(par,gid[c]):compNet[comp[c]]>=0?compNet[comp[c]]:G+comp[c];
+    const end=c=>free[c]||(st.cells[c]===p&&!st.bridged[c]),par2=new Int16Array(G+compNet.length).map((_,i)=>i);
     for(let a=0;a<NN;a++) if(end(a)) for(const e of BR[a])
-      if(e.b>a&&end(e.b)&&e.cov.every(x=>!st.cells[x]&&!st.covered[x])&&!st.bridges.some(B=>crosses(a,e.b,B.a,B.b))&&bridgeReachable(st,p,a,e)) return false;   // (2)
+      if(e.b>a&&end(e.b)&&e.cov.every(x=>!st.cells[x]&&!st.covered[x])&&!st.bridges.some(B=>crosses(a,e.b,B.a,B.b))&&bridgeReachable(st,p,a,e)){
+        if(tied) return false;   // (3)
+        union(par2,node(a),node(e.b));}
+    const cnt=new Int16Array(G+compNet.length);
+    for(let g=0;g<G;g++) if(isl[g]&&++cnt[find(par2,g)]>1) return false;   // (2) two island networks joinable
   }
   return true;
 }
