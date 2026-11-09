@@ -292,8 +292,8 @@ function piece2D(par,p,cx,cy,R0,op){const k=PC(p),g=el('g',{'pointer-events':'no
   return g;}
 // Isometric projection: the board turned by 45°, seen from ELEV degrees above (high enough for every empty cell to stay
 // visible behind tall pieces). Board units: cells of 1, origin at the board's centre, z up.
-const ELEV=(+new URLSearchParams(location.search).get('elev')||52)*Math.PI/180,SQ=Math.sin(ELEV),HF=Math.cos(ELEV),R2=Math.SQRT1_2;
-const QP=new URLSearchParams(location.search),TALL=+QP.get('tall')||.86,SHORT=+QP.get('short')||.48,PR=.30;
+const ELEV=52*Math.PI/180,SQ=Math.sin(ELEV),HF=Math.cos(ELEV),R2=Math.SQRT1_2;
+const TALL=.86,SHORT=.48,PR=.30;
 const prj=(S,x,y,z)=>[(x-y)*R2*S,(x+y)*R2*S*SQ-(z||0)*S*HF];
 let PD=(()=>{const v=+new URLSearchParams(location.search).get('d');return v>0?v:Infinity;})();
 // ROT: the board's turn in degrees (45: diagonal, 0: square to the viewer)
@@ -627,16 +627,8 @@ if(new URLSearchParams(location.search).has('compare'))addEventListener('load',(
   const cmp=new URLSearchParams(location.search).get('compare'),sqB=cmp==='0';
   const L=sqB?[[0,Infinity,'E — de face, sans perspective'],[0,30,'F — de face, très léger (d = 30)'],[0,18,'G — de face, léger (d = 18)'],[0,11,'H — de face, plus net (d = 11)']]
     :[[45,Infinity,'A — actuel, isométrique'],[45,30,'B — très léger (d = 30)'],[45,18,'C — léger (d = 18)'],[45,11,'D — plus net (d = 11)']];
-  // ?pos=behind : une petite pièce claire juste derrière une grande foncée, les quatre cas (carré/carré, rond/carré, carré/rond, rond/rond)
-  const behind=new URLSearchParams(location.search).get('pos')==='behind';
-  const SH=[4,8,12,0],TA=[7,7,3,3],pairs=rt=>rt===45?[[0,5],[2,7],[8,13],[10,15]]:[[4,8],[5,9],[6,10],[7,11]];
-  for(const [rt,d,lab] of L){ROT=rt;PD=d;
-    if(behind){st.b.fill(-1);pairs(rt).forEach(([bk,fr],k)=>{st.b[bk]=SH[k];st.b[fr]=TA[k];});}
-    drawBoard(scene(st));
-    const sv=$('svg').cloneNode(true);sv.removeAttribute('id');
-    // each copy gets its own gradients (the copied ids would point to the hidden board's, which do not paint)
-    const K='_'+L.findIndex(v=>v[2]===lab);sv.querySelectorAll('linearGradient').forEach(g=>g.id+=K);
-    sv.querySelectorAll('[fill^="url(#"]').forEach(n=>n.setAttribute('fill',n.getAttribute('fill').replace(/\)$/,K+')')));sv.style.cssText='width:100%;height:auto;max-height:44vh';
+  for(const [rt,d,lab] of L){ROT=rt;PD=d;drawBoard(scene(st));
+    const sv=$('svg').cloneNode(true);sv.removeAttribute('id');sv.style.cssText='width:100%;height:auto;max-height:44vh';
     const c=document.createElement('div');c.style.cssText='color:var(--ink,inherit);font:15px sans-serif;text-align:center';c.append(lab,document.createElement('br'),sv);wrap.append(c);}});
 </script>
 </body></html>
