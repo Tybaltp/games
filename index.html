@@ -6,7 +6,7 @@
 <title>Jeux</title>
 <script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="common/cards.css?v=4">
+<link rel="stylesheet" href="common/cards.css?v=5">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
 <style>
 :root{--bg:#f2f0ec;--ink:#1d1c1a;--muted:#6b6862;--line:#e3dfd6;--panel:#f9f8f5;--accent:#9C2E3A;--warn:#fff4e5;--warn-line:#e8c48a}
@@ -33,7 +33,7 @@ h1{font-size:1.8rem;margin:0 0 4px}
 /* game cards: common/cards.css; here their grid */
 .cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:14px}
 /* phone: every card on two columns, smaller titles (Ponte and Diagonal Blocks are long) */
-@media (max-width:560px){.cards{grid-template-columns:1fr 1fr;gap:10px}.cards .gc{border-radius:10px}.cards .gc .ct{left:10px;top:8px;font-size:1.2rem;max-width:56%}.cards .c-ponte .ct,.cards .c-dblocks .ct{font-size:1.02rem}}
+@media (max-width:560px){.cards{grid-template-columns:1fr 1fr;gap:10px}.cards .gc{border-radius:10px}}
 details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 16px;max-width:42rem}
 details.how summary{cursor:pointer;font-weight:600}
 details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
