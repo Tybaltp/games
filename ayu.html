@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ayu</title>
+<script src="common/theme.js?v=4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=38">
+<style>
+/* Ayu palette (light, dark), board and stones; the shared layout is in common/games.css */
+:root{
+  --bg:#dde1e8;--panel:#eef0f4;--ink:#1c2130;--muted:#5d6475;--line:#c4cad6;
+  --accent:#4a5fa8;--accent-ink:#ffffff;--danger:#b3261e;
+  --sboard:#e2cf9f;--sgrid:rgba(60,42,18,.7);--slab:rgba(60,42,18,.75);
+  --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.75);--mk:#c0392b;--sel:#2f6fd6;
+  --board-ar:1/1;color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15171c;--panel:#1e2129;--ink:#e3e6ee;--muted:#959cac;--line:#2d3240;
+  --accent:#8ea0e6;--accent-ink:#10142a;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#e5483a;--sel:#2f6fd6;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#15171c;--panel:#1e2129;--ink:#e3e6ee;--muted:#959cac;--line:#2d3240;
+  --accent:#8ea0e6;--accent-ink:#10142a;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#e5483a;--sel:#2f6fd6;color-scheme:dark;}
+.board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
+.board .pt{cursor:pointer}
+/* players' cards: the seat's colour (it changes with the swap) and its units */
+.dot.sst{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
+.player .who{padding:2px 0 2px 2px}
+.sst.b{background:var(--sb);border:1px solid #000;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.sst.w{background:var(--sw);border:1px solid rgba(0,0,0,.6)}
+.player .units{font-size:.78rem;color:var(--muted);white-space:nowrap}
+.mini{display:inline-block;width:11px;height:11px;border-radius:50%;box-sizing:border-box;flex:none;vertical-align:-1px}
+.mini.b{background:var(--sb);border:1px solid #000}.mini.w{background:var(--sw);border:1px solid rgba(0,0,0,.55)}
+ol.log li{align-items:center}
+ol.log .aym{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+ol.log .aym .tag{color:var(--muted);font-size:.72rem}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="ayu.html"><b id="ttl" style="font-weight:inherit">Ayu</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <p class="lede noinv" data-i18n="lede"></p>
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <div class="homeMain" id="homeMain">
+        <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
+        <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
+        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+        <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
+          <form class="form" id="joinForm">
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+            <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+          </form>
+          <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+        </details>
+        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
+          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="AYU1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    
+        </details>
+      </div>
+      <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
+      <p class="hint" id="modeTxt" hidden></p>
+      <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
+      <div class="picks" id="anaPick" hidden>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
+      </div>
+      
+      
+      <form class="form" id="createForm" hidden>
+        
+        <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
+        <label class="toggle" for="cSwap"><input type="checkbox" id="cSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
+        <label class="toggle" for="aSwap"><input type="checkbox" id="aSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
+        <label class="toggle" for="fSwap"><input type="checkbox" id="fSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
+        <label class="toggle" for="tSwap"><input type="checkbox" id="tSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="loadForm" hidden>
+        <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
+        <p class="hint err" id="sgfErr"></p>
+        <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    
+    
+    
+    
+    <details id="rulesHome" class="noinv"></details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="0 0 700 700" role="img" aria-label="Ayu board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
+    <div class="notice" id="notice"></div>
+    <form class="nameov" id="nameOv" hidden><div class="card"><h2 id="nameOvT"></h2><p class="hint" id="nameOvTxt"></p><div class="form"><label for="nameOvIn"><span data-i18n="nick">Your name</span><input id="nameOvIn" maxlength="24" autocomplete="nickname" class="txt"></label></div><div class="confirm"><button type="submit" class="primary" id="nameOvGo"></button><button type="button" id="nameOvAnon" data-i18n="anon" hidden>Anonymous</button></div></div></form>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary id="inviteSum" data-i18n="invite">Invite</summary>
+      <div id="invPart">
+      <!-- one row per code: the code in clear, then « copy the code » and « copy the link » (the links stay in hidden fields) -->
+      <div id="linksBox" class="vh" hidden><div id="oppLink"><input id="codeP" readonly tabindex="-1" aria-hidden="true"></div><div id="watchLinkBox"><input id="codeW" readonly tabindex="-1" aria-hidden="true"></div></div>
+      <div class="coderow" id="codePBox"><span class="hint" data-i18n="cGame">Opponent</span><input class="codetxt" id="codeC" readonly aria-label="Game code"><span class="cbtns"><button type="button" data-copy="codeC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeP" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <div class="coderow" id="codeWBox"><span class="hint" data-i18n="cWatch">Spectators</span><input class="codetxt" id="codeWC" readonly aria-label="Code for spectators"><span class="cbtns"><button type="button" data-copy="codeWC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeW" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
+      </div>
+      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><p class="wline" id="watchLine"></p><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button><div class="voicein" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
+    <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+    </details>
+    <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
+</main>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
+</div>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
+<script src="common/ai.js?v=1"></script>
+<script>
+// ===== Ayu (Luis Bolaños Mures, 2011) =====
+// Rules kept: an odd square board (11 × 11 by default; 9, 11 or 13), on the points; « neighbour » = orthogonal. Start (to
+// be checked on the rules' diagram): Black on the points (even column b, d, f…, odd row 1, 3, 5…), White on the points
+// (odd column a, c, e…, even row 2, 4…); 30 stones each on 11 × 11. A unit: a lone stone, or a group of neighbouring
+// stones of one colour. Black moves first. A move (code « c3-c4 »): a lone stone goes to an empty neighbouring point; a
+// stone of a group goes to an empty point neighbouring the same group, and the group stays in one piece after the move.
+// Distance rule: the move must reduce the distance between the unit moved and the nearest friendly unit (the number of
+// empty points on the shortest orthogonal path joining them, that is the number of moves to join them); a move that
+// joins the unit to another always reduces it. Swap (option, off by default): after Black's first move, White may change
+// sides (« swap »). The player who has no legal move on their turn wins (usually: all their stones in one group). A
+// position repeated with the same player to move: a draw.
+function AyuEngine(){
+ const BLACK=0,WHITE=1,ORTH=[[1,0],[-1,0],[0,1],[0,-1]],SIZES=[9,11,13];
+ function rules(src){const n=+(src&&src.size);return{size:SIZES.includes(n)?n:11,swap:!!(src&&src.swap)};}
+ // point i = x + n*y; x column (a… left to right), y row (0 = bottom); name « c3 »
+ const name=(n,i)=>String.fromCharCode(97+i%n)+(Math.floor(i/n)+1);
+ function parse(n,s){const m=/^([a-z])(\d+)$/.exec(s);if(!m)return -1;const x=m[1].charCodeAt(0)-97,y=+m[2]-1;
+  return x>=0&&x<n&&y>=0&&y<n?x+n*y:-1;}
+ const nbCache={};
+ function nbs(n){if(nbCache[n])return nbCache[n];const out=[];
+  for(let i=0;i<n*n;i++){const x=i%n,y=(i-x)/n,a=[];for(const[dx,dy]of ORTH){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<n&&Y<n)a.push(X+n*Y);}out.push(a);}
+  return nbCache[n]=out;}
+ function init(r){const n=r.size,b=new Int8Array(n*n).fill(-1);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if(x%2===1&&y%2===0)b[x+n*y]=BLACK;else if(x%2===0&&y%2===1)b[x+n*y]=WHITE;}
+  return{size:n,swap:r.swap,b,col:[BLACK,WHITE],turn:0,ply:0,seen:{}};}
+ const toMove=st=>st.col[st.turn];
+ // the unit (points) holding i on the board b
+ function unitOf(n,b,i){const N=nbs(n),c=b[i],out=[i],seen=new Uint8Array(n*n);seen[i]=1;
+  for(let k=0;k<out.length;k++)for(const j of N[out[k]])if(!seen[j]&&b[j]===c){seen[j]=1;out.push(j);}
+  return out;}
+ // distance from the unit u (colour c) to the nearest friendly unit: empty points on the shortest path; Infinity if none
+ function dist(n,b,u,c){const N=nbs(n),inU=new Uint8Array(n*n);u.forEach(i=>inU[i]=1);
+  const d=new Int16Array(n*n).fill(-1);let q=[];
+  for(const i of u)for(const j of N[i])if(b[j]===-1&&d[j]<0){d[j]=1;q.push(j);}
+  for(let k=0;k<q.length;k++){const i=q[k];
+   for(const j of N[i]){if(b[j]===c&&!inU[j])return d[i];if(b[j]===-1&&d[j]<0){d[j]=d[i]+1;q.push(j);}}}
+  return Infinity;}
+ // the board after the move f→t, or null if it is illegal
+ function after(st,f,t){const n=st.size,b=st.b,c=toMove(st),N=nbs(n);
+  if(f<0||t<0||b[f]!==c||b[t]!==-1)return null;
+  const u=unitOf(n,b,f);
+  const nb=b.slice();nb[f]=-1;nb[t]=c;
+  if(u.length===1){if(!N[f].includes(t))return null;}
+  else{
+   const rest=u.filter(i=>i!==f);if(!N[t].some(j=>rest.includes(j)))return null;      // next to the same group
+   const u2=unitOf(n,nb,t);if(!rest.every(i=>u2.includes(i)))return null;               // the group still in one piece
+  }
+  const u2=unitOf(n,nb,t);
+  if(u2.length>u.length)return nb;                       // joined to another unit
+  const before=dist(n,b,u,c),aft=dist(n,nb,u2,c);
+  return aft<before?nb:null;}
+ function legalMoves(st){const n=st.size,b=st.b,c=toMove(st),N=nbs(n),out=[];
+  for(let f=0;f<n*n;f++){if(b[f]!==c)continue;const u=unitOf(n,b,f),cand=new Set();
+   for(const i of u)for(const j of N[i])if(b[j]===-1)cand.add(j);
+   for(const t of cand)if(after(st,f,t))out.push([f,t]);}
+  return out;}
+ function legal(st,code){if(typeof code!=='string')return null;code=code.trim().toLowerCase();
+  if(code==='swap')return st.swap&&st.ply===1?'swap':null;
+  const m=/^([a-z]\d+)-([a-z]\d+)$/.exec(code);if(!m)return null;
+  const n=st.size,f=parse(n,m[1]),t=parse(n,m[2]);
+  return after(st,f,t)?name(n,f)+'-'+name(n,t):null;}
+ const key=st=>st.turn+':'+st.col[st.turn]+':'+st.b.join('');
+ // {st, log:[{p (seat),s,code,kind,c,f,t}], last, over:null|{w (-1 draw),why}}
+ function replay(r,moves){r=rules(r);const st=init(r),log=[];let last=null,over=null;st.seen[key(st)]=1;
+  const check=()=>{if(!legalMoves(st).length)return{w:st.turn,why:'w_stuck'};   // no move: the player to move wins
+   const k=key(st);if(st.seen[k])return{w:-1,why:'w_rep'};st.seen[k]=1;return null;};
+  for(const m of moves||[]){if(over)break;const code=legal(st,m);
+   if(code===null){over={w:-1,why:'w_bad'};break;}
+   const s=st.turn,c=toMove(st);let res;
+   if(code==='swap'){st.col=[st.col[1],st.col[0]];st.turn=0;res={kind:'swap',c};}
+   else{const [f,t]=code.split('-').map(x=>parse(st.size,x));st.b=after(st,f,t);st.turn=1-st.turn;res={kind:'move',c,f,t};}
+   st.ply++;log.push({p:s,s,code,...res});last={code,...res};over=check();}
+  if(!moves||!moves.length){if(!legalMoves(st).length)over={w:st.turn,why:'w_stuck'};}
+  return{st,log,last,over};}
+ return{BLACK,WHITE,SIZES,nbs,rules,init,name,parse,toMove,unitOf,dist,after,legalMoves,legal,replay};
+}
+const AY=AyuEngine();
+
+// ===== Ayu: the page's side of common/core.js =====
+const AY_I18N={fr:{
+ title:"Ayu",lede:"Rassemblez toutes vos pierres : le premier bloqué gagne.",
+ sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
+ firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
+ cB:"noir",cW:"blanc",units:"{n} unités",unit1:"1 unité",unitsT:"Unités : pierres seules ou groupes. Une seule unité, le plus souvent : plus de coup, c'est gagné.",
+ swap:"Échanger",swapT:"Échanger : vous prenez le camp noir et le coup joué ; votre adversaire joue Blanc.",
+ st_play:"À vous ({c}) : choisissez une pierre à déplacer.",st_playN:"{name} ({c}) : choisissez une pierre à déplacer.",st_swapQ:" Ou échangez.",
+ st_sel:"Choisissez où elle va (points marqués).",st_selNone:"Cette pierre ne peut pas bouger : choisissez-en une autre.",
+ st_turnC:"Au tour de {name} ({c}).",
+ pend:"{f} → {t}.",confirm1:"Confirmer",
+ d_move:"{f} → {t}",d_swap:"échange",l_swap:"échange",
+ w_stuck:"plus aucun coup possible",w_rep:"position répétée",
+ ai_swapped:"Ordinateur : échange.",
+ boardLbl:"Plateau d'Ayu",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li><b>Matériel</b> : un plateau de 11 × 11 intersections (9 × 9 ou 13 × 13 au choix). Au départ, les pierres noires et blanches alternent en quinconce : 30 de chaque couleur en 11 × 11. Noir commence.</li>
+ <li><b>Unités</b> : une pierre seule, ou un groupe de pierres de même couleur reliées orthogonalement.</li>
+ <li><b>Coup</b> : une pierre seule va sur un point vide voisin. Une pierre d'un groupe va sur un point vide voisin du groupe, et le groupe doit rester d'un seul tenant.</li>
+ <li><b>Distance</b> : le coup doit rapprocher l'unité déplacée de l'unité amie la plus proche (en nombre de points vides à traverser). Joindre une autre unité est toujours permis.</li>
+ <li><b>Victoire</b> : le joueur qui n'a plus de coup à son tour gagne, en général parce que toutes ses pierres forment un seul groupe. Une position répétée avec le même joueur au trait : partie nulle.</li>
+ <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, Blanc peut changer de camp ; le premier joueur, devenu Blanc, joue.</li>
+ <li><b>Cartes joueurs</b> : la couleur de chacun et son nombre d'unités.</li>
+ <li><b>Jouer</b> : cliquez une de vos pierres ; les points où elle peut aller sont marqués d'un point. Cliquez l'un d'eux (au survol, la pierre s'y affiche en transparence). Cliquer de nouveau la pierre la désélectionne. Avec « Confirmer chaque coup », le coup attend Confirmer. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Règles : <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
+},en:{
+ title:"Ayu",lede:"Gather all your stones: the first one stuck wins.",
+ sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
+ firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
+ cB:"black",cW:"white",units:"{n} units",unit1:"1 unit",unitsT:"Units: lone stones or groups. A single unit usually means no more moves: a win.",
+ swap:"Swap",swapT:"Swap: you take the black side and the move played; your opponent plays White.",
+ st_play:"Your move ({c}): choose a stone to move.",st_playN:"{name} ({c}): choose a stone to move.",st_swapQ:" Or swap.",
+ st_sel:"Choose where it goes (marked points).",st_selNone:"This stone cannot move: choose another one.",
+ st_turnC:"{name} to move ({c}).",
+ pend:"{f} → {t}.",confirm1:"Confirm",
+ d_move:"{f} → {t}",d_swap:"swap",l_swap:"swap",
+ w_stuck:"no move left",w_rep:"repeated position",
+ ai_swapped:"Computer: swaps.",
+ boardLbl:"Ayu board",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Material</b>: a board of 11 × 11 points (9 × 9 or 13 × 13 as you choose). At the start, black and white stones alternate in a staggered pattern: 30 of each colour on 11 × 11. Black moves first.</li>
+ <li><b>Units</b>: a lone stone, or a group of stones of one colour joined orthogonally.</li>
+ <li><b>Move</b>: a lone stone goes to an empty neighbouring point. A stone of a group goes to an empty point next to the group, and the group must stay in one piece.</li>
+ <li><b>Distance</b>: the move must bring the unit moved closer to the nearest friendly unit (in empty points to cross). Joining another unit is always allowed.</li>
+ <li><b>Winning</b>: the player with no move on their turn wins, usually because all their stones form a single group. A position repeated with the same player to move: a draw.</li>
+ <li><b>Swap</b> (option, off by default): after Black's first move, White may change sides; the first player, now White, moves.</li>
+ <li><b>Player cards</b>: each player's colour and number of units.</li>
+ <li><b>Playing</b>: click one of your stones; the points it can go to are marked with a dot. Click one of them (hovering shows the stone there in transparency). Clicking the stone again deselects it. With “Confirm each move”, the move waits for Confirm. The commands are in the bar under the board: Swap, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Rules: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
+},es:{
+ title:"Ayu",lede:"Reúne todas tus piedras: el primero que se queda bloqueado gana.",
+ sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
+ firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
+ cB:"negras",cW:"blancas",units:"{n} unidades",unit1:"1 unidad",unitsT:"Unidades: piedras sueltas o grupos. Una sola unidad, casi siempre: no hay más jugadas, has ganado.",
+ swap:"Intercambiar",swapT:"Intercambiar: tomas el bando negro y la jugada hecha; tu adversario juega con Blancas.",
+ st_play:"Te toca ({c}): elige una piedra para mover.",st_playN:"{name} ({c}): elige una piedra para mover.",st_swapQ:" O intercambia.",
+ st_sel:"Elige adónde va (puntos marcados).",st_selNone:"Esta piedra no puede moverse: elige otra.",
+ st_turnC:"Turno de {name} ({c}).",
+ pend:"{f} → {t}.",confirm1:"Confirmar",
+ d_move:"{f} → {t}",d_swap:"intercambio",l_swap:"intercambio",
+ w_stuck:"no queda ninguna jugada",w_rep:"posición repetida",
+ ai_swapped:"Ordenador: intercambia.",
+ boardLbl:"Tablero de Ayu",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Material</b>: un tablero de 11 × 11 intersecciones (9 × 9 o 13 × 13 a elegir). Al principio, las piedras negras y blancas se alternan al tresbolillo: 30 de cada color en 11 × 11. Empiezan las Negras.</li>
+ <li><b>Unidades</b>: una piedra suelta, o un grupo de piedras del mismo color unidas ortogonalmente.</li>
+ <li><b>Jugada</b>: una piedra suelta va a un punto vacío vecino. Una piedra de un grupo va a un punto vacío vecino del grupo, y el grupo debe seguir siendo de una sola pieza.</li>
+ <li><b>Distancia</b>: la jugada debe acercar la unidad movida a la unidad amiga más cercana (en número de puntos vacíos que cruzar). Unirse a otra unidad siempre está permitido.</li>
+ <li><b>Victoria</b>: el jugador que no tiene jugada en su turno gana, por lo general porque todas sus piedras forman un solo grupo. Una posición repetida con el mismo jugador al turno: tablas.</li>
+ <li><b>Intercambio</b> (opción, desactivada por defecto): tras la primera jugada de las Negras, las Blancas pueden cambiar de bando; el primer jugador, ahora con Blancas, juega.</li>
+ <li><b>Tarjetas de jugador</b>: el color de cada uno y su número de unidades.</li>
+ <li><b>Jugar</b>: haz clic en una de tus piedras; los puntos adonde puede ir se marcan con un punto. Haz clic en uno de ellos (al pasar el ratón, la piedra se muestra allí en transparencia). Volver a hacer clic en la piedra la deselecciona. Con «Confirmar cada jugada», la jugada espera a Confirmar. Los controles están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
+ <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Reglas: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
+}};
+const CN=c=>t(c===AY.BLACK?'cB':'cW'),CK=c=>c===AY.BLACK?'b':'w';
+const nm=(st,i)=>AY.name(st.size,i);
+function describe(mv,st){const c=String(mv);if(c==='swap')return t('d_swap');const [f,tt]=c.split('-');return t('d_move',{f,t:tt});}
+function logNode(e){const s=document.createElement('span');s.className='aym';const n=view?AY.rules(view).size:11,N=i=>AY.name(n,i);
+  s.innerHTML=`<span class="mini ${CK(e.c)}"></span>`+(e.kind==='swap'?`<span class="tag">${t('l_swap')}</span>`:N(e.f)+'→'+N(e.t));return s;}
+function logText(e){if(e.kind==='swap')return t('l_swap');const n=view?AY.rules(view).size:11;return AY.name(n,e.f)+'-'+AY.name(n,e.t);}
+// units of colour c on b
+function unitCount(n,b,c){const seen=new Uint8Array(n*n);let k=0;for(let i=0;i<n*n;i++)if(b[i]===c&&!seen[i]){k++;for(const j of AY.unitOf(n,b,i))seen[j]=1;}return k;}
+
+// ---------- the move being prepared ----------
+// ui.f: the stone selected, ui.t: its destination (provisional), ui.pending: the move awaiting confirmation
+const newUi=()=>({f:-1,t:-1,pending:null,hover:-1});
+const prepared=()=>ui.f>=0||!!ui.pending;
+function clearPrep(){ui.f=ui.t=-1;ui.pending=null;}
+function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
+const confirmOn=()=>$('needConfirm').checked;
+let shown=null,tgCache={key:'',list:[]};
+// the legal destinations of the stone f in st (cached for the position and the stone)
+function targets(st,f){const k=st.b.join('')+'|'+f;if(tgCache.key!==k){const out=[];if(f>=0&&st.b[f]===AY.toMove(st)){const n=st.size,N=AY.nbs(n),cand=new Set();
+    for(const i of AY.unitOf(n,st.b,f))for(const j of N[i])if(st.b[j]===-1)cand.add(j);for(const tt of cand)if(AY.after(st,f,tt))out.push(tt);}
+  tgCache={key:k,list:out};}return tgCache.list;}
+function ayBoard({r,d,mine,ms}){const live=navAt===null;if(mine&&live&&ui.f>=0&&ms.b[ui.f]!==AY.toMove(ms))clearPrep();
+  shown={d,ms,mine:mine&&live};drawBoard();return {};}
+function ayTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=AY.toMove(st),me=seatName(st.turn);
+  if(ui.f>=0){status(targets(st,ui.f).length?t('st_sel'):t('st_selNone'),'turn',[RST]);return;}
+  const sw=st.swap&&st.ply===1;
+  status((S?t('st_playN',{name:me,c:CN(c)}):t('st_play',{c:CN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
+  if(sw&&$('bSwap'))$('bSwap').title=t('swapT');}
+function ayWaitStatus({r}){status(t('st_turnC',{name:seatName(r.st.turn),c:CN(AY.toMove(r.st))}));return true;}
+function pendText(mv,st){const [f,tt]=String(mv).split('-');return [t('pend',{f,t:tt}),t('confirm1')];}
+function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
+  if(dot){dot.className='dot sst '+CK(col);dot.title=CN(col);}
+  const k=unitCount(st.size,st.b,col),x=document.createElement('div');x.className='units';x.title=t('unitsT');x.textContent=k===1?t('unit1'):t('units',{n:k});el.appendChild(x);}
+function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
+
+// ---------- input ----------
+// A click on one of my stones selects it (again: deselects it); on one of its destinations, plays there (waits for Confirm
+// with « Confirm each move », or on a touch screen); on the provisional stone with confirmation off, plays it.
+function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
+  const st=meSt(r),c=AY.toMove(st);
+  if(i===ui.t){if(!confirmOn()){const mv=ui.pending;clearPrep();send(mv);return;}ui.t=-1;ui.pending=null;renderGame();return;}
+  if(i===ui.f){clearPrep();renderGame();return;}
+  if(st.b[i]===c){clearPrep();ui.f=i;tone(880,.05,.03);renderGame();return;}
+  if(ui.f>=0&&targets(st,ui.f).includes(i)){const code=nm(st,ui.f)+'-'+nm(st,i);
+    if(!confirmOn()&&!touch){clearPrep();send(code);return;}ui.t=i;ui.pending=code;renderGame();return;}}
+$('needConfirm').checked=LS.get('ayu-confirm',true)!==false;
+$('needConfirm').onchange=e=>{LS.set('ayu-confirm',e.target.checked);if(!e.target.checked&&ui.pending&&view&&isMyTurn(replay(view,view.moves,view.result))){const mv=ui.pending;clearPrep();send(mv);}};
+let lastPT='mouse';
+$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
+$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
+function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
+function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;const n=shown.d.st.size;
+  for(const c of anaAlts()){const m=/-([a-z]\d+)$/.exec(c);if(m){const i=AY.parse(n,m[1]);if(i>=0)out.set(i,c);}}return out;}
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg',CELL=40,SR=CELL*.44;
+function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+let G={n:11,pad:CELL};
+const PX=i=>G.pad+(i%G.n)*CELL,PY=i=>G.pad+(G.n-1-Math.floor(i/G.n))*CELL;
+function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===0?'var(--sb)':'var(--sw)',stroke:c===0?'var(--sbe)':'var(--swe)','stroke-width':1.6},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
+const dashRing=(g,i,col)=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.72,fill:'none',stroke:col||'var(--mk)','stroke-width':2.2,'stroke-dasharray':'4 3'},g);
+function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
+  const sh=shown,st=sh&&view?sh.d.st:AY.init(AY.rules(view||{size:homeSize()})),n=st.size;
+  G={n,pad:coordsOn?CELL*1.05:CELL*.7};const W=2*G.pad+(n-1)*CELL;
+  svg.setAttribute('viewBox',`0 0 ${W} ${W}`);document.documentElement.style.setProperty('--board-ar','1/1');
+  el('rect',{x:0,y:0,width:W,height:W,fill:'var(--sboard)'},svg);
+  const a=G.pad,b=G.pad+(n-1)*CELL;let d='';for(let k=0;k<n;k++){const v=G.pad+k*CELL;d+=`M${a} ${v}H${b}M${v} ${a}V${b}`;}
+  el('path',{d,stroke:'var(--sgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':CELL*.3,fill:'var(--slab)'},svg);e.textContent=s;};
+    for(let k=0;k<n;k++){lab(G.pad+k*CELL,W-CELL*.3,String.fromCharCode(97+k));lab(CELL*.3,G.pad+(n-1-k)*CELL,String(k+1));}}
+  const g=el('g',{'pointer-events':'none'},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?AY.toMove(ms):-1;
+  let F=-1,T=-1;if(mine&&hintOn()){const m=/^([a-z]\d+)-([a-z]\d+)$/.exec(String(hintMv));if(m){F=AY.parse(n,m[1]);T=AY.parse(n,m[2]);}}else if(mine){F=ui.f;T=ui.t;}
+  const b2=st.b.slice();if(F>=0&&T>=0){b2[F]=-1;b2[T]=c;}
+  for(let i=0;i<n*n;i++)if(b2[i]>=0)stone(g,i,b2[i]);
+  if(F>=0&&T>=0){stone(g,F,c,.3);el('line',{x1:PX(F),y1:PY(F),x2:PX(T),y2:PY(T),stroke:'var(--mk)','stroke-width':2.2,'stroke-dasharray':'4 3','stroke-linecap':'round'},g);dashRing(g,T);}
+  else if(F>=0){dashRing(g,F,'var(--sel)');for(const tt of targets(ms,F))el('circle',{cx:PX(tt),cy:PY(tt),r:CELL*.1,fill:'var(--sel)',opacity:.75},g);}
+  // the last move: a thin line from where the stone came, a dot on it
+  const last=sh?sh.d.last:null;
+  if(view&&last&&last.kind==='move'&&F<0){el('line',{x1:PX(last.f),y1:PY(last.f),x2:PX(last.t),y2:PY(last.t),stroke:'var(--mk)','stroke-width':2,'stroke-linecap':'round',opacity:.8},g);
+    el('circle',{cx:PX(last.f),cy:PY(last.f),r:SR*.16,fill:'var(--mk)'},g);el('circle',{cx:PX(last.t),cy:PY(last.t),r:SR*.24,fill:'var(--mk)'},g);}
+  for(const [i] of (sh?altCells():new Map()))el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.4},g);
+  el('g',{id:'hov','pointer-events':'none'},svg);
+  const hit=el('g',{fill:'transparent'},svg),tg=mine&&ui.f>=0?targets(ms,ui.f):[];
+  for(let i=0;i<n*n;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&(ms.b[i]===c||tg.includes(i)))e.setAttribute('class','pt');}
+  drawHover();}
+function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
+  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||ui.f<0||ui.t>=0)return;if(targets(sh.ms,ui.f).includes(i))stone(g,i,AY.toMove(sh.ms),.5);}
+const homeSize=()=>AY.rules({size:LS.get('ayu-size',11)}).size;
+
+// ---------- computer opponent ----------
+// Evaluation: what each side still needs to gather its stones, the sum over its units of the distance to the nearest
+// friendly unit, plus a point per unit; the opponent's need minus mine.
+/*AI*/
+function AyuAI(AY){
+'use strict';
+function need(n,b,c){const seen=new Uint8Array(n*n);let s=0,k=0;
+  for(let i=0;i<n*n;i++)if(b[i]===c&&!seen[i]){const u=AY.unitOf(n,b,i);for(const j of u)seen[j]=1;k++;const d=AY.dist(n,b,u,c);s+=d===Infinity?0:d;}
+  return s+k;}
+const shim=S=>({size:S.n,b:S.b,col:[S.c,1-S.c],turn:0});
+const evalS=(S,p)=>need(S.n,S.b,1-p)-need(S.n,S.b,p);
+function gen(S){const st=shim(S),out=[];for(const [f,t] of AY.legalMoves(st)){const b=AY.after(st,f,t),T={n:S.n,b,c:1-S.c};out.push({m:[f,t],s:need(S.n,b,1-S.c)-need(S.n,b,S.c),T});}
+  out.sort((a,b)=>b.s-a.s);return out;}
+// no legal move for the side to move: it wins
+const done=S=>{if(S.over===undefined)S.over=!AY.legalMoves(shim(S)).length;return S.over;};
+const result=(S,p)=>S.c===p?1000:-1000;
+function play(S,m){return {n:S.n,b:AY.after(shim(S),m[0],m[1]),c:1-S.c};}
+const KS=AISearch({moves:gen,play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
+function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]};KS.start(opt.time);
+  if(P.swap&&P.ply===1){const v=evalS(S,1-S.c);if(v>0)return {move:'swap',score:v,depth:0,kind:'swap'};}
+  const C=gen(S);if(!C.length)return null;
+  const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);
+  return {move:AY.name(n,r.m[0])+'-'+AY.name(n,r.m[1]),score:r.s,depth:r.depth,forced:C.length===1};}
+return {search,need,gen};
+}
+/*AIEND*/
+const LEVELS={debutant:{algo:'greedy',pick:5,temp:1},moyen:{algo:'greedy',pick:1},fort:{algo:'beam',depth:2,widths:[10,8],time:5000}};
+const HINT={...LEVELS.fort};
+const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
+let pageAI=null;
+const aiSrc=()=>AISearch.toString()+'\n'+AyuEngine.toString()+'\n'+AyuAI.toString()+'\nconst AA=AyuAI(AyuEngine());function aiSearch(pos,opt){return AA.search(pos,opt);}';
+function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
+  return {k:Math.abs(s)<2?'ai_eq':s>0?(s>8?'ai_much':'ai_better'):(s<-8?'ai_muchWorse':'ai_worse'),d:r.depth};}
+
+// ---------- the interface with common/core.js ----------
+const GAME={id:'ayu',size:'square',codeTag:'AYU1',i18n:AY_I18N,
+  rules:g=>AY.rules(g),
+  form:p=>{const r=AY.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('ayu-size',r.size);LS.set('ayu-swap',r.swap);return r;},
+  replay:(r,m)=>AY.replay(r,m),
+  legal:(st,code)=>AY.legal(st,code),
+  enc:mv=>String(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
+  board:ayBoard,turnStatus:ayTurnStatus,waitStatus:ayWaitStatus,pendText,
+  playerCard,logNode,logText,
+  applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Size');if(!s)continue;const v=s.value||homeSize();s.innerHTML=AY.SIZES.map(n=>`<option value="${n}">${t('size_fmt',{n})}</option>`).join('');s.value=v;}},
+  home:()=>{shown=null;drawBoard();},
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||AyuAI(AY)).search(aiPos(st),opt),
+  evalInfo};
+for(const p of ['c','a','f','t']){if($(p+'Swap'))$(p+'Swap').checked=LS.get('ayu-swap',false)===true;if($(p+'Size'))$(p+'Size').addEventListener('change',e=>{LS.set('ayu-size',+e.target.value);if(!view)GAME.home();});}
+coreStart();
+</script>
+</body></html>

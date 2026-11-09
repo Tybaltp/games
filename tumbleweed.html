@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tumbleweed</title>
+<script src="common/theme.js?v=4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=38">
+<style>
+/* Tumbleweed palette (light, dark), board and stacks; the shared layout is in common/games.css */
+:root{
+  --bg:#eadfc9;--panel:#f5efe3;--ink:#2a2219;--muted:#6e6253;--line:#d6c8ad;
+  --accent:#b4532a;--accent-ink:#ffffff;--danger:#b3261e;
+  --board:#e2d3b4;--board-edge:#d4c19b;--hex:#f6efe0;--hex-edge:#c4ad84;--lab:#8a7656;
+  --red:#b9412b;--red-e:#6e2416;--red-i:#ffffff;--wht:#fbf8f1;--wht-e:#7d7262;--wht-i:#2a2219;--neu:#8d877c;--neu-e:#55514a;--neu-i:#ffffff;
+  --mk:#2a2219;
+  --board-ar:1/1;color-scheme:light;   /* set by the page from the board's viewBox (it depends on the size and the coordinates) */
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1a1612;--panel:#24201a;--ink:#ece5d8;--muted:#a3988a;--line:#3a3329;
+  --accent:#e08a5c;--accent-ink:#1f120a;--danger:#ef8579;
+  --board:#2e281f;--board-edge:#262119;--hex:#3b3328;--hex-edge:#5a4e3d;--lab:#a3937a;
+  --red:#d0573e;--red-e:#ffb4a3;--red-i:#ffffff;--wht:#f1ece2;--wht-e:#1a1612;--wht-i:#2a2219;--neu:#8c867b;--neu-e:#d6d0c4;--neu-i:#ffffff;
+  --mk:#f6efe0;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#1a1612;--panel:#24201a;--ink:#ece5d8;--muted:#a3988a;--line:#3a3329;
+  --accent:#e08a5c;--accent-ink:#1f120a;--danger:#ef8579;
+  --board:#2e281f;--board-edge:#262119;--hex:#3b3328;--hex-edge:#5a4e3d;--lab:#a3937a;
+  --red:#d0573e;--red-e:#ffb4a3;--red-i:#ffffff;--wht:#f1ece2;--wht-e:#1a1612;--wht-i:#2a2219;--neu:#8c867b;--neu-e:#d6d0c4;--neu-i:#ffffff;
+  --mk:#f6efe0;color-scheme:dark;}
+/* the board: a soft gradient behind the hexagons, on every layout */
+.board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 35%,var(--board),var(--board-edge));border-color:transparent;border-radius:14px}
+.board [data-i]{cursor:default}
+.board [data-i].pt{cursor:pointer}
+/* players' cards: the seat's colour (unknown until the colour is chosen) and its points */
+.dot.tw{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
+.player .who{padding:2px 0 2px 2px}
+.tw.r{background:var(--red);border:1.5px solid var(--red-e)}
+.tw.w{background:var(--wht);border:1.5px solid var(--wht-e)}
+.tw.u{background:none;border:1.5px dashed var(--muted)}
+.player .pts{display:flex;align-items:baseline;gap:5px;font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.player .pts b{font-size:1.05rem;font-weight:600}
+.player .pts span{font-size:.72rem;color:var(--muted)}
+.player .pts.lead b{color:var(--accent)}
+/* move list and bar: small stacks */
+.mini{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;box-sizing:border-box;flex:none;font-family:var(--f-mono);font-size:.62rem;font-weight:600;line-height:1}
+.mini.r{background:var(--red);border:1px solid var(--red-e);color:var(--red-i)}
+.mini.w{background:var(--wht);border:1px solid var(--wht-e);color:var(--wht-i)}
+ol.log li{align-items:center}
+ol.log .twm{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+ol.log .twm .tag{color:var(--muted);font-size:.72rem}
+.notice button .tw{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:5px}
+</style>
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="tumbleweed.html"><b id="ttl" style="font-weight:inherit">Tumbleweed</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <p class="lede noinv" data-i18n="lede"></p>
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <div class="homeMain" id="homeMain">
+        <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
+        <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
+        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
+        <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
+          <form class="form" id="joinForm">
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+            <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+          </form>
+          <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+        </details>
+        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
+          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="TUMBLEWEED1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
+            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
+            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
+    
+        </details>
+      </div>
+      <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
+      <p class="hint" id="modeTxt" hidden></p>
+      <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
+      <div class="picks" id="anaPick" hidden>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
+      </div>
+      
+      
+      <form class="form" id="createForm" hidden>
+        
+        <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="loadForm" hidden>
+        <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
+        <p class="hint err" id="sgfErr"></p>
+        <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
+      </form>
+    </div>
+    <p class="hint err" id="joinErr"></p>
+    
+    
+    
+    
+    <details id="rulesHome" class="noinv"></details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="0 0 700 700" role="img" aria-label="Tumbleweed board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
+    <div class="notice" id="notice"></div>
+    <form class="nameov" id="nameOv" hidden><div class="card"><h2 id="nameOvT"></h2><p class="hint" id="nameOvTxt"></p><div class="form"><label for="nameOvIn"><span data-i18n="nick">Your name</span><input id="nameOvIn" maxlength="24" autocomplete="nickname" class="txt"></label></div><div class="confirm"><button type="submit" class="primary" id="nameOvGo"></button><button type="button" id="nameOvAnon" data-i18n="anon" hidden>Anonymous</button></div></div></form>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary id="inviteSum" data-i18n="invite">Invite</summary>
+      <div id="invPart">
+      <!-- one row per code: the code in clear, then « copy the code » and « copy the link » (the links stay in hidden fields) -->
+      <div id="linksBox" class="vh" hidden><div id="oppLink"><input id="codeP" readonly tabindex="-1" aria-hidden="true"></div><div id="watchLinkBox"><input id="codeW" readonly tabindex="-1" aria-hidden="true"></div></div>
+      <div class="coderow" id="codePBox"><span class="hint" data-i18n="cGame">Opponent</span><input class="codetxt" id="codeC" readonly aria-label="Game code"><span class="cbtns"><button type="button" data-copy="codeC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeP" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <div class="coderow" id="codeWBox"><span class="hint" data-i18n="cWatch">Spectators</span><input class="codetxt" id="codeWC" readonly aria-label="Code for spectators"><span class="cbtns"><button type="button" data-copy="codeWC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeW" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
+      </div>
+      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><p class="wline" id="watchLine"></p><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button><div class="voicein" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
+    <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="zonesOn"><input type="checkbox" id="zonesOn" checked> <span data-i18n="zones">Show the cells held</span></label>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+    </details>
+    <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
+</main>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
+</div>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
+<script src="common/ai.js?v=1"></script>
+<script>
+// ===== Tumbleweed (Mike Zapawa, 2020): rules =====
+// Rules kept (see 02 - Règles retenues par jeu): a hexhex board of side 6, 8 (default) or 11, a neutral stack of height 2 in
+// the centre. Opening (move of player 1): a Red and a White stack of height 1 on two empty cells, anywhere (code « D4/F6 »,
+// Red then White). Choice (move of player 2): Red (« R ») or White (« W »); Red then moves first. A move: a stack of one's
+// colour on a cell, its height = the number of one's stacks seen from that cell (six directions, the first stack met
+// blocks the view), at least one; an empty cell always, an occupied one (opponent's, neutral or one's own) only if the new
+// stack is strictly higher. Passing is always allowed (« pass »); two passes in a row end the game. Score: cells occupied by
+// one's stacks + empty cells seen by more of one's stacks than of the opponent's; the higher total wins, equal = draw.
+function TumbleweedEngine(){
+ const DIRS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];   // axial (q,r); d and d+3 are opposite
+ const geoCache={};
+ // The board of side n: cells in axial coordinates (q,r), |q|,|r|,|q+r| < n. A cell's name, as in the other
+ // implementations: column A, B, C… (the lines running down to the left, q+r increasing: A starts at the top left
+ // corner), row 1, 2, 3… (the horizontal rows, top to bottom).
+ function geo(n){
+  if(geoCache[n])return geoCache[n];
+  const cells=[],idx={};
+  for(let r=-(n-1);r<=n-1;r++)for(let q=-(n-1);q<=n-1;q++){
+   if(Math.abs(q+r)>n-1)continue;
+   idx[q+','+r]=cells.length;cells.push({q,r,name:String.fromCharCode(65+q+r+n-1)+(r+n)});
+  }
+  const byName={};cells.forEach((c,i)=>byName[c.name]=i);
+  // rays[i][d]: the cells met from i in direction d, nearest first
+  const rays=cells.map(c=>DIRS.map(([dq,dr])=>{const out=[];let q=c.q+dq,r=c.r+dr;
+   while(idx[q+','+r]!==undefined){out.push(idx[q+','+r]);q+=dq;r+=dr;}return out;}));
+  return geoCache[n]={n,cells,idx,byName,rays,center:idx['0,0']};
+ }
+ const RED=0,WHITE=1,NEU=2,SIZES=[6,8,11];
+ function rules(src){const s=+(src&&src.size);return{size:SIZES.includes(s)?s:8};}
+ // st: h (height of each cell, 0 empty), o (owner: -1, RED, WHITE, NEU), phase 'setup' (player 1 places Red and White)
+ // → 'color' (player 2 chooses) → 'play', col[seat] (colour of each seat, -1 until chosen), turn (seat to move), passes
+ function init(r){
+  const g=geo(r.size),N=g.cells.length;
+  const st={size:r.size,h:new Int16Array(N),o:new Int8Array(N).fill(-1),phase:'setup',col:[-1,-1],turn:0,passes:0};
+  st.h[g.center]=2;st.o[g.center]=NEU;
+  return st;
+ }
+ // stacks of colour c seen from cell i (the first stack met in each direction)
+ function sight(st,i,c){const g=geo(st.size);let k=0;
+  for(const ray of g.rays[i])for(const j of ray){if(st.h[j]){if(st.o[j]===c)k++;break;}}
+  return k;}
+ // height of the stack colour c would place on i, or 0 if not allowed
+ function placeH(st,i,c){const k=sight(st,i,c);return k>=1&&st.h[i]<k?k:0;}
+ const seatOf=(st,c)=>st.col[0]===c?0:1;
+ const colorToMove=st=>st.phase==='play'?st.col[st.turn]:-1;
+ // the canonical code of a legal move in st, or null
+ function legal(st,code){
+  if(typeof code!=='string')return null;
+  const g=geo(st.size);code=code.trim();
+  if(st.phase==='setup'){
+   const m=/^([a-z]\d+)\/([a-z]\d+)$/i.exec(code);if(!m)return null;
+   const a=g.byName[m[1].toUpperCase()],b=g.byName[m[2].toUpperCase()];
+   if(a===undefined||b===undefined||a===b||st.h[a]||st.h[b])return null;
+   return g.cells[a].name+'/'+g.cells[b].name;
+  }
+  if(st.phase==='color'){const c=code.toUpperCase();return c==='R'||c==='W'?c:null;}
+  if(code.toLowerCase()==='pass')return 'pass';
+  const i=g.byName[code.toUpperCase()];
+  if(i===undefined||!placeH(st,i,colorToMove(st)))return null;
+  return g.cells[i].name;
+ }
+ // plays a canonical legal code on st; returns what the move did {kind,c,k,prev,cells}
+ function apply(st,code){
+  const g=geo(st.size);
+  if(st.phase==='setup'){const [a,b]=code.split('/').map(x=>g.byName[x]);
+   st.h[a]=1;st.o[a]=RED;st.h[b]=1;st.o[b]=WHITE;st.phase='color';st.turn=1;
+   return{kind:'setup',cells:[a,b]};}
+  if(st.phase==='color'){const c=code==='R'?RED:WHITE;st.col[1]=c;st.col[0]=1-c;st.phase='play';
+   st.turn=seatOf(st,RED);return{kind:'color',c,cells:[]};}
+  const c=colorToMove(st);
+  if(code==='pass'){st.passes++;st.turn=1-st.turn;return{kind:'pass',c,cells:[]};}
+  const i=g.byName[code],k=placeH(st,i,c),prev=st.h[i]?st.o[i]:-1;
+  st.h[i]=k;st.o[i]=c;st.passes=0;st.turn=1-st.turn;
+  return{kind:'place',c,k,prev,cells:[i]};
+ }
+ // score: stacks owned + empty cells seen by more stacks of one colour than of the other; ctl[i] the colour controlling
+ // the empty cell i (-1 none)
+ function score(st){
+  const g=geo(st.size),s=[0,0],ctl=new Int8Array(g.cells.length).fill(-1);
+  for(let i=0;i<g.cells.length;i++){
+   if(st.h[i]){if(st.o[i]<2)s[st.o[i]]++;continue;}
+   const r=sight(st,i,RED),w=sight(st,i,WHITE);
+   if(r>w){s[RED]++;ctl[i]=RED;}else if(w>r){s[WHITE]++;ctl[i]=WHITE;}
+  }
+  return{byColor:s,ctl};
+ }
+ // {st, log:[{p,code,kind,c,k,prev,cells}], last, over:null|{w (-1 draw),why,score:[seat 0, seat 1]}}
+ function replay(r,moves){
+  r=rules(r);const st=init(r),log=[];let last=null,over=null;
+  for(const m of moves||[]){
+   if(over)break;
+   const code=legal(st,m);
+   if(code===null){over={w:-1,why:'w_bad'};break;}
+   const p=st.turn,res=apply(st,code);log.push({p,code,...res});last={code,...res};
+   if(st.phase==='play'&&st.passes>=2){
+    const sc=score(st).byColor,a=sc[st.col[0]],b=sc[st.col[1]];
+    over={w:a>b?0:b>a?1:-1,why:'w_score',score:[a,b]};
+   }
+  }
+  return{st,log,last,over};
+ }
+ return{RED,WHITE,NEU,SIZES,geo,rules,init,sight,placeH,legal,apply,score,replay,colorToMove,seatOf};
+}
+const TW=TumbleweedEngine();
+
+// ===== Tumbleweed: the page's side of common/core.js =====
+const TW_I18N={fr:{
+ title:"Tumbleweed",lede:"Des piles qui se voient : occupez et tenez le plus de cases.",
+ sizeOpt:"Plateau",size_fmt:"Côté {n} ({c} cases)",
+ firstIs:"Qui pose l'ouverture",opener:"Qui pose l'ouverture ?",needConfirm:"Confirmer chaque coup",zones:"Montrer les cases tenues",
+ cRed:"Rouge",cWhite:"Blanc",cRedL:"rouge",cWhiteL:"blanc",
+ takeRed:"Prendre Rouge",takeWhite:"Prendre Blanc",takeRedT:"Prendre Rouge : vous jouez le premier coup.",takeWhiteT:"Prendre Blanc : votre adversaire joue le premier coup.",
+ n_open:"Posez une pile rouge et une pile blanche, où vous voulez ({n}/2) ; votre adversaire choisira sa couleur.",
+ n_openN:"{name} pose une pile rouge et une pile blanche ({n}/2) ; {other} choisira sa couleur.",
+ n_choose:"Choisissez votre couleur. Rouge joue le premier.",n_chooseN:"{name} choisit sa couleur. Rouge joue le premier.",
+ st_play:"À vous de jouer ({c}).",st_turnC:"Au tour de {name} ({c}).",st_passed:" {name} a passé : passer aussi termine la partie.",st_passedY:" Votre adversaire a passé : passer aussi termine la partie.",
+ st_openOther:"{name} pose l'ouverture.",st_chooseOther:"{name} choisit sa couleur.",
+ pend_open:"Ouverture : rouge en {a}, blanc en {b}.",pend_mv:"{c} : pile de {k}.",pend_pass:"Passer ?",pend_passEnd:"Passer termine la partie : {a} à {b}.",
+ confirm1:"Confirmer",confirmPass:"Confirmer",
+ d_open:"rouge {a}, blanc {b}",d_R:"prendre Rouge",d_W:"prendre Blanc",d_pass:"passer",d_mv:"{c}, pile de {k}",
+ l_R:"prend Rouge",l_W:"prend Blanc",l_pass:"passe",l_take:"prise",l_neu:"prise du neutre",l_up:"renfort",
+ pts:"points",ptsT:"{n} points : {s} piles et {z} cases tenues",
+ w_score:"au décompte des points",
+ ai_tookRed:"Ordinateur : prend Rouge.",ai_tookWhite:"Ordinateur : prend Blanc.",ai_opened:"Ordinateur : ouverture posée.",
+ boardLbl:"Plateau de Tumbleweed",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li><b>Matériel</b> : un plateau hexagonal (côté 6, 8 ou 11 au choix), des piles rouges et blanches, une pile neutre de hauteur 2 au centre.</li>
+ <li><b>Ouverture</b> : le premier joueur pose une pile rouge et une pile blanche de hauteur 1 sur deux cases vides, où il veut. Le second choisit sa couleur ; Rouge joue ensuite le premier.</li>
+ <li><b>Coup</b> : posez une pile de votre couleur sur une case, de hauteur égale au nombre de vos piles qui voient cette case. Une pile voit en ligne droite dans les 6 directions, jusqu'à la première pile rencontrée (de n'importe quelle couleur), qui bloque la vue. Il faut au moins une pile qui voie la case.</li>
+ <li><b>Sur une case occupée</b> : par une pile adverse, neutre ou à vous, seulement si la nouvelle pile est strictement plus haute ; elle la remplace (prise ou renfort).</li>
+ <li><b>Passer</b> est toujours permis. Deux passes de suite terminent la partie.</li>
+ <li><b>Décompte</b> : vos piles, plus les cases vides que voient plus de vos piles que de piles adverses. Le plus haut total gagne ; égalité, nulle. La pile neutre ne compte pour personne.</li>
+ <li><b>Cartes joueurs</b> : la couleur de chacun (en pointillés avant le choix) et ses points du moment. Sur le plateau (option), un point coloré marque chaque case vide tenue.</li>
+ <li><b>Jouer</b> : cliquez une case ; au survol, la pile qu'on y poserait s'affiche en transparence, avec sa hauteur. Sur écran tactile, un premier toucher la pose à titre provisoire (cadre en pointillés). L'ouverture attend toujours Confirmer ; un coup simple aussi avec « Confirmer chaque coup ». Cliquer une pile provisoire la retire. Les commandes du coup sont dans la barre sous le plateau : Passer, Rouge ou Blanc au choix de couleur, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <p class="hint" style="margin-top:.6em">Tumbleweed — Mike Zapawa (2020).</p>`
+},en:{
+ title:"Tumbleweed",lede:"Stacks that see each other: occupy and hold the most cells.",
+ sizeOpt:"Board",size_fmt:"Side {n} ({c} cells)",
+ firstIs:"Who places the opening",opener:"Who places the opening?",needConfirm:"Confirm each move",zones:"Show the cells held",
+ cRed:"Red",cWhite:"White",cRedL:"red",cWhiteL:"white",
+ takeRed:"Take Red",takeWhite:"Take White",takeRedT:"Take Red: you make the first move.",takeWhiteT:"Take White: your opponent makes the first move.",
+ n_open:"Place a red and a white stack, wherever you like ({n}/2); your opponent will then choose a colour.",
+ n_openN:"{name} places a red and a white stack ({n}/2); {other} will then choose a colour.",
+ n_choose:"Choose your colour. Red moves first.",n_chooseN:"{name} chooses a colour. Red moves first.",
+ st_play:"Your move ({c}).",st_turnC:"{name} to move ({c}).",st_passed:" {name} passed: passing too ends the game.",st_passedY:" Your opponent passed: passing too ends the game.",
+ st_openOther:"{name} is placing the opening.",st_chooseOther:"{name} is choosing a colour.",
+ pend_open:"Opening: red on {a}, white on {b}.",pend_mv:"{c}: stack of {k}.",pend_pass:"Pass?",pend_passEnd:"Passing ends the game: {a} to {b}.",
+ confirm1:"Confirm",confirmPass:"Confirm",
+ d_open:"red {a}, white {b}",d_R:"take Red",d_W:"take White",d_pass:"pass",d_mv:"{c}, stack of {k}",
+ l_R:"takes Red",l_W:"takes White",l_pass:"passes",l_take:"capture",l_neu:"takes the neutral",l_up:"reinforces",
+ pts:"points",ptsT:"{n} points: {s} stacks and {z} cells held",
+ w_score:"on points",
+ ai_tookRed:"Computer: takes Red.",ai_tookWhite:"Computer: takes White.",ai_opened:"Computer: opening placed.",
+ boardLbl:"Tumbleweed board",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Material</b>: a hexagonal board (side 6, 8 or 11, as you choose), red and white stacks, a neutral stack of height 2 in the centre.</li>
+ <li><b>Opening</b>: the first player places a red and a white stack of height 1 on two empty cells, wherever they like. The second player chooses a colour; Red then moves first.</li>
+ <li><b>Move</b>: place a stack of your colour on a cell, as high as the number of your stacks that see that cell. A stack sees in straight lines in the 6 directions, up to the first stack met (of any colour), which blocks the view. At least one stack must see the cell.</li>
+ <li><b>On an occupied cell</b>: an opponent's, neutral or your own stack, only if the new stack is strictly higher; it replaces it (capture or reinforcement).</li>
+ <li><b>Passing</b> is always allowed. Two passes in a row end the game.</li>
+ <li><b>Score</b>: your stacks, plus the empty cells seen by more of your stacks than of your opponent's. The higher total wins; equal, a draw. The neutral stack counts for no one.</li>
+ <li><b>Player cards</b>: each player's colour (dashed before the choice) and current points. On the board (option), a coloured dot marks each empty cell held.</li>
+ <li><b>Playing</b>: click a cell; hovering shows the stack you would place there in transparency, with its height. On a touch screen, a first tap places it provisionally (dashed frame). The opening always waits for Confirm; a single move too with “Confirm each move”. Clicking a provisional stack removes it. The move commands are in the bar under the board: Pass, Red or White for the colour choice, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <p class="hint" style="margin-top:.6em">Tumbleweed — Mike Zapawa (2020).</p>`
+},es:{
+ title:"Tumbleweed",lede:"Pilas que se ven: ocupa y mantén el mayor número de casillas.",
+ sizeOpt:"Tablero",size_fmt:"Lado {n} ({c} casillas)",
+ firstIs:"Quién coloca la apertura",opener:"¿Quién coloca la apertura?",needConfirm:"Confirmar cada jugada",zones:"Mostrar las casillas controladas",
+ cRed:"Rojo",cWhite:"Blanco",cRedL:"rojo",cWhiteL:"blanco",
+ takeRed:"Tomar Rojo",takeWhite:"Tomar Blanco",takeRedT:"Tomar Rojo: haces la primera jugada.",takeWhiteT:"Tomar Blanco: tu adversario hace la primera jugada.",
+ n_open:"Coloca una pila roja y una pila blanca, donde quieras ({n}/2); tu adversario elegirá su color.",
+ n_openN:"{name} coloca una pila roja y una pila blanca ({n}/2); {other} elegirá su color.",
+ n_choose:"Elige tu color. Rojo juega primero.",n_chooseN:"{name} elige su color. Rojo juega primero.",
+ st_play:"Te toca jugar ({c}).",st_turnC:"Turno de {name} ({c}).",st_passed:" {name} ha pasado: pasar también termina la partida.",st_passedY:" Tu adversario ha pasado: pasar también termina la partida.",
+ st_openOther:"{name} coloca la apertura.",st_chooseOther:"{name} elige su color.",
+ pend_open:"Apertura: rojo en {a}, blanco en {b}.",pend_mv:"{c}: pila de {k}.",pend_pass:"¿Pasar?",pend_passEnd:"Pasar termina la partida: {a} a {b}.",
+ confirm1:"Confirmar",confirmPass:"Confirmar",
+ d_open:"rojo {a}, blanco {b}",d_R:"tomar Rojo",d_W:"tomar Blanco",d_pass:"pasar",d_mv:"{c}, pila de {k}",
+ l_R:"toma Rojo",l_W:"toma Blanco",l_pass:"pasa",l_take:"captura",l_neu:"captura del neutro",l_up:"refuerzo",
+ pts:"puntos",ptsT:"{n} puntos: {s} pilas y {z} casillas controladas",
+ w_score:"por puntos",
+ ai_tookRed:"Ordenador: toma Rojo.",ai_tookWhite:"Ordenador: toma Blanco.",ai_opened:"Ordenador: apertura colocada.",
+ boardLbl:"Tablero de Tumbleweed",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Material</b>: un tablero hexagonal (lado 6, 8 u 11, a elegir), pilas rojas y blancas, y una pila neutra de altura 2 en el centro.</li>
+ <li><b>Apertura</b>: el primer jugador coloca una pila roja y una pila blanca de altura 1 en dos casillas vacías, donde quiera. El segundo elige su color; después, Rojo juega primero.</li>
+ <li><b>Jugada</b>: coloca una pila de tu color en una casilla, de altura igual al número de pilas tuyas que ven esa casilla. Una pila ve en línea recta en las 6 direcciones, hasta la primera pila que encuentra (de cualquier color), que bloquea la vista. Al menos una pila debe ver la casilla.</li>
+ <li><b>En una casilla ocupada</b>: por una pila adversaria, neutra o tuya, solo si la nueva pila es estrictamente más alta; la sustituye (captura o refuerzo).</li>
+ <li><b>Pasar</b> siempre está permitido. Dos pases seguidos terminan la partida.</li>
+ <li><b>Recuento</b>: tus pilas, más las casillas vacías que ven más pilas tuyas que adversarias. Gana el total más alto; en caso de empate, tablas. La pila neutra no cuenta para nadie.</li>
+ <li><b>Tarjetas de los jugadores</b>: el color de cada uno (en línea discontinua antes de la elección) y sus puntos actuales. En el tablero (opción), un punto de color marca cada casilla vacía controlada.</li>
+ <li><b>Jugar</b>: haz clic en una casilla; al pasar el ratón, la pila que se colocaría allí se muestra en transparencia, con su altura. En pantalla táctil, un primer toque la coloca de forma provisional (marco discontinuo). La apertura siempre espera a Confirmar; una jugada simple también con «Confirmar cada jugada». Hacer clic en una pila provisional la retira. Los mandos de la jugada están en la barra bajo el tablero: Pasar, Rojo o Blanco al elegir color, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
+ <p class="hint" style="margin-top:.6em">Tumbleweed — Mike Zapawa (2020).</p>`
+}};
+const CN=c=>t(c===TW.RED?'cRed':'cWhite'),CNL=c=>t(c===TW.RED?'cRedL':'cWhiteL'),CK=c=>c===TW.RED?'r':c===TW.WHITE?'w':'u';
+const nameOf=(st,i)=>TW.geo(st.size).cells[i].name;
+const twReplay=(rules,moves)=>TW.replay(rules,moves);
+// the move list: small stacks and coordinates
+function logNode(e){const s=document.createElement('span');s.className='twm';
+  const mini=(c,k)=>`<span class="mini ${CK(c)}">${k}</span>`,G=TW.geo(view?TW.rules(view).size:8);
+  const nm=i=>G.cells[i]?G.cells[i].name:'?';
+  if(e.kind==='setup')s.innerHTML=mini(0,1)+nm(e.cells[0])+' '+mini(1,1)+nm(e.cells[1]);
+  else if(e.kind==='color')s.innerHTML=mini(e.c,'')+t(e.c===TW.RED?'l_R':'l_W');
+  else if(e.kind==='pass')s.innerHTML=mini(e.c,'')+'<span class="tag">'+t('l_pass')+'</span>';
+  else s.innerHTML=mini(e.c,e.k)+nm(e.cells[0])+(e.prev>=0?' <span class="tag">'+t(e.prev===e.c?'l_up':e.prev===TW.NEU?'l_neu':'l_take')+'</span>':'');
+  return s;}
+function logText(e){const G=TW.geo(view?TW.rules(view).size:8),nm=i=>G.cells[i]?G.cells[i].name:'?';
+  if(e.kind==='setup')return t('d_open',{a:nm(e.cells[0]),b:nm(e.cells[1])});
+  if(e.kind==='color')return t(e.c===TW.RED?'l_R':'l_W');if(e.kind==='pass')return t('l_pass');return nm(e.cells[0])+' '+e.k;}
+// a move (code) played from st, in words (hints, the move awaiting confirmation)
+function describe(mv,st){const c=String(mv);
+  if(st.phase==='setup'){const [a,b]=c.split('/');return t('d_open',{a,b});}
+  if(st.phase==='color')return t(c==='R'?'d_R':'d_W');
+  if(c==='pass')return t('d_pass');const g=TW.geo(st.size),i=g.byName[c];return t('d_mv',{c,k:i===undefined?'?':TW.placeH(st,i,TW.colorToMove(st))});}
+
+// ---------- game view ----------
+// ui: tent [red cell, white cell] of the opening being placed (-1 when not placed), cell (the stack placed provisionally
+// in play), pending (complete move awaiting confirmation: a code), hover (cell under the mouse)
+const newUi=()=>({tent:[-1,-1],cell:-1,pending:null,hover:-1});
+const prepared=()=>ui.tent[0]>=0||ui.tent[1]>=0||ui.cell>=0||!!ui.pending;
+function clearPrep(){ui.tent=[-1,-1];ui.cell=-1;ui.pending=null;}
+function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
+const confirmOn=()=>$('needConfirm').checked;
+let zonesOn=LS.get('tumbleweed-zones',true)!==false;
+let shown=null;   // what the board shows: {d (position), ms (position to act on), mine}
+function twBoard({r,d,mine,ms}){const live=navAt===null;
+  if(mine&&live&&ms.phase==='setup'&&!ui.pending&&ui.tent[0]>=0&&ui.tent[1]>=0&&!ms.h[ui.tent[0]]&&!ms.h[ui.tent[1]])ui.pending=nameOf(ms,ui.tent[0])+'/'+nameOf(ms,ui.tent[1]);
+  if(mine&&live&&ms.phase==='play'&&ui.cell>=0&&!TW.placeH(ms,ui.cell,TW.colorToMove(ms)))clearPrep();
+  shown={d,ms,mine:mine&&live};drawBoard();return {};}
+// The bar for my turn, nothing pending (a complete move awaiting confirmation is core's): the opening, the colour choice,
+// a move (Pass, then Undo / Hint)
+function twTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.turn),n=(ui.tent[0]>=0)+(ui.tent[1]>=0);
+  if(st.phase==='setup'){status(S?t('n_openN',{name:me,other:seatName(1),n}):t('n_open',{n}),'turn',prep?[RST]:idle);return;}
+  if(st.phase==='color'){
+    status(S?t('n_chooseN',{name:me}):t('n_choose'),'turn',[{id:'bRed',label:t('takeRed'),on:()=>pick('R')},{id:'bWhite',label:t('takeWhite'),on:()=>pick('W')},...idle]);
+    const tip=(id,txt,c)=>{const e=$(id);if(!e)return;e.title=txt;e.setAttribute('aria-label',txt);const s=document.createElement('span');s.className='tw '+c;e.insertBefore(s,e.firstChild);};
+    tip('bRed',t('takeRedT'),'tw r');tip('bWhite',t('takeWhiteT'),'tw w');return;}
+  const c=TW.colorToMove(st),pas=st.passes?(S?t('st_passed',{name:seatName(1-st.turn)}):t('st_passedY')):'';
+  status((S?t('st_turnC',{name:me,c:CNL(c)}):t('st_play',{c:CNL(c)}))+pas,'turn',prep?[RST]:[{id:'bPass',label:t('pass'),on:passBtn},...idle]);}
+// The opponent's turn: who places the opening, who chooses; a move: the colour to play
+function twWaitStatus({r}){const st=r.st,n=seatName(st.turn);
+  status(st.phase==='setup'?t('st_openOther',{name:n}):st.phase==='color'?t('st_chooseOther',{name:n}):t('st_turnC',{name:n,c:CNL(TW.colorToMove(st))})+(st.passes?t('st_passed',{name:seatName(1-st.turn)}):''));return true;}
+function myState(){if(!view)return null;const r=replay(view,view.moves,view.result);return isMyTurn(r)?meSt(r):null;}
+function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
+function pick(c){dropHint();const st=myState();if(!st||st.phase!=='color')return;clearPrep();send(c);}
+// Pass: at once, unless « Confirm each move », or when it ends the game (the opponent has just passed): then it waits
+function passBtn(){dropHint();const st=myState();if(!st||st.phase!=='play')return;clearPrep();
+  if(confirmOn()||st.passes){ui.pending='pass';renderGame();return;}send('pass');}
+function pendText(mv,st){
+  if(st.phase==='setup'){const [a,b]=String(mv).split('/');return [t('pend_open',{a,b}),t('confirm1')];}
+  if(mv==='pass'){if(st.passes){const s=TW.score(st).byColor,me=TW.colorToMove(st);return [t('pend_passEnd',{a:s[me],b:s[1-me]}),t('confirmPass')];}return [t('pend_pass'),t('confirmPass')];}
+  const g=TW.geo(st.size),i=g.byName[mv];return [t('pend_mv',{c:mv,k:TW.placeH(st,i,TW.colorToMove(st))}),t('confirm1')];}
+// Players' cards (built by core): the seat's colour instead of the seat dot, its points (stacks + cells held)
+function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
+  if(dot){dot.className='dot tw '+CK(col);dot.title=col>=0?CN(col):'';}
+  if(col<0)return;const sc=TW.score(st).byColor,n=sc[col],o=sc[1-col];let stk=0;for(let i=0;i<st.h.length;i++)if(st.h[i]&&st.o[i]===col)stk++;
+  const x=document.createElement('div');x.className='pts'+(n>o?' lead':'');x.title=t('ptsT',{n,s:stk,z:n-stk});
+  x.innerHTML=`<b>${n}</b><span>${t('pts')}</span>`;el.appendChild(x);}
+
+// ---------- input ----------
+// Analysis (core): the other variations of the move shown are marked; a click on one switches to it
+function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;const g=TW.geo(shown.d.st.size);
+  for(const c of anaAlts()){const i=g.byName[c];if(i!==undefined)out.set(i,c);}return out;}
+// A click on a cell. Opening: places the next stack (red, then white; a stack taken back is the next one placed), and
+// waits for Confirm. Move: the stack of the height the cell allows, provisionally (Confirm), or at once with « Confirm each
+// move » off and a mouse; a click on the provisional stack removes it (confirmation off: plays it).
+function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
+  const st=meSt(r);
+  if(st.phase==='setup'){const k=ui.tent.indexOf(i);ui.pending=null;
+    if(k>=0)ui.tent[k]=-1;else if(!st.h[i]){if(ui.tent[0]<0)ui.tent[0]=i;else if(ui.tent[1]<0)ui.tent[1]=i;}
+    if(ui.tent[0]>=0&&ui.tent[1]>=0)ui.pending=nameOf(st,ui.tent[0])+'/'+nameOf(st,ui.tent[1]);
+    tone(880,.05,.03);renderGame();return;}
+  if(st.phase!=='play'){renderGame();return;}
+  const c=TW.colorToMove(st);
+  if(ui.cell===i){if(!confirmOn()){const code=nameOf(st,i);clearPrep();send(code);return;}clearPrep();renderGame();return;}
+  if(!TW.placeH(st,i,c)){renderGame();return;}
+  const code=nameOf(st,i);
+  if(!confirmOn()&&!touch){clearPrep();send(code);return;}
+  ui.cell=i;ui.pending=code;renderGame();}
+$('needConfirm').checked=LS.get('tumbleweed-confirm',true)!==false;
+$('needConfirm').onchange=e=>{LS.set('tumbleweed-confirm',e.target.checked);
+  // switched off with a single stack waiting: it is played (the opening and a pass that ends the game still wait)
+  if(!e.target.checked&&ui.pending&&ui.cell>=0&&view){const st=myState();if(st){const mv=ui.pending;clearPrep();send(mv);}}};
+$('zonesOn').checked=zonesOn;$('zonesOn').onchange=e=>{zonesOn=e.target.checked;LS.set('tumbleweed-zones',zonesOn);if(view)renderGame();else GAME.home();};
+let lastPT='mouse';
+$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
+$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
+// With a mouse, hovering shows the stack to place in transparency (only that layer is redrawn)
+function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
+
+// ---------- drawing ----------
+// Pointy-top hexagons of radius S; the coordinates: the row numbers on the left, the column letters below each column
+const NS='http://www.w3.org/2000/svg',S=24,SQ3=Math.sqrt(3),SR=S*.64;
+const XY=c=>[S*SQ3*(c.q+c.r/2),S*1.5*c.r];
+function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+const HEXPTS=(()=>{const a=[];for(let k=0;k<6;k++){const an=Math.PI/180*(60*k-90);a.push(((S-1.2)*Math.cos(an)).toFixed(2)+','+((S-1.2)*Math.sin(an)).toFixed(2));}return a.join(' ');})();
+const FILL=['var(--red)','var(--wht)','var(--neu)'],EDGE=['var(--red-e)','var(--wht-e)','var(--neu-e)'],INK=['var(--red-i)','var(--wht-i)','var(--neu-i)'];
+// a stack: a disc in its colour, its height written on it
+function stack(g,x,y,c,k,op){const p=el('g',{transform:`translate(${x.toFixed(2)} ${y.toFixed(2)})`,'pointer-events':'none'},g);if(op!==undefined)p.setAttribute('opacity',op);
+  el('circle',{r:SR,fill:FILL[c],stroke:EDGE[c],'stroke-width':1.5},p);
+  const tx=el('text',{y:.5,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':S*.78,fill:INK[c]},p);tx.textContent=k;return p;}
+const ring=(g,x,y,dash,w)=>el('circle',{cx:x.toFixed(2),cy:y.toFixed(2),r:S*.8,fill:'none',stroke:'var(--mk)','stroke-width':w||2,...(dash?{'stroke-dasharray':'4 3'}:{}),'pointer-events':'none'},g);
+// the coordinates: each row's number on its left; each column's letter beyond its top cell, turned along the column
+function labels(n){const L=[];
+  for(let r=-(n-1);r<=n-1;r++){const q=Math.max(-(n-1),-(n-1)-r),[x,y]=XY({q,r});L.push({x:x-S*1.35,y,s:String(r+n),rot:0});}
+  for(let s=-(n-1);s<=n-1;s++){const r=Math.max(-(n-1),s-(n-1)),[x,y]=XY({q:s-r,r});L.push({x:x+S*.62,y:y-S*1.08,s:String.fromCharCode(65+s+n-1),rot:30});}
+  return L;}
+function geom(n){const g=TW.geo(n),pts=g.cells.map(XY);
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;const add=(x,y,m)=>{x0=Math.min(x0,x-m);x1=Math.max(x1,x+m);y0=Math.min(y0,y-m);y1=Math.max(y1,y+m);};
+  for(const [x,y] of pts)add(x,y,S*1.15);if(coordsOn)for(const l of labels(n))add(l.x,l.y,S*.55);
+  return {g,pts,vb:[x0,y0,x1-x0,y1-y0]};}
+function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
+  const sh=shown,st=sh&&view?sh.d.st:TW.init(TW.rules(view||{size:homeSize()})),G=geom(st.size),{g,pts}=G,N=g.cells.length;
+  const vb=G.vb.map(v=>+v.toFixed(2));svg.setAttribute('viewBox',vb.join(' '));document.documentElement.style.setProperty('--board-ar',`${vb[2]}/${vb[3]}`);
+  const hexes=el('g',{},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine&&ms.phase==='play'?TW.colorToMove(ms):-1,alt=sh?altCells():new Map();
+  for(let i=0;i<N;i++){const [x,y]=pts[i],e=el('g',{'data-i':i,transform:`translate(${x.toFixed(2)} ${y.toFixed(2)})`},hexes);
+    el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.2},e);
+    // a pointer only where a click acts
+    if(mine&&(ms.phase==='setup'?!ms.h[i]||ui.tent.includes(i):ms.phase==='play'&&(TW.placeH(ms,i,c)||ui.cell===i))||alt.has(i))e.setAttribute('class','pt');}
+  // coordinates (core: coordsOn): each row's number on its left, each column's letter beyond its top cell
+  if(coordsOn)for(const l of labels(st.size)){const x=l.x.toFixed(2),y=l.y.toFixed(2),e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-size':S*.5,fill:'var(--lab)','pointer-events':'none',...(l.rot?{transform:`rotate(${l.rot} ${x} ${y})`}:{})},svg);e.textContent=l.s;}
+  const pcs=el('g',{'pointer-events':'none'},svg);
+  // the cells held (option): a dot of the colour that holds the empty cell, in the position shown
+  if(zonesOn&&st.phase==='play'){const ctl=TW.score(st).ctl;for(let i=0;i<N;i++)if(!st.h[i]&&ctl[i]>=0){const [x,y]=pts[i];el('circle',{cx:x.toFixed(2),cy:y.toFixed(2),r:S*.2,fill:FILL[ctl[i]],stroke:EDGE[ctl[i]],'stroke-width':1,opacity:.8},pcs);}}
+  const hint=mine&&hintOn()?String(hintMv):null;
+  // provisional: the opening's stacks, or the stack placed (opaque, a dashed frame), or the suggestion drawn the same way
+  const prov=[];if(mine){if(hint){if(ms.phase==='setup'){const [a,b]=hint.split('/').map(x=>g.byName[x]);prov.push([a,0,1],[b,1,1]);}
+      else if(ms.phase==='play'&&hint!=='pass'){const i=g.byName[hint];if(i!==undefined)prov.push([i,c,TW.placeH(ms,i,c)]);}}
+    else if(ms.phase==='setup'){if(ui.tent[0]>=0)prov.push([ui.tent[0],0,1]);if(ui.tent[1]>=0)prov.push([ui.tent[1],1,1]);}
+    else if(ms.phase==='play'&&ui.cell>=0)prov.push([ui.cell,c,TW.placeH(ms,ui.cell,c)]);}
+  const provAt=new Set(prov.map(x=>x[0]));
+  for(let i=0;i<N;i++)if(st.h[i]&&!provAt.has(i)){const [x,y]=pts[i];stack(pcs,x,y,st.o[i],st.h[i]);}
+  // the last move: a solid frame round its stacks, until a move is being prepared
+  const last=sh?sh.d.last:null;
+  if(view&&last&&!prov.length&&!(mine&&prepared()))for(const i of last.cells){const [x,y]=pts[i];ring(pcs,x,y,false);}
+  // analysis: the other variations of the move shown, in transparency with a hollow mark
+  for(const [i] of alt){const [x,y]=pts[i];if(!st.h[i])el('circle',{cx:x.toFixed(2),cy:y.toFixed(2),r:S*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.2},pcs);}
+  for(const [i,cc,k] of prov){const [x,y]=pts[i];stack(pcs,x,y,cc,k);ring(pcs,x,y,true);}
+  el('g',{id:'hov','pointer-events':'none'},svg);drawHover();}
+// The stack to place, under the mouse: in transparency, only where it is legal
+function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
+  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending)return;const ms=sh.ms,G=TW.geo(ms.size),[x,y]=XY(G.cells[i]||{q:0,r:0});if(!G.cells[i])return;
+  if(!prepared()&&altCells().has(i))return;
+  if(ms.phase==='setup'){if(ms.h[i]||ui.tent.includes(i))return;const nx=ui.tent[0]<0?0:ui.tent[1]<0?1:-1;if(nx>=0)stack(g,x,y,nx,1,.5);return;}
+  if(ms.phase!=='play'||ui.cell===i)return;const c=TW.colorToMove(ms),k=TW.placeH(ms,i,c);if(k)stack(g,x,y,c,k,.5);}
+// the size shown on the home page: the one last chosen
+const homeSize=()=>TW.rules({size:LS.get('tumbleweed-size',8)}).size;
+
+// ---------- computer opponent ----------
+// The search (AISearch, common/ai.js) on Tumbleweed's interface: a position keeps, for each cell, the stacks of each colour
+// that see it, and the score, both updated move by move along the six rays of the cell played. Evaluation: the score
+// difference for the side to move. The opening: the most balanced of a few random ones (the opponent chooses the colour);
+// the colour choice: the side a short search prefers.
+/*AI*/
+function TumbleAI(TW){
+'use strict';
+const ctl=(a,b)=>a>b?0:b>a?1:-1;
+function fromPos(P){const g=TW.geo(P.size),N=g.cells.length,rays=g.rays;
+  const S={n:P.size,N,rays,h:Int8Array.from(P.h),o:Int8Array.from(P.o),v:[new Int8Array(N),new Int8Array(N)],c:P.c,passes:P.passes||0,sc:[0,0]};
+  for(let j=0;j<N;j++)for(const ray of rays[j])for(const x of ray){if(S.h[x]){const w=S.o[x];if(w<2)S.v[w][j]++;break;}}
+  for(let j=0;j<N;j++){if(S.h[j]){if(S.o[j]<2)S.sc[S.o[j]]++;}else{const t=ctl(S.v[0][j],S.v[1][j]);if(t>=0)S.sc[t]++;}}
+  return S;}
+const clone=S=>({n:S.n,N:S.N,rays:S.rays,h:S.h.slice(),o:S.o.slice(),v:[S.v[0].slice(),S.v[1].slice()],c:S.c,passes:S.passes,sc:S.sc.slice()});
+// the owner of the first stack seen from i in direction d (-1: none)
+function seen(S,i,d){for(const x of S.rays[i][d])if(S.h[x])return S.o[x];return -1;}
+// colour c places its stack on i, in place (its height: the stacks of c that see i)
+function place(S,i,c){const h=S.h,o=S.o,v=S.v,sc=S.sc,po=h[i]?o[i]:-1,k=v[c][i];
+  if(!h[i]){const t=ctl(v[0][i],v[1][i]);if(t>=0)sc[t]--;}else if(po<2)sc[po]--;
+  h[i]=k;o[i]=c;sc[c]++;
+  if(po!==c)for(let d=0;d<6;d++){const prev=po>=0?po:seen(S,i,(d+3)%6);if(prev===c)continue;
+    for(const j of S.rays[i][d]){const em=!h[j],t0=em?ctl(v[0][j],v[1][j]):-2;
+      if(prev===0||prev===1)v[prev][j]--;v[c][j]++;
+      if(em){const t1=ctl(v[0][j],v[1][j]);if(t0!==t1){if(t0>=0)sc[t0]--;if(t1>=0)sc[t1]++;}}else break;}}
+  S.passes=0;S.c=1-c;}
+// what placing on i is worth to c (score difference), without playing it
+function delta(S,i,c){const h=S.h,o=S.o,v=S.v,po=h[i]?o[i]:-1,D=[0,0];
+  if(!h[i]){const t=ctl(v[0][i],v[1][i]);if(t>=0)D[t]--;}else if(po<2)D[po]--;
+  D[c]++;
+  if(po!==c)for(let d=0;d<6;d++){const prev=po>=0?po:seen(S,i,(d+3)%6);if(prev===c)continue;
+    for(const j of S.rays[i][d]){if(h[j])break;let a=v[0][j],b=v[1][j];const t0=ctl(a,b);
+      if(prev===0)a--;else if(prev===1)b--;if(c===0)a++;else b++;const t1=ctl(a,b);
+      if(t0!==t1){if(t0>=0)D[t0]--;if(t1>=0)D[t1]++;}}}
+  return D[c]-D[1-c];}
+const evalS=(S,p)=>S.sc[p]-S.sc[1-p];
+function result(S,p){const d=evalS(S,p);return d>0?1000+d:d<0?-1000+d:0;}
+// every legal move, best first by the score after it (m: the cell, -1 to pass)
+function gen(S){const c=S.c,v=S.v[c],h=S.h,base=evalS(S,c),out=[{m:-1,s:base}];
+  for(let i=0;i<S.N;i++){const k=v[i];if(k>=1&&h[i]<k)out.push({m:i,s:base+delta(S,i,c)});}
+  out.sort((a,b)=>b.s-a.s);return out;}
+function play(S,m){const T=clone(S);if(m<0){T.passes++;T.c=1-T.c;}else place(T,m,T.c);return T;}
+const KS=AISearch({moves:gen,play,turn:S=>S.c,done:S=>S.passes>=2,result,eval:evalS,playout:()=>{},scratch:S=>S});
+// the value of S for the side to move, by a short search
+function value(S,o){if(S.passes>=2)return result(S,S.c);const C=gen(S);if(C.length===1)return C[0].s;
+  return o.algo==='greedy'?C[0].s:KS.beam(S,C,o).s;}
+const SHORT={depth:2,widths:[8,6]};
+function search(P,opt){const g=TW.geo(P.size),N=g.cells.length;KS.start(opt.time);
+  if(P.phase==='setup'){
+    // candidates: two cells away from the edge and from the centre, not next to each other
+    const inner=[];for(let i=0;i<N;i++){const c=g.cells[i],dd=Math.max(Math.abs(c.q),Math.abs(c.r),Math.abs(c.q+c.r));if(dd>=1&&dd<=P.size-2&&!P.h[i])inner.push(i);}
+    const tries=opt.algo==='greedy'?6:opt.depth>=4?40:20;let best=null,bv=1e9;
+    for(let k=0;k<tries;k++){const a=inner[(Math.random()*inner.length)|0],b=inner[(Math.random()*inner.length)|0];if(a===b)continue;
+      const ca=g.cells[a],cb=g.cells[b];if(Math.max(Math.abs(ca.q-cb.q),Math.abs(ca.r-cb.r),Math.abs(ca.q+ca.r-cb.q-cb.r))<2)continue;
+      const h=Array.from(P.h),o=Array.from(P.o);h[a]=1;o[a]=0;h[b]=1;o[b]=1;
+      const v=Math.abs(value(fromPos({size:P.size,h,o,c:0,passes:0}),SHORT))+Math.random()*.5;if(v<bv){bv=v;best=g.cells[a].name+'/'+g.cells[b].name;}}
+    return {move:best,score:0,depth:2,kind:'open'};}
+  if(P.phase==='color'){const v=value(fromPos({size:P.size,h:P.h,o:P.o,c:0,passes:0}),opt.algo==='greedy'?SHORT:{...opt,depth:Math.min(opt.depth||3,3)});
+    return {move:v>=0?'R':'W',score:Math.abs(v),depth:2,kind:'color'};}
+  const S=fromPos({size:P.size,h:P.h,o:P.o,c:P.col[P.turn],passes:P.passes}),C=gen(S);
+  if(C.length===1)return {move:'pass',score:C[0].s,depth:0,forced:true};
+  const r=KS[opt.algo](S,C,opt);
+  return {move:r.m<0?'pass':g.cells[r.m].name,score:r.s,depth:r.depth,nodes:KS.nodes()};}
+return {search,fromPos,gen,play,evalS,delta};
+}
+/*AIEND*/
+// Levels: Débutant, one move ahead with some randomness among the best; Moyen, two plies; Fort, four plies on the best
+// candidates (beam, common/ai.js). The hints use Fort.
+const LEVELS={debutant:{algo:'greedy',pick:6,temp:1.5},moyen:{algo:'beam',depth:2,widths:[12,8],time:2000},fort:{algo:'beam',depth:4,widths:[24,14,8,6],time:4000}};
+const HINT={...LEVELS.fort};
+const aiPos=st=>({size:st.size,h:Array.from(st.h),o:Array.from(st.o),col:st.col.slice(),phase:st.phase,turn:st.turn,passes:st.passes});
+let pageAI=null;   // the search on the page itself, when no worker can be made
+const aiSrc=()=>AISearch.toString()+'\n'+TumbleweedEngine.toString()+'\n'+TumbleAI.toString()+'\nconst TA=TumbleAI(TumbleweedEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}';
+// The computer's opinion: its score is the expected score difference, in points
+function evalInfo(r){const m=r.move;if(m==='R')return {k:'ai_tookRed'};if(m==='W')return {k:'ai_tookWhite'};if(m&&m.indexOf('/')>0)return {k:'ai_opened'};
+  const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
+  return {k:Math.abs(s)<=2?'ai_eq':s>0?(s>10?'ai_much':'ai_better'):(s<-10?'ai_muchWorse':'ai_worse'),d:r.depth};}
+
+// ---------- the interface with common/core.js ----------
+const sizeOpts=()=>TW.SIZES.map(n=>`<option value="${n}">${t('size_fmt',{n,c:3*n*(n-1)+1})}</option>`).join('');
+const GAME={id:'tumbleweed',size:'hexhex',codeTag:'TUMBLEWEED1',i18n:TW_I18N,
+  rules:g=>TW.rules(g),
+  form:p=>{const s=TW.rules({size:$(p+'Size').value}).size;LS.set('tumbleweed-size',s);return {size:s};},
+  replay:twReplay,
+  legal:(st,code)=>TW.legal(st,code),
+  enc:mv=>String(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
+  board:twBoard,turnStatus:twTurnStatus,waitStatus:twWaitStatus,pendText,
+  playerCard,logNode,logText,
+  applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Size');if(!s)continue;const v=s.value||homeSize();s.innerHTML=sizeOpts();s.value=v;}},
+  home:()=>{shown=null;drawBoard();},
+  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TumbleAI(TW)).search(aiPos(st),opt),
+  evalInfo};
+for(const p of ['c','a','f','t'])if($(p+'Size'))$(p+'Size').addEventListener('change',e=>{LS.set('tumbleweed-size',+e.target.value);if(!view)GAME.home();});
+coreStart();
+</script>
+</body></html>
