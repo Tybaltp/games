@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ponte del Diavolo</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
@@ -66,7 +66,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html"><b id="ttl" style="font-weight:inherit">Ponte <em>del</em> Diavolo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html"><b id="ttl" style="font-weight:inherit">Ponte <em>del</em> Diavolo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -187,8 +187,8 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
@@ -331,6 +331,28 @@ const PD_I18N={fr:{
  <li><b>Playing</b>: click two water squares to place your two tiles (a single one when no square is left for the second: End turn); for a bridge, click one of your tiles, then the other end among those offered. Hovering shows the tile or the bridge in transparency; clicking a tile placed this turn takes it back. At the colour choice, Take Light or Play Dark. The move commands are in the bar under the board: Reset, End turn, Pass, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+},es:{
+ title:"Ponte del Diavolo",lede:"Construye islas de cuatro losetas y únelas con puentes.",firstIs:"Primer jugador (coloca las dos losetas claras de apertura)",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
+ needConfirm:"Confirmar cada jugada",takeLight:"Tomar las claras",playDark:"Jugar las oscuras",endTurn:"Terminar el turno",passEnd:"Pasar y terminar",takeLightS:"Claras",playDarkS:"Oscuras",endTurnS:"Terminar",passEndS:"Pasar",
+ pts:"pts",isl:"isl.",brg:"pte.",ptsL:"puntos",islL:"islas",brgL:"puentes",light:"Claras",dark:"Oscuras",mv_bridge:"puente",lg_pass:"pasa",lg_takeL:"toma las claras",lg_dark:"juega las oscuras",
+ lg_forced:"{c}: ninguna jugada posible, pasa.",lg_lastTurn:"Las claras han pasado: las oscuras juegan un último turno.",
+ st_opening:"Coloca las dos losetas claras de apertura.",st_pie:"¿Tomas las claras o juegas las oscuras?",st_oneLeft:"No queda casilla para una segunda loseta: termina tu turno con una sola.",st_lastTurn:"Las claras han pasado: es tu último turno.",
+ pend_pass:"Pasar: las oscuras jugarán un último turno.",pend_passEnd:"Pasar y terminar la partida.",
+ w_score:"{w} a {l}{tb}",w_tie:"empate perfecto, {w} a {l}{tb}",tb_isl:" (decidido por las islas)",tb_brg:" (decidido por los puentes)",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li>En tu turno, coloca <b>dos losetas</b> de tu color, o <b>un puente</b>.</li>
+ <li><b>Isla</b>: exactamente 4 losetas unidas ortogonalmente. Menos de 4: un <b>banco de arena</b>. Nunca más de 4.</li>
+ <li>Una isla no puede tocar ninguna otra loseta de su color, ni siquiera en diagonal. Los colores distintos nunca se estorban.</li>
+ <li>Puente: entre dos de tus losetas, a dos casillas de distancia (en línea recta o en diagonal) o a un salto de caballo. Las casillas que salva deben ser agua.</li>
+ <li>Una loseta lleva como máximo un puente. Los puentes nunca se cruzan. Nada se coloca bajo un puente.</li>
+ <li>Apertura: el primer jugador coloca dos losetas claras; el segundo elige su color. Luego juegan las oscuras.</li>
+ <li>Final: si las oscuras pasan, la partida se detiene de inmediato. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. Solo se puede pasar si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente.</li>
+ <li>Cada grupo de islas unidas por puentes (los bancos de arena sirven de enlace) vale:
+ <div class="scale"><span>1 isla: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
+ <li>Desempate: más islas, luego más puentes.</li>
+ <li><b>Jugar</b>: haz clic en dos casillas de agua para colocar tus dos losetas (una sola si no queda sitio para la segunda: Terminar el turno); para un puente, haz clic en una de tus losetas y luego en el otro extremo, entre los propuestos. Al pasar el ratón, la loseta o el puente se muestran en transparencia; hacer clic en una loseta colocada este turno la retira. Al elegir color, Tomar las claras o Jugar las oscuras. Los controles de la jugada están en la barra bajo el tablero: Reiniciar, Terminar el turno, Pasar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>`
 }};
 
 // ---------- game state and moves ----------

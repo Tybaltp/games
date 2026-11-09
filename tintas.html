@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tintas</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Tintas palette (light, dark), board and colour counters; the shared layout is in common/games.css */
 :root{
@@ -55,7 +55,7 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="tintas.html"><b id="ttl" style="font-weight:inherit">Tintas</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="tintas.html"><b id="ttl" style="font-weight:inherit">Tintas</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -176,8 +176,8 @@ ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function TintasEngine(){
@@ -272,6 +272,27 @@ const TI_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Original rules: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, Creative Commons BY-NC 4.0 licence.</p>`
+},es:{
+ lv_n0:"0 (al azar)",lv_n1:"1",lv_n2:"2",lv_n3:"3",lv_n4:"4",lv_n5:"5",lv_n6:"6",lv_n7:"7",lv_n8:"8",lv_n9:"9",lv_n10:"10",lv_n11:"11 (el más fuerte)",m_aiTxt:"Doce niveles, de 0 (al azar) a 11, para entrenarse.",
+ title:"Tintas",lede:"Un peón común, siete colores: colecciona uno.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",firstIs:"Quién empieza",
+ endTurn:"Terminar el turno",endTurnS:"Terminar",confirmTurn:"Confirmar el turno",
+ t_cont:"Puedes continuar con una pieza {c}, o terminar el turno.",t_pending:"Turno terminado: confírmalo, o reinicia.",
+ cb:"Daltónico",needConfirm:"Confirmar cada jugada",
+ cols:["rojo","naranja","amarillo","verde","azul celeste","azul","violeta"],colsF:["roja","naranja","amarilla","verde","azul celeste","azul","violeta"],
+ tag_jump:"salto",draw:"Partida interrumpida: {why}.",
+ st_first:"Primera jugada: pon el peón sobre la pieza que quieras y tómala.",st_jump:"Ninguna pieza en línea con el peón: sáltalo a la pieza que quieras y tómala.",
+ w_seven:"las siete piezas de un color",w_major:"al menos 4 piezas en al menos 4 colores",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Material</b>: 49 piezas, 7 de cada uno de los 7 colores, repartidas al azar (se vuelve a repartir si las 7 piezas de un color forman un solo grupo), y un peón neutro común a los dos jugadores.</li>
+ <li><b>Primera jugada</b>: pon el peón sobre cualquier pieza y tómala. El turno termina ahí.</li>
+ <li><b>Turno normal</b>: empuja el peón en línea recta en una de las 6 direcciones, por encima de las casillas vacías, hasta la primera pieza; tómala, el peón se queda en su casilla. Puedes encadenar, en cualquier dirección, mientras tomes piezas del mismo color que la primera de ese turno; para cuando quieras. Al menos una captura por turno.</li>
+ <li><b>Salto</b>: si ninguna pieza está en línea con el peón, ponlo sobre la pieza que quieras y tómala; el turno termina.</li>
+ <li><b>Victoria</b>: reunir las 7 piezas de un color gana de inmediato. Si no, gana quien tiene al menos 4 piezas en al menos 4 colores, en cuanto el adversario ya no puede completar ningún color (ha tomado al menos una de cada): el resultado es entonces seguro. Mientras tanto, se sigue jugando.</li>
+ <li><b>Tarjetas de los jugadores</b>: piezas tomadas por color; enmarcado = 4 o más (mayoría), relleno = 7.</li>
+ <li><b>Jugar</b>: haz clic en una pieza que el peón pueda alcanzar (al pasar el ratón, se muestra en transparencia): el peón se empuja hasta ella y la toma. Mientras una pieza del mismo color sea alcanzable, continúa, o haz clic en Terminar el turno; un turno que se detiene por sí solo tras varias capturas espera a Confirmar. Hacer clic en la última pieza tomada la devuelve. Los mandos del turno están en la barra bajo el tablero: Reiniciar, Terminar el turno, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
+ <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Reglas originales: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licencia Creative Commons BY-NC 4.0.</p>`
 }};
 // ---------- board geometry ----------
 const HR=30,X=i=>E.C[i]*HR*1.5,Y=i=>E.R[i]*HR*0.8660254;

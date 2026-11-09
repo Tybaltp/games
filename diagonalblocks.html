@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Diagonal Blocks Duo</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -96,7 +96,7 @@ html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop 
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="diagonalblocks.html"><b id="ttl" style="font-weight:inherit">Diagonal Blocks Duo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="diagonalblocks.html"><b id="ttl" style="font-weight:inherit">Diagonal Blocks Duo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -221,8 +221,8 @@ html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop 
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function DBEngine(){
@@ -318,6 +318,19 @@ const DB_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, three levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Two-player adaptation of Diagonal Blocks (Dave Dyer); board size and swap rule chosen for this site.</p>`
+},es:{
+ needConfirm:"Confirmar cada jugada",title:"Diagonal Blocks Duo",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",firstIs:"Quién empieza",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"↻ Girar",flip:"⇋ Voltear",trayHint:"Elige una pieza; R la gira, F la voltea.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Objetivo</b>: cubrir el mayor número posible de casillas. Cada jugador tiene su color y 21 piezas de 1 a 5 cuadrados (89 cuadrados en total). Las piezas se pueden girar y voltear.</li>
+ <li><b>Tablero</b>: 14 × 14, con 3 casillas recortadas en cada esquina (184 casillas). Dos casillas de salida, en gris oscuro.</li>
+ <li><b>Primera pieza</b>: cubre la casilla de salida de tu color (la del primer jugador, arriba a la izquierda).</li>
+ <li><b>Después</b>: cada pieza toca al menos una de tus piezas por una esquina, y ninguna por un lado. Con las piezas del adversario se permite cualquier contacto. Sin solapamientos.</li>
+ <li><b>Intercambio</b>: justo después de colocarse la primera pieza, el segundo jugador elige primero, antes de preparar su jugada: intercambiar (se queda con esa pieza y su color, y el otro jugador coloca entonces su primera pieza con el otro color) o quedarse con las piezas rosas.</li>
+ <li><b>Pase forzoso</b>: quien ya no puede colocar pasa automáticamente; el otro sigue. La partida termina cuando ya nadie puede colocar.</li>
+ <li><b>Puntuación</b>: el número de casillas cubiertas. Gana el mayor; el empate es posible.</li>
+ <li><b>Jugar</b>: elige una pieza de tu reserva, gírala (R) o voltéala (F). Con ratón, al pasar por encima se muestra en transparencia dónde iría y un clic la coloca; en el teléfono, un toque la coloca. La pieza colocada (marco de puntos) espera a Confirmar; hacer clic en ella la retira, hacer clic en otro sitio la desplaza, R o F la giran en el sitio (si ya no cabe, sale del tablero). Con ratón, la opción «Confirmar cada jugada» puede desmarcarse: el clic juega entonces la pieza. Los puntos de color señalan tus esquinas disponibles. Los controles de la jugada están en la barra bajo el tablero: Reiniciar, Girar, Voltear, Intercambiar, Confirmar; en partida libre y contra el ordenador, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, tres niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
+ <p class="hint" style="margin-top:.6em">Adaptación para dos jugadores de Diagonal Blocks (Dave Dyer); dimensiones del tablero y regla de intercambio elegidas para este sitio.</p>`
 }};
 // ===== Diagonal Blocks: the page's side of common/core.js =====
 const E=DBEngine(),{W,N}=E;

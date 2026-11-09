@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Volo</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -43,7 +43,7 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html"><b id="ttl" style="font-weight:inherit">Volo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html"><b id="ttl" style="font-weight:inherit">Volo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -164,8 +164,8 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
 function VoloEngine(){
@@ -282,6 +282,20 @@ const VO_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eight levels, from 0 to 7 (a neural network from 2 on), with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
+},es:{
+ mq_q:"¿Quieres jugar con Naranja (primero) o con Azul?",mq_1:"Naranja",mq_2:"Azul",
+ lv_debutant:"0 (principiante)",lv_moyen:"1 (medio)",lv_nn16:"2",lv_nn32:"3",lv_nn64:"4",lv_nn150:"5",lv_nn400:"6",lv_nn1000:"7",lv_reseau:"8 (el más fuerte)",m_aiTxt:"Nueve niveles, de 0 a 8, para entrenarse; a partir de 2, una red neuronal.",st_autoPass:"Ninguna jugada posible: pasas.",
+ needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orangeIs:"Naranja (empieza)",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",w_pass:"los dos jugadores han pasado",rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Objetivo</b>: reunir todos tus pájaros del cielo en una sola bandada contigua. Los pájaros son ilimitados; 3 empiezan en los nidos cerca de las esquinas. Naranja empieza.</li>
+ <li>En tu turno, o bien <b>añades un pájaro</b>, o bien <b>haces volar</b> pájaros.</li>
+ <li><b>Añadir</b>: en cualquier punto libre que no sea vecino de uno de tus pájaros ni esté en una zona cerrada únicamente por pájaros adversarios.</li>
+ <li><b>Volar</b>: un pájaro solo, o una línea recta de tus pájaros, avanza en línea recta (en fila o de frente) solo sobre puntos vacíos; cualquier pájaro bloquea el paso. Debe posarse junto a otro de tus pájaros de modo que su bandada crezca, sin dividir ninguna bandada.</li>
+ <li><b>Regiones</b>: si tu jugada deja a los pájaros adversarios sin camino abierto entre ellos (puntos vacíos o sus propios pájaros), eliges la región que se queda; los pájaros de las demás regiones levantan el vuelo y vuelven a la reserva adversaria. Si al adversario solo le queda una bandada, gana.</li>
+ <li><b>Pasar</b>: solo si no hay vuelo posible y únicamente puedes añadir en zonas cerradas por tus propios pájaros (o en ninguna parte). Dos pases seguidos: tablas.</li>
+ <li><b>Jugar</b>: para añadir un pájaro, haz clic en un punto libre; para un vuelo, haz clic en un pájaro (o en varios alineados, un clic por pájaro) y luego en el punto de llegada. Al pasar el ratón, el pájaro añadido o el vuelo se muestra en transparencia; hacer clic en un pájaro provisional retrocede un paso; hacer clic en otro sitio anula la selección. Si la jugada corta los pájaros adversarios en regiones, elige la que se queda (Conservar A, Conservar B…, o un clic en uno de sus pájaros). Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Pasar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, ocho niveles, de 0 a 7 (una red neuronal a partir de 2), con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
+ <p class="hint" style="margin-top:.6em">Volo es un juego de Dieter Stein (2010). Reglas: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Conservar {r}"
 }};
 const E=VoloEngine(),{N,TURN}=E;
 const SIZE=120;

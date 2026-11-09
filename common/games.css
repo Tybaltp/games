@@ -121,10 +121,18 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .side{display:flex;flex-direction:column;gap:12px;min-width:0}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .card h2{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:visible}
 .seg button{border:0;border-radius:0;padding:6px 10px;font-size:.8rem;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.seg .themeBtn{border-right:1px solid var(--line);min-width:2.4em}
+.seg .themeBtn{border-right:1px solid var(--line);min-width:2.4em;border-radius:7px 0 0 7px}
+/* language: one frame with the current code, a menu drops from it */
+.langdd{position:relative;display:inline-flex}
+.langBtn{border-radius:0 7px 7px 0}.langBtn::after{content:'▾';margin-left:.3em;opacity:.65}
+.langdd .menu{position:absolute;right:-1px;top:calc(100% + 5px);display:flex;flex-direction:column;min-width:8.5em;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgb(0 0 0/.18);z-index:30}
+.langdd .menu[hidden]{display:none}
+.langdd .menu button{text-align:left;padding:8px 14px;font-size:.85rem;font-weight:500;color:var(--ink);background:transparent;border:0;border-radius:0}
+.langdd .menu button:hover{background:var(--line)}
+.langdd .menu button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .home{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px;width:100%}
 .home button.big{padding:14px;font-size:1.05rem}
 .lede{color:var(--muted);margin:0;font-size:.95rem}   /* the game in one line, above the home card */
@@ -205,7 +213,7 @@ h1 a.crumb{color:var(--muted);font-weight:600;font-size:1rem;letter-spacing:0;te
 h1 a.crumb:hover,h1 a.gname:hover{color:var(--accent)}
 h1 .sep{margin:0 .3em;font-weight:400;color:var(--muted);font-size:1rem}
 h1 a.gname{color:inherit;text-decoration:none}
-@media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}}
+@media (max-width:520px){header{flex-wrap:nowrap;align-items:flex-start}h1>span[data-i18n="sub"]{display:none}header h1{min-width:0}header .seg,header .fsbtn{flex-shrink:0}}   /* the title wraps or shrinks, the buttons stay whole */
 
 /* action bar: a button's short label shows only when the full labels don't fit (core.js fitBtns) */
 .notice .btns.measure>button{flex-shrink:0;max-width:none}

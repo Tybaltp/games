@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mochalunt</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/cards.css?v=1">
+<link rel="stylesheet" href="common/cards.css?v=3">
 <style>
 :root{--bg:#f2f0ec;--ink:#1d1c1a;--muted:#6b6862;--line:#e3dfd6;--panel:#f9f8f5;--accent:#9C2E3A;--err:#b3261e}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11100f;--ink:#eeeae2;--muted:#a19d95;--line:#2f2d2a;--panel:#181715;--accent:#E1737D;--err:#f28b82}}
@@ -22,10 +22,18 @@ h1{font-size:1.8rem;margin:0}
 h1 a{color:var(--muted);text-decoration:none;font-size:1rem;font-weight:500}
 h2{font-size:1.05rem;margin:0 0 10px}
 .lede{color:var(--muted);margin:2px 0 0}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none;margin-top:6px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:visible;flex:none;margin-top:6px}
 .seg button{font:inherit;font-size:.8rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.seg .themeBtn{border-right:1px solid var(--line);min-width:2.4em}
+.seg .themeBtn{border-right:1px solid var(--line);min-width:2.4em;border-radius:7px 0 0 7px}
+/* language: one frame with the current code, a menu drops from it */
+.langdd{position:relative;display:inline-flex}
+.langBtn{border-radius:0 7px 7px 0}.langBtn::after{content:'▾';margin-left:.3em;opacity:.65}
+.langdd .menu{position:absolute;right:-1px;top:calc(100% + 5px);display:flex;flex-direction:column;min-width:8.5em;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 6px 20px rgb(0 0 0/.18);z-index:30}
+.langdd .menu[hidden]{display:none}
+.langdd .menu button{text-align:left;padding:8px 14px;font-size:.85rem;font-weight:500;color:var(--ink);background:transparent;border:0;border-radius:0}
+.langdd .menu button:hover{background:var(--line)}
+.langdd .menu button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}
 [hidden]{display:none!important}
 label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
@@ -52,7 +60,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 <body>
 <main>
 <header><div><h1><a href="index.html">games /</a> Mochalunt</h1><p class="lede" data-i18n="lede"></p></div>
-<div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div></header>
+<div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div></header>
 
 <!-- home: my matches, a new match -->
 <section id="vHome">
@@ -126,15 +134,23 @@ const I18N={
   watchT:"Follow a Mochalunt match",watchFind:"Looking for the table in play…",watchNone:"No table is open yet: the players are not at a table.",retry:"Try again",
   resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",result:"Result",
   drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",table:"Table {k}",vs:"against {n}",opp:"your opponent",you:"you",
-  j1Is:"Match's Player 1: {n}.",swap:"swap rule",adv:"advanced rule",bad:"This match link is not valid.",unknown:"This match is not known on this device.",noPeer:"PeerJS could not be loaded: check the connection."}};
+  j1Is:"Match's Player 1: {n}.",swap:"swap rule",adv:"advanced rule",bad:"This match link is not valid.",unknown:"This match is not known on this device.",noPeer:"PeerJS could not be loaded: check the connection."},
+ es:{lede:"Encuentro entre dos jugadores, una partida por juego, en el orden del torneo.",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
+  fmtAll:"Encuentro individual: los 5 juegos",fmtTeam:"Encuentro por equipos: 4 juegos",excl:"Juego excluido",j1:"Jugador 1 del encuentro",j1Rnd:"Sorteo",j1Me:"Yo",j1Opp:"Mi adversario",
+  j1Hint:"El jugador 1 elige su sitio en las mesas 1, 3 y 5; el otro en las mesas 2 y 4.",create:"Crear el encuentro",madeT:"Encuentro creado",invLink:"Enlace de invitación, para enviar a tu adversario",
+  watchLink:"Enlace para los espectadores",copy:"Copiar",copied:"Copiado",goFirst:"Ir a la primera mesa",joinT:"Te han invitado a un encuentro Mochalunt",joinBtn:"Unirse al encuentro",
+  watchT:"Seguir un encuentro Mochalunt",watchFind:"Buscando la mesa en curso…",watchNone:"Ninguna mesa está abierta por ahora: los jugadores aún no están en una mesa.",retry:"Reintentar",
+  resT:"Resultado del encuentro",wins:"{n} gana {x}–{y}",tie:"Empate {x}–{y}",sofar:"Marcador: {a} {x} – {y} {b}",resume:"Reanudar",del:"Eliminar",delQ:"¿Eliminar el encuentro contra {n} de este dispositivo?",result:"Resultado",
+  drawn:"tablas",won:"{n} gana",live:"por jugar",tableN:"mesa {k} / {n}",table:"Mesa {k}",vs:"contra {n}",opp:"tu adversario",you:"tú",
+  j1Is:"Jugador 1 del encuentro: {n}.",swap:"regla del swap",adv:"regla avanzada",bad:"Este enlace de encuentro no es válido.",unknown:"Este encuentro no se conoce en este dispositivo.",noPeer:"No se ha podido cargar PeerJS: comprueba la conexión."}};
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
-let lang=LS.get('games-lang',null)||((navigator.language||'fr').startsWith('fr')?'fr':'en');
+let lang=LS.get('games-lang',null)||(l=>l.startsWith('fr')?'fr':l.startsWith('es')?'es':'en')((navigator.language||'fr').toLowerCase());
 const t=(k,p)=>{let s=(I18N[lang]||I18N.fr)[k];if(s===undefined)s=I18N.fr[k]||k;for(const x in p||{})s=s.split('{'+x+'}').join(p[x]);return s;};
 const rnd=n=>{const a='abcdefghijkmnpqrstuvwxyz23456789';let s='';for(const b of crypto.getRandomValues(new Uint8Array(n)))s+=a[b%a.length];return s;};
 const plan=excl=>MOCHA.filter((g,i)=>i!==excl);
 const other=r=>r==='c'?'i':'c';
-const num=x=>String(x).replace('.',lang==='fr'?',':'.');
+const num=x=>String(x).replace('.',lang==='en'?'.':',');
 const recOf=c=>LS.get('mochalunt-'+c,null);
 const score=rec=>{const p={c:0,i:0};for(const k in rec.res||{}){const w=rec.res[k].w;if(w==='d'){p.c+=.5;p.i+=.5;}else if(w)p[w]+=1;}return p;};
 const nameOf=(rec,ro)=>rec.names&&rec.names[ro]||(rec.me===ro?rec.name:'')||(rec.me?(ro===rec.me?t('you'):t('opp')):ro==='c'?'J1':'J2');

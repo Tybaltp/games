@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Zèrtz</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
@@ -58,7 +58,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="zertz.html"><b id="ttl" style="font-weight:inherit">Zèrtz</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="zertz.html"><b id="ttl" style="font-weight:inherit">Zèrtz</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -185,8 +185,8 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script>
 function ZertzEngine(size){
   const B=size===48?[-3,4,-4,3,-3,4]:[-3,3,-3,3,-3,3],cells=[];
@@ -337,6 +337,24 @@ const ZZ_I18N={fr:{
  <li><b>Play</b>: choose the colour under the board, click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen, a single tap is enough). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+},es:{
+ title:"Zèrtz",lede:"Bolas comunes en un tablero de anillos que se encoge.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",firstIs:"Primer jugador",
+ pool:"Reserva común",poolN:"{n} bolas",poolLbl:"Reserva: {n}",poolLblE:"Reserva vacía",h_empty:"Reserva vacía: cada uno coloca sus propias bolas capturadas.",
+ c0:"blanca",c1:"gris",c2:"negra",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmar cada jugada",
+ st_capStart:"Captura obligatoria: haz clic en la bola que salta.",st_capPath:"Captura: haz clic en el anillo de llegada (resaltado), o en un anillo ya recorrido para volver a él.",st_remove:"Retira un anillo libre (en rojo), o vuelve a hacer clic en la bola para recuperarla.",
+ st_place:"Elige un color y luego un anillo vacío.",st_placeN:"{n}: elige un color y luego un anillo vacío.",
+ st_placeOwn:"Reserva vacía: coloca una de tus bolas capturadas.",st_placeOwnN:"{n}: reserva vacía, coloca una de tus bolas capturadas.",
+ draw:"Partida interrumpida: {why}.",
+ w_g0:"4 bolas blancas",w_g1:"5 bolas grises",w_g2:"6 bolas negras",w_each:"3 bolas de cada color",w_nomove:"el adversario ya no tiene jugadas",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li>Las bolas son comunes a los dos jugadores. Si una captura es posible, es obligatoria.</li>
+ <li><b>Colocar</b>: coloca una bola de la reserva en un anillo vacío, y luego retira un anillo libre (vacío, en el borde, que pueda deslizarse fuera del tablero).</li>
+ <li><b>Capturar</b>: una bola salta por encima de una vecina hasta el anillo vacío justo detrás; la captura continúa mientras sea posible.</li>
+ <li><b>Aislar</b>: un grupo de anillos separado y totalmente ocupado pasa al jugador que lo ha aislado.</li>
+ <li><b>Ganar</b>: 3 bolas de cada color, 4 blancas, 5 grises o 6 negras. También por tiempo o por abandono.</li>
+ <li><b>Jugar</b>: elige el color bajo el tablero, haz clic en un anillo vacío y luego en el anillo libre que quieres retirar (en rojo); para una captura, haz clic en la bola que salta y luego en cada anillo de llegada. Al pasar el ratón, la jugada se muestra en transparencia (en pantalla táctil, basta con un solo toque). Hacer clic en la bola colocada o en un anillo ya recorrido da marcha atrás. Los mandos de la jugada están en la barra de acciones: Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
 }};
 const CN=k=>t('c'+k);
 

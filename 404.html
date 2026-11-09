@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Page not found</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <script>
 (function(){
   // old or shortened addresses: the game's page (the case of the address is ignored)
   var alias={'ponte.html':'pontedeldiavolo.html','ponte-del-diavolo.html':'pontedeldiavolo.html','pontedeldiavolo':'pontedeldiavolo.html','ponte':'pontedeldiavolo.html',
-    'pente':'pente.html','zertz':'zertz.html','volo':'volo.html','arimaa':'arimaa.html','gyges':'gyges.html','tintas':'tintas.html','quarto':'quarto.html',
+    'pente':'pente.html','zertz':'zertz.html','volo':'volo.html','arimaa':'arimaa.html','gyges':'gyges.html','tintas':'tintas.html','quarto':'quarto.html','tumbleweed':'tumbleweed.html','slither':'slither.html','ayu':'ayu.html','siam':'siam.html',
     'diagonalblocks':'diagonalblocks.html','dblocks':'diagonalblocks.html','dblocks.html':'diagonalblocks.html','diagonal-blocks.html':'diagonalblocks.html','mochalunt':'mochalunt.html'};
   var p=location.pathname, low=p.toLowerCase(), i=low.lastIndexOf('/'), file=low.slice(i+1);
   if(alias[file]) low=low.slice(0,i+1)+alias[file];
@@ -25,8 +25,8 @@ ul{padding-left:1.2em}
 </style>
 </head>
 <body>
-<h1>Page not found · Page introuvable</h1>
-<p><a href="/games/">All the games · Tous les jeux</a></p>
+<h1>Page not found · Page introuvable · Página no encontrada</h1>
+<p><a href="/games/">All the games · Tous les jeux · Todos los juegos</a></p>
 <ul>
 <li><a href="/games/pente.html">Pente</a></li>
 <li><a href="/games/pontedeldiavolo.html">Ponte del Diavolo</a></li>
@@ -37,6 +37,10 @@ ul{padding-left:1.2em}
 <li><a href="/games/tintas.html">Tintas</a></li>
 <li><a href="/games/diagonalblocks.html">Diagonal Blocks Duo</a></li>
 <li><a href="/games/quarto.html">Quarto</a></li>
+<li><a href="/games/tumbleweed.html">Tumbleweed</a></li>
+<li><a href="/games/slither.html">Slither</a></li>
+<li><a href="/games/ayu.html">Ayu</a></li>
+<li><a href="/games/siam.html">Siam</a></li>
 <li><a href="/games/mochalunt.html">Mochalunt</a></li>
 </ul>
 </body>

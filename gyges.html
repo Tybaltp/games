@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gygès</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Gyges palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -35,7 +35,7 @@ html.nocoords{--board-ar:388/552}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gygès</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gygès</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -163,8 +163,8 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script>
 function GygesEngine(){
   // 6×6 board, cell i = row*6+col, row 0 at the top. Seat 0 sits at the bottom (home row 5) and aims at the goal above row 0;
@@ -391,6 +391,22 @@ const GY_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once. The increment is added on each confirmed move; at zero, the game is lost on time. No clock runs during a simultaneous setup.</li></ul>
  <p class="hint" style="margin-top:.6em">Gygès was designed by Claude Leroy (1985).</p>`
+},es:{
+ mq_q:"¿Quieres colocar la primera pieza o dejar que la coloque tu adversario?",mq_1:"La coloco yo",mq_2:"La coloca mi adversario",
+ title:"Gygès",lede:"Anillos neutros que rebotan hasta la meta adversaria.",pend_block:"Colocación: {m}",firstIs:"Quién empieza (coloca la primera pieza)",advOpt:"Regla avanzada (sustitución)",setupOpt:"Colocación inicial",su_piece:"Pieza a pieza",su_simul:"En bloque, simultánea",su_seq:"En bloque, secuencial",suIn:"«{m}» en esta partida",sud_piece:"Los jugadores colocan por turnos una pieza de su reserva en su fila. J1 coloca la primera; J2 coloca la última y hace el primer movimiento.",sud_simul:"Los dos jugadores eligen sus posiciones de salida al mismo tiempo. Las piezas se hacen visibles una vez validado el tablero. Empieza J1.",sud_seq:"Por orden: J1 coloca sus 6 piezas, se hacen visibles para J2, J2 coloca sus 6 piezas, J1 hace el primer movimiento.",st_block:"Coloca tus 6 piezas: una pieza de la reserva y luego una casilla de tu fila. Haz clic en una pieza colocada para retirarla.",st_blockSim:"Coloca tus 6 piezas: una pieza de la reserva y luego una casilla de tu fila. Tu adversario solo las verá una vez validadas las dos colocaciones.",st_simWait:"Colocación validada. Esperando al adversario…",st_simWatch:"Los dos jugadores colocan sus piezas en secreto.",st_blockOpp:"{n} coloca sus piezas.",hiddenBlock:"colocación oculta",hiddenRow:"piezas ocultas",validBlock:"Validar la colocación",st_place:"Colocación: elige una pieza de tu reserva y luego una casilla libre de tu fila.",st_blockS:"Coloca tus 6 piezas: una pieza de la reserva y luego una casilla de tu fila.",st_blockSimS:"Coloca en secreto tus 6 piezas: reserva y luego casilla de tu fila.",st_placeS:"Colocación: una pieza de la reserva y luego una casilla de tu fila.",st_land:"Llegada sobre una pieza: ¿rebotar o sustituirla?",st_bad:"La pieza no puede detenerse ahí.",st_sel:"Elige adónde va la pieza, o haz clic en ella para dejarla en su sitio.",st_bounce:"Rebote: juega la continuación, o haz clic en la pieza para volver atrás.",st_stuck:"Ninguna continuación desde este rebote: haz clic en la pieza para volver atrás.",bounce:"Rebotar",replace:"Sustituir",st_drop:"Coloca la pieza desalojada en una casilla libre resaltada.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_theyPass:"{n} no tiene ninguna jugada posible y debe pasar.",w_goal:"una pieza ha entrado en la meta adversaria",w_pass:"ninguno de los dos jugadores puede jugar",goalW:"meta",passW:"pasa",advOn:"activada en esta partida",advOff:"desactivada en esta partida",rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Objetivo</b>: hacer entrar una pieza en la meta adversaria, la casilla única situada detrás de la fila del fondo del adversario.</li>
+ <li><b>Piezas</b>: 12 piezas neutras, de nadie: 4 simples, 4 dobles, 4 triples (1, 2 o 3 anillos). Cada jugador recibe 2 de cada y las coloca en las 6 casillas de su propia fila, según la colocación inicial elegida.</li>
+ <li><b>Colocación inicial</b> (<span class="setupState"></span>), elegida al crear la partida; J1 es el jugador que empieza. <i>Pieza a pieza</i>: se coloca una pieza por turnos, J1 la primera; J2 coloca la última y hace el primer movimiento; el clic en la casilla coloca la pieza, sin confirmación. <i>En bloque, simultánea</i>: los dos jugadores eligen sus posiciones de salida al mismo tiempo; las piezas se hacen visibles una vez validado el tablero; empieza J1. <i>En bloque, secuencial</i>: J1 coloca sus 6 piezas, se hacen visibles para J2, J2 coloca sus 6 piezas, J1 hace el primer movimiento. En bloque, elige una pieza de la reserva y luego una casilla de tu fila; haz clic en una pieza colocada para retirarla; Reiniciar borra toda la colocación; Validar la colocación la envía.</li>
+ <li><b>Qué pieza</b>: cualquier pieza de tu fila ocupada más cercana; si ninguna puede mover, las de la siguiente fila ocupada, y así sucesivamente.</li>
+ <li><b>Desplazamiento</b>: exactamente tantos pasos ortogonales como anillos tiene la pieza, girando a voluntad, a través de casillas vacías. Durante toda la jugada, nunca se recorre dos veces el mismo segmento entre dos casillas.</li>
+ <li><b>Llegada</b>: en una casilla vacía, la pieza se detiene (no en su casilla de salida). Sobre una pieza, <b>rebota</b>: vuelve a partir enseguida tantos pasos como anillos tiene esa pieza; los rebotes se encadenan.</li>
+ <li><b>Entrar en la meta</b>: desde la fila del fondo adversaria, solo como último paso de un movimiento. No se atraviesa una meta y nunca se entra en la propia.</li>
+ <li><b>Regla avanzada</b> (<span class="advState"></span>): al llegar sobre una pieza, se puede, en vez de rebotar, ocupar su lugar; la pieza desalojada se coloca en una casilla vacía, pero no en una fila más cercana al adversario que su fila ocupada más cercana.</li>
+ <li><b>Pasar</b>: sin ninguna jugada posible, se pasa; si los dos pasan seguidos, la partida acaba en tablas.</li>
+ <li><b>Jugar</b>: haz clic en una pieza jugable (rodeada de un círculo), luego en la casilla donde se detiene, o en la pieza sobre la que rebota, y así sucesivamente, un clic por rebote. Al pasar el ratón por una casilla alcanzable directamente, el movimiento se muestra en transparencia. Hacer clic en la posición actual retrocede una etapa; hacer clic en una etapa anterior vuelve a ella. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Rebotar, Sustituir, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida. El tiempo añadido por jugada se abona en cada jugada confirmada; a cero, la partida se pierde por tiempo. Durante una colocación simultánea no corre ningún reloj.</li></ul>
+ <p class="hint" style="margin-top:.6em">Gygès es un juego de Claude Leroy (1985).</p>`
 }};
 // ===== Gyges: the page's side of common/core.js =====
 const E=GygesEngine(),G=E.G;

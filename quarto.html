@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quarto</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
@@ -44,7 +44,7 @@
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="quarto.html"><b id="ttl" style="font-weight:inherit">Quarto</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="quarto.html"><b id="ttl" style="font-weight:inherit">Quarto</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -169,8 +169,8 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script>
 // ===== Quarto: rules =====
 // 16 pieces shared by both players, numbered 0..15; each bit is a trait: 1 dark, 2 tall (2D view: larger), 4 square, 8 hollow.
@@ -268,11 +268,31 @@ const Q_I18N={fr:{
  <li><b>Playing</b>: place the piece received by clicking an empty cell (hovering shows it in transparency), then click in the reserve the piece your opponent will place. Clicking the chosen cell or piece drops it. 2D or 3D view in the Options. The move commands are in the bar under the board: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, five levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+},es:{
+ title:"Quarto",lede:"Da al adversario la pieza que colocará; alinea cuatro piezas que compartan una característica.",viewOpt:"Vista",v_2d:"2D, vista cenital",v_iso:"3D isométrica",v_persp:"3D en perspectiva",needConfirm:"Confirmar cada jugada",
+ m_aiTxt:"Cinco niveles, para entrenarse.",
+ lv_debutant:"Principiante",lv_facile:"Fácil",lv_moyen:"Medio",lv_fort:"Fuerte",lv_expert:"Experto",
+ sqOpt:"Variante avanzada: los cuadrados 2 × 2 también ganan",sqOn:"activada en esta partida",sqOff:"desactivada en esta partida",
+ traits:["clara","oscura","redonda","cuadrada","maciza","hueca","pequeña","grande"],
+ gives:"da la {p}",givesM:"da {p}",sep:": ",toPlace:"por colocar",
+ st_give1:"elige la pieza que colocará el adversario.",
+ st_giveNow:"elige la pieza siguiente.",st_placeNow:"coloca la pieza enmarcada.",
+ w_full:"tablero lleno sin alineación",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Material</b>: un tablero de 4 × 4 casillas y 16 piezas todas distintas, comunes a los dos jugadores: claras u oscuras, redondas o cuadradas, huecas o macizas, pequeñas o grandes.</li>
+ <li><b>Turno</b>: se coloca en una casilla libre la pieza elegida por el adversario, y luego se elige la que él colocará. En la primera jugada, el primer jugador solo elige.</li>
+ <li><b>Victoria</b>: gana quien completa una línea de cuatro piezas (fila, columna o diagonal) que comparten al menos una característica.</li>
+ <li><b>Variante avanzada</b> (<span class="sqState"></span>): un cuadrado 2 × 2 de cuatro piezas que comparten una característica también gana.</li>
+ <li><b>Tablas</b>: las 16 piezas están colocadas sin victoria.</li>
+ <li><b>Jugar</b>: coloca la pieza recibida haciendo clic en una casilla libre (al pasar el ratón, se muestra en transparencia), y luego haz clic en la reserva sobre la pieza que colocará el adversario. Hacer clic en la casilla o en la pieza elegida la abandona. Vista 2D o 3D en las Opciones. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, cinco niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
 }};
 // The texts of a win: « four pieces in a line, all dark and hollow » (whyKey: the shape, the traits all have, none has)
 {const ADJ={fr:{all:["foncées","grandes","carrées","creuses"],none:["claires","petites","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
-  en:{all:["dark","large","square","hollow"],none:["light","small","round","solid"],line:"four pieces in a line, all ",sq:"four pieces in a square, all ",and:" and "}};
-  for(const lg of ['fr','en'])for(const sq of [0,1])for(let all=0;all<16;all++)for(let none=0;none<16;none++){if(all&none||!(all|none))continue;
+  en:{all:["dark","large","square","hollow"],none:["light","small","round","solid"],line:"four pieces in a line, all ",sq:"four pieces in a square, all ",and:" and "},
+  es:{all:["oscuras","grandes","cuadradas","huecas"],none:["claras","pequeñas","redondas","macizas"],line:"cuatro piezas alineadas, todas ",sq:"cuatro piezas en cuadrado, todas ",and:" y "}};
+  for(const lg of ['fr','en','es'])for(const sq of [0,1])for(let all=0;all<16;all++)for(let none=0;none<16;none++){if(all&none||!(all|none))continue;
     const A=ADJ[lg],w=[];for(let k=0;k<4;k++){if(all>>k&1)w.push(A.all[k]);if(none>>k&1)w.push(A.none[k]);}
     Q_I18N[lg][whyKey(sq,all,none)]=(sq?A.sq:A.line)+(w.length>1?w.slice(0,-1).join(', ')+A.and+w[w.length-1]:w[0]);}}
 

@@ -2,7 +2,7 @@
 
 Jeux de plateau à deux, joués de navigateur à navigateur : https://tybaltp.github.io/games/
 
-Neuf jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
+Treize jeux : Arimaa, Ayu, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Siam, Slither, Tintas, Tumbleweed, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
 
 ## Branches
 
@@ -14,11 +14,11 @@ Neuf jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quart
 ```
 index.html            accueil du site : une carte par jeu, « Comment ça marche ? »
 img/cartes/           images des cartes de l'accueil (un morceau de plateau par jeu, clair et sombre)
-<jeu>.html            une page par jeu : règles, plateau, ordinateur s'il y en a un, textes FR/EN du jeu
+<jeu>.html            une page par jeu : règles, plateau, ordinateur s'il y en a un, textes FR/EN/ES du jeu
 common/core.js        tout ce qui n'est pas propre à un jeu (ci-dessous)
 common/games.css      styles communs : accueil, écran de jeu fixe, barre d'actions, tiroir « ⋯ », cartes des joueurs
 common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS),
-                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks Duo et Volo
+                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks Duo, Volo, Tumbleweed, Slither, Ayu et Siam
 CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
 volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau », bloc /*NN*/ de volo.html), produits par
                       ~/volo-ia ; le worker charge onnxruntime-web depuis jsDelivr (repli unpkg, puis MCTS 3 s hors ligne)
@@ -33,7 +33,7 @@ volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau �
 - Analyse (socle commun, `ana()`) : en Libre, pour une partie chargée, et pour une partie Face à face ou contre l'ordinateur une fois terminée. Un coup joué depuis n'importe quelle position ajoute une variante (ou suit celle qui l'a déjà). `view.tree` (le premier enfant = la ligne principale), `view.moves` = le chemin jusqu'à la position montrée, `view.gameResult` = le résultat de la partie (abandon, temps, accord), valable seulement au bout de la ligne principale. Barre : début, branchement précédent, coup précédent, coup suivant, branchement suivant, fin de la ligne ; au-dessus et en dessous du numéro, la variante précédente / suivante du coup montré. Clavier : ← → coup par coup (Maj : début, fin), Début / Fin, ↑ ↓ branchements, Maj + ↑ ↓ variantes. Avancer suit toujours le premier enfant. La liste des coups montre la ligne entière, ◆n sur un coup qui a n variantes. Pas d'annulation ni d'abandon en analyse. Plateau : `anaAlts()` / `anaAltGo(code)` pour marquer les autres variantes du coup montré (Pente : pierre transparente cerclée, un clic y passe).
 - Modes sur un seul appareil : Face à face (pendule au choix, sans annulation), Libre (suggestions si le jeu a un ordinateur, arbre de variantes). Contre l'ordinateur : calcul dans une tâche de fond, annulation et suggestions.
 - Sauvegarde dans le navigateur et reprise au rafraîchissement, dans tous les modes (`#test`, `#ai`, `#local`, parties par lien).
-- Écran de jeu : une seule barre d'actions sous le plateau (libellés abrégés seulement si la place manque), écran fixe (deux colonnes sur grand écran, bandes et tiroir « ⋯ » sur téléphone), option Coordonnées, langue FR/EN, sons.
+- Écran de jeu : une seule barre d'actions sous le plateau (libellés abrégés seulement si la place manque), écran fixe (deux colonnes sur grand écran, bandes et tiroir « ⋯ » sur téléphone), option Coordonnées, langue FR/EN/ES, sons.
 
 ### Ce que fournit une page de jeu : l'objet `GAME`
 
@@ -41,7 +41,7 @@ La page charge `common/core.js`, définit `const GAME={…}`, puis appelle `core
 
 ## Règles à respecter
 
-- **Version des fichiers communs.** Les pages chargent `common/core.js?v=N`, `common/games.css?v=N` et, pour quatre d'entre elles, `common/ai.js?v=M`. Après toute modification d'un fichier commun, augmenter son numéro dans **toutes les pages qui le chargent** ; sinon un navigateur peut garder l'ancien fichier en cache à côté d'une page récente.
+- **Version des fichiers communs.** Les pages chargent `common/core.js?v=N`, `common/games.css?v=N` et, pour huit d'entre elles, `common/ai.js?v=M`. Après toute modification d'un fichier commun, augmenter son numéro dans **toutes les pages qui le chargent** ; sinon un navigateur peut garder l'ancien fichier en cache à côté d'une page récente.
 - **`GAME.id` ne change jamais.** Il préfixe les clés de stockage, les identifiants réseau et les codes de reprise (`gyges-test`, `gyges-p2p-…`) : le changer ferait perdre les parties enregistrées. Deux identifiants diffèrent du nom de fichier : `diagonalblocks.html` → `dblk`, `pontedeldiavolo.html` → `pdd`.
 - **Ergonomie.** Appliquer `CHARTE-ERGONOMIE.md` : survol en transparence, provisoire en pointillés, joué en plein, une seule mise en évidence, une seule barre d'actions, écran sans défilement.
 

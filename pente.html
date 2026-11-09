@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pente</title>
-<script src="common/theme.js?v=2"></script>
+<script src="common/theme.js?v=4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=36">
+<link rel="stylesheet" href="common/games.css?v=38">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -58,7 +58,7 @@ h1{font-weight:400;letter-spacing:0}
 </style>
 </head><body>
 <div class="wrap">
-<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html"><b id="ttl" style="font-weight:inherit">Pente</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html"><b id="ttl" style="font-weight:inherit">Pente</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
 <div class="status" id="status" aria-live="polite">Loading…</div>
 
 <section class="view" id="setup">
@@ -386,8 +386,8 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=56"></script>
-<script src="common/codes.js?v=2"></script>
+<script src="common/core.js?v=57"></script>
+<script src="common/codes.js?v=3"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -412,7 +412,7 @@ const HINT={...LEVELS.expert,hint:true};
 
 
 // Pente strings, merged over the shared ones (core.js)
-const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n});
+const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n,es:'una línea de '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",
  lv_facile:"Facile",lv_confirme:"Confirmé",lv_expert:"Expert",m_aiTxt:"Six niveaux, pour s'entraîner.",
@@ -463,8 +463,33 @@ const PE_I18N={fr:{
  <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; on a touch screen, a first tap places it provisionally; a winning move is played at once). Clicking a provisional stone removes it; in the opening and the 2 more stones the order does not matter: the next stone takes the colour of the one removed. The opening and the 2 more stones always wait for Confirm, even with “Confirm each move” off. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, six levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+},es:{
+ title:"Pente",lede:"Cinco en línea, o cinco pares capturados. Apertura Swap2.",
+ lv_facile:"Fácil",lv_confirme:"Avanzado",lv_expert:"Experto",m_aiTxt:"Seis niveles, para entrenarse.",
+ firstIs:"Primer jugador (coloca la apertura Swap2)",opener:"¿Quién coloca la apertura Swap2?",needConfirm:"Confirmar cada jugada",
+ black:"Negras",white:"Blancas",colw_1:"negra",colw_2:"blanca",captured:"{n} pares capturados de 5",
+ n_open:"Coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_choose:"Te toca elegir: Negras, Blancas o 2 piedras más.",
+ n_add2:"Añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_openN:"{name} coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_add2N:"{who} añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_choose1:"{name} ha añadido una negra y una blanca: elige tu color.",
+ st_play:"Te toca jugar ({color}).",st_openOther:"{name} coloca la apertura.",st_chooseOther:"{name} elige: Negras, Blancas o 2 piedras más.",
+ st_choose1Other:"{name} elige su color.",st_turnC:"Le toca a {name} ({color}).",
+ st_tentative:"Jugada en {c}: confirma para jugarla.",pend_stones:"Piedras: {m}. Confirma para jugarlas.",confirm1:"Confirmar",confirmN:"Confirmar las piedras",
+ bBlack:"Negras",bWhite:"Blancas",bAdd:"+2 piedras",takeBlack:"Tomar Negras",takeBlackSub:"Blancas hacen la siguiente jugada.",takeWhite:"Tomar Blancas",takeWhiteSub:"Tomarlas es hacer la siguiente jugada.",
+ add2:"Añadir 2 piedras",add2Sub:"1 negra y luego 1 blanca; {name} elige después.",
+ d_open:"negra {a}, blanca {b}, negra {c}",d_add:"2 piedras más, negra {a} y blanca {b}",d_B:"Tomar las negras",d_W:"Tomar las blancas",d_Wn:"Tomar las blancas y jugar {c}",
+ l_B:"toma Negras",l_W:"toma Blancas",
+ w_five:"cinco en línea",w_caps:"cinco pares capturados",w_full:"tablero lleno",
+ ai_tookWhite:"El ordenador toma Blancas.",ai_tookBlack:"El ordenador toma Negras.",boardLbl:"Tablero de Pente de 15 por 15",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li>Alinear 5 piedras o más gana.</li>
+ <li>Flanquear exactamente dos piedras adversarias (X O O X) las captura. Colocarse entre dos piedras adversarias no supone ningún riesgo.</li>
+ <li>Cinco pares capturados ganan.</li>
+ <li>Swap2: el primer jugador coloca 2 negras y 1 blanca. El segundo toma Negras, toma Blancas, o añade 1 negra y 1 blanca y deja elegir al primero. Después juegan Blancas.</li>
+ <li>Reloj Fischer: tiempo base para cada uno, incremento añadido tras cada acción. Tiempo agotado: partida perdida.</li>
+ <li><b>Jugar</b>: haz clic en una intersección para colocar una piedra (al pasar el ratón, se muestra en transparencia; en pantalla táctil, un primer toque la coloca de forma provisional; una jugada ganadora se juega enseguida). Hacer clic en una piedra provisional la retira; en la apertura y en las 2 piedras más, el orden no importa: la piedra siguiente toma el color de la retirada. La apertura y las 2 piedras más esperan siempre Confirmar, aunque «Confirmar cada jugada» esté desmarcado. Los mandos de la jugada están en la barra de acciones: Negras, Blancas o +2 piedras para la elección de Swap2, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, seis niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
 }};
-for(let n=6;n<=9;n++){const l=LINES(n);PE_I18N.fr['w_line'+n]=l.fr;PE_I18N.en['w_line'+n]=l.en;}
+for(let n=6;n<=9;n++){const l=LINES(n);PE_I18N.fr['w_line'+n]=l.fr;PE_I18N.en['w_line'+n]=l.en;PE_I18N.es['w_line'+n]=l.es;}
 const CN=c=>c===1?t('black'):c===2?t('white'):'';
 
 // ---------- rules ----------
