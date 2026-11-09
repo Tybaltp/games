@@ -2,7 +2,7 @@
 
 Jeux de plateau à deux, joués de navigateur à navigateur : https://tybaltp.github.io/games/
 
-Neuf jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Quarto, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
+Dix jeux : Arimaa, Diagonal Blocks Duo, Gygès, Pente, Ponte del Diavolo, Pylos, Quarto, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
 
 ## Branches
 
@@ -18,7 +18,7 @@ img/cartes/           images des cartes de l'accueil (un morceau de plateau par 
 common/core.js        tout ce qui n'est pas propre à un jeu (ci-dessous)
 common/games.css      styles communs : accueil, écran de jeu fixe, barre d'actions, tiroir « ⋯ », cartes des joueurs
 common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS),
-                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks Duo et Volo
+                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks Duo, Volo et Pylos
 CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
 volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau », bloc /*NN*/ de volo.html), produits par
                       ~/volo-ia ; le worker charge onnxruntime-web depuis jsDelivr (repli unpkg, puis MCTS 3 s hors ligne)
@@ -37,7 +37,7 @@ volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau �
 
 ### Ce que fournit une page de jeu : l'objet `GAME`
 
-La page charge `common/core.js`, définit `const GAME={…}`, puis appelle `coreStart()`. Les crochets (`id`, `rules`, `replay`, `legal`, `board`, `turnStatus`, `pendBtns`, `newUi`, `preparing`, `cancel`, ordinateur `levels`/`aiSrc`/`aiSearch`…) sont décrits en tête de `common/core.js`. `GAME.ownLayout` (Diagonal Blocks Duo) dispense un jeu de la disposition commune du plateau (voir `lockBoard()`). `gyges.html` sert d'exemple de référence.
+La page charge `common/core.js`, définit `const GAME={…}`, puis appelle `coreStart()`. Les crochets (`id`, `rules`, `replay`, `legal`, `board`, `turnStatus`, `pendBtns`, `newUi`, `preparing`, `cancel`, ordinateur `levels`/`aiSrc`/`aiSearch`…) sont décrits en tête de `common/core.js`. `GAME.ownLayout` (Diagonal Blocks Duo) dispense un jeu de la disposition commune du plateau (voir `lockBoard()`). `gyges.html` sert d'exemple de référence. Depuis Pylos (`pylos.html`), un nouveau jeu part de son moteur de règles écrit en chat d'après le gabarit `maquettes/gabarit-moteur/` : le moteur est repris tel quel dans la page, dans un bloc `<script type="text/plain">` que la page et le worker de l'ordinateur évaluent.
 
 ## Règles à respecter
 
