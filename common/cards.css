@@ -6,7 +6,7 @@
 .gc{position:relative;display:block;aspect-ratio:16/10;container-type:inline-size;border-radius:14px;overflow:hidden;background:var(--gbg);color:var(--gink);text-decoration:none;isolation:isolate}
 .gc .ct{position:absolute;left:6.5cqw;top:5cqw;z-index:3;max-width:50%;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:12.2cqw;line-height:1.05;letter-spacing:-.01em;transition:color .2s}
 .gc .ct em{font-style:italic}
-.c-ponte .ct{font-size:10.8cqw}
+.c-ponte .ct,.c-dblocks .ct{font-size:8.8cqw}
 a.gc:hover .ct,a.gc:focus-visible .ct{color:var(--gacc)}
 a.gc:focus-visible{outline:2px solid var(--gacc);outline-offset:3px}
 /* the image fills the right 76 % exactly (it has that box's proportions); cut from 52 % at the top to the box's left edge
