@@ -30,11 +30,13 @@
   --wood1:#8a6236;--wood2:#5a3d1d;--wood-edge:#33220f;--dimple:#2c1c0c;--lab:#b59a74;--mk:#f3ead6;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{background:var(--panel);border-radius:14px}
 .board [data-i]{cursor:default}
-.board [data-i].pt,.board .pill{cursor:pointer}
-/* players' cards: the seat's balls left in reserve */
-.player .res{display:flex;align-items:baseline;gap:5px;font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
-.player .res b{font-size:1.05rem;font-weight:600}
-.player .res span{font-size:.72rem;color:var(--muted)}
+.board [data-i].pt{cursor:pointer}
+/* players' cards: « 6 balls in reserve » */
+.player .res{font-size:.82rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player .res b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:1.05rem;font-weight:600;color:var(--ink)}
+/* the end of a blocked game: each ball the page places drops in */
+.drop{transform-box:fill-box;transform-origin:center;animation:pydrop .32s ease-out}
+@keyframes pydrop{from{opacity:0;transform:scale(1.35)}to{opacity:1;transform:scale(1)}}
 /* the last move: a ball taken back stays a moment as a ghost, then fades to a faint outline */
 .fade{animation:pyfade 1.8s ease-out forwards}
 @keyframes pyfade{from{opacity:.9}to{opacity:.3}}
@@ -411,8 +413,7 @@ const PY_I18N={fr:{
  pend_more:"Coup : {m}. Une seconde reprise est possible : cliquez une autre bille libre, ou confirmez.",
  d_place:"poser en {a}",d_lift:"monter {a} en {b}",d_rem:", reprendre {r}",d_and:" et ",
  l_lift:"monte",l_rem:"reprend {r}",
- res:"en réserve",resT:"{n} billes en réserve",resLbl:"réserve",
- layer:"Étage",layerT:"Isoler l'étage {n} : les étages au-dessus s'effacent (survol ou toucher)",layerHint:"survol ou toucher : les étages au-dessus s'effacent",
+ res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
  rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_no:"Continuer",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
  lv_n0:"0 : un coup d'avance, au hasard parmi les bons",lv_n1:"1 : un coup d'avance",lv_n2:"2 : deux coups d'avance",lv_n3:"3 : trois coups d'avance",lv_n4:"4 : quatre coups d'avance",lv_n5:"5 : six coups d'avance, le plus fort",
@@ -423,10 +424,10 @@ const PY_I18N={fr:{
  <li><b>Emplacement disponible</b> : au socle, tout creux vide ; aux étages, un emplacement vide posé sur quatre billes, de n'importe quelles couleurs.</li>
  <li><b>Coup</b>, au choix : <i>poser</i> une bille de sa réserve sur un emplacement disponible, à n'importe quel étage ; ou <i>monter</i> une de ses billes libres (rien ne repose dessus) sur un emplacement disponible d'un étage plus haut, qui ne repose pas sur elle. Monter épargne une bille de la réserve.</li>
  <li><b>Carré à sa couleur</b> : si la bille posée ou montée achève un carré de quatre billes de sa couleur à son étage, on reprend aussitôt une ou deux de ses billes libres, celle qu'on vient de jouer comprise, et on les remet dans sa réserve. La seconde se choisit après la première.</li>
- <li><b>Fin</b> : celui qui pose la bille du sommet gagne. Un joueur qui ne peut plus jouer (réserve vide, aucune bille à monter) perd. Pas d'égalité, pas de passe.</li>
+ <li><b>Fin</b> : celui qui pose la bille du sommet gagne. Un joueur qui ne peut plus jouer (réserve vide, aucune bille à monter) perd. Pas d'égalité, pas de passe. Quand un joueur ne peut plus jouer, la page pose d'elle-même les billes qui restent à l'autre, sans reprise ni montée, jusqu'au sommet : la partie ne pouvait pas finir autrement.</li>
  <li><b>Alignement</b> : par défaut, la reprise vaut aussi pour un alignement complet à sa couleur, en ligne ou en colonne (quatre billes au socle, trois au deuxième étage), jamais en diagonale. En option, le carré seul.</li>
  <li><b>Répétition</b> : quand la même position revient pour la troisième fois, la page propose au joueur de proposer la nulle ; si l'adversaire accepte, la partie s'arrête sur une nulle, sinon elle continue.</li>
- <li><b>Cartes joueurs</b> et côtés du plateau : les billes qu'il reste à chacun. Sous le plateau, les pastilles <i>Étage 1 2 3 4</i> : au survol ou au toucher, les étages au-dessus s'effacent pour voir les billes recouvertes.</li>
+ <li><b>Cartes joueurs</b> : les billes qu'il reste à chacun, aussi dessinées de part et d'autre du plateau. <b>Bille cachée</b> : une bille du troisième étage cache entièrement celle du socle qui est dessous ; au survol de la souris, ou en la touchant sur téléphone, elle devient transparente ; la toucher à nouveau, ou toucher ailleurs, la rend opaque.</li>
  <li><b>Jouer</b> : cliquez un emplacement pour y poser une bille ; cliquez une de vos billes libres puis un emplacement plus haut pour la monter. Au survol, la bille à poser s'affiche en transparence ; la bille provisoire est cerclée de pointillés. Quand un carré est achevé, cliquez la ou les billes à reprendre (en fantôme), puis Confirmer. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Dernier coup</b> : halo plein à l'arrivée ; pour une montée, le départ en pointillés et une trace ; une bille reprise reste un instant en fantôme.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li></ul>
@@ -443,8 +444,7 @@ const PY_I18N={fr:{
  pend_more:"Move: {m}. A second take-back is possible: click another free ball, or confirm.",
  d_place:"place on {a}",d_lift:"move {a} up to {b}",d_rem:", take back {r}",d_and:" and ",
  l_lift:"moves up",l_rem:"takes back {r}",
- res:"in reserve",resT:"{n} balls in reserve",resLbl:"reserve",
- layer:"Level",layerT:"Isolate level {n}: the levels above fade out (hover or touch)",layerHint:"hover or touch: the levels above fade out",
+ res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
  rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_no:"Keep playing",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
  lv_n0:"0: one move ahead, at random among the good ones",lv_n1:"1: one move ahead",lv_n2:"2: two moves ahead",lv_n3:"3: three moves ahead",lv_n4:"4: four moves ahead",lv_n5:"5: six moves ahead, the strongest",
@@ -455,10 +455,10 @@ const PY_I18N={fr:{
  <li><b>Available spot</b>: on the base, any empty hollow; higher up, an empty spot resting on four balls, of any colours.</li>
  <li><b>Move</b>, either: <i>place</i> a ball from your reserve on an available spot, at any level; or <i>move up</i> one of your free balls (nothing rests on it) to an available spot one level higher at least, which does not rest on it. Moving up saves a ball of your reserve.</li>
  <li><b>Square of your colour</b>: if the ball placed or moved up completes a square of four balls of your colour at its level, you take back at once one or two of your free balls, the one just played included, into your reserve. The second one is chosen after the first.</li>
- <li><b>End</b>: whoever places the top ball wins. A player who cannot move (empty reserve, no ball to move up) loses. No draw, no passing.</li>
+ <li><b>End</b>: whoever places the top ball wins. A player who cannot move (empty reserve, no ball to move up) loses. No draw, no passing. When a player cannot move, the page places the other player's remaining balls by itself, with no take-back and no move up, up to the top: the game could not end otherwise.</li>
  <li><b>Line</b>: by default, the take-back also applies to a complete line of your colour, row or column (four balls on the base, three on the second level), never a diagonal. As an option, the square only.</li>
  <li><b>Repetition</b>: when the same position comes back for the third time, the page offers the player to propose a draw; if the opponent accepts, the game ends in a draw, otherwise it goes on.</li>
- <li><b>Player cards</b> and the sides of the board: the balls each player has left. Under the board, the <i>Level 1 2 3 4</i> pills: on hover or touch, the levels above fade out to show the balls covered.</li>
+ <li><b>Player cards</b>: the balls each player has left, also drawn on either side of the board. <b>Hidden ball</b>: a ball of the third level fully hides the base ball under it; hovering it with the mouse, or tapping it on a phone, makes it transparent; tapping it again, or anywhere else, makes it opaque again.</li>
  <li><b>Playing</b>: click a spot to place a ball there; click one of your free balls then a higher spot to move it up. Hovering shows the ball to place in transparency; the provisional ball has a dashed ring. When a square is completed, click the ball or balls to take back (shown as ghosts), then Confirm. The move commands are in the bar under the board: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
  <li><b>Last move</b>: a solid halo on arrival; for a move up, the start in dashes and a trace; a ball taken back stays a moment as a ghost.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li></ul>
@@ -475,8 +475,7 @@ const PY_I18N={fr:{
  pend_more:"Jugada: {m}. Puedes recuperar una segunda bola: pulsa otra bola libre, o confirma.",
  d_place:"colocar en {a}",d_lift:"subir {a} a {b}",d_rem:", recuperar {r}",d_and:" y ",
  l_lift:"sube",l_rem:"recupera {r}",
- res:"en reserva",resT:"{n} bolas en reserva",resLbl:"reserva",
- layer:"Nivel",layerT:"Aislar el nivel {n}: los niveles de arriba se atenúan (al pasar o tocar)",layerHint:"al pasar o tocar: los niveles de arriba se atenúan",
+ res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
  rep_ask:"Has repetido la misma posición tres veces. ¿Quieres proponer tablas?",rep_no:"Continuar",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
  lv_n0:"0: una jugada de antelación, al azar entre las buenas",lv_n1:"1: una jugada de antelación",lv_n2:"2: dos jugadas de antelación",lv_n3:"3: tres jugadas de antelación",lv_n4:"4: cuatro jugadas de antelación",lv_n5:"5: seis jugadas de antelación, el más fuerte",
@@ -487,10 +486,10 @@ const PY_I18N={fr:{
  <li><b>Hueco disponible</b>: en la base, cualquier hueco vacío; en los niveles superiores, un hueco vacío apoyado en cuatro bolas, de cualquier color.</li>
  <li><b>Jugada</b>, a elegir: <i>colocar</i> una bola de la reserva en un hueco disponible, en cualquier nivel; o <i>subir</i> una de tus bolas libres (nada se apoya en ella) a un hueco disponible de un nivel más alto, que no se apoye en ella. Subir ahorra una bola de la reserva.</li>
  <li><b>Cuadrado de tu color</b>: si la bola colocada o subida completa un cuadrado de cuatro bolas de tu color en su nivel, recuperas enseguida una o dos de tus bolas libres, incluida la que acabas de jugar, y vuelven a tu reserva. La segunda se elige después de la primera.</li>
- <li><b>Final</b>: quien coloca la bola de la cima gana. Un jugador que no puede jugar (reserva vacía, ninguna bola que subir) pierde. Sin empate, sin pasar.</li>
+ <li><b>Final</b>: quien coloca la bola de la cima gana. Un jugador que no puede jugar (reserva vacía, ninguna bola que subir) pierde. Sin empate, sin pasar. Cuando un jugador no puede jugar, la página coloca por sí sola las bolas que le quedan al otro, sin recuperación ni subida, hasta la cima: la partida no podía terminar de otra manera.</li>
  <li><b>Línea</b>: por defecto, la recuperación vale también por una línea completa de tu color, fila o columna (cuatro bolas en la base, tres en el segundo nivel), nunca en diagonal. Como opción, solo el cuadrado.</li>
  <li><b>Repetición</b>: cuando la misma posición vuelve por tercera vez, la página propone al jugador ofrecer tablas; si el adversario acepta, la partida termina en tablas, si no continúa.</li>
- <li><b>Tarjetas de los jugadores</b> y lados del tablero: las bolas que le quedan a cada uno. Bajo el tablero, las pastillas <i>Nivel 1 2 3 4</i>: al pasar o tocar, los niveles de arriba se atenúan para ver las bolas cubiertas.</li>
+ <li><b>Tarjetas de los jugadores</b>: las bolas que le quedan a cada uno, dibujadas también a ambos lados del tablero. <b>Bola oculta</b>: una bola del tercer nivel oculta por completo la bola de la base que tiene debajo; al pasar el ratón por encima, o al tocarla en el móvil, se vuelve transparente; tocarla de nuevo, o tocar en otro sitio, la vuelve opaca.</li>
  <li><b>Jugar</b>: pulsa un hueco para colocar una bola; pulsa una de tus bolas libres y luego un hueco más alto para subirla. Al pasar el ratón, la bola que se colocaría se muestra en transparencia; la bola provisional lleva un anillo discontinuo. Cuando se completa un cuadrado, pulsa la bola o las bolas que recuperas (en fantasma) y luego Confirmar. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
  <li><b>Última jugada</b>: halo lleno en la llegada; en una subida, la salida en discontinuo y una traza; una bola recuperada queda un instante en fantasma.</li>
  <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li></ul>
@@ -517,8 +516,8 @@ const isFreeBall=(b,i)=>b[i]!==-1&&PG.above[i].every(j=>b[j]===-1);
 // ---------- game view ----------
 // ui: sel (my free ball chosen to move up, -1), main ({from,to} of the action made, null), bonus (the action completes a
 // square: removals to choose), rem (balls taken back so far), pending (the complete code awaiting confirmation), hover,
-// iso (the level isolated by its pill, -1: all), isoHover (the pill under the mouse)
-const newUi=()=>({sel:-1,main:null,bonus:false,rem:[],pending:null,hover:-1,iso:-1,isoHover:-1,repSeen:-1});
+// repSeen (the third repetition already answered at this move)
+const newUi=()=>({sel:-1,main:null,bonus:false,rem:[],pending:null,hover:-1,repSeen:-1});
 const prepared=()=>ui.sel>=0||!!ui.main||!!ui.pending;
 function clearPrep(){ui.sel=-1;ui.main=null;ui.bonus=false;ui.rem=[];ui.pending=null;}
 function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
@@ -556,9 +555,9 @@ function pendText(mv,st){const m=parseCode(mv);
   return [t('pend_mv',{m:describe(mv)}),t('confirmMv')];}
 function myState(){if(!view)return null;const r=replay(view,view.moves,view.result);return isMyTurn(r)?meSt(r):null;}
 function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
-// Players' cards (built by core): the balls left in reserve
-function playerCard(el,p,d){const n=d.st.res[p],x=document.createElement('div');x.className='res';x.title=t('resT',{n});
-  x.innerHTML=`<b>${n}</b><span>${t('res')}</span>`;el.appendChild(x);}
+// Players' cards (built by core): « 6 balls in reserve » (during the end of a blocked game, what is left to place)
+const resTxt=n=>t(n===1?'res1':n===0?'res0':'resN',{n:`<b>${n}</b>`});
+function playerCard(el,p,d){const n=d.st.res[p]-fillUsed(d,p),x=document.createElement('div');x.className='res';x.innerHTML=resTxt(n);el.appendChild(x);}
 
 // ---------- input ----------
 function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;
@@ -592,19 +591,45 @@ $('needConfirm').onchange=e=>{LS.set('pylos-confirm',e.target.checked);
   // switched off with a simple move waiting: it is played (a move with removals still waits)
   if(!e.target.checked&&ui.pending&&ui.main&&!ui.bonus&&view){const st=myState();if(st){const mv=ui.pending;clearPrep();send(mv);}}};
 let lastPT='mouse';
+// The hidden ball (decision of 10.11.2026): a ball of the third level hides the base ball under it, the top ball hides the
+// centre ball of the second level. Hovering such a ball with the mouse makes it transparent (xrayH); a click or a tap on it
+// makes it transparent until a second click on it or a click anywhere else (xray). When the click also plays (a ball of
+// the third level taken back on a square), it plays: the transparency is only for balls the click does nothing with.
+let xray=-1,xrayH=-1,lastAct=new Set();
 $('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
-$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');
-  const pl=e.target.closest&&e.target.closest('[data-iso]');if(pl){const l=+pl.dataset.iso;ui.iso=ui.iso===l?-1:l;ui.isoHover=-1;drawBoard();}lastPT='mouse';});
+$('svg').addEventListener('click',e=>{e.pyBoard=true;const g=e.target.closest&&e.target.closest('[data-i]'),i=g?+g.dataset.i:-1,touch=lastPT==='touch';lastPT='mouse';
+  if(g&&g.hasAttribute('data-b')&&CELLS[i].l>=2&&!lastAct.has(i)){xray=xray===i?-1:i;drawBoard();return;}
+  if(xray>=0){xray=-1;if(!g)drawBoard();}
+  if(g)onCell(i,touch);});
+// (a click on the board is marked: the board is redrawn by then, so its target is no longer in the page)
+document.addEventListener('click',e=>{if(xray<0||e.pyBoard)return;xray=-1;drawBoard();});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);
-    const pl=e.target.closest&&e.target.closest('[data-iso]'),l=pl?+pl.dataset.iso:-1;if(l!==ui.isoHover){ui.isoHover=l;drawBoard();}});
-  $('svg').addEventListener('pointerleave',()=>{hoverAt(-1);if(ui.isoHover>=0){ui.isoHover=-1;drawBoard();}});}
+    const b=e.target.closest&&e.target.closest('[data-b]'),x=b&&CELLS[+b.dataset.i].l>=2?+b.dataset.i:-1;if(x!==xrayH){xrayH=x;drawBoard();}});
+  $('svg').addEventListener('pointerleave',()=>{hoverAt(-1);if(xrayH>=0){xrayH=-1;drawBoard();}});}
+
+// ---------- the end of a blocked game ----------
+// When the side to move cannot play, the engine ends the game (w_block): the blocked player has no ball left, so the
+// empty spots are exactly the winner's reserve. The page then places those balls by itself, one by one, level by level,
+// with no take-back and no move up, the last one on the top (decision of 10.11.2026). These balls are only drawn: they
+// are not moves (view.moves, the link game, the SGF and the move list stay as the engine ended the game).
+let fill={key:null,k:0,n:0,w:-1,spots:[]};
+function fillSpots(st,w){const out=[];for(let l=0;l<4;l++)for(let i=0;i<PG.N;i++)if(CELLS[i].l===l&&st.b[i]===-1)out.push(i);return out.slice(0,st.res[w]);}
+const fillLive=d=>!!view&&navAt===null&&!!d&&!!d.over&&d.over.why==='w_block'&&d.over.w>=0;
+// the balls of seat p the page has placed so far in the position d (0 outside the end of a blocked game)
+function fillUsed(d,p){return fillLive(d)&&fill.key===fillKey()&&fill.w===p?fill.k:0;}
+const fillKey=()=>view?PY.rules(view).variant+'|'+view.moves.join(','):null;
+function fillStep(key){if(fill.key!==key||key!==fillKey())return;if(fill.k<fill.n){fill.k++;tone(520+40*fill.k,.06,.03);
+    const c=$('pl'+fill.w),x=c&&c.querySelector('.res');if(x&&shown)x.innerHTML=resTxt(shown.d.st.res[fill.w]-fill.k);drawBoard(true);}
+  if(fill.k<fill.n)setTimeout(()=>fillStep(key),340);}
+function fillStart(d){const key=fillKey();if(fill.key===key)return;const w=d.over.w,spots=fillSpots(d.st,w);
+  fill={key,k:0,n:spots.length,w,spots};setTimeout(()=>fillStep(key),700);}
 
 // ---------- drawing ----------
 // Top view. A spot of level l at cell (x,y) is centred on ((x+.5+l/2)U, (y+.5+l/2)U): each level sits in the hollows of
-// the one below. Landscape layout: the reserves in columns left (seat 0) and right (seat 1), the level pills under the
-// board; portrait layout (phones): the reserves in rows above (seat 1) and below (seat 0).
+// the one below. Landscape layout: the reserves in columns left (seat 0) and right (seat 1); portrait layout (phones):
+// the reserves in rows above and below. The reserve balls overlap, so fifteen of them stay a light line.
 const NS='http://www.w3.org/2000/svg',U=60,R0=.46*U;
 const XY=i=>{const c=CELLS[i];return [(c.x+.5+c.l*.5)*U,(c.y+.5+c.l*.5)*U];};
 const RAD=l=>R0+l*.015*U;
@@ -612,17 +637,17 @@ function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.s
 const f1=v=>(+v).toFixed(1);
 let lastPortrait=null;
 function portrait(){const ba=document.querySelector('.boardwrap .boardarea');if(!ba||!ba.clientWidth)return false;return ba.clientHeight>ba.clientWidth*1.05;}
-// a ball: shadow, sphere (gradient g0/g1 of the defs), highlight
-function ball(g,x,y,r,c,op,cls){const p=el('g',{transform:`translate(${f1(x)} ${f1(y)})`,'pointer-events':'none'},g);if(op!==undefined)p.setAttribute('opacity',op);if(cls)p.setAttribute('class',cls);
-  el('ellipse',{cx:f1(r*.12),cy:f1(r*.22),rx:f1(r*1.02),ry:f1(r*.92),fill:'rgb(0 0 0/.3)'},p);
+// a ball: shadow (unless flat), sphere (gradient g0/g1 of the defs), highlight
+function ball(g,x,y,r,c,op,cls,flat){const p=el('g',{transform:`translate(${f1(x)} ${f1(y)})`,'pointer-events':'none'},g);if(op!==undefined)p.setAttribute('opacity',op);if(cls)p.setAttribute('class',cls);
+  if(!flat)el('ellipse',{cx:f1(r*.12),cy:f1(r*.22),rx:f1(r*1.02),ry:f1(r*.92),fill:'rgb(0 0 0/.3)'},p);
   el('circle',{r:f1(r),fill:`url(#g${c})`,stroke:c?'var(--s1e)':'var(--s0e)','stroke-width':1},p);
   el('ellipse',{cx:f1(-r*.32),cy:f1(-r*.38),rx:f1(r*.26),ry:f1(r*.16),fill:'#fff',opacity:c?.35:.75,transform:'rotate(-30)'},p);return p;}
 const ring=(g,x,y,r,dash,w,col)=>el('circle',{cx:f1(x),cy:f1(y),r:f1(r),fill:'none',stroke:col||'var(--mk)','stroke-width':w||2,...(dash?{'stroke-dasharray':'5 4'}:{}),'pointer-events':'none'},g);
 function cross(g,x,y){const k=el('g',{transform:`translate(${f1(x)} ${f1(y)})`,'pointer-events':'none'},g);
   el('line',{x1:-9,y1:-9,x2:9,y2:9,stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round'},k);el('line',{x1:9,y1:-9,x2:-9,y2:9,stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round'},k);}
-function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
+function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const sh=shown,st=sh&&view?sh.d.st:PY.init(PY.rules({})),b=st.b,P=portrait();lastPortrait=P;
-  const vb=P?[-.9*U,-1.75*U,5.6*U,8.65*U]:[-2.15*U,-.65*U,8.3*U,6.25*U];
+  const vb=P?[-.9*U,-1.38*U,5.6*U,6.96*U]:[-1.45*U,-.62*U,6.9*U,5.48*U];
   svg.setAttribute('viewBox',vb.map(f1).join(' '));document.documentElement.style.setProperty('--board-ar',`${f1(vb[2])}/${f1(vb[3])}`);
   const defs=el('defs',{},svg);
   for(const p of [0,1]){const g=el('radialGradient',{id:'g'+p,cx:'35%',cy:'30%',r:'75%'},defs);
@@ -638,6 +663,9 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   if(mine&&ui.main){if(ui.main.from>=0)disp[ui.main.from]=-1;disp[ui.main.to]=p;prov=ui.main;for(const i of ui.rem){disp[i]=-1;remGhost.push(i);}}
   const hint=mine&&hintOn()?parseCode(hintMv):null;
   if(hint){if(hint.from>=0)disp[hint.from]=-1;disp[hint.to]=p;prov=hint;for(const i of hint.rem){disp[i]=-1;remGhost.push(i);}}
+  // the end of a blocked game: the winner's balls the page has placed so far
+  const fl=sh&&fillLive(sh.d);if(fl)fillStart(sh.d);const fk=fl?fill.k:0,res=st.res.slice();
+  if(fl){for(let k=0;k<fk;k++)disp[fill.spots[k]]=fill.w;res[fill.w]-=fk;}
   // what a click does: a spot to place on, a ball to move up, a lift's target, a ball to take back
   const act=new Set();
   if(mine){if(ui.main&&ui.bonus){for(let i=0;i<PG.N;i++)if(ui.rem.includes(i)||(ui.rem.length<2&&disp[i]===p&&PY.legal(ms,fullCode(ui.main,ui.rem.concat(i)))!==null))act.add(i);}
@@ -645,31 +673,35 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
     else if(ui.sel>=0){act.add(ui.sel);for(const m of L)if(m.from===ui.sel)act.add(m.to);}
     else for(const m of L){act.add(m.to);if(m.from>=0)act.add(m.from);}}
   for(const [i] of alt)act.add(i);
+  lastAct=act;if(xray>=0&&disp[xray]===-1)xray=-1;
   const hol=el('g',{},svg);
   for(let i=0;i<16;i++){const [x,y]=XY(i),g=el('g',{'data-i':i,class:act.has(i)?'pt':''},hol);
     el('circle',{cx:f1(x),cy:f1(y),r:f1(.4*U),fill:'var(--dimple)',opacity:.35},g);el('circle',{cx:f1(x),cy:f1(y),r:f1(.4*U),fill:'none',stroke:'var(--wood-edge)','stroke-width':1,opacity:.5},g);}
   // coordinates (core: coordsOn): the column letters under the base, the row numbers on its left
   if(coordsOn){for(let x=0;x<4;x++){const e=el('text',{x:f1((x+.5)*U),y:f1(4.5*U+14),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String.fromCharCode(97+x);}
     for(let y=0;y<4;y++){const e=el('text',{x:f1(-.5*U-10),y:f1((y+.5)*U+4),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String(y+1);}}
-  // the balls, level by level; above the isolated level only a dashed outline; the empty spots that can be clicked get a target
-  const iso=ui.isoHover>=0?ui.isoHover:ui.iso,layers=[0,1,2,3].map(()=>el('g',{},svg));
+  // the balls, level by level; the empty spots that can be clicked get a target; the transparent ball (hidden ball) keeps
+  // a dashed outline
+  const layers=[0,1,2,3].map(()=>el('g',{},svg));
   const lastMv=view&&sh&&sh.d.last?parseCode(sh.d.last.code):null,lastP=lastMv&&sh.d.log.length?sh.d.log[sh.d.log.length-1].p:-1;
-  const showLast=!!lastMv&&!prov&&!(mine&&prepared());
+  const showLast=!!lastMv&&!prov&&!(mine&&prepared())&&!fk;
   for(let i=0;i<PG.N;i++){const c=CELLS[i],[x,y]=XY(i),v=disp[i],g=layers[c.l];
-    if(v===-1){if(c.l>0&&act.has(i))el('circle',{cx:f1(x),cy:f1(y),r:f1(.36*U),fill:'transparent','data-i':i,class:'pt'},g);
-      else if(c.l>0&&alt.has(i))el('circle',{cx:f1(x),cy:f1(y),r:f1(.36*U),fill:'transparent','data-i':i,class:'pt'},g);continue;}
-    if(iso>=0&&c.l>iso){ring(g,x,y,RAD(c.l),true,1.5,v?'var(--s1e)':'var(--s0e)').setAttribute('opacity',.55);continue;}
-    const k=ball(g,x,y,RAD(c.l),v);if(act.has(i)){k.setAttribute('pointer-events','all');k.setAttribute('data-i',i);k.setAttribute('class','pt');}
-    else{k.setAttribute('pointer-events','all');k.setAttribute('data-i',i);}}
+    if(v===-1){if(c.l>0&&(act.has(i)||alt.has(i)))el('circle',{cx:f1(x),cy:f1(y),r:f1(.36*U),fill:'transparent','data-i':i,class:'pt'},g);continue;}
+    const see=c.l>=2&&(i===xray||i===xrayH),drop=fl&&fillTick&&fk&&fill.spots[fk-1]===i;
+    const k=ball(drop?el('g',{class:'drop'},g):g,x,y,RAD(c.l),v,see?.28:undefined);k.setAttribute('pointer-events','all');k.setAttribute('data-i',i);k.setAttribute('data-b','');
+    if(act.has(i))k.setAttribute('class','pt');
+    if(see)ring(g,x,y,RAD(c.l),true,1.5,v?'var(--s1e)':'var(--s0e)');}
   // the ghosts: the balls being taken back (dashed, a cross), the last move's removals (fading)
   const top=el('g',{'pointer-events':'none'},svg);
-  for(const i of remGhost){const [x,y]=XY(i),c=CELLS[i];if(iso>=0&&c.l>iso)continue;ball(top,x,y,RAD(c.l),p,.45);ring(top,x,y,RAD(c.l)+4,true,2);cross(top,x,y);}
-  if(mine&&ui.main&&ui.bonus)for(const i of ui.rem){const g=el('circle',{cx:f1(XY(i)[0]),cy:f1(XY(i)[1]),r:f1(.4*U),fill:'transparent','data-i':i,class:'pt'},svg);}
-  if(showLast){for(const i of lastMv.rem){const [x,y]=XY(i),c=CELLS[i];if(iso>=0&&c.l>iso||disp[i]!==-1)continue;ball(top,x,y,RAD(c.l),lastP,undefined,'fade');cross(top,x,y);}
+  for(const i of remGhost){const [x,y]=XY(i),c=CELLS[i];ball(top,x,y,RAD(c.l),p,.45);ring(top,x,y,RAD(c.l)+4,true,2);cross(top,x,y);}
+  if(mine&&ui.main&&ui.bonus)for(const i of ui.rem){el('circle',{cx:f1(XY(i)[0]),cy:f1(XY(i)[1]),r:f1(.4*U),fill:'transparent','data-i':i,class:'pt'},svg);}
+  if(showLast){for(const i of lastMv.rem){const [x,y]=XY(i),c=CELLS[i];if(disp[i]!==-1)continue;ball(top,x,y,RAD(c.l),lastP,undefined,'fade');cross(top,x,y);}
     if(lastMv.from>=0){const a=XY(lastMv.from),bb=XY(lastMv.to),r1=RAD(CELLS[lastMv.from].l)*.9,r2=RAD(CELLS[lastMv.to].l)+5;ring(top,a[0],a[1],r1,true,2);
       const dx=bb[0]-a[0],dy=bb[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
       el('line',{x1:f1(a[0]+ux*r1),y1:f1(a[1]+uy*r1),x2:f1(bb[0]-ux*r2),y2:f1(bb[1]-uy*r2),stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round',opacity:.8},top);}
     {const [x,y]=XY(lastMv.to);ring(top,x,y,RAD(CELLS[lastMv.to].l)+5,false,3);}}
+  // the end of a blocked game: a halo on the last ball placed (the top, once done)
+  if(fk){const i=fill.spots[fk-1],[x,y]=XY(i);ring(top,x,y,RAD(CELLS[i].l)+5,false,3,fk===fill.n?'var(--accent)':undefined);}
   // the preparation: the chosen ball (accent ring), the provisional ball (dashed ring), a lift's start (dashed)
   if(mine&&ui.sel>=0&&!ui.main){const [x,y]=XY(ui.sel);ring(top,x,y,RAD(CELLS[ui.sel].l)+4,false,3,'var(--accent)');}
   if(prov){const [x,y]=XY(prov.to);ring(top,x,y,RAD(CELLS[prov.to].l)+4,true,2.5);
@@ -677,23 +709,14 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
       const dx=bb[0]-a[0],dy=bb[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;el('line',{x1:f1(a[0]+ux*r1),y1:f1(a[1]+uy*r1),x2:f1(x-ux*(RAD(CELLS[prov.to].l)+5)),y2:f1(y-uy*(RAD(CELLS[prov.to].l)+5)),stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round',opacity:.8},top);}}
   // analysis: the other variations of the move shown, a hollow mark
   for(const [i] of alt){const [x,y]=XY(i);el('circle',{cx:f1(x),cy:f1(y),r:f1(.18*U),fill:'none',stroke:'var(--mk)','stroke-width':2.2,'pointer-events':'none'},top);}
-  // the reserves: the number, the label, the balls left (two columns, or two rows in portrait)
-  for(const q of [0,1]){const res=st.res[q];
-    if(!P){const cx=q?5.55*U:-1.55*U;
-      const n=el('text',{x:f1(cx),y:f1(-.1*U),'text-anchor':'middle','font-family':'var(--f-mono)','font-weight':500,'font-size':30,fill:'var(--ink)'},svg);n.textContent=res;
-      const lb=el('text',{x:f1(cx),y:f1(.28*U),'text-anchor':'middle','font-family':'var(--f-body)','font-size':11,fill:'var(--muted)'},svg);lb.textContent=t('resLbl');
-      for(let k=0;k<res;k++){const col=k%2,row=(k-col)/2;ball(svg,cx+(col?.26:-.26)*U,(.75+row*.5)*U,.2*U,q);}}
-    else{const cy=(q===1)!==flip?-1.2*U:5.25*U;
-      const n=el('text',{x:f1(-.3*U),y:f1(cy+10),'text-anchor':'middle','font-family':'var(--f-mono)','font-weight':500,'font-size':30,fill:'var(--ink)'},svg);n.textContent=res;
-      for(let k=0;k<res;k++){const row=k%2,col=(k-row)/2;ball(svg,(.45+col*.5)*U,cy+(row?.26:-.26)*U,.2*U,q);}}}
-  // the level pills (hidden balls: hover or touch one, the levels above fade out)
-  const py=P?6.35*U:5.45*U;
-  const lab=el('text',{x:f1(-.5*U),y:f1(py+5),'font-family':'var(--f-body)','font-size':12,fill:'var(--muted)','pointer-events':'none'},svg);lab.textContent=t('layer');
-  for(let l=0;l<4;l++){const x=(.6+l*.75)*U,on=iso===l,g=el('g',{class:'pill','data-iso':l,role:'button'},svg);
-    const ti=el('title',{},g);ti.textContent=t('layerT',{n:l+1});
-    el('rect',{x:f1(x-20),y:f1(py-13),width:40,height:26,rx:13,fill:on?'var(--accent)':'var(--panel)',stroke:on?'var(--accent)':'var(--line)','stroke-width':1.2},g);
-    const tx=el('text',{x:f1(x),y:f1(py+5),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,'font-weight':500,fill:on?'var(--accent-ink)':'var(--ink)','pointer-events':'none'},g);tx.textContent=l+1;}
-  if(!P){const h=el('text',{x:f1(3.7*U),y:f1(py+5),'font-family':'var(--f-body)','font-size':11,fill:'var(--muted)','pointer-events':'none'},svg);h.textContent=t('layerHint');}
+  // the reserves: the number, then the balls left, overlapping (a column on each side, or a row above and below)
+  for(const q of [0,1]){const n=res[q],rr=.2*U;
+    if(!P){const cx=q?5.05*U:-1.05*U;
+      const tx=el('text',{x:f1(cx),y:f1(-.12*U),'text-anchor':'middle','font-family':'var(--f-mono)','font-weight':500,'font-size':24,fill:'var(--ink)','pointer-events':'none'},svg);tx.textContent=n;
+      for(let k=0;k<n;k++)ball(svg,cx,(.38+k*.25)*U,rr,q,undefined,undefined,true);}
+    else{const cy=(q===1)!==flip?-.95*U:5.2*U;
+      const tx=el('text',{x:f1(-.45*U),y:f1(cy+8),'text-anchor':'middle','font-family':'var(--f-mono)','font-weight':500,'font-size':24,fill:'var(--ink)','pointer-events':'none'},svg);tx.textContent=n;
+      for(let k=0;k<n;k++)ball(svg,(.3+k*.27)*U,cy,rr,q,undefined,undefined,true);}}
   el('g',{id:'hov','pointer-events':'none'},svg);drawHover();}
 // Under the mouse: the ball to place (or the chosen ball moved up), in transparency, only where it is legal
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
