@@ -33,6 +33,40 @@ html.nocoords{--board-ar:388/552}
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
 </style>
+<style>
+/* PROVISOIRE (branche accueil-jeu, essai de Thibault) : accueil « fond de carte + modes en cartes ». Si l'essai est
+   retenu, ces règles vont dans common/games.css pour les neuf jeux et disparaissent de cette page. */
+html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
+#setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:6vh}
+:root{--accImg:url(img/cartes/gyges.svg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/cartes/gyges-dark.svg)}}
+:root[data-theme="dark"]{--accImg:url(img/cartes/gyges-dark.svg)}
+.accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
+.accBg::before{content:"";position:absolute;inset:0 0 0 auto;width:72%;background:var(--accImg) center/cover no-repeat;
+  -webkit-mask-image:linear-gradient(to left,#000 35%,transparent 92%);mask-image:linear-gradient(to left,#000 35%,transparent 92%)}
+.accBg::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 34rem 30rem at 50% 52%,var(--bg) 0 38%,color-mix(in srgb,var(--bg) 70%,transparent) 62%,color-mix(in srgb,var(--bg) 20%,transparent) 100%)}
+#setup .home{max-width:520px}
+#setup .home .card,#setup .home details#rulesHome{background:color-mix(in srgb,var(--panel) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#setup .home .card.primary-card{border-color:var(--line);box-shadow:0 10px 40px rgb(0 0 0/.14)}
+#setup .lede{color:var(--ink);font-weight:500}
+#playBtn,#anaBtn,#modeWrap{display:none!important}
+.accTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px 14px 13px;min-height:122px;border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
+.accTile svg{width:26px;height:26px;fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-bottom:auto}
+.accTile b{font-family:var(--f-display);font-weight:800;font-size:1.12rem;letter-spacing:-.01em;color:var(--ink);margin-top:10px}
+.accTile span{font-size:.8rem;color:var(--muted);line-height:1.3}
+.accTile:hover:not(:disabled){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--panel))}
+.accTile.cur{border-color:var(--accent);border-width:1.5px}
+.accLoad{text-align:left;font-weight:600;font-size:.9rem;padding:8px 12px}
+@media (max-width:700px){
+  .accBg::before{inset:0 0 auto 0;width:auto;height:58%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,transparent 100%);mask-image:linear-gradient(to bottom,#000 30%,transparent 100%)}
+  .accBg::after{background:linear-gradient(to bottom,color-mix(in srgb,var(--bg) 35%,transparent) 0,color-mix(in srgb,var(--bg) 55%,transparent) 30%,var(--bg) 62%)}
+  #setup:not([hidden]){justify-content:flex-end;padding-bottom:2vh}}
+@media (max-width:420px){.accTile{min-height:112px;padding:12px}.accTile b{font-size:1.02rem}}
+</style>
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gygès</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -774,5 +808,34 @@ function aiSearch(m,opt){return A.search({...m,b:Int8Array.from(m.b)},opt);}`,
   aiOpt:v=>({adv:!!v.adv}),aiView:aiSafe,
   evalInfo:(res,st)=>E.setup(st)?null:evalInfo(res)};
 coreStart();
+</script>
+<script>
+// PROVISOIRE (branche accueil-jeu, essai de Thibault) : les modes de jeu en cartes sur l'accueil, au lieu de « Jouer /
+// Analyser » puis la liste « Mode de jeu ». S'appuie sur homeStep() et la liste #modeSel du socle, qui restent la référence.
+(function(){
+  const $i=id=>document.getElementById(id),ms=$i('modeSel');
+  Object.assign(I18N.fr,{acc_linkTxt:'Un adversaire sur un autre appareil.',acc_aiTxt:'Contre l’ordinateur, au niveau choisi.',acc_faceTxt:'Deux joueurs, un seul écran.',acc_freeTxt:'Les deux camps : essayer, analyser.',acc_load:'Charger une partie (SGF)'});
+  Object.assign(I18N.en,{acc_linkTxt:'An opponent on another device.',acc_aiTxt:'Against the computer, at the level you choose.',acc_faceTxt:'Two players, one screen.',acc_freeTxt:'Both sides: try things, analyse.',acc_load:'Load a game (SGF)'});
+  Object.assign(I18N.es,{acc_linkTxt:'Un adversario en otro dispositivo.',acc_aiTxt:'Contra el ordenador, al nivel elegido.',acc_faceTxt:'Dos jugadores, una sola pantalla.',acc_freeTxt:'Los dos bandos: probar, analizar.',acc_load:'Cargar una partida (SGF)'});
+  const bg=document.createElement('div');bg.className='accBg';bg.setAttribute('aria-hidden','true');document.body.prepend(bg);
+  const IC={link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    ai:'<rect x="3.5" y="4.5" width="17" height="11.5" rx="2"/><path d="M9 20h6M12 16v4"/>',
+    face:'<circle cx="4" cy="12" r="2.5"/><circle cx="20" cy="12" r="2.5"/><rect x="8.5" y="7" width="7" height="10" rx="1.2"/>',
+    free:'<path d="M4 20l1-4 11-11 3 3-11 11-4 1zM13.5 6.5l3 3"/>'};
+  const grid=document.createElement('div');grid.className='accTiles';
+  const modes=[...ms.options].map(o=>o.value).concat('free');
+  for(const k of modes){const b=document.createElement('button');b.type='button';b.className='accTile';b.dataset.mode=k;
+    b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(IC[k]||'')+'</svg><b data-i18n="m_'+k+'"></b><span data-i18n="acc_'+k+'Txt"></span>';
+    b.onclick=()=>{if(k==='free'){homeStep('free');return;}ms.value=k;ms.onchange();};grid.appendChild(b);}
+  $i('playBtn').before(grid);
+  const ld=document.createElement('button');ld.type='button';ld.className='accLoad';ld.dataset.i18n='acc_load';ld.onclick=()=>homeStep('load');
+  $i('resumeD').after(ld);
+  grid.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));ld.textContent=t('acc_load');
+  const mark=()=>grid.querySelectorAll('.accTile').forEach(b=>b.classList.toggle('cur',b.dataset.mode===ms.value));mark();
+  // the card's title names the chosen mode; « Retour » always comes back to the four cards
+  const base=homeStep;homeStep=function(k){base(k);mark();const h=$i('newTitle');
+    if(k==='play'||k==='free'){h.dataset.i18n=k==='free'?'m_free':'m_'+ms.value;h.textContent=t(h.dataset.i18n);}};
+  $i('newBack').onclick=()=>homeStep('');
+})();
 </script>
 </body></html>
