@@ -256,7 +256,7 @@ function VoloEngine(){
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",
- lv_debutant:"0 : glouton au hasard",lv_moyen:"1 : glouton",lv_nn16:"2 : réseau de neurones, 16 simulations",lv_nn32:"3 : réseau de neurones, 32 simulations",lv_nn64:"4 : réseau de neurones, 64 simulations",lv_nn150:"5 : réseau de neurones, 150 simulations",lv_nn400:"6 : réseau de neurones, 400 simulations",lv_nn1000:"7 : réseau de neurones, 1000 simulations",lv_reseau:"8 : réseau de neurones, 3000 simulations",m_aiTxt:"Neuf niveaux, de 0 à 8 : les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones, de plus en plus de simulations.",st_autoPass:"Aucun coup possible : vous passez.",
+ lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orangeIs:"Orange (commence)",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : réunir tous vos oiseaux du ciel en une seule nuée contiguë. Les oiseaux sont illimités ; 3 débutent dans les nids près des coins. Orange commence.</li>
  <li>À votre tour, soit vous <b>ajoutez un oiseau</b>, soit vous <b>faites voler</b> des oiseaux.</li>
@@ -265,12 +265,12 @@ const VO_I18N={fr:{
  <li><b>Régions</b> : si votre coup laisse les oiseaux adverses sans chemin ouvert entre eux (points vides ou leurs propres oiseaux), vous choisissez la région qui reste ; les oiseaux des autres régions s'envolent et retournent dans la réserve adverse. S'il ne lui reste qu'une nuée, l'adversaire gagne.</li>
  <li><b>Passer</b> : seulement sans vol possible et si vous ne pouvez ajouter que dans des zones closes par vos propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li>
  <li><b>Jouer</b> : pour ajouter un oiseau, cliquez un point libre ; pour un vol, cliquez un oiseau (ou plusieurs alignés, un clic par oiseau), puis le point d'arrivée. Au survol, l'oiseau ajouté ou le vol s'affiche en transparence ; cliquer un oiseau provisoire revient en arrière ; cliquer ailleurs abandonne la sélection. Si le coup coupe les oiseaux adverses en régions, choisissez celle qui reste (Garder A, Garder B…, ou un clic sur un de ses oiseaux). Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Passer, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, neuf niveaux, de 0 à 8 (un réseau de neurones à partir de 2), avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, onze niveaux, de 0 à 10 (un réseau de neurones à partir de 2), avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",
- lv_debutant:"0: greedy, at random",lv_moyen:"1: greedy",lv_nn16:"2: neural network, 16 simulations",lv_nn32:"3: neural network, 32 simulations",lv_nn64:"4: neural network, 64 simulations",lv_nn150:"5: neural network, 150 simulations",lv_nn400:"6: neural network, 400 simulations",lv_nn1000:"7: neural network, 1000 simulations",lv_reseau:"8: neural network, 3000 simulations",m_aiTxt:"Nine levels, from 0 to 8: levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations.",st_autoPass:"No move available: you pass.",
+ lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",rm_ask:"{n} offers a new game, colours swapped.",orangeIs:"Orange (plays first)",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring all your birds in the sky together into one contiguous flock. Birds are unlimited; 3 start in the nests near the corners. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
@@ -279,12 +279,12 @@ const VO_I18N={fr:{
  <li><b>Regions</b>: if your move leaves the opponent's birds with no open path between them (empty points or their own birds), you choose one region that stays; the birds in the other regions fly away and return to the opponent's reserve. If the opponent then has a single flock, they win.</li>
  <li><b>Pass</b>: only when you have no flight and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row make a draw.</li>
  <li><b>Playing</b>: to add a bird, click an empty point; for a flight, click a bird (or several in line, one click per bird), then the landing point. Hovering shows the bird added or the flight in transparency; clicking a provisional bird goes back one step; clicking elsewhere drops the selection. If the move splits the opponent's birds into regions, choose the one that stays (Keep A, Keep B…, or a click on one of its birds). The move commands are in the bar under the board: Reset, Pass, Confirm; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, nine levels, from 0 to 8 (a neural network from 2 on), with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eleven levels, from 0 to 10 (a neural network from 2 on), with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
 },es:{
  mq_q:"¿Quieres jugar con Naranja (primero) o con Azul?",mq_1:"Naranja",mq_2:"Azul",
- lv_debutant:"0: voraz al azar",lv_moyen:"1: voraz",lv_nn16:"2: red neuronal, 16 simulaciones",lv_nn32:"3: red neuronal, 32 simulaciones",lv_nn64:"4: red neuronal, 64 simulaciones",lv_nn150:"5: red neuronal, 150 simulaciones",lv_nn400:"6: red neuronal, 400 simulaciones",lv_nn1000:"7: red neuronal, 1000 simulaciones",lv_reseau:"8: red neuronal, 3000 simulaciones",m_aiTxt:"Nueve niveles, de 0 a 8: los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones.",st_autoPass:"Ninguna jugada posible: pasas.",
+ lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",st_autoPass:"Ninguna jugada posible: pasas.",
  needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orangeIs:"Naranja (empieza)",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",w_pass:"los dos jugadores han pasado",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: reunir todos tus pájaros del cielo en una sola bandada contigua. Los pájaros son ilimitados; 3 empiezan en los nidos cerca de las esquinas. Naranja empieza.</li>
  <li>En tu turno, o bien <b>añades un pájaro</b>, o bien <b>haces volar</b> pájaros.</li>
@@ -293,7 +293,7 @@ const VO_I18N={fr:{
  <li><b>Regiones</b>: si tu jugada deja a los pájaros adversarios sin camino abierto entre ellos (puntos vacíos o sus propios pájaros), eliges la región que se queda; los pájaros de las demás regiones levantan el vuelo y vuelven a la reserva adversaria. Si al adversario solo le queda una bandada, gana.</li>
  <li><b>Pasar</b>: solo si no hay vuelo posible y únicamente puedes añadir en zonas cerradas por tus propios pájaros (o en ninguna parte). Dos pases seguidos: tablas.</li>
  <li><b>Jugar</b>: para añadir un pájaro, haz clic en un punto libre; para un vuelo, haz clic en un pájaro (o en varios alineados, un clic por pájaro) y luego en el punto de llegada. Al pasar el ratón, el pájaro añadido o el vuelo se muestra en transparencia; hacer clic en un pájaro provisional retrocede un paso; hacer clic en otro sitio anula la selección. Si la jugada corta los pájaros adversarios en regiones, elige la que se queda (Conservar A, Conservar B…, o un clic en uno de sus pájaros). Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Pasar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, nueve niveles, de 0 a 8 (una red neuronal a partir de 2), con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, once niveles, de 0 a 10 (una red neuronal a partir de 2), con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
  <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo es un juego de Dieter Stein (2010). Reglas: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Conservar {r}"
 }};
@@ -1023,23 +1023,23 @@ return {search, load, X, Search};
 // 500 to 1000 network evaluations a second on a recent computer) · time, a cap in ms for slower devices, which stop
 // short of `sims` · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
 const NN_NET='volo-net.onnx?v=112';
-// The ladder (08.11.2026, network n° 78, 60 games a pair, ~/volo-ia/site/ladder.sh, runs/ref/ladder4 and 5): each
-// level beats the one below by 66-82 % (moyen→nn16 66 %, nn16→nn32 73 %, nn32→nn64 69 %, nn64→nn150 77 %, nn150→nn400
-// 78 %, nn400→nn1000 80 %, nn1000→reseau 82 %; debutant→moyen 83-88 % on 06.11). With this network 1700 simulations
-// no longer beat 1000 (49 %): that level is gone, and nn16 and nn32 fill the gap above moyen (moyen→nn64 was 88 %).
-// The network levels play with a little randomness
-// (temp .3) for variety, except the strongest. MCTS3, the former 3 s level: what answers when the network cannot load.
+// The ladder (10.11.2026, network n° 112, outils/aitools/nn/volo_niveaux.sh, 300 games a pair, res/volo112/niveaux.md):
+// each level beats the one below by 74-78 % (wins + half the draws, ±5); level 10, the strongest, beats 9 by 83 %.
+// The network levels play without randomness (temp 0): with a little (.3), few simulations lose much of their strength.
+// MCTS3, the former 3 s level: what answers when the network cannot load.
 const MCTS3={algo:'mcts',sims:1e7,time:3000,cut:0,cellsIn:12,scale:1,c:.5};
 const LEVELS={
-  debutant:{algo:'greedy',temp:.6},
-  moyen:{algo:'greedy',exact:1},
-  nn16:{algo:'nn',sims:16,temp:.3,time:10000,net:NN_NET},
-  nn32:{algo:'nn',sims:32,temp:.3,time:10000,net:NN_NET},
-  nn64:{algo:'nn',sims:64,temp:.3,time:10000,net:NN_NET},
-  nn150:{algo:'nn',sims:150,temp:.3,time:10000,net:NN_NET},
-  nn400:{algo:'nn',sims:400,temp:.3,time:10000,net:NN_NET},
-  nn1000:{algo:'nn',sims:1000,temp:.3,time:10000,net:NN_NET},
-  reseau:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
+  l0:{algo:'greedy',temp:.6},
+  l1:{algo:'greedy',exact:1,temp:.7},
+  l2:{algo:'nn',sims:1,time:10000,net:NN_NET},
+  l3:{algo:'nn',sims:6,time:10000,net:NN_NET},
+  l4:{algo:'nn',sims:10,time:10000,net:NN_NET},
+  l5:{algo:'nn',sims:22,time:10000,net:NN_NET},
+  l6:{algo:'nn',sims:50,time:10000,net:NN_NET},
+  l7:{algo:'nn',sims:130,time:10000,net:NN_NET},
+  l8:{algo:'nn',sims:300,time:10000,net:NN_NET},
+  l9:{algo:'nn',sims:700,time:10000,net:NN_NET},
+  l10:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
 const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
@@ -1060,7 +1060,7 @@ const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,
   enc,describe,newUi,preparing,cancel:cancelPrep,
   board:voBoard,turnStatus:voTurnStatus,
-  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  levels:LEVELS,levelDefault:'l2',hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\n'+VoloNN.toString()+'\nconst VA=VoloAI(VoloEngine());function aiSearch(pos,opt){return VA.search(pos,opt);}'+
     // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
     // if the network cannot load (offline, old browser), the MCTS 3 s level answers instead
