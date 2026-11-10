@@ -231,7 +231,7 @@ function TintasEngine(){
 const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
- lv_n0:"0 (au hasard)",lv_n1:"1",lv_n2:"2",lv_n3:"3",lv_n4:"4",lv_n5:"5",lv_n6:"6",lv_n7:"7",lv_n8:"8",lv_n9:"9",lv_n10:"10",lv_n11:"11 (le plus fort)",m_aiTxt:"Douze niveaux, de 0 (au hasard) à 11, pour s'entraîner.",
+ lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10",lv_l11:"Niveau 11, le plus fort",m_aiTxt:"Douze niveaux, de 0 à 11 : chacun bat le précédent environ trois parties sur quatre.",
  title:"Tintas",lede:"Un pion commun, sept couleurs : collectionnez-en une.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
@@ -252,7 +252,7 @@ const TI_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
- lv_n0:"0 (random)",lv_n1:"1",lv_n2:"2",lv_n3:"3",lv_n4:"4",lv_n5:"5",lv_n6:"6",lv_n7:"7",lv_n8:"8",lv_n9:"9",lv_n10:"10",lv_n11:"11 (strongest)",m_aiTxt:"Twelve levels, from 0 (random) to 11, to practise.",
+ lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10",lv_l11:"Level 11, the strongest",m_aiTxt:"Twelve levels, from 0 to 11: each one beats the one below about three games in four.",
  title:"Tintas",lede:"One shared pawn, seven colours: collect a full set.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
@@ -273,7 +273,7 @@ const TI_I18N={fr:{
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Original rules: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, Creative Commons BY-NC 4.0 licence.</p>`
 },es:{
- lv_n0:"0 (al azar)",lv_n1:"1",lv_n2:"2",lv_n3:"3",lv_n4:"4",lv_n5:"5",lv_n6:"6",lv_n7:"7",lv_n8:"8",lv_n9:"9",lv_n10:"10",lv_n11:"11 (el más fuerte)",m_aiTxt:"Doce niveles, de 0 (al azar) a 11, para entrenarse.",
+ lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10",lv_l11:"Nivel 11, el más fuerte",m_aiTxt:"Doce niveles, de 0 a 11: cada uno gana al anterior unas tres partidas de cada cuatro.",
  title:"Tintas",lede:"Un peón común, siete colores: colecciona uno.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",firstIs:"Quién empieza",
  endTurn:"Terminar el turno",endTurnS:"Terminar",confirmTurn:"Confirmar el turno",
  t_cont:"Puedes continuar con una pieza {c}, o terminar el turno.",t_pending:"Turno terminado: confírmalo, o reinicia.",
@@ -548,31 +548,28 @@ return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dis
   setEV:o=>{EV={...EV,...o};mkV();},EV:()=>EV};
 }
 /*AIEND*/
-// Levels: plain parameters for TintasAI().search. Twelve steps, each winning about 70-78 % of its games against the one
-// below and 82-92 % against the one two below (400 games per pair, same boards both ways, first player alternated;
-// tournaments and tool: Dropbox outils/tintas_niveaux, 05.11.2026). algo: 'random' · 'ab' alpha-beta on the distance to a
-// win (depth in turns; temp, a softmax over the root turns, fills the gaps between depths) · 'mcts' UCT with short
-// playouts (see common/ai.js): sims (time is only a cap, so the strength does not depend on the machine) · time, the cap
-// (ms) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration · scale,
-// evaluation points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout turns whose
-// colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening · temp
-// (default 0), final choice by visits^(1/temp). The former levels sit at about n6 (Débutant, 300 sims) and n8 (Moyen,
-// 2000); the hints keep the former Fort (100000).
+// The ladder (10.11.2026, outils/aitools/res/tintas/niveaux.md, 300 games a pair): each level beats the one below by
+// 74-78 % (no draws in Tintas; level 11, the strongest, beats 10 by 78 %). algo: 'random' · 'ab' alpha-beta on the
+// distance to a win (depth in turns; temp, a softmax over the root turns, fills the gaps between depths) · 'mcts' UCT
+// with short playouts (see common/ai.js): sims (time is only a cap, so the strength does not depend on the machine) ·
+// time, the cap (ms) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration ·
+// scale, evaluation points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout
+// turns whose colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening.
 const MC={algo:'mcts',time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
 const LEVELS={
-  n0:{algo:'random'},
-  n1:{algo:'ab',depth:1,temp:2},
-  n2:{algo:'ab',depth:1},
-  n3:{algo:'ab',depth:2,temp:.9},
-  n4:{algo:'ab',depth:2},
-  n5:{algo:'ab',depth:4},
-  n6:{...MC,sims:150},
-  n7:{...MC,sims:500},
-  n8:{...MC,sims:1500},
-  n9:{...MC,sims:5000},
-  n10:{...MC,sims:15000},
-  n11:{...MC,sims:50000,time:2500}};
-const HINT={...MC,sims:100000,time:2500};
+  l0:{algo:'random'},
+  l1:{algo:'ab',depth:1,temp:2},
+  l2:{algo:'ab',depth:1},
+  l3:{algo:'ab',depth:2,temp:.85},
+  l4:{algo:'ab',depth:3,temp:.45},
+  l5:{algo:'ab',depth:4},
+  l6:{...MC,sims:200},
+  l7:{...MC,sims:600},
+  l8:{...MC,sims:1800},
+  l9:{...MC,sims:6000},
+  l10:{...MC,sims:30000},
+  l11:{...MC,sims:300000,time:5000}};
+const HINT=LEVELS.l11;
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: its score is a logit (×scale) of its winning chances, or a sure result
@@ -587,7 +584,7 @@ const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   enc:encT,describe:txtOf,newUi,preparing,cancel:cancelPrep,
   board:tiBoard,turnStatus:tiTurnStatus,
   pendText:()=>[t('t_pending'),t('confirmTurn')],
-  levels:LEVELS,levelDefault:'n4',hintLevel:HINT,
+  levels:LEVELS,levelDefault:'l4',hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+TintasEngine.toString()+'\n'+TintasAI.toString()+'\nconst TA=TintasAI(TintasEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TintasAI(E)).search(aiPos(st),opt),
   evalInfo:tiEvalInfo,

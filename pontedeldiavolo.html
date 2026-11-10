@@ -285,13 +285,73 @@ function hasMove(st,p){
   return legalBridges(st,p).length>0;
 }
 function canPass(st,p){for(let c=0;c<NN;c++) if(canPlace(st,p,c)) return false; return true;}
+// Early end: is the result frozen for good? The test is exact up to one cap (below), and always safe: when it cannot
+// prove the result frozen, the game goes on. It rests on three facts of the rules: tiles and bridges are never removed,
+// islands never grow, and a square where a colour may legally place a tile can only stop being so (every rule adds
+// constraints as tiles arrive: groups grow, islands stay, squares get filled or covered), whoever plays. Hence any tile
+// p will ever place lies in L = legalCells(st,p) today, and any sequence of p's placements that is legal in the future
+// is legal today, in the same order, from the same position. The result is points, then islands, then bridges; the
+// points of p change only when a new island appears or two networks that both hold islands get joined (a bridge or a
+// tile joining a network that holds no island changes nothing). So the result is frozen for p when:
+//  (1) no new island can ever appear: in each 4-connected component of (p's sandbank tiles ∪ L), no order of placing
+//      some of its free squares ever makes a group of four (searched exhaustively; a component with more than
+//      FIX_MAX free squares is simply deemed open, so the game goes on);
+//  (2) no two networks holding islands can ever be joined: the joins still possible are the components above (a
+//      component holding tiles of two networks is a possible join by tiles) and the bridges still buildable (a span
+//      whose ends are p's unbridged tiles or squares of L, over free water today, crossing no bridge on the board, and
+//      such that placing the free end(s) in either order then bridging is legal). Networks, and tile-less components
+//      (future sandbanks), are the nodes of a graph with those joins as edges: no connected part may hold two networks
+//      with islands. A bridge between two squares of one network is redundant: it never changes the count;
+//  (3) only when points and islands are tied between the two colours, the bridge count decides: then any bridge still
+//      buildable keeps the game going.
+// Frozen for both colours ⇒ no legal move, now or after any sequence of moves, changes the result: the game ends (w_fixed).
+const FIX_MAX=12;
+function islandReachable(st,p,fr){const w=cloneState(st),seen=new Set();
+  const rec=mask=>{if(seen.has(mask))return false;seen.add(mask);
+    for(let i=0;i<fr.length;i++){if(mask&(1<<i))continue;const c=fr[i];if(!canPlace(w,p,c))continue;
+      w.cells[c]=p;const hit=group(w,c,p).length===4||rec(mask|(1<<i));w.cells[c]=0;if(hit)return true;}
+    return false;};
+  return rec(0);}
+function bridgeReachable(st,p,a,e){
+  for(const order of [[a,e.b],[e.b,a]]){const w=cloneState(st);let ok=true;
+    for(const x of order) if(w.cells[x]!==p){if(!canPlace(w,p,x)){ok=false;break;}w.cells[x]=p;}
+    if(ok&&canBridge(w,p,a,e))return true;}
+  return false;}
+function scoreFixed(st){
+  const S1=score(st,1),S2=score(st,2),tied=S1.pts===S2.pts&&S1.islands===S2.islands;
+  for(const p of [1,2]){
+    const L=legalCells(st,p),free=new Uint8Array(NN),pot=new Uint8Array(NN),comp=new Int16Array(NN).fill(-1);
+    for(const c of L){free[c]=1;pot[c]=1;}
+    const {gid,groups}=analyze(st,p),G=groups.length,par=new Int16Array(G).map((_,i)=>i);   // networks: groups joined by bridges
+    for(const B of st.bridges) if(B.o===p) union(par,gid[B.a],gid[B.b]);
+    const isl=new Int16Array(G); for(const g of groups){if(g.length<4) for(const c of g) pot[c]=1; else isl[find(par,gid[g[0]])]++;}
+    const compNet=[];   // per component: the network of its tiles (-1: none)
+    for(let c=0;c<NN;c++) if(pot[c]&&comp[c]<0){
+      const k=compNet.length,q=[c]; comp[c]=k;
+      for(let i=0;i<q.length;i++) for(const n of NB4[q[i]]) if(pot[n]&&comp[n]<0){comp[n]=k;q.push(n);}
+      let net=-1; for(const x of q) if(st.cells[x]){const r=find(par,gid[x]);if(net>=0&&r!==net) return false;net=r;}   // (2) join by tiles
+      compNet.push(net);
+      if(q.length<4) continue;
+      const fr=q.filter(x=>!st.cells[x]); if(fr.length>FIX_MAX||islandReachable(st,p,fr)) return false;}   // (1)
+    // graph of possible joins: nodes = networks (0..G-1) and tile-less components (G+k)
+    const node=c=>st.cells[c]?find(par,gid[c]):compNet[comp[c]]>=0?compNet[comp[c]]:G+comp[c];
+    const end=c=>free[c]||(st.cells[c]===p&&!st.bridged[c]),par2=new Int16Array(G+compNet.length).map((_,i)=>i);
+    for(let a=0;a<NN;a++) if(end(a)) for(const e of BR[a])
+      if(e.b>a&&end(e.b)&&e.cov.every(x=>!st.cells[x]&&!st.covered[x])&&!st.bridges.some(B=>crosses(a,e.b,B.a,B.b))&&bridgeReachable(st,p,a,e)){
+        if(tied) return false;   // (3)
+        union(par2,node(a),node(e.b));}
+    const cnt=new Int16Array(G+compNet.length);
+    for(let g=0;g<G;g++) if(isl[g]&&++cnt[find(par2,g)]>1) return false;   // (2) two island networks joinable
+  }
+  return true;
+}
 /*END*/
 // Ponte strings, merged over the shared ones (core.js)
 const PD_I18N={fr:{
  title:"Ponte del Diavolo",lede:"Bâtissez des îles de quatre tuiles et reliez-les par des ponts.",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  needConfirm:"Confirmer chaque coup",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Terminer le tour",passEnd:"Passer et terminer",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Terminer",passEndS:"Passer",
  pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
- lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",
+ lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",lg_fixed:"Plus aucun coup ne peut changer le score : fin de la partie.",w_fixed:", plus aucun coup ne peut changer le score",
  st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
  pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",
  w_score:"{w} à {l}{tb}",w_tie:"égalité parfaite, {w} à {l}{tb}",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
@@ -302,7 +362,7 @@ const PD_I18N={fr:{
  <li>Pont : entre deux de vos tuiles, à deux cases d'écart (en ligne droite ou en diagonale) ou à un saut de cavalier. Les cases qu'il enjambe doivent être de l'eau.</li>
  <li>Une tuile porte au plus un pont. Les ponts ne se croisent jamais. Rien ne se pose sous un pont.</li>
  <li>Ouverture : le premier joueur pose deux tuiles claires ; le second choisit sa couleur. Les foncés jouent ensuite.</li>
- <li>Fin : si les foncés passent, la partie s'arrête aussitôt. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. On ne peut passer que si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément.</li>
+ <li>Fin : si les foncés passent, la partie s'arrête aussitôt. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. On ne peut passer que si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément. La partie s'arrête aussi d'elle-même dès que plus aucun coup, de l'un ou de l'autre, ne peut changer le score.</li>
  <li>Chaque groupe d'îles reliées par des ponts (les bancs de sable servent de relais) rapporte :
  <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
  <li>Départage : le plus d'îles, puis le plus de ponts.</li>
@@ -313,7 +373,7 @@ const PD_I18N={fr:{
  title:"Ponte del Diavolo",lede:"Build islands of four tiles and link them with bridges.",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
  needConfirm:"Confirm each move",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",
  pts:"pts",isl:"isl.",brg:"br.",ptsL:"points",islL:"islands",brgL:"bridges",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
- lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",
+ lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",lg_fixed:"No move can change the score any more: the game is over.",w_fixed:", no move can change the score any more",
  st_opening:"Place the two opening light tiles.",st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
  pend_pass:"Pass: Dark will play one last turn.",pend_passEnd:"Pass and end the game.",
  w_score:"{w} to {l}{tb}",w_tie:"a perfect tie, {w} to {l}{tb}",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
@@ -324,7 +384,7 @@ const PD_I18N={fr:{
  <li>Bridge: between two of your tiles, two squares apart (straight or diagonal) or a knight's move apart. The squares it spans must be water.</li>
  <li>A tile carries at most one bridge. Bridges never cross. Nothing may be placed under a bridge.</li>
  <li>Opening: the first player places two light tiles; the second player chooses a colour. Dark then moves.</li>
- <li>End: if Dark passes, the game ends at once. If Light passes, Dark plays one last turn, then the game ends. You may only pass when no tile can be placed; a player with no move at all must pass.</li>
+ <li>End: if Dark passes, the game ends at once. If Light passes, Dark plays one last turn, then the game ends. You may only pass when no tile can be placed; a player with no move at all must pass. The game also ends by itself as soon as no move, by either side, can change the score any more.</li>
  <li>Each group of islands linked by bridges (sandbanks included as links) scores:
  <div class="scale"><span>1 island: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
  <li>Tie-break: most islands, then most bridges.</li>
@@ -335,7 +395,7 @@ const PD_I18N={fr:{
  title:"Ponte del Diavolo",lede:"Construye islas de cuatro losetas y únelas con puentes.",firstIs:"Primer jugador (coloca las dos losetas claras de apertura)",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
  needConfirm:"Confirmar cada jugada",takeLight:"Tomar las claras",playDark:"Jugar las oscuras",endTurn:"Terminar el turno",passEnd:"Pasar y terminar",takeLightS:"Claras",playDarkS:"Oscuras",endTurnS:"Terminar",passEndS:"Pasar",
  pts:"pts",isl:"isl.",brg:"pte.",ptsL:"puntos",islL:"islas",brgL:"puentes",light:"Claras",dark:"Oscuras",mv_bridge:"puente",lg_pass:"pasa",lg_takeL:"toma las claras",lg_dark:"juega las oscuras",
- lg_forced:"{c}: ninguna jugada posible, pasa.",lg_lastTurn:"Las claras han pasado: las oscuras juegan un último turno.",
+ lg_forced:"{c}: ninguna jugada posible, pasa.",lg_lastTurn:"Las claras han pasado: las oscuras juegan un último turno.",lg_fixed:"Ninguna jugada puede ya cambiar el marcador: fin de la partida.",w_fixed:", ninguna jugada puede ya cambiar el marcador",
  st_opening:"Coloca las dos losetas claras de apertura.",st_pie:"¿Tomas las claras o juegas las oscuras?",st_oneLeft:"No queda casilla para una segunda loseta: termina tu turno con una sola.",st_lastTurn:"Las claras han pasado: es tu último turno.",
  pend_pass:"Pasar: las oscuras jugarán un último turno.",pend_passEnd:"Pasar y terminar la partida.",
  w_score:"{w} a {l}{tb}",w_tie:"empate perfecto, {w} a {l}{tb}",tb_isl:" (decidido por las islas)",tb_brg:" (decidido por los puentes)",
@@ -346,7 +406,7 @@ const PD_I18N={fr:{
  <li>Puente: entre dos de tus losetas, a dos casillas de distancia (en línea recta o en diagonal) o a un salto de caballo. Las casillas que salva deben ser agua.</li>
  <li>Una loseta lleva como máximo un puente. Los puentes nunca se cruzan. Nada se coloca bajo un puente.</li>
  <li>Apertura: el primer jugador coloca dos losetas claras; el segundo elige su color. Luego juegan las oscuras.</li>
- <li>Final: si las oscuras pasan, la partida se detiene de inmediato. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. Solo se puede pasar si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente.</li>
+ <li>Final: si las oscuras pasan, la partida se detiene de inmediato. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. Solo se puede pasar si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente. La partida también se detiene por sí sola en cuanto ninguna jugada, de uno u otro, puede ya cambiar el marcador.</li>
  <li>Cada grupo de islas unidas por puentes (los bancos de arena sirven de enlace) vale:
  <div class="scale"><span>1 isla: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
  <li>Desempate: más islas, luego más puentes.</li>
@@ -358,7 +418,8 @@ const PD_I18N={fr:{
 // ---------- game state and moves ----------
 // The position is the engine's state plus phase ('opening': seat 0 places two light tiles · 'pie': seat 1 takes Light
 // or plays Dark · 'play' · 'over'), colorA (colour of seat 0 once chosen: 1 light, 2 dark), toMove (colour to move),
-// finalTurn (Light has passed: Dark's last turn) and turn (seat to move, for the shared code).
+// finalTurn (Light has passed: Dark's last turn), fixed (the game ended early: the result could not change any more,
+// see scoreFixed) and turn (seat to move, for the shared code).
 // Move codes: 't12.34' two tiles (placement order; 't12' a single tile when no square is left for a second one),
 // 'b12-34' a bridge (smaller square first), 'x' pass, 'L' / 'D' the colour choice (seat 1 takes Light / plays Dark).
 // A player with no move at all passes automatically: replay applies it after the move before (noted in its log entry).
@@ -369,8 +430,8 @@ const NAME=c=>t(c===1?'light':'dark');
 const colorOf=(s,seat)=>s.colorA?(seat===0?s.colorA:3-s.colorA):(seat===0?1:null);
 const seatOf=(s,c)=>c===s.colorA?0:1;
 const mover=s=>s.phase==='opening'?1:s.toMove;
-function initSt(){return Object.assign(newState(),{phase:'opening',colorA:null,toMove:1,finalTurn:false,turn:0});}
-function cloneSt(s){return Object.assign(cloneState(s),{phase:s.phase,colorA:s.colorA,toMove:s.toMove,finalTurn:s.finalTurn,turn:s.turn});}
+function initSt(){return Object.assign(newState(),{phase:'opening',colorA:null,toMove:1,finalTurn:false,fixed:false,turn:0});}
+function cloneSt(s){return Object.assign(cloneState(s),{phase:s.phase,colorA:s.colorA,toMove:s.toMove,finalTurn:s.finalTurn,fixed:s.fixed,turn:s.turn});}
 function parse(code){code=String(code);if(code==='x'||code==='L'||code==='D')return {t:code};
   let m=/^t(\d{1,2})(?:\.(\d{1,2}))?$/.exec(code);if(m){const cells=[+m[1]];if(m[2]!==undefined)cells.push(+m[2]);return cells[0]===cells[1]?null:{t:'t',cells};}
   m=/^b(\d{1,2})-(\d{1,2})$/.exec(code);return m?{t:'b',a:Math.min(+m[1],+m[2]),b:Math.max(+m[1],+m[2])}:null;}
@@ -391,13 +452,17 @@ function step(s,m){if(!m)return null;const n=cloneSt(s),e={p:s.turn,col:null,m,n
   else if(m.t==='x'){if(!canPass(s,p))return null;if(passOn(n))e.notes.push({k:'lg_lastTurn'});}
   else return null;
   if(m.t!=='x'){if(s.finalTurn)n.phase='over';else{n.toMove=3-p;n.turn=seatOf(n,n.toMove);}}
+  // the result cannot change any more (scoreFixed): the game ends here, noted under this move
+  if(n.phase==='play'&&scoreFixed(n)){n.phase='over';n.fixed=true;e.notes.push({k:'lg_fixed'});}
   while(n.phase==='play'&&!hasMove(n,n.toMove)){e.notes.push({k:'lg_forced',c:n.toMove});if(passOn(n))e.notes.push({k:'lg_lastTurn'});}
   return {st:n,e};}
 function tieNote(a,b){return a.pts===b.pts?(a.islands!==b.islands?t('tb_isl'):a.bridges!==b.bridges?t('tb_brg'):''):'';}
 function compare(a,b){return a.pts!==b.pts?Math.sign(a.pts-b.pts):a.islands!==b.islands?Math.sign(a.islands-b.islands):Math.sign(a.bridges-b.bridges);}
-// end of the game on the board: points, then islands, then bridges (the text is the reason the shared code shows)
+// end of the game on the board: points, then islands, then bridges (the text is the reason the shared code shows);
+// an early end (st.fixed) says so after the score
 function result(st){const a=score(st,colorOf(st,0)),b=score(st,colorOf(st,1)),c=compare(a,b),tb=tieNote(a,b),[w,l]=c>=0?[a,b]:[b,a];
-  return c===0?{w:-1,why:t('w_tie',{w:w.pts,l:l.pts,tb})}:{w:c>0?0:1,why:t('w_score',{w:w.pts,l:l.pts,tb})};}
+  const why=t(c===0?'w_tie':'w_score',{w:w.pts,l:l.pts,tb})+(st.fixed?t('w_fixed'):'');
+  return {w:c===0?-1:c>0?0:1,why};}
 function pdReplay(rules,moves){let st=initSt();const log=[];let last=null,over=null;
   for(const code of moves){const r=step(st,parse(code));if(!r){over={w:-1,why:'w_bad'};break;}
     st=r.st;log.push(r.e);last={p:r.e.col,m:r.e.m.t==='t'||r.e.m.t==='b'?r.e.m:null};
