@@ -61,9 +61,10 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 .accTile:hover:not(:disabled){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--panel))}
 .accTile.cur{border-color:var(--accent);border-width:1.5px}
 @media (max-width:700px){
-  /* téléphone : les cadres centrés, le plateau en bas, retourné (le but et l'anneau gagnant en bas), fondu vers le haut */
-  .accBg::before{inset:0;width:auto;background-size:auto 88%;background-position:center top;transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom,#000 25%,rgb(0 0 0/.35) 70%,rgb(0 0 0/.25) 80%,transparent 89%);mask-image:linear-gradient(to bottom,#000 25%,rgb(0 0 0/.35) 70%,rgb(0 0 0/.25) 80%,transparent 89%)}
-  .accBg::after{background:linear-gradient(to top,color-mix(in srgb,var(--bg) 25%,transparent) 0,color-mix(in srgb,var(--bg) 50%,transparent) 35%,color-mix(in srgb,var(--bg) 55%,transparent) 100%)}
+  /* téléphone : les cadres centrés ; le plateau en bas, retourné (le but et l'anneau gagnant en bas), décalé vers la droite
+     (but aux trois quarts de la largeur) ; fondu du coin bas droit vers le coin haut gauche (la seconde couche efface le bord haut du bois) */
+  .accBg::before{inset:0;width:auto;background-size:auto 88%;background-position:8vw top;transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%),linear-gradient(to bottom,#000 80%,transparent 88%);mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%),linear-gradient(to bottom,#000 80%,transparent 88%);-webkit-mask-composite:source-in;mask-composite:intersect}
+  .accBg::after{background:linear-gradient(to top left,color-mix(in srgb,var(--bg) 20%,transparent) 0,color-mix(in srgb,var(--bg) 50%,transparent) 40%,color-mix(in srgb,var(--bg) 60%,transparent) 100%)}
   #setup:not([hidden]){padding-bottom:2vh}}
 @media (max-width:420px){.accTile{min-height:112px;padding:12px}.accTile b{font-size:1.02rem}}
 </style>
