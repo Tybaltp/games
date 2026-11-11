@@ -43,9 +43,9 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 </style>
 <style>
 /* accueil : ce qui est propre à Volo ; le reste dans common/accueil.css. Le fond : une partie de l'entraînement de l'IA, coup 147
-   (choix et cadrage de Thibault), plateau coupé à droite ; le bord coupé tombe au bord de l'écran (--accRight à 0 ; html:root
+   (choix et cadrage de Thibault), plateau coupé à droite ; sans le cadre du plateau : sa couleur se prolonge partout et se fond ; le bord coupé tombe au bord de l'écran (--accRight à 0 ; html:root
    pour passer devant common/accueil.css). */
-:root{--accImgL:url(../img/accueil/volo.svg);--accImgD:url(../img/accueil/volo-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.75351;--accTintL:#2f6fd6;--accTintD:#6aa2f5}
+:root{--accImgL:url(../img/accueil/volo.svg);--accImgD:url(../img/accueil/volo-dark.svg);--accWoodL:rgb(165,198,221);--accWoodD:rgb(16,33,48);--accR:0.75351;--accTintL:#2f6fd6;--accTintD:#6aa2f5}
 html:root{--accRight:0px}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
