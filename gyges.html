@@ -38,20 +38,21 @@ html.nocoords{--board-ar:388/552}
    retenu, ces règles vont dans common/games.css pour les neuf jeux et disparaissent de cette page. */
 html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
 #setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:6vh}
-:root{--accImg:url(img/cartes/gyges.svg)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/cartes/gyges-dark.svg)}}
-:root[data-theme="dark"]{--accImg:url(img/cartes/gyges-dark.svg)}
+:root{--accImg:url(img/accueil/gyges.svg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/accueil/gyges-dark.svg)}}
+:root[data-theme="dark"]{--accImg:url(img/accueil/gyges-dark.svg)}
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
-.accBg::before{content:"";position:absolute;inset:0 0 0 auto;width:72%;background:var(--accImg) center/cover no-repeat;
-  -webkit-mask-image:linear-gradient(to left,#000 35%,transparent 92%);mask-image:linear-gradient(to left,#000 35%,transparent 92%)}
+.accBg::before{content:"";position:absolute;top:56px;bottom:3vh;right:3vw;aspect-ratio:388/552;max-width:calc(100vw - 620px);background:var(--accImg) right center/contain no-repeat;
+  -webkit-mask-image:linear-gradient(to left,#000 70%,transparent 100%);mask-image:linear-gradient(to left,#000 70%,transparent 100%)}
+@media (min-width:701px){.accBg::after{display:none}#setup .home{margin-left:0;margin-right:auto}}
 .accBg::after{content:"";position:absolute;inset:0;
   background:radial-gradient(ellipse 34rem 30rem at 50% 52%,var(--bg) 0 38%,color-mix(in srgb,var(--bg) 70%,transparent) 62%,color-mix(in srgb,var(--bg) 20%,transparent) 100%)}
 #setup .home{max-width:520px}
 #setup .home .card,#setup .home details#rulesHome{background:color-mix(in srgb,var(--panel) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 #setup .home .card.primary-card{border-color:var(--line);box-shadow:0 10px 40px rgb(0 0 0/.14)}
 #setup .lede{color:var(--ink);font-weight:500}
-#playBtn,#anaBtn,#modeWrap{display:none!important}
+#playBtn,#anaBtn,#modeWrap,#resumeD{display:none!important}
 .accTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px 14px 13px;min-height:122px;border-radius:12px;
   border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
@@ -61,7 +62,7 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 .accTile:hover:not(:disabled){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--panel))}
 .accTile.cur{border-color:var(--accent);border-width:1.5px}
 @media (max-width:700px){
-  .accBg::before{inset:0 0 auto 0;width:auto;height:58%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,transparent 100%);mask-image:linear-gradient(to bottom,#000 30%,transparent 100%)}
+  .accBg::before{inset:52px 0 auto 0;width:auto;height:52%;aspect-ratio:auto;max-width:none;background-position:center top;-webkit-mask-image:linear-gradient(to bottom,#000 30%,transparent 100%);mask-image:linear-gradient(to bottom,#000 30%,transparent 100%)}
   .accBg::after{background:linear-gradient(to bottom,color-mix(in srgb,var(--bg) 35%,transparent) 0,color-mix(in srgb,var(--bg) 55%,transparent) 30%,var(--bg) 62%)}
   #setup:not([hidden]){justify-content:flex-end;padding-bottom:2vh}}
 @media (max-width:420px){.accTile{min-height:112px;padding:12px}.accTile b{font-size:1.02rem}}
@@ -821,9 +822,9 @@ coreStart();
 // Analyser » puis la liste « Mode de jeu ». La quatrième carte, Analyser, ouvre le choix du socle : créer ou charger une partie. S'appuie sur homeStep() et la liste #modeSel du socle, qui restent la référence.
 (function(){
   const $i=id=>document.getElementById(id),ms=$i('modeSel');
-  Object.assign(I18N.fr,{acc_linkTxt:'Un adversaire sur un autre appareil.',acc_aiTxt:'Contre l’ordinateur, au niveau choisi.',acc_faceTxt:'Deux joueurs, un seul écran.',acc_anaTxt:'Les deux camps : essayer, analyser.'});
-  Object.assign(I18N.en,{acc_linkTxt:'An opponent on another device.',acc_aiTxt:'Against the computer, at the level you choose.',acc_faceTxt:'Two players, one screen.',acc_anaTxt:'Both sides: try things, analyse.'});
-  Object.assign(I18N.es,{acc_linkTxt:'Un adversario en otro dispositivo.',acc_aiTxt:'Contra el ordenador, al nivel elegido.',acc_faceTxt:'Dos jugadores, una sola pantalla.',acc_anaTxt:'Los dos bandos: probar, analizar.'});
+  Object.assign(I18N.fr,{acc_linkTxt:'Un adversaire sur un autre appareil.',acc_aiTxt:'Contre l’ordinateur, au niveau choisi.',acc_faceTxt:'Deux joueurs, un seul écran.',acc_anaTxt:'Créer ou charger une partie.'});
+  Object.assign(I18N.en,{acc_linkTxt:'An opponent on another device.',acc_aiTxt:'Against the computer, at the level you choose.',acc_faceTxt:'Two players, one screen.',acc_anaTxt:'Create or load a game.'});
+  Object.assign(I18N.es,{acc_linkTxt:'Un adversario en otro dispositivo.',acc_aiTxt:'Contra el ordenador, al nivel elegido.',acc_faceTxt:'Dos jugadores, una sola pantalla.',acc_anaTxt:'Crear o cargar una partida.'});
   const bg=document.createElement('div');bg.className='accBg';bg.setAttribute('aria-hidden','true');document.body.prepend(bg);
   const IC={link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
     ai:'<rect x="3.5" y="4.5" width="17" height="11.5" rx="2"/><path d="M9 20h6M12 16v4"/>',
