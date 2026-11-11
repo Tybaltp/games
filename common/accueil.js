@@ -15,7 +15,7 @@
     face:'<circle cx="4" cy="12" r="2.5"/><circle cx="20" cy="12" r="2.5"/><rect x="8.5" y="7" width="7" height="10" rx="1.2"/>',
     ana:'<path d="M4 20l1-4 11-11 3 3-11 11-4 1zM13.5 6.5l3 3"/>'};
   const grid=document.createElement('div');grid.className='accTiles';
-  const modes=[...ms.options].map(o=>o.value).concat('ana');
+  const modes=[...ms.querySelectorAll("option")].map(o=>o.value).concat('ana');
   for(const k of modes){const b=document.createElement('button');b.type='button';b.className='accTile';b.dataset.mode=k;
     b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(IC[k]||'')+'</svg><b data-i18n="'+(k==='ana'?'analyse':'m_'+k)+'"></b><span data-i18n="acc_'+k+'Txt"></span>';
     b.onclick=()=>{if(k==='ana'){homeStep('ana');return;}ms.value=k;ms.onchange();};grid.appendChild(b);}
