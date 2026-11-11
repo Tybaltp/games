@@ -43,7 +43,8 @@ html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 5
 :root[data-theme="dark"]{--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
-.accBg::before{content:"";position:absolute;inset:0 0 0 auto;width:72%;background:var(--accImg) center/100% 100% no-repeat;
+/* grand écran : plateau calé à droite, marge de 24 px à droite et en bas, sous l'en-tête en haut ; bois en aplat autour */
+.accBg::before{content:"";position:absolute;inset:0 0 0 auto;width:72%;background:var(--accImg) right 24px bottom 24px/auto calc(100% - 96px) no-repeat,var(--accWood);
   -webkit-mask-image:linear-gradient(to left,#000 35%,transparent 92%);mask-image:linear-gradient(to left,#000 35%,transparent 92%)}
 .accBg::after{content:"";position:absolute;inset:0;
   background:radial-gradient(ellipse 34rem 30rem at 50% 52%,var(--bg) 0 38%,color-mix(in srgb,var(--bg) 70%,transparent) 62%,color-mix(in srgb,var(--bg) 20%,transparent) 100%)}
