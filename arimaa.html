@@ -528,10 +528,10 @@ function capsRow(box,b,q){const cnt=[0,8,2,2,2,1,1],g=E.sgn(q),gold=q===0,names=
   if(!x)return;sv.setAttribute('width',x-5);sv.setAttribute('viewBox',`0 0 ${x-5} 24`);box.title=t('t_caps',{l:names.join(', ')});box.appendChild(sv);}
 // o: {real, shown, last, pv (turn preview), hl (highlights), setup}
 // Moves drawn as paths, never as rings (one marker per piece). Last turn: a thin, discreet line, a dot on the start square,
-// ending at the edge of the piece; hovering a moved piece shows its own path plainly and dims the others. Turn being
+// ending at the edge of the piece; hovering a moved piece or any square of a path shows that path plainly and dims the others. Turn being
 // prepared: the same lines, vivid, each step numbered 1 to 4 where it crosses into the next square (kept, dimmed, once the turn is validated); a number is a button that goes
 // back to just before that step. Solid: moved by the player; dashed: pushed or pulled.
-let lastEnds=new Map(),stepSpots=new Set();   // end square -> path index, for the hover; places taken by step numbers
+let lastEnds=new Map(),stepSpots=new Set();   // square on a path -> path index, for the hover (the piece's arrival square first); places taken by step numbers
 function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',c=P.pts.map(i=>[X(i)+S/2,Y(i)+S/2]);
   // a step's number sits on the path, where it crosses the edge between the two squares
   // (slid aside along that edge if the place is taken, e.g. a piece crossing the same edge twice)
@@ -548,7 +548,8 @@ function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',
     el('circle',{cx:x,cy:y,r:8,fill:P.own?'var(--hl)':'var(--bink)',stroke:'var(--wood)','stroke-width':1.5},b);
     const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,'font-weight':600,fill:'#06211f'},b);tx.textContent=n;});}
 function lastOver(g,L,shown,top){lastEnds=new Map();stepSpots=new Set();if(!L||!L.det)return;
-  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,top);if(shown[end])lastEnds.set(end,k);});
+  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,top);for(const i of P.pts)if(!lastEnds.has(i))lastEnds.set(i,k);});
+  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];if(shown[end])lastEnds.set(end,k);});
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5});}}
 function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp,.lpn').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
