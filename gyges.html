@@ -62,8 +62,8 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 .accTile.cur{border-color:var(--accent);border-width:1.5px}
 @media (max-width:700px){
   /* téléphone : les cadres centrés, le plateau en bas, retourné (le but et l'anneau gagnant en bas), fondu vers le haut */
-  .accBg::before{inset:auto 0 0 0;width:auto;height:58%;transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom,#000 30%,transparent 100%);mask-image:linear-gradient(to bottom,#000 30%,transparent 100%)}
-  .accBg::after{background:linear-gradient(to top,color-mix(in srgb,var(--bg) 35%,transparent) 0,color-mix(in srgb,var(--bg) 55%,transparent) 30%,var(--bg) 62%)}
+  .accBg::before{inset:0;width:auto;background-size:auto 88%;background-position:center top;transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom,#000 25%,rgb(0 0 0/.35) 70%,rgb(0 0 0/.25) 80%,transparent 89%);mask-image:linear-gradient(to bottom,#000 25%,rgb(0 0 0/.35) 70%,rgb(0 0 0/.25) 80%,transparent 89%)}
+  .accBg::after{background:linear-gradient(to top,color-mix(in srgb,var(--bg) 25%,transparent) 0,color-mix(in srgb,var(--bg) 50%,transparent) 35%,color-mix(in srgb,var(--bg) 55%,transparent) 100%)}
   #setup:not([hidden]){padding-bottom:2vh}}
 @media (max-width:420px){.accTile{min-height:112px;padding:12px}.accTile b{font-size:1.02rem}}
 </style>
