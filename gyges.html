@@ -39,21 +39,22 @@ html.nocoords{--board-ar:388/552}
 html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
 /* Une seule mise en page, quelle que soit la largeur (pas de bascule, pas de saut au redimensionnement) :
    en-tête aligné sur le bloc d'accueil ; description en haut ; cadres centrés dans la place qui reste ;
-   plateau (victoire en haut) calé à droite, hauteur fixée par la fenêtre tant que la largeur suffit, puis centré et réduit ;
+   plateau (victoire en haut), hauteur fixée par la fenêtre, calé à droite (marge 24 px) ; quand la fenêtre se resserre, son bord
+   gauche s'arrête à 8 % de la largeur et c'est la droite du plateau qui sort de l'écran (au téléphone, le but aux trois quarts) ;
    fondu oblique, de la pente des étiquettes de la page principale. */
 #setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding-bottom:2vh}
 #setup .home{max-width:520px;flex:1}#setup .home>.lede{margin-bottom:auto}#setup .home>#rulesHome{margin-bottom:auto}
 body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-left:auto;margin-right:auto}
 :root{--accImg:url(img/accueil/gyges.svg);--accWood:rgb(220,197,156);
-  --accH:min(calc(100vh - 96px),calc((100vw - 48px) * 552 / 388));--accW:calc(var(--accH) * 388 / 552)}
-@supports (height:100dvh){:root{--accH:min(calc(100dvh - 96px),calc((100vw - 48px) * 552 / 388))}}
+  --accH:calc(100vh - 96px);--accW:calc(var(--accH) * 388 / 552);--accX:max(8vw,calc(100vw - 24px - var(--accW)))}
+@supports (height:100dvh){:root{--accH:calc(100dvh - 96px)}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}}
 :root[data-theme="dark"]{--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
-/* la zone du fond : le plateau (marges 24 px à droite et en bas, 72 px en haut, sous l'en-tête) et, à sa gauche, la moitié de
-   sa largeur pour le fondu ; bois en aplat autour du plateau ; fondu à 122° (la coupe des étiquettes) et, sous le plateau, vers le bas */
-.accBg::before{content:"";position:absolute;top:0;right:0;bottom:0;width:calc(var(--accW) * 1.5 + 24px);
+/* la zone du fond suit le plateau (bord gauche en --accX ; 72 px en haut, sous l'en-tête ; 24 px à droite et en bas) : à sa
+   gauche, la moitié de sa largeur pour le fondu ; bois en aplat autour du plateau ; fondu à 122° (la coupe des étiquettes) et, sous le plateau, vers le bas */
+.accBg::before{content:"";position:absolute;top:0;bottom:0;left:calc(var(--accX) - var(--accW) * .5);width:calc(var(--accW) * 1.5 + 24px);
   background:var(--accImg) right 24px top 72px/var(--accW) var(--accH) no-repeat,var(--accWood);
   -webkit-mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px));
   mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px));
