@@ -70,10 +70,10 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
    à droite de 15 % de sa largeur (comme Quarto) ; le plateau laisse de l'espace en haut et en bas (9 % de la hauteur de plus de chaque côté) ; html:root pour passer devant common/accueil.css. */
 :root{--accImgL:url(../img/accueil/ponte.svg);--accImgD:url(../img/accueil/ponte-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#a8761c;--accTintD:#e0a94a}
 html:root{--accTop:calc(72px + 9vh);--accBot:calc(24px + 9vh);--accX:max(var(--accMinX),calc(100vw - var(--accW) * .85))}
-/* cartes de mode neutres (fond et bord du cadre qui les entoure) : l'or de Ponte ne reste que sur l'icône et le bord au survol
-   (choix de Thibault : l'or et le brun des cartes tranchaient trop) */
-html #setup .accTile{background:color-mix(in srgb,var(--panel) 92%,transparent);border-color:var(--line)}
-html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--accTint) 8%,var(--panel));border-color:var(--accTint)}
+/* cartes de mode : la teinte de l'or de Ponte, plus légère que dans le modèle (fond 4 % au lieu de 9 %, bord 18 % au lieu de 30 %,
+   survol 9 % au lieu de 17 %) ; demande de Thibault : en sombre, l'or et le brun des cartes tranchaient trop */
+html #setup .accTile{background:color-mix(in srgb,var(--accTint) 4%,var(--panel));border-color:color-mix(in srgb,var(--accTint) 18%,var(--line))}
+html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--accTint) 9%,var(--panel));border-color:var(--accTint)}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
