@@ -1,5 +1,4 @@
-/* PROVISOIRE (branche accueil-jeu) : l'accueil des pages de jeu, commun aux neuf jeux. Chargé après le style de la page ;
-   ira dans common/games.css quand Thibault le décidera. */
+/* L'accueil des pages de jeu (modèle commun ; aujourd'hui Gygès, Zèrtz, Diagonal Blocks). Chargé après le style de la page. */
 html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
 /* Une seule mise en page, quelle que soit la largeur (pas de bascule, pas de saut au redimensionnement) :
    en-tête aligné sur le bloc d'accueil ; description en haut ; cadres centrés dans la place qui reste ;

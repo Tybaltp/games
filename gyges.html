@@ -34,10 +34,10 @@ html.nocoords{--board-ar:388/552}
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
 </style>
 <style>
-/* accueil (essai, branche accueil-jeu) : ce qui est propre à Gygès ; le reste dans essai-accueil/accueil.css */
+/* accueil : ce qui est propre à Gygès ; le reste dans common/accueil.css */
 :root{--accImgL:url(../img/accueil/gyges.svg);--accImgD:url(../img/accueil/gyges-dark.svg);--accWoodL:rgb(220,197,156);--accWoodD:rgb(86,65,42);--accR:0.70290;--accTintL:#d98f1f;--accTintD:#efa93c}
 </style>
-<link rel="stylesheet" href="essai-accueil/accueil.css">
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gygès</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -856,5 +856,5 @@ function aiSearch(m,opt){return A.search({...m,b:Int8Array.from(m.b)},opt);}`,
   evalInfo:(res,st)=>E.setup(st)?null:evalInfo(res)};
 coreStart();
 </script>
-<script src="essai-accueil/accueil.js"></script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>

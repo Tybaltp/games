@@ -95,11 +95,11 @@ html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop 
 .slot:disabled{opacity:1}
 </style>
 <style>
-/* accueil (essai, branche accueil-jeu) : ce qui est propre à Diagonal Blocks ; le reste dans essai-accueil/accueil.css.
+/* accueil : ce qui est propre à Diagonal Blocks ; le reste dans common/accueil.css.
    L'image est un coin du plateau : son bord droit et son bas tombent au bord de l'écran. */
 :root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil/dblocks-dark.svg);--accWoodL:#f0e1e5;--accWoodD:#1a1315;--accR:1.03006;--accRight:0px;--accBot:0px;--accTintL:#9c2457;--accTintD:#d4588a}
 </style>
-<link rel="stylesheet" href="essai-accueil/accueil.css">
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="diagonalblocks.html"><b id="ttl" style="font-weight:inherit">Diagonal Blocks</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -851,5 +851,5 @@ const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
 coreStart();
 if(mqWide.addEventListener)mqWide.addEventListener('change',placeBlocks);else mqWide.addListener(placeBlocks);
 </script>
-<script src="essai-accueil/accueil.js"></script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>

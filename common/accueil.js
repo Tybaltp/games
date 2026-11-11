@@ -1,5 +1,4 @@
-// PROVISOIRE (branche accueil-jeu) : l'accueil des pages de jeu, commun aux neuf jeux, chargé en fin de page après le script du
-// jeu ; ira dans common/core.js quand Thibault le décidera.
+// L'accueil des pages de jeu (modèle commun ; aujourd'hui Gygès, Zèrtz, Diagonal Blocks), chargé en fin de page après le script du jeu.
 // les modes de jeu en cartes sur l'accueil, au lieu de « Jouer /
 // Analyser » puis la liste « Mode de jeu ». La quatrième carte, Analyser, ouvre le choix du socle : créer ou charger une partie. S'appuie sur homeStep() et la liste #modeSel du socle, qui restent la référence.
 (function(){
