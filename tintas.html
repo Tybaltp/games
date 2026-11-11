@@ -54,8 +54,12 @@ ol.log .cap{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-width:0}
 ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 </style>
 <style>
-/* accueil : ce qui est propre à Tintas ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
-:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#6a3790;--accTintD:#a676d4}
+/* accueil : ce qui est propre à Tintas ; le reste dans common/accueil.css. Le fond reprend la position de la vignette du site
+   (img/cartes/tintas[-dark].svg, sans son dégradé de fond), cadrée sur le plateau, posé sur le fond de la page, coupé à droite comme la capture de Thibault (bord droit en x = 273 :
+   la septième colonne coupée juste après son milieu) ; le bord coupé tombe au bord de l'écran (--accRight à 0 ; html:root pour
+   passer devant common/accueil.css). */
+:root{--accImgL:url(../img/accueil/tintas.svg);--accImgD:url(../img/accueil/tintas-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.71789;--accTintL:#6a3790;--accTintD:#a676d4}
+html:root{--accRight:0px}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
