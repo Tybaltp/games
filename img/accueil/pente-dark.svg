@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="20.0 20.0 620.0 620.0" role="img" aria-label="Pente board">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="86.0 90.0 424.8 484.0" role="img" aria-label="Pente board">
 <rect x="-2000" y="-2000" width="4000" height="4000" fill="rgb(180,141,87)"/>
 <path d="M50 50H610M50 50V610M50 90H610M90 50V610M50 130H610M130 50V610M50 170H610M170 50V610M50 210H610M210 50V610M50 250H610M250 50V610M50 290H610M290 50V610M50 330H610M330 50V610M50 370H610M370 50V610M50 410H610M410 50V610M50 450H610M450 50V610M50 490H610M490 50V610M50 530H610M530 50V610M50 570H610M570 50V610M50 610H610M610 50V610" stroke="rgba(40,26,10,.8)" stroke-width="1.4" fill="none"/>
 <rect x="50" y="50" width="560" height="560" fill="none" stroke="rgba(40,26,10,.8)" stroke-width="2"/>
