@@ -45,9 +45,9 @@
 <style>
 /* accueil : ce qui est propre à Quarto ; le reste dans common/accueil.css. Le fond reprend l'image de la carte d'accueil du site
    (img/cartes/quarto[-dark].svg, sans son dégradé de fond : le plateau repose sur le fond de la page), cadrée sur le plateau entier et sa réserve (fond de la réserve retiré).
-   En grand écran l'image dépasse à droite de 15 % de sa largeur (plateau plus visible, coupé à droite) ; html:root pour passer devant common/accueil.css. */
+   En grand écran l'image dépasse à droite de 16,5 % de sa largeur (plateau plus visible, coupé à droite ; le bord de l'écran tombe juste avant la dernière colonne de la réserve, sans tranche de pièce) ; html:root pour passer devant common/accueil.css. */
 :root{--accImgL:url(../img/accueil/quarto.svg);--accImgD:url(../img/accueil/quarto-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.87054;--accTintL:#6f8f66;--accTintD:#9cb894}
-html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .85))}
+html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
