@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="86.0 90.0 424.8 484.0" role="img" aria-label="Pente board">
+<rect x="-2000" y="-2000" width="4000" height="4000" fill="rgb(196,154,94)"/>
+<path d="M50 50H610M50 50V610M50 90H610M90 50V610M50 130H610M130 50V610M50 170H610M170 50V610M50 210H610M210 50V610M50 250H610M250 50V610M50 290H610M290 50V610M50 330H610M330 50V610M50 370H610M370 50V610M50 410H610M410 50V610M50 450H610M450 50V610M50 490H610M490 50V610M50 530H610M530 50V610M50 570H610M570 50V610M50 610H610M610 50V610" stroke="rgba(58,40,20,.75)" stroke-width="1.4" fill="none"/>
+<rect x="50" y="50" width="560" height="560" fill="none" stroke="rgba(58,40,20,.75)" stroke-width="2"/>
+<circle cx="170" cy="170" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="170" cy="330" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="170" cy="490" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="330" cy="170" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="330" cy="330" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="330" cy="490" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="490" cy="170" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="490" cy="330" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="490" cy="490" r="4.4" fill="rgba(58,40,20,.85)"/>
+<circle cx="330" cy="330" r="11.2" fill="none" stroke="rgba(58,40,20,.75)" stroke-width="1.2"/>
+<circle cx="450" cy="210" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="290" cy="250" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="370" cy="250" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="250" cy="290" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="410" cy="290" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="450" cy="290" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="330" cy="330" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="370" cy="330" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="370" cy="370" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="450" cy="370" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="410" cy="490" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="450" cy="490" r="18.8" fill="rgb(247,246,241)" stroke="rgba(0,0,0,.85)" stroke-width="1.316"/>
+<circle cx="330" cy="250" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="450" cy="250" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="330" cy="290" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="290" cy="330" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="410" cy="330" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="250" cy="370" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="290" cy="370" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="330" cy="370" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="410" cy="370" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="370" cy="410" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="410" cy="410" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="410" cy="450" r="18.8" fill="rgb(28,31,30)" stroke="#000" stroke-width="1.316"/>
+<circle cx="370" cy="370" r="4.512" fill="rgb(196,43,58)"/></svg>
