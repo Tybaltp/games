@@ -531,7 +531,9 @@ function capsRow(box,b,q){const cnt=[0,8,2,2,2,1,1],g=E.sgn(q),gold=q===0,names=
 // ending at the edge of the piece; hovering a moved piece or any square of a path shows that path plainly and dims the others. Turn being
 // prepared: the same lines, vivid, each step numbered 1 to 4 where it crosses into the next square (kept, dimmed, once the turn is validated); a number is a button that goes
 // back to just before that step. Solid: moved by the player; dashed: pushed or pulled.
-let lastEnds=new Map(),stepSpots=new Set();   // square on a path -> path index, for the hover (the piece's arrival square first); places taken by step numbers
+// lastEnds: square on a path -> path index, for the hover (the piece's arrival square first); stepSpots: places taken by
+// step numbers; lpK: the path in focus, kept across redraws so that moving the mouse along a path does not blink
+let lastEnds=new Map(),stepSpots=new Set(),lpK=-1;
 function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',c=P.pts.map(i=>[X(i)+S/2,Y(i)+S/2]);
   // a step's number sits on the path, where it crosses the edge between the two squares
   // (slid aside along that edge if the place is taken, e.g. a piece crossing the same edge twice)
@@ -539,11 +541,11 @@ function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',
     for(const d of [0,14,-14]){const x=vert?mx+d:mx,y=vert?my:my+d,key=x+','+y;if(!stepSpots.has(key)||d<0){stepSpots.add(key);return [x,y];}}});
   if(end&&c.length>1){const a=c[c.length-2],b=c[c.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,cut=Math.min(25,L-2);
     c[c.length-1]=[b[0]-dx/L*cut,b[1]-dy/L*cut];}
-  const pts=c.map(q=>q.join(',')).join(' '),gr=el('g',{class:'lp'+(prep?' prep':''),'data-k':k},g);
+  const pts=c.map(q=>q.join(',')).join(' '),gr=el('g',{class:'lp'+(prep?' prep':'')+(k===lpK?' on':''),'data-k':k},g);
   el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':prep?2.6:1.8,'stroke-linecap':'round','stroke-linejoin':'round',...(P.own?{}:{'stroke-dasharray':'5 5'})},gr);
   el('circle',{cx:c[0][0],cy:c[0][1],r:prep?4.5:3.5,fill:col},gr);
   // the numbers stay on the last validated turn, for the opponent to read it (a little dimmed, not clickable)
-  P.nums.forEach((n,j)=>{const live=prep&&top,b=live?el('g',{'data-step':n,class:'stepn'},top):el('g',{class:'lpn','data-k':k,'pointer-events':'none'},top||gr),[x,y]=mids[j];
+  P.nums.forEach((n,j)=>{const live=prep&&top,b=live?el('g',{'data-step':n,class:'stepn'},top):el('g',{class:'lpn'+(k===lpK?' on':''),'data-k':k,'pointer-events':'none'},top||gr),[x,y]=mids[j];
     if(live)el('title',{},b).textContent=t('backTo',{n});
     el('circle',{cx:x,cy:y,r:8,fill:P.own?'var(--hl)':'var(--bink)',stroke:'var(--wood)','stroke-width':1.5},b);
     const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,'font-weight':600,fill:'#06211f'},b);tx.textContent=n;});}
@@ -551,12 +553,12 @@ function lastOver(g,L,shown,top){lastEnds=new Map();stepSpots=new Set();if(!L||!
   L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,top);for(const i of P.pts)if(!lastEnds.has(i))lastEnds.set(i,k);});
   L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];if(shown[end])lastEnds.set(end,k);});
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5});}}
-function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp,.lpn').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
+function lpFocus(k){lpK=k;const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp,.lpn').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   const hoverTo=i=>{if(i===ui.hover)return;ui.hover=i;renderGame();};   // also with nothing selected: a movable piece shows it can be picked
-  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const c=e.target.closest('[data-i]'),i=c?+c.dataset.i:-1;hoverTo(i);
-    const k=i>=0?lastEnds.get(i):undefined;lpFocus(k===undefined?-1:k);});
-  $('svg').addEventListener('pointerleave',()=>{hoverTo(-1);lpFocus(-1);});}
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const c=e.target.closest('[data-i]'),i=c?+c.dataset.i:-1;
+    const k=i>=0?lastEnds.get(i):undefined;lpFocus(k===undefined?-1:k);hoverTo(i);});
+  $('svg').addEventListener('pointerleave',()=>{lpFocus(-1);hoverTo(-1);});}
 // A piece on a trap is held by its friendly neighbours: a short metal link to each of them.
 // A frozen piece (next to a stronger enemy, no friend around) sits under a hatched icy veil (no ring: one marker per piece).
 function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;const gold=v>0;
