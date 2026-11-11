@@ -42,8 +42,11 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 </style>
 <style>
-/* accueil : ce qui est propre à Volo ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
-:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#2f6fd6;--accTintD:#6aa2f5}
+/* accueil : ce qui est propre à Volo ; le reste dans common/accueil.css. Le fond : une partie de l'entraînement de l'IA, coup 147
+   (choix et cadrage de Thibault), plateau coupé à droite ; le bord coupé tombe au bord de l'écran (--accRight à 0 ; html:root
+   pour passer devant common/accueil.css). */
+:root{--accImgL:url(../img/accueil/volo.svg);--accImgD:url(../img/accueil/volo-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.75351;--accTintL:#2f6fd6;--accTintD:#6aa2f5}
+html:root{--accRight:0px}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
