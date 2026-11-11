@@ -64,6 +64,11 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 .hit{fill:transparent;cursor:default}
 .hit.legal,.hit.own{cursor:pointer}
 </style>
+<style>
+/* accueil : ce qui est propre à Ponte del Diavolo ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
+:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#a8761c;--accTintD:#e0a94a}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html"><b id="ttl" style="font-weight:inherit">Ponte <em>del</em> Diavolo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -894,4 +899,5 @@ try{const sv=LS.get(K('test'),null);if(sv&&sv.doc&&!Array.isArray(sv.moves)){con
   const g=oldGame(JSON.parse(decodeURIComponent(escape(atob(x.slice(7))))));if(!g)throw 0;return g;};}
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
