@@ -17,7 +17,7 @@
   --ghi:#f8e4a4;--g1:#d9ab3a;--gsh:#a67a1e;--g3:#6b4b10;--gk:#3a2908;--shi:#fbfdfe;--s1:#b7c1c9;--ssh:#7f8b94;--s3:#3d474f;--sk:#1b2228;
   --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
   --accent:#2f7d8c;--accent-ink:#ffffff;--hl:#5fd0c9;--bink:#e3e9e6;--danger:#e8604a;
-  --ice:rgba(190,225,255,.30);--icek:#bfe0ff;      /* frozen piece: a veil and a dotted ring */
+  --ice:rgba(190,225,255,.42);--icek:#bfe0ff;      /* frozen piece: a veil and a snowflake */
   --board-ar:506/508;            /* viewBox of the board (506×508; 488×488 without the coordinates) */
 }
 html.nocoords{--board-ar:1/1}
@@ -25,12 +25,12 @@ html.nocoords{--board-ar:1/1}
   --bg:#101413;--panel:#191f1d;--ink:#e4e8e6;--muted:#8f9a97;--line:#2a3330;
   --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
-  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.28);color-scheme:dark;}}
+  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.38);color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#101413;--panel:#191f1d;--ink:#e4e8e6;--muted:#8f9a97;--line:#2a3330;
   --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
-  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.28);color-scheme:dark;}
+  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.38);color-scheme:dark;}
 /* the board sits on its wood frame, on phones too (thinner there) */
 .board{background:var(--wood);border:0;border-radius:12px;padding:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 1px 0 rgba(0,0,0,.25)}
 html.ingame:not(.wide) .board{--bp:4px;padding:4px;border-radius:10px;background:var(--wood)}
@@ -532,10 +532,10 @@ function capsRow(box,b,q){const cnt=[0,8,2,2,2,1,1],g=E.sgn(q),gold=q===0,names=
 // back to just before that step. Solid: moved by the player; dashed: pushed or pulled.
 let lastEnds=new Map(),stepSpots=new Set();   // end square -> path index, for the hover; places taken by step numbers
 function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',c=P.pts.map(i=>[X(i)+S/2,Y(i)+S/2]);
-  // a step's number sits on the edge it crosses, slid 24 along that edge, clear of the rings of the squares around
-  // (the other side if that place is taken, e.g. a piece crossing the same edge twice)
+  // a step's number sits on the path, where it crosses the edge between the two squares
+  // (slid aside along that edge if the place is taken, e.g. a piece crossing the same edge twice)
   const mids=c.slice(1).map((q,j)=>{const mx=(q[0]+c[j][0])/2,my=(q[1]+c[j][1])/2,vert=q[0]===c[j][0];
-    for(const d of [24,-24]){const x=vert?mx+d:mx,y=vert?my:my+d,key=x+','+y;if(!stepSpots.has(key)||d<0){stepSpots.add(key);return [x,y];}}});
+    for(const d of [0,14,-14]){const x=vert?mx+d:mx,y=vert?my:my+d,key=x+','+y;if(!stepSpots.has(key)||d<0){stepSpots.add(key);return [x,y];}}});
   if(end&&c.length>1){const a=c[c.length-2],b=c[c.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,cut=Math.min(25,L-2);
     c[c.length-1]=[b[0]-dx/L*cut,b[1]-dy/L*cut];}
   const pts=c.map(q=>q.join(',')).join(' '),gr=el('g',{class:'lp'+(prep?' prep':''),'data-k':k},g);
@@ -543,8 +543,8 @@ function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',
   el('circle',{cx:c[0][0],cy:c[0][1],r:prep?4.5:3.5,fill:col},gr);
   if(prep&&top)P.nums.forEach((n,j)=>{const b=el('g',{'data-step':n,class:'stepn'},top),[x,y]=mids[j];
     el('title',{},b).textContent=t('backTo',{n});
-    el('circle',{cx:x,cy:y,r:9,fill:P.own?'var(--hl)':'var(--bink)',stroke:'var(--wood)','stroke-width':1.5},b);
-    const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'#06211f'},b);tx.textContent=n;});}
+    el('circle',{cx:x,cy:y,r:8,fill:P.own?'var(--hl)':'var(--bink)',stroke:'var(--wood)','stroke-width':1.5},b);
+    const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,'font-weight':600,fill:'#06211f'},b);tx.textContent=n;});}
 function lastOver(g,L,shown,top){lastEnds=new Map();stepSpots=new Set();if(!L||!L.det)return;
   L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,top);if(shown[end])lastEnds.set(end,k);});
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5});}}
@@ -561,7 +561,11 @@ function trapLinks(g,b){for(const t of E.TRAPS){const v=b[t];if(!v)continue;cons
     const dx=Math.sign(X(j)-X(t)),dy=Math.sign(Y(j)-Y(t)),cx=X(t)+S/2,cy=Y(t)+S/2,a={x1:cx+dx*22,y1:cy+dy*22,x2:cx+dx*38,y2:cy+dy*38};
     el('line',{...a,stroke:gold?'var(--g3)':'var(--s3)','stroke-width':5,'stroke-linecap':'round'},g);
     el('line',{...a,stroke:gold?'var(--g1)':'var(--s1)','stroke-width':2.2,'stroke-linecap':'round'},g);}}}
-function frost(g,b){for(let i=0;i<64;i++)if(b[i]&&E.frozen(b,i)){const cx=X(i)+S/2,cy=Y(i)+S/2,e=el('circle',{cx,cy,r:23.5,fill:'var(--ice)'},g);
+function frost(g,b){for(let i=0;i<64;i++)if(b[i]&&E.frozen(b,i)){const cx=X(i)+S/2,cy=Y(i)+S/2,e=el('g',{},g);
+  el('circle',{cx,cy,r:23.5,fill:'var(--ice)'},e);
+  const fx=cx+19,fy=cy-19,f=el('g',{stroke:'var(--icek)','stroke-width':2,'stroke-linecap':'round'},e);   // a snowflake in the corner
+  el('circle',{cx:fx,cy:fy,r:9,fill:'var(--wood)',stroke:'none',opacity:.85},f);
+  for(let a=0;a<3;a++){const r=a*Math.PI/3,dx=6*Math.cos(r),dy=6*Math.sin(r);el('line',{x1:fx-dx,y1:fy-dy,x2:fx+dx,y2:fy+dy},f);}
   const ti=el('title',{},e);ti.textContent=t('frozenT');}}
 function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,shown=o.shown,H=o.hov;
   // a piece the hovered move takes away: faint for a walk, not drawn for a push or pull (the two pieces swap around)
@@ -596,7 +600,7 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
     const swap=H&&!H.walk;if(hl.sel>=0&&!swap)ring(lay,hl.sel,{w:3.5,r:27});
     if(hl.target>=0&&!swap)ring(lay,hl.target,{w:3.5,r:27,c:'var(--bink)'});
     // the squares the selection can reach: a dot (red where the piece would be lost in a trap), none under the hovered move
-    for(const i of hl.cand)if(!shown[i]&&!(H&&H.to===i))el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:7,fill:hl.die.has(i)?'var(--danger)':'var(--hl)',opacity:.7},lay);}
+    for(const i of hl.cand)if(!shown[i]&&!(H&&H.to===i))el('circle',{cx:X(i)+S/2,cy:Y(i)+S/2,r:4.5,fill:hl.die.has(i)?'var(--danger)':'var(--hl)',opacity:.8},lay);}
   // hovered move: its walk, the pieces where they would arrive (translucent, no frame), the pieces lost, the steps it costs
   if(H){if(H.walk)el('polyline',{points:H.walk.map(i=>(X(i)+S/2)+','+(Y(i)+S/2)).join(' '),fill:'none',stroke:'var(--hl)','stroke-width':2.4,opacity:.5,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'},lay);
     for(let i=0;i<64;i++)if(H.b[i]&&H.b[i]!==shown[i])piece(lay,i,H.b[i],.6);
