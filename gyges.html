@@ -37,41 +37,39 @@ html.nocoords{--board-ar:388/552}
 /* PROVISOIRE (branche accueil-jeu, essai de Thibault) : accueil « fond de carte + modes en cartes ». Si l'essai est
    retenu, ces règles vont dans common/games.css pour les neuf jeux et disparaissent de cette page. */
 html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
-#setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:6vh}
-:root{--accImg:url(img/accueil/gyges.svg);--accWood:rgb(220,197,156)}
+/* Une seule mise en page, quelle que soit la largeur (pas de bascule, pas de saut au redimensionnement) :
+   en-tête aligné sur le bloc d'accueil ; description en haut ; cadres centrés dans la place qui reste ;
+   plateau (victoire en haut) calé à droite, hauteur fixée par la fenêtre tant que la largeur suffit, puis centré et réduit ;
+   fondu oblique, de la pente des étiquettes de la page principale. */
+#setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding-bottom:2vh}
+#setup .home{max-width:520px;flex:1}#setup .home>.lede{margin-bottom:auto}#setup .home>#rulesHome{margin-bottom:auto}
+body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-left:auto;margin-right:auto}
+:root{--accImg:url(img/accueil/gyges.svg);--accWood:rgb(220,197,156);
+  --accH:min(calc(100vh - 96px),calc((100vw - 48px) * 552 / 388));--accW:calc(var(--accH) * 388 / 552)}
+@supports (height:100dvh){:root{--accH:min(calc(100dvh - 96px),calc((100vw - 48px) * 552 / 388))}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}}
 :root[data-theme="dark"]{--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
-/* grand écran : plateau calé à droite, marge de 24 px à droite et en bas, sous l'en-tête en haut ; bois en aplat autour */
-.accBg::before{content:"";position:absolute;inset:0 0 0 auto;width:72%;background:var(--accImg) right 24px bottom 24px/auto calc(100% - 96px) no-repeat,var(--accWood);
-  -webkit-mask-image:linear-gradient(to left,#000 35%,transparent 92%);mask-image:linear-gradient(to left,#000 35%,transparent 92%)}
-.accBg::after{content:"";position:absolute;inset:0;
-  background:radial-gradient(ellipse 34rem 30rem at 50% 52%,var(--bg) 0 38%,color-mix(in srgb,var(--bg) 70%,transparent) 62%,color-mix(in srgb,var(--bg) 20%,transparent) 100%)}
-#setup .home{max-width:520px}
-/* sur l'accueil, l'en-tête (titre, réglages) s'aligne sur les bords du bloc d'accueil */
-@media (min-width:701px){body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-left:auto;margin-right:auto}}
+/* la zone du fond : le plateau (marges 24 px à droite et en bas, 72 px en haut, sous l'en-tête) et, à sa gauche, la moitié de
+   sa largeur pour le fondu ; bois en aplat autour du plateau ; fondu à 122° (la coupe des étiquettes) et, sous le plateau, vers le bas */
+.accBg::before{content:"";position:absolute;top:0;right:0;bottom:0;width:calc(var(--accW) * 1.5 + 24px);
+  background:var(--accImg) right 24px top 72px/var(--accW) var(--accH) no-repeat,var(--accWood);
+  -webkit-mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px));
+  mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px));
+  -webkit-mask-composite:source-in;mask-composite:intersect}
 #setup .home .card,#setup .home details#rulesHome{background:color-mix(in srgb,var(--panel) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 #setup .home .card.primary-card{border-color:var(--line);box-shadow:0 10px 40px rgb(0 0 0/.14)}
-#setup .lede{color:var(--ink);font-weight:500}
+#setup .lede{color:var(--ink);font-weight:500;text-shadow:0 0 3px var(--bg),0 0 10px var(--bg),0 0 18px var(--bg)}
 #playBtn,#anaBtn,#modeWrap,#resumeD{display:none!important}
 .accTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px 14px 13px;min-height:122px;border-radius:12px;
+.accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:clamp(12px,3.4vw,14px);min-height:clamp(112px,29vw,122px);border-radius:12px;
   border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
 .accTile svg{width:26px;height:26px;fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-bottom:auto}
-.accTile b{font-family:var(--f-display);font-weight:800;font-size:1.12rem;letter-spacing:-.01em;color:var(--ink);margin-top:10px}
+.accTile b{font-family:var(--f-display);font-weight:800;font-size:clamp(1.02rem,.82rem + 1.1vw,1.12rem);letter-spacing:-.01em;color:var(--ink);margin-top:10px}
 .accTile span{font-size:.8rem;color:var(--muted);line-height:1.3}
 .accTile:hover:not(:disabled){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--panel))}
 .accTile.cur{border-color:var(--accent);border-width:1.5px}
-@media (max-width:700px){
-  /* téléphone : les cadres centrés ; le plateau en bas, retourné (le but et l'anneau gagnant en bas), décalé vers la droite
-     (but aux trois quarts de la largeur) ; fondu du coin bas droit vers le coin haut gauche ; sous le plateau, le bois en aplat : pas de bord */
-  .accBg::before{inset:0;width:auto;background:var(--accImg) 8vw 4vh/auto 86% no-repeat,var(--accWood);transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom left,#000 35%,rgb(0 0 0/.6) 62%,rgb(0 0 0/.4) 82%,rgb(0 0 0/.25) 100%);mask-image:linear-gradient(to bottom left,#000 35%,rgb(0 0 0/.6) 62%,rgb(0 0 0/.4) 82%,rgb(0 0 0/.25) 100%)}
-  .accBg::after{background:linear-gradient(to top left,color-mix(in srgb,var(--bg) 10%,transparent) 0,color-mix(in srgb,var(--bg) 35%,transparent) 45%,color-mix(in srgb,var(--bg) 50%,transparent) 100%)}
-  /* la description en haut de page, les cadres centrés dans la place qui reste */
-  #setup:not([hidden]){justify-content:flex-start;padding-bottom:2vh}
-  #setup .home{flex:1}#setup .home>.lede{margin-bottom:auto}#setup .home>#rulesHome{margin-bottom:auto}}
-@media (max-width:420px){.accTile{min-height:112px;padding:12px}.accTile b{font-size:1.02rem}}
 </style>
 </head><body>
 <div class="wrap">
@@ -850,6 +848,12 @@ coreStart();
     if(k==='play'){h.dataset.i18n='m_'+ms.value;h.textContent=t(h.dataset.i18n);}
     $i('modeTxt').dataset.i18n='m_'+ms.value+'Txt';};
   $i('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
+  // le bouton plein écran existe partout où le navigateur le permet (le socle ne le met que sur écran tactile)
+  {const D=document,R=D.documentElement;if(!$i('fsBtn')&&D.fullscreenEnabled&&R.requestFullscreen){const f=D.createElement('button');f.type='button';f.className='fsbtn';f.id='fsBtn';
+    f.setAttribute('data-i18n-t','fullscreen');f.title=t('fullscreen');f.setAttribute('aria-label',f.title);
+    f.innerHTML='<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4"/></svg>';
+    f.onclick=()=>{if(D.fullscreenElement)D.exitFullscreen().catch(()=>{});else R.requestFullscreen({navigationUI:'hide'}).catch(()=>{});};
+    D.addEventListener('fullscreenchange',()=>f.classList.toggle('on',!!D.fullscreenElement));$i('optBtn').before(f);}}
 })();
 </script>
 </body></html>
