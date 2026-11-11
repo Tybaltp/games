@@ -10,7 +10,7 @@
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
-  --bg:#e9e6df;--panel:#f6f4ef;--ink:#23262a;--muted:#666a70;--line:#d3cfc6;
+  --bg:#c9d6cf;--panel:#e4ece8;--ink:#1a2622;--muted:#4f625b;--line:#a3b8ad;   /* page: velvet green, the board's own tone lightened */
   /* the board: a dark green velvet in both themes, like a jeweller's tray; --hl is the highlight on it */
   --wood:#203530;--wood-edge:#182a25;--sq:#2d4a43;--gridl:rgba(255,255,255,.10);--trap:#223b35;--trapk:rgba(255,255,255,.26);--coord:#8ea8a1;
   /* the pieces: highlight, body, shade, rim (g = gold, s = silver), and the ink of the animal */
@@ -22,12 +22,12 @@
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#101413;--panel:#191f1d;--ink:#e4e8e6;--muted:#8f9a97;--line:#2a3330;
+  --bg:#111a17;--panel:#1a2521;--ink:#ece6d6;--muted:#a39a80;--line:#4a4128;
   --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
   --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#101413;--panel:#191f1d;--ink:#e4e8e6;--muted:#8f9a97;--line:#2a3330;
+  --bg:#111a17;--panel:#1a2521;--ink:#ece6d6;--muted:#a39a80;--line:#4a4128;
   --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
   --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}
@@ -704,7 +704,7 @@ function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;
   function mover(g){const o={g,x:0,y:0,set(x,y){o.x=x;o.y=y;g.setAttribute('transform','translate('+x+','+y+')');}};return o;}
   function pc(L,gold,c,r,op){const g=el('g',{},lay);if(op!==undefined)g.setAttribute('opacity',op);pieceArt(g,L,0,0,23,gold);const o=mover(g),p=P(c,r);o.set(p.x,p.y);return o;}
   const ringAt=(c,r,a)=>{const p=P(c,r);return el('circle',{cx:p.x,cy:p.y,r:a.r||27,fill:'none',stroke:a.c||'var(--hl)','stroke-width':a.w||3},top);};
-  const dotAt=(c,r)=>{const p=P(c,r);return el('circle',{cx:p.x,cy:p.y,r:8,fill:'var(--hl)',opacity:.75},top);};
+  const dotAt=(c,r)=>{const p=P(c,r);return el('circle',{cx:p.x,cy:p.y,r:4.5,fill:'var(--hl)',opacity:.8},top);};
   function badge(c,r,n){const p=P(c,r),g=el('g',{},top);el('circle',{cx:p.x+19,cy:p.y-19,r:9,fill:'var(--hl)'},g);
     const tx=el('text',{x:p.x+19,y:p.y-15,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'#06211f'},g);tx.textContent=n;return g;}
   function trail(pts,own,nums){const col=own?'var(--hl)':'var(--bink)',c=pts.map(([a,b])=>P(a,b)),g=el('g',{},lay),q=c.slice();
