@@ -63,8 +63,8 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 @media (max-width:700px){
   /* téléphone : les cadres centrés ; le plateau en bas, retourné (le but et l'anneau gagnant en bas), décalé vers la droite
      (but aux trois quarts de la largeur) ; fondu du coin bas droit vers le coin haut gauche ; sous le plateau, le bois en aplat : pas de bord */
-  .accBg::before{inset:0;width:auto;background:var(--accImg) 8vw 4vh/auto 80% no-repeat,var(--accWood);transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%);mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%)}
-  .accBg::after{background:linear-gradient(to top left,color-mix(in srgb,var(--bg) 20%,transparent) 0,color-mix(in srgb,var(--bg) 50%,transparent) 40%,color-mix(in srgb,var(--bg) 60%,transparent) 100%)}
+  .accBg::before{inset:0;width:auto;background:var(--accImg) 8vw 4vh/auto 86% no-repeat,var(--accWood);transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom left,#000 35%,rgb(0 0 0/.6) 62%,rgb(0 0 0/.4) 82%,rgb(0 0 0/.25) 100%);mask-image:linear-gradient(to bottom left,#000 35%,rgb(0 0 0/.6) 62%,rgb(0 0 0/.4) 82%,rgb(0 0 0/.25) 100%)}
+  .accBg::after{background:linear-gradient(to top left,color-mix(in srgb,var(--bg) 10%,transparent) 0,color-mix(in srgb,var(--bg) 35%,transparent) 45%,color-mix(in srgb,var(--bg) 50%,transparent) 100%)}
   /* la description en haut de page, les cadres centrés dans la place qui reste */
   #setup:not([hidden]){justify-content:flex-start;padding-bottom:2vh}
   #setup .home{flex:1}#setup .home>.lede{margin-bottom:auto}#setup .home>#rulesHome{margin-bottom:auto}}
