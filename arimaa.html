@@ -265,7 +265,7 @@ const AR_I18N={fr:{
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",
  pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",pull_t:"{A} {fa} tire {b} {fb} en {to}",
- st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",
+ st_pushPull:"Choisissez la case où va la pièce poussée ; votre pièce prend sa place. Survolez une case pour voir le résultat.",
  st_pullBy:"Tirer : choisissez la pièce qui tire (cerclée).",st_pullTo:"Choisissez où va la pièce qui tire : la pièce tirée prend la case qu'elle quitte.",backTo:"Revenir avant le pas {n}",
  ht_title:"Comment jouer",ht_skip:"Passer",ht_done:"C'est parti",ht_never:"Ne plus montrer",ht_prev:"Précédent",ht_next:"Suivant",ht_sent:"Coup envoyé ✓",ht_1:"<b>Déplacer</b> : cliquez la pièce à déplacer, puis sa case d'arrivée, à une ou plusieurs cases (4 pas par tour en tout). En survolant une case, vous voyez le résultat avant de cliquer.",ht_2:"<b>Pousser</b> (2 pas) : cliquez d'abord la pièce qui pousse, puis la pièce adverse à pousser (voisine et plus faible), puis sa case d'arrivée. Votre pièce prend sa place.",ht_3:"<b>Tirer</b> (2 pas) : cliquez la pièce adverse à tirer, puis votre pièce qui la tire, puis la case où va votre pièce. La pièce tirée prend la case libérée.",ht_4:"<b>Fin du tour</b> : après vos 4 pas (ou moins), confirmez l'envoi de votre coup avec « Terminer le tour ». Jusque-là rien ne part : « Annuler le pas » et « Réinitialiser » reviennent en arrière.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
@@ -273,7 +273,7 @@ const AR_I18N={fr:{
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
  <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
  <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
- <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez votre pièce, la pièce adverse, puis la case d'arrivée : l'aperçu montre le résultat. Pour tirer, on peut aussi cliquer d'abord la pièce adverse, puis la vôtre qui la tire, puis la case où va la vôtre.</li>
+ <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Pour pousser, cliquez votre pièce, la pièce adverse, puis la case où va la pièce adverse. Pour tirer, cliquez la pièce adverse, puis la vôtre qui la tire, puis la case où va la vôtre. L'aperçu montre le résultat.</li>
  <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
  <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
@@ -292,7 +292,7 @@ const AR_I18N={fr:{
  st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
  w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",
  pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
- st_pushPull:"Choose the arrival square: the pushed piece goes there, or your piece goes there pulling. Hover a free neighbouring square to see the result.",
+ st_pushPull:"Choose the square the pushed piece goes to; your piece takes its place. Hover a square to see the result.",
  st_pullBy:"Pull: choose the piece that pulls (ringed).",st_pullTo:"Choose where the pulling piece goes: the pulled piece takes the square it leaves.",backTo:"Go back to before step {n}",
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",ht_sent:"Move sent ✓",ht_1:"<b>Move</b>: click the piece to move, then its arrival square, one or more squares away (4 steps per turn in all). Hovering a square shows the result before you click.",ht_2:"<b>Push</b> (2 steps): click first the piece that pushes, then the opposing piece to push (adjacent and weaker), then its arrival square. Your piece takes its place.",ht_3:"<b>Pull</b> (2 steps): click the opposing piece to pull, then your piece that pulls it, then the square your piece goes to. The pulled piece takes the square it left.",ht_4:"<b>End of turn</b>: after your 4 steps (or fewer), confirm sending your move with “End turn”. Until then nothing is sent: “Undo step” and “Reset” go back.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
  rules:`<summary>Rules in brief</summary><ul>
@@ -300,7 +300,7 @@ const AR_I18N={fr:{
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
  <li><b>Setup</b>: Gold arranges its 16 pieces freely on ranks 1 and 2, then Silver on ranks 7 and 8. Each setup counts as a move; the opponent only sees it once confirmed.</li>
  <li><b>Turn</b>: Gold starts. 1 to 4 steps, shared among your pieces as you like. A step: one square forward, backward or sideways onto an empty square. Rabbits never step back. You cannot pass, and the turn must change the position.</li>
- <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. Click your piece, the opposing piece, then the arrival square: the preview shows the result. To pull, you can also click the opposing piece first, then your piece that pulls it, then the square your piece goes to.</li>
+ <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. To push, click your piece, the opposing piece, then the square the opposing piece goes to. To pull, click the opposing piece, then your piece that pulls it, then the square your piece goes to. The preview shows the result.</li>
  <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
  <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
@@ -319,7 +319,7 @@ const AR_I18N={fr:{
  st_same:"El turno debe cambiar la posición.",st_rep3:"Este turno repetiría la posición por tercera vez: está prohibido.",
  w_goal:"un conejo ha llegado a la última fila",w_rabbits:"no queda ningún conejo adversario",w_immob:"el adversario ya no puede mover",w_rep:"al adversario solo le quedan jugadas prohibidas por la repetición",
  pn:["conejo","gato","perro","caballo","camello","elefante"],push_t:"{A} {fa} empuja {b} {fb} a {to}",pull_t:"{A} {fa} tira de {b} {fb} a {to}",
- st_pushPull:"Elige la casilla de llegada: la pieza empujada va allí, o tu pieza va allí tirando. Pasa el ratón por una casilla libre vecina para ver el resultado.",
+ st_pushPull:"Elige la casilla adonde va la pieza empujada; tu pieza ocupa su lugar. Pasa el ratón por una casilla para ver el resultado.",
  st_pullBy:"Tirar: elige la pieza que tira (rodeada).",st_pullTo:"Elige adónde va la pieza que tira: la pieza tirada ocupa la casilla que deja.",backTo:"Volver antes del paso {n}",
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",ht_sent:"Jugada enviada ✓",ht_1:"<b>Mover</b>: haz clic en la pieza que quieres mover y luego en su casilla de llegada, a una o varias casillas (4 pasos por turno en total). Al pasar el ratón por una casilla ves el resultado antes de hacer clic.",ht_2:"<b>Empujar</b> (2 pasos): haz clic primero en la pieza que empuja, luego en la pieza adversaria que quieres empujar (vecina y más débil) y luego en su casilla de llegada. Tu pieza ocupa su lugar.",ht_3:"<b>Tirar</b> (2 pasos): haz clic en la pieza adversaria de la que quieres tirar, luego en tu pieza que tira y luego en la casilla adonde va tu pieza. La pieza tirada ocupa la casilla liberada.",ht_4:"<b>Fin del turno</b>: tras tus 4 pasos (o menos), confirma el envío de tu jugada con «Terminar el turno». Hasta entonces no se envía nada: «Deshacer el paso» y «Reiniciar» vuelven atrás.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
  rules:`<summary>Reglas en breve</summary><ul>
@@ -327,7 +327,7 @@ const AR_I18N={fr:{
  <li><b>Piezas</b>, de la más fuerte a la más débil: <b>E</b> elefante, <b>M</b> camello, <b>H</b> caballo (×2), <b>D</b> perro (×2), <b>C</b> gato (×2), <b>R</b> conejo (×8). Letras según la notación inglesa.</li>
  <li><b>Colocación</b>: Oro coloca sus 16 piezas en las filas 1 y 2 como quiera, y luego Plata en las filas 7 y 8. Cada colocación cuenta como una jugada; el adversario solo la ve una vez validada.</li>
  <li><b>Turno</b>: Oro empieza. De 1 a 4 pasos, repartidos entre tus piezas como quieras. Un paso: una casilla hacia delante, hacia atrás o hacia un lado, a una casilla vacía. Un conejo nunca retrocede. No se puede pasar, y el turno debe cambiar la posición.</li>
- <li><b>Empujar y tirar</b> (2 pasos): una pieza puede desplazar una pieza adversaria vecina estrictamente más débil. Empujar: la pieza adversaria va a una casilla vacía vecina y la tuya ocupa su lugar. Tirar: tu pieza va a una casilla vacía y la pieza adversaria ocupa la casilla liberada. Haz clic en tu pieza, en la pieza adversaria y luego en la casilla de llegada: la vista previa muestra el resultado. Para tirar, también puedes hacer clic primero en la pieza adversaria, luego en la tuya que tira de ella y luego en la casilla adonde va la tuya.</li>
+ <li><b>Empujar y tirar</b> (2 pasos): una pieza puede desplazar una pieza adversaria vecina estrictamente más débil. Empujar: la pieza adversaria va a una casilla vacía vecina y la tuya ocupa su lugar. Tirar: tu pieza va a una casilla vacía y la pieza adversaria ocupa la casilla liberada. Para empujar, haz clic en tu pieza, en la pieza adversaria y luego en la casilla adonde va la pieza adversaria. Para tirar, haz clic en la pieza adversaria, luego en la tuya que tira de ella y luego en la casilla adonde va la tuya. La vista previa muestra el resultado.</li>
  <li><b>Congelación</b>: una pieza vecina de una pieza adversaria más fuerte ya no puede moverse por sí misma, salvo si una de sus piezas amigas la toca. Aun así, se la puede empujar o tirar de ella.</li>
  <li><b>Trampas</b> (c3, f3, c6, f6): tras cada paso, una pieza situada en una trampa sin ninguna pieza amiga vecina se retira.</li>
  <li><b>Final</b>: al final de un turno, gana primero el jugador que tiene un conejo en su última fila (el que acaba de jugar pasa antes que el otro); si no, pierde el que ya no tiene conejos; si no, pierde el que debe jugar y no tiene ninguna jugada permitida. Un turno que produjera por tercera vez la misma posición, con el mismo jugador al turno, está prohibido.</li>
@@ -448,23 +448,23 @@ function reach(b,s,from,left){const out=new Map();let q=[{b,loc:from,path:[]}];
         const x=E.apply(st.b,a),die=!x.b[a.t],path=st.path.concat([a]);out.set(a.t,{path,die});if(!die)nq.push({b:x.b,loc:a.t,path});}}
     q=nq;}
   return out;}
-// Push or pull in three clicks: my piece, the enemy piece, then an arrival square. Push: the square where the enemy goes
-// (my piece takes its place); pull: the square where my piece goes (the enemy takes its place). The two sets never overlap.
-// Pull the other way round: the enemy piece first (ringed in ink, the pieces that can pull it with a thin ring), then the
-// piece that pulls, then the square it goes to (dots); the enemy takes the square it left. Pulls only, no push.
+// Push in three clicks: my piece, the enemy piece, then the square where the enemy goes (my piece takes its place).
+// Pull in three clicks, the enemy piece first (ringed in ink, the pieces that can pull it with a thin ring), then the
+// piece that pulls, then the square it goes to (dots); the enemy takes the square it left. The two entries, as the
+// « Comment jouer » card shows them; no other.
 function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),pushTo:new Set(),pullTo:new Set(),pullers:new Set(),pullable:new Set(),die:new Set(),target:-1,sel:-1};
   if(ui.pullOnly){hl.target=ui.enemy;
     for(const a of acts){if(a.k!=='L'||a.e!==ui.enemy)continue;if(ui.via<0)hl.pullers.add(a.a);else if(a.a===ui.via){hl.pullTo.add(a.to);hl.cand.add(a.to);}}
     hl.sel=ui.via;return hl;}
   if(ui.enemy>=0&&ui.via>=0){hl.sel=ui.via;hl.target=ui.enemy;
-    for(const a of acts){if(a.k==='m'||a.a!==ui.via||a.e!==ui.enemy)continue;(a.k==='P'?hl.pushTo:hl.pullTo).add(a.to);hl.cand.add(a.to);}return hl;}
-  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k==='L')hl.pullable.add(a.e);if(a.k!=='m'&&ui.sel>=0&&a.a===ui.sel)hl.enemy.add(a.e);
+    for(const a of acts){if(a.k!=='P'||a.a!==ui.via||a.e!==ui.enemy)continue;hl.pushTo.add(a.to);hl.cand.add(a.to);}return hl;}
+  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k==='L')hl.pullable.add(a.e);if(a.k==='P'&&ui.sel>=0&&a.a===ui.sel)hl.enemy.add(a.e);
     if(ui.sel>=0&&a.k==='m'&&a.f===ui.sel)hl.dest.add(a.t);}
   if(ui.sel>=0){hl.reach=reach(b,s,ui.sel,4-pv.used);for(const [i,x] of hl.reach){hl.cand.add(i);if(x.die)hl.die.add(i);}}
   hl.sel=ui.sel;return hl;}
 // The steps that would bring the selection to square i (a simple move, a longer walk, or a push or pull), or null
 function hoverActs(b,used,i){if(i<0)return null;const acts=E.actions(b,mySeat,4-used);
-  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>(ui.pullOnly?x.k==='L':x.k!=='m')&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);return a?[a]:null;}
+  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k===(ui.pullOnly?'L':'P')&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);return a?[a]:null;}
   if(ui.sel<0)return null;const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m)return [m];
   const far=reach(b,mySeat,ui.sel,4-used).get(i);return far?far.path:null;}
 // The hovered square: the position it would give, the pieces lost, the steps it costs
@@ -484,11 +484,12 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
       if(i===via){ui.via=-1;renderGame();return;}}                                 // the pulling piece again: choose another one
     else if(pulls(e).some(x=>x.a===i)){ui.via=i;renderGame();return;}
     clearSel();if(i===e){renderGame();return;}}   // the pulled piece again: cancel
-  else if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
+  else if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k==='P'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
     const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
     const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();winNow();return;}
-    if(enemySq(i)&&acts.some(a=>a.k!=='m'&&a.e===i&&a.a===ui.sel)){ui.enemy=i;ui.via=ui.sel;renderGame();return;}
+    if(enemySq(i)&&acts.some(a=>a.k==='P'&&a.e===i&&a.a===ui.sel)){   // an enemy it can push (to pull, the enemy comes first)
+      ui.enemy=i;ui.via=ui.sel;renderGame();return;}
     // a second click on the selection deselects it (and nothing else: going back is done with the numbered steps)
     const via=ui.sel;clearSel();if(i===via){renderGame();return;}}
   const canAct=mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i);
