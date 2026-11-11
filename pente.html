@@ -56,6 +56,11 @@ h1{font-weight:400;letter-spacing:0}
 @media (max-width:560px){.notice.choose{gap:3px}.notice.choose .msg{-webkit-line-clamp:1;line-clamp:1}}
 @media (orientation:landscape) and (max-height:500px){.notice.choose .msg{-webkit-line-clamp:1;line-clamp:1}}
 </style>
+<style>
+/* accueil : ce qui est propre à Pente ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
+:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#9C2E3A;--accTintD:#b8434f}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html"><b id="ttl" style="font-weight:inherit">Pente</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -764,4 +769,5 @@ const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   evalInfo:res=>evalInfo(res)};
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>

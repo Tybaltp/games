@@ -41,6 +41,11 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 .player .tally span{color:var(--ink);font-weight:500}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 </style>
+<style>
+/* accueil : ce qui est propre à Volo ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
+:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#2f6fd6;--accTintD:#6aa2f5}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html"><b id="ttl" style="font-weight:inherit">Volo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -1073,4 +1078,5 @@ const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   home:()=>{drawBoard(E.init(),{});}};
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
