@@ -43,8 +43,11 @@
 .board,html.ingame:not(.wide) .board{background:var(--boardbox);border-color:var(--boardline)}
 </style>
 <style>
-/* accueil : ce qui est propre à Quarto ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
-:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#6f8f66;--accTintD:#9cb894}
+/* accueil : ce qui est propre à Quarto ; le reste dans common/accueil.css. Le fond reprend l'image de la carte d'accueil du site
+   (img/cartes/quarto[-dark].svg, sans son dégradé de fond : le plateau repose sur le fond de la page), cadrée sur le plateau entier et sa réserve (fond de la réserve retiré).
+   En grand écran l'image dépasse à droite de 15 % de sa largeur (plateau plus visible, coupé à droite) ; html:root pour passer devant common/accueil.css. */
+:root{--accImgL:url(../img/accueil/quarto.svg);--accImgD:url(../img/accueil/quarto-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.87054;--accTintL:#6f8f66;--accTintD:#9cb894}
+html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .85))}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
