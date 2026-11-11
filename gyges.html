@@ -344,7 +344,7 @@ function GygesAI(E){
     return {move:clean(result.m),score:result.v,depth:result.d,nodes};}
   // Threat-aware search (opt.ts, the strong levels; outils/aitools/res/gyges/niveaux.md). A threat: the player not to
   // move can reach the goal. Then only the moves that may parry it are searched (exact: the others leave the threatening
-  // path and the rows in front of its piece unchanged), without using up depth (up to opt.ext plies past the nominal
+  // path and the rows in front of its piece unchanged), without using up depth (up to opt.ext plies, 3 by default, past the nominal
   // depth); at the horizon, a threatened position is searched on in the same way instead of being judged lost. Moves
   // are ordered by a history of the moves that cut (killer-like), the best one of the transposition table first.
   // Sound pruning only: what it plays is what a full-width search of the same lines would play, seen deeper.
@@ -358,7 +358,7 @@ function GygesAI(E){
     return out;}
   function stat(s,mine,theirs){const o=1-s.turn,farCells=(list,p)=>{const f=far(p),set=new Set();for(const m of list){const e=m.path[m.path.length-1];if(e!==G&&rowOf(e)===f)set.add(e);}return set.size;};
     return 3*(mine.length-theirs.length)+60*(farCells(mine,s.turn)-farCells(theirs,o));}
-  function search2(s0,opt){const t0=Date.now(),TT=new Map(),HI=new Int32Array(36*37*37),ext=opt.ext==null?6:opt.ext;
+  function search2(s0,opt){const t0=Date.now(),TT=new Map(),HI=new Int32Array(36*37*37),ext=opt.ext==null?3:opt.ext;
     let nodes=0,stop=false,maxPly=0;const A=opt.adv,MS=opt.maxSeg,CAP=opt.cap,LMR=opt.lmr||0,CM=opt.ev===1?3:2;
     const view=(s)=>({b:s.b,turn:1-s.turn,n:s.n,passes:0});
     function order(moves,first){for(const m of moves)m.h=HI[m.id];moves.sort((x,y)=>y.h-x.h);
