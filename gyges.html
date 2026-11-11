@@ -48,6 +48,8 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 .accBg::after{content:"";position:absolute;inset:0;
   background:radial-gradient(ellipse 34rem 30rem at 50% 52%,var(--bg) 0 38%,color-mix(in srgb,var(--bg) 70%,transparent) 62%,color-mix(in srgb,var(--bg) 20%,transparent) 100%)}
 #setup .home{max-width:520px}
+/* sur l'accueil, l'en-tête (titre, réglages) s'aligne sur les bords du bloc d'accueil */
+@media (min-width:701px){body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-left:auto;margin-right:auto}}
 #setup .home .card,#setup .home details#rulesHome{background:color-mix(in srgb,var(--panel) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 #setup .home .card.primary-card{border-color:var(--line);box-shadow:0 10px 40px rgb(0 0 0/.14)}
 #setup .lede{color:var(--ink);font-weight:500}
