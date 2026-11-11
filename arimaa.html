@@ -252,13 +252,14 @@ const AR_I18N={fr:{
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
  w_goal:"un lapin a atteint la dernière rangée",w_rabbits:"plus aucun lapin adverse",w_immob:"l'adversaire ne peut plus bouger",w_rep:"l'adversaire n'a plus que des coups interdits par la répétition",
  pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",pull_t:"{A} {fa} tire {b} {fb} en {to}",
- st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
+ st_pushPull:"Choisissez la case d'arrivée : la pièce poussée y va, ou votre pièce y va en tirant. Survolez une case libre voisine pour voir le résultat.",
+ st_pullBy:"Tirer : choisissez la pièce qui tire (cerclée).",st_pullTo:"Choisissez où va la pièce qui tire : la pièce tirée prend la case qu'elle quitte.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
  <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
  <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
- <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez la pièce adverse, puis la case d'arrivée : l'aperçu montre le résultat.</li>
+ <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Cliquez votre pièce, la pièce adverse, puis la case d'arrivée : l'aperçu montre le résultat. Pour tirer, on peut aussi cliquer d'abord la pièce adverse, puis la vôtre qui la tire, puis la case où va la vôtre.</li>
  <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
  <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
@@ -277,13 +278,14 @@ const AR_I18N={fr:{
  st_same:"The turn must change the position.",st_rep3:"This turn would repeat the position a third time: it is not allowed.",
  w_goal:"a rabbit reached the far row",w_rabbits:"no opposing rabbit left",w_immob:"the opponent cannot move",w_rep:"the opponent only has moves forbidden by repetition",
  pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
- st_pushPull:"Choose the arrival square: the pushed piece goes there, or your piece goes there pulling. Hover a free neighbouring square to see the result.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
+ st_pushPull:"Choose the arrival square: the pushed piece goes there, or your piece goes there pulling. Hover a free neighbouring square to see the result.",
+ st_pullBy:"Pull: choose the piece that pulls (ringed).",st_pullTo:"Choose where the pulling piece goes: the pulled piece takes the square it leaves.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
  <li><b>Setup</b>: Gold arranges its 16 pieces freely on ranks 1 and 2, then Silver on ranks 7 and 8. Each setup counts as a move; the opponent only sees it once confirmed.</li>
  <li><b>Turn</b>: Gold starts. 1 to 4 steps, shared among your pieces as you like. A step: one square forward, backward or sideways onto an empty square. Rabbits never step back. You cannot pass, and the turn must change the position.</li>
- <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. Click the opposing piece, then the arrival square: the preview shows the result.</li>
+ <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. Click your piece, the opposing piece, then the arrival square: the preview shows the result. To pull, you can also click the opposing piece first, then your piece that pulls it, then the square your piece goes to.</li>
  <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
  <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
@@ -302,13 +304,14 @@ const AR_I18N={fr:{
  st_same:"El turno debe cambiar la posición.",st_rep3:"Este turno repetiría la posición por tercera vez: está prohibido.",
  w_goal:"un conejo ha llegado a la última fila",w_rabbits:"no queda ningún conejo adversario",w_immob:"el adversario ya no puede mover",w_rep:"al adversario solo le quedan jugadas prohibidas por la repetición",
  pn:["conejo","gato","perro","caballo","camello","elefante"],push_t:"{A} {fa} empuja {b} {fb} a {to}",pull_t:"{A} {fa} tira de {b} {fb} a {to}",
- st_pushPull:"Elige la casilla de llegada: la pieza empujada va allí, o tu pieza va allí tirando. Pasa el ratón por una casilla libre vecina para ver el resultado.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
+ st_pushPull:"Elige la casilla de llegada: la pieza empujada va allí, o tu pieza va allí tirando. Pasa el ratón por una casilla libre vecina para ver el resultado.",
+ st_pullBy:"Tirar: elige la pieza que tira (rodeada).",st_pullTo:"Elige adónde va la pieza que tira: la pieza tirada ocupa la casilla que deja.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: llevar uno de tus conejos a la última fila, la del bando adversario (fila 8 para Oro, fila 1 para Plata).</li>
  <li><b>Piezas</b>, de la más fuerte a la más débil: <b>E</b> elefante, <b>M</b> camello, <b>H</b> caballo (×2), <b>D</b> perro (×2), <b>C</b> gato (×2), <b>R</b> conejo (×8). Letras según la notación inglesa.</li>
  <li><b>Colocación</b>: Oro coloca sus 16 piezas en las filas 1 y 2 como quiera, y luego Plata en las filas 7 y 8. Cada colocación cuenta como una jugada; el adversario solo la ve una vez validada.</li>
  <li><b>Turno</b>: Oro empieza. De 1 a 4 pasos, repartidos entre tus piezas como quieras. Un paso: una casilla hacia delante, hacia atrás o hacia un lado, a una casilla vacía. Un conejo nunca retrocede. No se puede pasar, y el turno debe cambiar la posición.</li>
- <li><b>Empujar y tirar</b> (2 pasos): una pieza puede desplazar una pieza adversaria vecina estrictamente más débil. Empujar: la pieza adversaria va a una casilla vacía vecina y la tuya ocupa su lugar. Tirar: tu pieza va a una casilla vacía y la pieza adversaria ocupa la casilla liberada. Haz clic en la pieza adversaria y luego en la casilla de llegada: la vista previa muestra el resultado.</li>
+ <li><b>Empujar y tirar</b> (2 pasos): una pieza puede desplazar una pieza adversaria vecina estrictamente más débil. Empujar: la pieza adversaria va a una casilla vacía vecina y la tuya ocupa su lugar. Tirar: tu pieza va a una casilla vacía y la pieza adversaria ocupa la casilla liberada. Haz clic en tu pieza, en la pieza adversaria y luego en la casilla de llegada: la vista previa muestra el resultado. Para tirar, también puedes hacer clic primero en la pieza adversaria, luego en la tuya que tira de ella y luego en la casilla adonde va la tuya.</li>
  <li><b>Congelación</b>: una pieza vecina de una pieza adversaria más fuerte ya no puede moverse por sí misma, salvo si una de sus piezas amigas la toca. Aun así, se la puede empujar o tirar de ella.</li>
  <li><b>Trampas</b> (c3, f3, c6, f6): tras cada paso, una pieza situada en una trampa sin ninguna pieza amiga vecina se retira.</li>
  <li><b>Final</b>: al final de un turno, gana primero el jugador que tiene un conejo en su última fila (el que acaba de jugar pasa antes que el otro); si no, pierde el que ya no tiene conejos; si no, pierde el que debe jugar y no tiene ninguna jugada permitida. Un turno que produjera por tercera vez la misma posición, con el mismo jugador al turno, está prohibido.</li>
@@ -371,8 +374,8 @@ function describe(code,st){const r=st.n<2?E.setup(st.b,st.turn,code):E.turn(st.b
 
 // ---------- game view ----------
 // ui: steps of the turn being prepared (local preview, sent only when the turn is finished), current selection, setup arrangement
-function newUi(){return {acts:[],sel:-1,enemy:-1,via:-1,hover:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1};}
-function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.cand=[];ui.candKind='';}
+function newUi(){return {acts:[],sel:-1,enemy:-1,via:-1,hover:-1,cand:[],candKind:'',pending:null,setup:null,swap:-1,pullOnly:false};}
+function clearSel(){ui.sel=-1;ui.enemy=-1;ui.via=-1;ui.cand=[];ui.candKind='';ui.pullOnly=false;}
 // Something is being prepared (steps, a selection, a changed setup); otherwise the board is neutral
 function prepared(){return !!(ui.acts.length||ui.sel>=0||ui.enemy>=0||ui.pending||ui.swap>=0||(ui.setup&&mySeat>=0&&ui.setup.join('')!==E.DEFAULT[mySeat]));}
 // « Réinitialiser » (Reset, Escape): drop the whole prepared turn (or setup) and come back to the neutral board
@@ -404,7 +407,7 @@ function arBoard({r,d,mine}){shownD=d;const o={setup:r.st.n<2,pv:null,es:'none'}
 function arTurnStatus({r,o,prep,idle,RST}){
   if(o.setup){status(t('st_setup'),'turn',(prep?[RST]:idle).concat([{label:t('setupGo'),short:t('setupGoS'),primary:true,on:setupGo}]));return;}
   const pv=o.pv,es=o.es;let msg;
-  if(ui.enemy>=0)msg=t('st_pushPull');else if(es==='same')msg=t('st_same');else if(es==='rep')msg=t('st_rep3');
+  if(ui.pullOnly)msg=t(ui.via>=0?'st_pullTo':'st_pullBy');else if(ui.enemy>=0)msg=t('st_pushPull');else if(es==='same')msg=t('st_same');else if(es==='rep')msg=t('st_rep3');
   else if(pv&&pv.used)msg=t(pv.used>=4?'st_steps4':'st_steps',{k:pv.used});
   else msg=solo()?t('st_soloTurn',{n:seatName(r.st.turn)}):t('st_yourTurn');
   status(msg,'turn',prep?[RST,ui.acts.length?{label:t('undoStep'),short:t('undoStepS'),on:undoStep}:null,es==='ok'?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endTurn}:null]:idle);}
@@ -434,16 +437,21 @@ function reach(b,s,from,left){const out=new Map();let q=[{b,loc:from,path:[]}];
   return out;}
 // Push or pull in three clicks: my piece, the enemy piece, then an arrival square. Push: the square where the enemy goes
 // (my piece takes its place); pull: the square where my piece goes (the enemy takes its place). The two sets never overlap.
-function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),pushTo:new Set(),pullTo:new Set(),target:-1,sel:-1};
+// Pull the other way round: the enemy piece first (ringed in ink, the pieces that can pull it with a thin ring), then the
+// piece that pulls, then the square it goes to (dots); the enemy takes the square it left. Pulls only, no push.
+function highlights(pv){const s=mySeat,g=E.sgn(s),b=pv.b,acts=E.actions(b,s,4-pv.used),hl={own:new Set(),enemy:new Set(),dest:new Set(),cand:new Set(),pushTo:new Set(),pullTo:new Set(),pullers:new Set(),pullable:new Set(),target:-1,sel:-1};
+  if(ui.pullOnly){hl.target=ui.enemy;
+    for(const a of acts){if(a.k!=='L'||a.e!==ui.enemy)continue;if(ui.via<0)hl.pullers.add(a.a);else if(a.a===ui.via){hl.pullTo.add(a.to);hl.cand.add(a.to);}}
+    hl.sel=ui.via;return hl;}
   if(ui.enemy>=0&&ui.via>=0){hl.sel=ui.via;hl.target=ui.enemy;
     for(const a of acts){if(a.k==='m'||a.a!==ui.via||a.e!==ui.enemy)continue;(a.k==='P'?hl.pushTo:hl.pullTo).add(a.to);}return hl;}
-  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k!=='m'&&ui.sel>=0&&a.a===ui.sel)hl.enemy.add(a.e);
+  for(const a of acts){hl.own.add(a.k==='m'?a.f:a.a);if(a.k==='L')hl.pullable.add(a.e);if(a.k!=='m'&&ui.sel>=0&&a.a===ui.sel)hl.enemy.add(a.e);
     if(ui.sel>=0&&a.k==='m'&&a.f===ui.sel)hl.dest.add(a.t);}
   if(ui.sel>=0)hl.reach=reach(b,s,ui.sel,4-pv.used);
   hl.sel=ui.sel;return hl;}
 // The steps that would bring the selection to square i (a simple move, a longer walk, or a push or pull), or null
 function hoverActs(b,used,i){if(i<0)return null;const acts=E.actions(b,mySeat,4-used);
-  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);return a?[a]:null;}
+  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>(ui.pullOnly?x.k==='L':x.k!=='m')&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);return a?[a]:null;}
   if(ui.sel<0)return null;const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m)return [m];
   const far=reach(b,mySeat,ui.sel,4-used).get(i);return far?far.path:null;}
 // The hovered square: the position it would give, the pieces lost, the steps it costs
@@ -457,7 +465,13 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
   const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
   const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
   // a click or a single tap plays the step (with a mouse, hovering previews it first)
-  if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
+  const pulls=e=>acts.filter(a=>a.k==='L'&&a.e===e);
+  if(ui.pullOnly){const e=ui.enemy,via=ui.via;
+    if(via>=0){const a=pulls(e).find(x=>x.a===via&&x.to===i);if(a){doAct(a);return;}
+      if(i===via){ui.via=-1;renderGame();return;}}                                 // the pulling piece again: choose another one
+    else if(pulls(e).some(x=>x.a===i)){ui.via=i;renderGame();return;}
+    clearSel();if(i===e){const q=seqPieces(r.st.b).get(i);if(q){rewindTo(q);return;}renderGame();return;}}   // the pulled piece again: cancel
+  else if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k!=='m'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
     const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
     const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();winNow();return;}
@@ -465,6 +479,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
     // a second click on the selection deselects it; on a piece already moved in this turn, it rewinds to that piece's first selection
     const via=ui.sel;clearSel();if(i===via){const e=seqPieces(r.st.b).get(i);if(e){rewindTo(e);return;}renderGame();return;}}
   const canAct=mineSq(i)&&acts.some(a=>(a.k==='m'?a.f:a.a)===i);
+  if(enemySq(i)&&pulls(i).length){ui.enemy=i;ui.pullOnly=true;renderGame();return;}   // an enemy piece that can be pulled: pull it, enemy first
   {const e=seqPieces(r.st.b).get(i);if(e&&!canAct){rewindTo(e);return;}}   // a moved piece that can't go on (or a pushed/pulled one): rewind
   if(canAct){ui.sel=i;renderGame();return;}
   renderGame();}
@@ -561,7 +576,9 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   const hl=o.hl;
   // one active highlight, never two rings on a piece: nothing selected, a thin ring on the hovered piece if it can move; a piece selected, its solid ring
   // (and a thin ink ring on the opposing pieces it can push or pull); a push or pull engaged, the opposing piece ringed too
-  if(hl){if(hl.sel<0&&hl.own.has(ui.hover)&&!lastEnds.has(ui.hover))ring(lay,ui.hover,{w:1.6,r:26});
+  if(hl){if(hl.sel<0&&hl.target<0&&hl.own.has(ui.hover)&&!lastEnds.has(ui.hover))ring(lay,ui.hover,{w:1.6,r:26});
+    if(hl.sel<0&&hl.target<0&&hl.pullable.has(ui.hover)&&!lastEnds.has(ui.hover))ring(lay,ui.hover,{w:1.6,r:26,c:'var(--ink)'});
+    for(const i of hl.pullers)ring(lay,i,{w:1.6,r:26});
     for(const i of hl.enemy)ring(lay,i,{w:1.6,r:26,c:'var(--ink)'});
     const swap=H&&!H.walk;if(hl.sel>=0&&!swap)ring(lay,hl.sel,{w:3.5,r:27});
     if(hl.target>=0&&!swap)ring(lay,hl.target,{w:3.5,r:27,c:'var(--ink)'});
