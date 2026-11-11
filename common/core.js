@@ -1002,7 +1002,7 @@ function init(){GAME.home();
 // Table k is the page of its game with #mt-<code>-<k> (to play), #mw-<code>-<k> (to watch) or #mv-<code>-<k> (a finished
 // table, read only). Whoever arrives first hosts the table (its code: <code>t<k>), the other joins it. At each table
 // the match's Player 1 of that table (j1 at tables 0, 2, 4; the other at 1, 3) chooses their seat, then both start.
-const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',tc:{base:20*60e3,inc:30e3}},{id:'dblk',page:'diagonalblocks',name:'Diagonal Blocks Duo',tc:{base:20*60e3,inc:10e3}},
+const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',tc:{base:20*60e3,inc:30e3}},{id:'dblk',page:'diagonalblocks',name:'Diagonal Blocks',tc:{base:20*60e3,inc:10e3}},
   {id:'volo',page:'volo',name:'Volo',tc:{base:20*60e3,inc:20e3}},{id:'gyges',page:'gyges',name:'Gygès',tc:{base:20*60e3,inc:10e3},rules:{adv:true}},
   {id:'tintas',page:'tintas',name:'Tintas',tc:{base:20*60e3,inc:10e3}}];
 const mPlan=rec=>MOCHA.filter((g,i)=>i!==rec.excl);

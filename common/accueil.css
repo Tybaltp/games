@@ -1,0 +1,44 @@
+/* L'accueil des pages de jeu (modèle commun ; aujourd'hui Gygès, Zèrtz, Diagonal Blocks). Chargé après le style de la page. */
+html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
+/* Une seule mise en page, quelle que soit la largeur (pas de bascule, pas de saut au redimensionnement) :
+   en-tête aligné sur le bloc d'accueil ; description en haut ; cadres centrés dans la place qui reste ;
+   plateau (victoire en haut), hauteur fixée par la fenêtre, calé à droite (marge 24 px) ; quand la fenêtre se resserre, son bord
+   gauche s'arrête à 8 % de la largeur et c'est la droite du plateau qui sort de l'écran (au téléphone, le but aux trois quarts) ;
+   fondu oblique, de la pente des étiquettes de la page principale. */
+#setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding-bottom:2vh}
+#setup .home{max-width:520px;flex:1}#setup .home>.lede{margin-bottom:auto}#setup .home>#rulesHome{margin-bottom:auto}
+body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-left:auto;margin-right:auto}
+/* Ce que chaque page déclare (dans son propre <style>) :
+     --accImgL, --accImgD : le plateau entier, clair et sombre, en url(../img/accueil/...) (chemin lu depuis cette feuille) ; --accWoodL, --accWoodD : la couleur du bois autour ;
+     --accR : largeur / hauteur de l'image (nombre) ; --accTintL, --accTintD : la couleur des cartes de mode, celle de l'étiquette
+     du jeu sur la page d'accueil du site (common/cards.css, --gacc) ;
+     facultatif, le cadrage : --accTop (72px, haut du plateau, sous l'en-tête), --accBot (24px), --accRight (24px, marge à droite
+     quand la fenêtre est large), --accMinX (8vw, là où s'arrête le bord gauche quand la fenêtre se resserre : la droite du plateau
+     sort alors de l'écran). */
+:root{--accTint:var(--accTintL,var(--accent));--accTop:72px;--accBot:24px;--accRight:24px;--accMinX:8vw;--accImg:var(--accImgL);--accWood:var(--accWoodL);
+  --accH:calc(100vh - var(--accTop) - var(--accBot));--accW:calc(var(--accH) * var(--accR));
+  --accX:max(var(--accMinX),calc(100vw - var(--accRight) - var(--accW)))}
+@supports (height:100dvh){:root{--accH:calc(100dvh - var(--accTop) - var(--accBot))}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:var(--accImgD);--accWood:var(--accWoodD);--accTint:var(--accTintD,var(--accent))}}
+:root[data-theme="dark"]{--accImg:var(--accImgD);--accWood:var(--accWoodD);--accTint:var(--accTintD,var(--accent))}
+.accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
+/* Le fond : le plateau (bord gauche en --accX, --accTop en haut, --accBot en bas) sur le bois en aplat, qui couvre toute la
+   page (aucun bord). Transparence en diagonale : 100 % au coin bas droit du plateau, 0 % à son coin haut gauche ; entre les
+   deux, opacité = t^1,8 (t de 0 à 1 le long de la diagonale). Le dégradé suit la diagonale du plateau : angle --accAng =
+   180° − atan(1 / --accR), arrêts aux projections de ses deux coins, --accK = 1 / √(1 + --accR²) (calculés par accueil.js). */
+.accZone{position:absolute;inset:0;background:var(--accImg) var(--accX) var(--accTop)/var(--accW) var(--accH) no-repeat,var(--accWood);
+  -webkit-mask-image:linear-gradient(var(--accAng),transparent calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK)),rgb(0 0 0/0.033) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.15),rgb(0 0 0/0.115) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.30),rgb(0 0 0/0.238) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.45),rgb(0 0 0/0.399) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.60),rgb(0 0 0/0.596) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.75),rgb(0 0 0/0.827) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.90),#000 calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK)));mask-image:linear-gradient(var(--accAng),transparent calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK)),rgb(0 0 0/0.033) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.15),rgb(0 0 0/0.115) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.30),rgb(0 0 0/0.238) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.45),rgb(0 0 0/0.399) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.60),rgb(0 0 0/0.596) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.75),rgb(0 0 0/0.827) calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK) * 0.90),#000 calc((var(--accX) + var(--accTop) * var(--accR)) * var(--accK) + var(--accW) * 2 * var(--accK)))}
+#setup .home .card,#setup .home details#rulesHome{background:color-mix(in srgb,var(--panel) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#setup .home .card.primary-card{border-color:var(--line);box-shadow:0 10px 40px rgb(0 0 0/.14)}
+/* le titre (games / nom du jeu) au survol : la couleur du jeu, pas l'accent de la page */
+h1 a.crumb:hover,h1 a.gname:hover{color:var(--accTint)}
+#setup .lede{color:var(--ink);font-weight:500;text-shadow:0 0 3px var(--bg),0 0 10px var(--bg),0 0 18px var(--bg)}
+#playBtn,#anaBtn,#modeWrap,#resumeD{display:none!important}
+.accTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:clamp(12px,3.4vw,14px);min-height:clamp(112px,29vw,122px);border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--accTint) 30%,var(--line));background:color-mix(in srgb,var(--accTint) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
+.accTile svg{width:26px;height:26px;fill:none;stroke:var(--accTint);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-bottom:auto}
+.accTile b{font-family:var(--f-display);font-weight:800;font-size:clamp(1.02rem,.82rem + 1.1vw,1.12rem);letter-spacing:-.01em;color:var(--ink);margin-top:10px}
+.accTile span{font-size:.8rem;color:var(--muted);line-height:1.3}
+.accTile:hover:not(:disabled){border-color:var(--accTint);background:color-mix(in srgb,var(--accTint) 17%,var(--panel))}

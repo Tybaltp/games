@@ -33,6 +33,11 @@ html.nocoords{--board-ar:388/552}
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--danger:#e8634d;color-scheme:dark}
 </style>
+<style>
+/* accueil : ce qui est propre à Gygès ; le reste dans common/accueil.css */
+:root{--accImgL:url(../img/accueil/gyges.svg);--accImgD:url(../img/accueil/gyges-dark.svg);--accWoodL:rgb(220,197,156);--accWoodD:rgb(86,65,42);--accR:0.70290;--accTintL:#d98f1f;--accTintD:#efa93c}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="gyges.html"><b id="ttl" style="font-weight:inherit">Gygès</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -163,7 +168,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=58"></script>
+<script src="common/core.js?v=59"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 function GygesEngine(){
@@ -276,20 +281,31 @@ function GygesAI(E){
   const G=E.G,NB=E.NB,rowOf=E.rowOf,far=E.far,ORDER=E.ORDER,NSET=E.NSET,WIN=1e6;
   // Distinct moves of the player to move: {s,path,rep,b (resulting board),goal}. A move reaching the goal is returned alone.
   // maxSeg limits the movements per move (1 = no bounce); nodeCap bounds the path search of each piece.
-  function gen(s,adv,maxSeg,nodeCap){const p=s.turn,out=[],seen=new Set(),fr=far(p);let goal=null;
+  // A move's board is built only when asked for (most moves of a leaf are only counted). base: the board with the moving
+  // piece lifted; the piece (k) lands on x, the displaced one (base[x]) on rep.
+  class Mv{constructor(s,path,rep,id,base,x,k){this.s=s;this.path=path;this.rep=rep;this.id=id;this.base=base;this.x=x;this.k=k;this._b=null;}
+    get b(){let nb=this._b;if(!nb){nb=this.base.slice();nb[this.x]=this.k;if(this.rep>=0)nb[this.rep]=this.base[this.x];this._b=nb;}return nb;}}
+  const SEEN=new Int32Array(4096+36*36*36);let stamp=0;
+  // go: 1 = goal only, looks for a move reaching the goal ([that move] or []), no move list (threat test); 2 = count only,
+  // [that goal move] or {n: number of moves, f: cells of the row before the goal reached} (a leaf's static value); 3 = the same, a replacement counted once whatever the drop.
+  function gen(s,adv,maxSeg,nodeCap,go){const p=s.turn,out=[],fr=far(p),cnt=go>=2;let goal=null,n=0,fm=0;const st=++stamp;
     for(const s0 of E.playable(s,adv)){const b=s.b.slice(),k=b[s0];b[s0]=0;const used=new Uint8Array(60),path=[],memo=new Set();let nodes=0;
-      const rec=(cur,rem,seg,lo,hi)=>{if(goal||++nodes>nodeCap)return;
-        const key=cur*64+rem*8+seg+'|'+lo+'|'+hi;if(memo.has(key))return;memo.add(key);
+      // drop cells: the board with the piece landed on an occupied cell has the same empty cells as b
+      const drops=adv&&go!==1?E.dropCells(b,p):null;
+      const rec=(cur,rem,seg,lo,hi,bn)=>{if(goal||++nodes>nodeCap)return;
+        if(bn){const key=cur*64+rem*8+seg+'|'+lo+'|'+hi;if(memo.has(key))return;memo.add(key);}   // memo at bounces only
         if(rem===1&&rowOf(cur)===fr){goal={s:s0,path:path.concat([G]),rep:-1,goal:true};return;}
         for(const [nx,e] of NB[cur]){if(used[e])continue;
           const l2=e<30?lo|(1<<e):lo,h2=e<30?hi:hi|(1<<(e-30));
-          if(rem>1){if(b[nx])continue;used[e]=1;path.push(nx);rec(nx,rem-1,seg,l2,h2);path.pop();used[e]=0;if(goal)return;continue;}
-          if(!b[nx]){if(nx===s0)continue;const id=s0*64+nx;if(!seen.has(id)){seen.add(id);const nb=b.slice();nb[nx]=k;out.push({s:s0,path:path.concat([nx]),rep:-1,b:nb});}continue;}
+          if(rem>1){if(b[nx])continue;used[e]=1;path.push(nx);rec(nx,rem-1,seg,l2,h2,false);path.pop();used[e]=0;if(goal)return;continue;}
+          if(!b[nx]){if(go===1||nx===s0)continue;const id=s0*64+nx;if(SEEN[id]!==st){SEEN[id]=st;if(cnt){n++;if(rowOf(nx)===fr)fm|=1<<(nx%6);}else out.push(new Mv(s0,path.concat([nx]),-1,(s0*37+nx)*37,b,nx,k));}continue;}
           used[e]=1;path.push(nx);
-          if(adv){const b2=b.slice();b2[nx]=k;for(const d of E.dropCells(b2,p)){const id=s0*64+nx+'r'+d;if(seen.has(id))continue;seen.add(id);const nb=b2.slice();nb[d]=b[nx];out.push({s:s0,path:path.slice(),rep:d,b:nb});}}
-          if(seg<maxSeg)rec(nx,b[nx],seg+1,l2,h2);
+          if(drops&&cnt){const id=4096+s0*36+nx;if(SEEN[id]!==st&&drops.length){SEEN[id]=st;n+=go===2?drops.length:1;if(rowOf(nx)===fr)fm|=1<<(nx%6);}}
+          else if(drops){let pc=null;for(const d of drops){const id=4096+(s0*36+nx)*36+d;if(SEEN[id]===st)continue;SEEN[id]=st;if(!pc)pc=path.slice();out.push(new Mv(s0,pc,d,(s0*37+nx)*37+d+1,b,nx,k));}}
+          if(seg<maxSeg)rec(nx,b[nx],seg+1,l2,h2,true);
           path.pop();used[e]=0;if(goal)return;}};
-      rec(s0,k,1,0,0);if(goal)return [goal];}
+      rec(s0,k,1,0,0,false);if(goal)return [goal];}
+    if(cnt){let f=0;while(fm){f+=fm&1;fm>>=1;}return {n,f};}
     return out;}
   const child=(s,mv)=>({b:mv.b,turn:1-s.turn,n:s.n,passes:0,goal:null});
   const keyOf=s=>String.fromCharCode(...s.b)+s.turn+s.passes;
@@ -300,6 +316,7 @@ function GygesAI(E){
     const farCells=(list,p)=>{const f=far(p),set=new Set();for(const m of list){const e=m.path[m.path.length-1];if(e!==G&&rowOf(e)===f)set.add(e);}return set.size;};
     return 3*(mine.length-theirs.length)+60*(farCells(mine,s.turn)-farCells(theirs,o));}
   function search(s0,opt){opt={adv:false,depth:3,time:2000,noise:0,maxSeg:99,cap:60000,...opt};
+    if(opt.ts&&!E.setup(s0))return search2(s0,opt);
     const t0=Date.now(),TT=new Map();let nodes=0,stop=false;
     if(E.setup(s0))return E.blockMode(s0)?block(s0,opt):place(s0,opt);
     const rootMoves=gen(s0,opt.adv,opt.maxSeg,opt.cap);
@@ -328,6 +345,62 @@ function GygesAI(E){
       if(stop&&result)break;
       let pick=null,pv=-Infinity;for(const x of scored){const v=x.v+(opt.noise?(Math.random()*2-1)*opt.noise:0);if(v>pv){pv=v;pick=x;}}
       if(pick)result={m:pick.m,v:pick.v,d};
+      if(stop||Math.abs(alpha)>WIN/2)break;}
+    return {move:clean(result.m),score:result.v,depth:result.d,nodes};}
+  // Threat-aware search (opt.ts, the strong levels; outils/aitools/res/gyges/niveaux.md). A threat: the player not to
+  // move can reach the goal. Then only the moves that may parry it are searched (exact: the others leave the threatening
+  // path and the rows in front of its piece unchanged), without using up depth (up to opt.ext plies, 3 by default, past the nominal
+  // depth); at the horizon, a threatened position is searched on in the same way instead of being judged lost. Moves
+  // are ordered by a history of the moves that cut (killer-like), the best one of the transposition table first.
+  // Sound pruning only: what it plays is what a full-width search of the same lines would play, seen deeper.
+  function parries(s,moves,th){const o=1-s.turn,b=s.b,cells=[th.s];for(const x of th.path)if(x!==G)cells.push(x);
+    const rs=rowOf(th.s),front=[];for(const r of ORDER[o]){if(r===rs)break;for(let c=0;c<6;c++)front.push(r*6+c);}
+    if(front.some(i=>b[i]))return moves;              // a blocked piece in front of it could be freed: no pruning
+    const out=[];for(const m of moves){const nb=m.b;let hit=false;
+      for(const i of cells)if(nb[i]!==b[i]){hit=true;break;}
+      if(!hit)for(const i of front)if(nb[i]){hit=true;break;}
+      if(hit)out.push(m);}
+    return out;}
+  function stat(s,mine,theirs){const o=1-s.turn,farCells=(list,p)=>{const f=far(p),set=new Set();for(const m of list){const e=m.path[m.path.length-1];if(e!==G&&rowOf(e)===f)set.add(e);}return set.size;};
+    return 3*(mine.length-theirs.length)+60*(farCells(mine,s.turn)-farCells(theirs,o));}
+  function search2(s0,opt){const t0=Date.now(),TT=new Map(),HI=new Int32Array(36*37*37),ext=opt.ext==null?3:opt.ext;
+    let nodes=0,stop=false,maxPly=0;const A=opt.adv,MS=opt.maxSeg,CAP=opt.cap,LMR=opt.lmr||0,CM=opt.ev===1?3:2;
+    const view=(s)=>({b:s.b,turn:1-s.turn,n:s.n,passes:0});
+    function order(moves,first){for(const m of moves)m.h=HI[m.id];moves.sort((x,y)=>y.h-x.h);
+      if(first!=null){const i=moves.findIndex(m=>m.id===first);if(i>0){const [m]=moves.splice(i,1);moves.unshift(m);}}}
+    function neg(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
+      let th=null,moves;
+      if(depth<=0){const mc=gen(s,A,MS,CAP,CM);if(mc.length)return WIN-ply;   // a leaf: counts only, unless threatened
+        if(mc.n){const tc=gen(view(s),A,MS,CAP,CM);if(!tc.length)return 3*(mc.n-tc.n)+60*(mc.f-tc.f);
+          th=tc[0];if(ply>=maxPly)return -3000;}}
+      moves=gen(s,A,MS,CAP);
+      if(moves.length===1&&moves[0].goal)return WIN-ply;
+      if(!moves.length){if(s.passes>=1)return 0;return -neg({b:s.b,turn:1-s.turn,n:s.n,passes:s.passes+1},depth-1,-beta,-alpha,ply+1);}
+      if(depth>0){const g=gen(view(s),A,MS,CAP,1);if(g.length)th=g[0];}
+      let list=moves,d1=depth-1;
+      if(th){list=parries(s,moves,th);if(!list.length)return -(WIN-ply-1);if(ply<maxPly&&(depth<=0||opt.cx))d1=Math.max(0,depth);}
+      const k=keyOf(s),te=TT.get(k);let best=-Infinity,bestId=-1;const a0=alpha;
+      if(te&&te.d>=depth){if(te.f===0)return te.v;if(te.f===1&&te.v>=beta)return te.v;if(te.f===-1&&te.v<=alpha)return te.v;}
+      order(list,te?te.m:null);
+      // lmr: the late moves of a quiet node are first searched one ply shallower, and again at full depth if they rise
+      let i=0;for(const m of list){const c=child(s,m);let v;
+        if(LMR&&!th&&depth>=2&&i>=LMR&&alpha>-WIN){v=-neg(c,d1-1,-alpha-1,-alpha,ply+1);if(!stop&&v>alpha)v=-neg(c,d1,-beta,-alpha,ply+1);}
+        else v=-neg(c,d1,-beta,-alpha,ply+1);
+        i++;if(stop)return 0;
+        if(v>best){best=v;bestId=m.id;}if(v>alpha)alpha=v;if(alpha>=beta){HI[m.id]+=1+depth*depth;break;}}
+      TT.set(k,{d:depth,v:best,f:best<=a0?-1:best>=beta?1:0,m:bestId});return best;}
+    let rootMoves=gen(s0,A,MS,CAP);
+    if(!rootMoves.length)return {move:{t:'x'},score:0,depth:0};
+    if(rootMoves.length===1)return {move:clean(rootMoves[0]),score:rootMoves[0].goal?WIN:0,depth:0,forced:!rootMoves[0].goal};
+    {const g=gen(view(s0),A,MS,CAP,1);if(g.length){const pr=parries(s0,rootMoves,g[0]);if(pr.length)rootMoves=pr;}}
+    if(opt.shuffle)for(let i=rootMoves.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;const x=rootMoves[i];rootMoves[i]=rootMoves[j];rootMoves[j]=x;}
+    let result=null;
+    for(let d=1;d<=opt.depth;d++){let alpha=-Infinity,bm=null;maxPly=d+ext;
+      if(result){const i=rootMoves.indexOf(result.m);if(i>0){const [m]=rootMoves.splice(i,1);rootMoves.unshift(m);}}
+      for(const m of rootMoves){const v=-neg(child(s0,m),d-1,-Infinity,-alpha,1);if(stop)break;
+        if(v>alpha){alpha=v;bm=m;}}
+      if(stop&&result){if(bm)result={m:bm,v:alpha,d:d-1+.5};break;}   // the previous best was searched first: bm is at least as good
+      if(bm)result={m:bm,v:alpha,d};else if(!result)result={m:rootMoves[0],v:alpha,d};
       if(stop||Math.abs(alpha)>WIN/2)break;}
     return {move:clean(result.m),score:result.v,depth:result.d,nodes};}
   const mk=m=>m.s+'.'+m.path[m.path.length-1]+'.'+m.rep;
@@ -419,7 +492,7 @@ const E=GygesEngine(),G=E.G;
 // Computer levels: depth of reading (half-moves), bounces seen per move, random noise on the choice, time budget (ms);
 // shuffle + placeTol:0 = random among equal moves and equal setups (no cost; outils/aitools/res/gyges/niveaux.md)
 const LEVELS={debutant:{depth:1,maxSeg:3,noise:300},moyen:{depth:2,maxSeg:3,noise:100,time:1500,placeTries:4},
-  fort:{depth:12,time:3000,placeTries:6,shuffle:true,placeTol:0},tresfort:{depth:12,time:8000,placeTries:6,shuffle:true,placeTol:0}};
+  fort:{depth:12,time:3000,placeTries:6,shuffle:true,placeTol:0,ts:true},tresfort:{depth:12,time:8000,placeTries:6,shuffle:true,placeTol:0,ts:true}};
 const HINT=LEVELS.fort;
 // Setup modes: 'piece' one piece at a time in turn (default) · 'simul' both rows chosen at the same time, hidden until both
 // are validated · 'seq' J1's whole row, then J2's. Missing (old saves, resume codes) = 'piece'.
@@ -783,4 +856,5 @@ function aiSearch(m,opt){return A.search({...m,b:Int8Array.from(m.b)},opt);}`,
   evalInfo:(res,st)=>E.setup(st)?null:evalInfo(res)};
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
