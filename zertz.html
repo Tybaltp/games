@@ -56,6 +56,11 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 .colors .mb{width:18px;height:18px}
 .colors button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
 </style>
+<style>
+/* accueil (essai, branche accueil-jeu) : ce qui est propre à Zèrtz ; le reste dans essai-accueil/accueil.css */
+:root{--accImgL:url(../img/accueil/zertz.svg);--accImgD:url(../img/accueil/zertz-dark.svg);--accWoodL:rgb(31,56,64);--accWoodD:rgb(19,42,50);--accR:0.87108}
+</style>
+<link rel="stylesheet" href="essai-accueil/accueil.css">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="zertz.html"><b id="ttl" style="font-weight:inherit">Zèrtz</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -576,4 +581,5 @@ function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search
   evalInfo:res=>evalInfo(res)};
 coreStart();
 </script>
+<script src="essai-accueil/accueil.js"></script>
 </body></html>
