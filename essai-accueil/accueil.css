@@ -11,16 +11,17 @@ html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 5
 body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-left:auto;margin-right:auto}
 /* Ce que chaque page déclare (dans son propre <style>) :
      --accImgL, --accImgD : le plateau entier, clair et sombre, en url(../img/accueil/...) (chemin lu depuis cette feuille) ; --accWoodL, --accWoodD : la couleur du bois autour ;
-     --accR : largeur / hauteur de l'image (nombre) ;
+     --accR : largeur / hauteur de l'image (nombre) ; --accTintL, --accTintD : la couleur des cartes de mode, celle de l'étiquette
+     du jeu sur la page d'accueil du site (common/cards.css, --gacc) ;
      facultatif, le cadrage : --accTop (72px, haut du plateau, sous l'en-tête), --accBot (24px), --accRight (24px, marge à droite
      quand la fenêtre est large), --accMinX (8vw, là où s'arrête le bord gauche quand la fenêtre se resserre : la droite du plateau
      sort alors de l'écran). */
-:root{--accTop:72px;--accBot:24px;--accRight:24px;--accMinX:8vw;--accImg:var(--accImgL);--accWood:var(--accWoodL);
+:root{--accTint:var(--accTintL,var(--accent));--accTop:72px;--accBot:24px;--accRight:24px;--accMinX:8vw;--accImg:var(--accImgL);--accWood:var(--accWoodL);
   --accH:calc(100vh - var(--accTop) - var(--accBot));--accW:calc(var(--accH) * var(--accR));
   --accX:max(var(--accMinX),calc(100vw - var(--accRight) - var(--accW)))}
 @supports (height:100dvh){:root{--accH:calc(100dvh - var(--accTop) - var(--accBot))}}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:var(--accImgD);--accWood:var(--accWoodD)}}
-:root[data-theme="dark"]{--accImg:var(--accImgD);--accWood:var(--accWoodD)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:var(--accImgD);--accWood:var(--accWoodD);--accTint:var(--accTintD,var(--accent))}}
+:root[data-theme="dark"]{--accImg:var(--accImgD);--accWood:var(--accWoodD);--accTint:var(--accTintD,var(--accent))}
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 /* Le fond : le plateau (bord gauche en --accX, --accTop en haut, --accBot en bas) sur le bois en aplat, qui couvre toute la
@@ -35,8 +36,8 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 #playBtn,#anaBtn,#modeWrap,#resumeD{display:none!important}
 .accTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:clamp(12px,3.4vw,14px);min-height:clamp(112px,29vw,122px);border-radius:12px;
-  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
-.accTile svg{width:26px;height:26px;fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-bottom:auto}
+  border:1px solid color-mix(in srgb,var(--accTint) 30%,var(--line));background:color-mix(in srgb,var(--accTint) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
+.accTile svg{width:26px;height:26px;fill:none;stroke:var(--accTint);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-bottom:auto}
 .accTile b{font-family:var(--f-display);font-weight:800;font-size:clamp(1.02rem,.82rem + 1.1vw,1.12rem);letter-spacing:-.01em;color:var(--ink);margin-top:10px}
 .accTile span{font-size:.8rem;color:var(--muted);line-height:1.3}
-.accTile:hover:not(:disabled){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--panel))}
+.accTile:hover:not(:disabled){border-color:var(--accTint);background:color-mix(in srgb,var(--accTint) 17%,var(--panel))}
