@@ -17,7 +17,7 @@
   --ghi:#f8e4a4;--g1:#d9ab3a;--gsh:#a67a1e;--g3:#6b4b10;--gk:#3a2908;--shi:#fbfdfe;--s1:#b7c1c9;--ssh:#7f8b94;--s3:#3d474f;--sk:#1b2228;
   --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
   --accent:#2f7d8c;--accent-ink:#ffffff;--hl:#5fd0c9;--bink:#e3e9e6;--danger:#e8604a;
-  --ice:rgba(190,225,255,.42);--ice2:rgba(225,242,255,.72);--icek:#bfe0ff;      /* frozen piece: a hatched veil */
+  --ice:rgba(190,225,255,.34);--ice2:rgba(225,242,255,.60);--icek:#bfe0ff;      /* frozen piece: a hatched veil */
   --board-ar:506/508;            /* viewBox of the board (506×508; 488×488 without the coordinates) */
 }
 html.nocoords{--board-ar:1/1}
@@ -25,12 +25,12 @@ html.nocoords{--board-ar:1/1}
   --bg:#101413;--panel:#191f1d;--ink:#e4e8e6;--muted:#8f9a97;--line:#2a3330;
   --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
-  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.38);--ice2:rgba(215,236,255,.66);color-scheme:dark;}}
+  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#101413;--panel:#191f1d;--ink:#e4e8e6;--muted:#8f9a97;--line:#2a3330;
   --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
-  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.38);--ice2:rgba(215,236,255,.66);color-scheme:dark;}
+  --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}
 /* the board sits on its wood frame, on phones too (thinner there) */
 .board{background:var(--wood);border:0;border-radius:12px;padding:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 1px 0 rgba(0,0,0,.25)}
 html.ingame:not(.wide) .board{--bp:4px;padding:4px;border-radius:10px;background:var(--wood)}
@@ -39,6 +39,7 @@ html.ingame:not(.wide) .board{--bp:4px;padding:4px;border-radius:10px;background
 ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);font-size:.74rem;line-height:1.3}
 #svg .lp{opacity:.5;transition:opacity .12s}
 #svg .lp.prep{opacity:1}
+#svg .lpn{opacity:.8;transition:opacity .12s}#svg.lpfocus .lpn{opacity:.12}#svg.lpfocus .lpn.on{opacity:1}
 #svg.lpfocus .lp{opacity:.12}
 #svg.lpfocus .lp.on{opacity:1}
 #svg .stepn{cursor:pointer}#svg .stepn:hover circle{stroke:var(--hl);stroke-width:2.5}
@@ -528,7 +529,7 @@ function capsRow(box,b,q){const cnt=[0,8,2,2,2,1,1],g=E.sgn(q),gold=q===0,names=
 // o: {real, shown, last, pv (turn preview), hl (highlights), setup}
 // Moves drawn as paths, never as rings (one marker per piece). Last turn: a thin, discreet line, a dot on the start square,
 // ending at the edge of the piece; hovering a moved piece shows its own path plainly and dims the others. Turn being
-// prepared: the same lines, vivid, each step numbered 1 to 4 halfway along its segment; a number is a button that goes
+// prepared: the same lines, vivid, each step numbered 1 to 4 where it crosses into the next square (kept, dimmed, once the turn is validated); a number is a button that goes
 // back to just before that step. Solid: moved by the player; dashed: pushed or pulled.
 let lastEnds=new Map(),stepSpots=new Set();   // end square -> path index, for the hover; places taken by step numbers
 function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',c=P.pts.map(i=>[X(i)+S/2,Y(i)+S/2]);
@@ -541,14 +542,15 @@ function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',
   const pts=c.map(q=>q.join(',')).join(' '),gr=el('g',{class:'lp'+(prep?' prep':''),'data-k':k},g);
   el('polyline',{points:pts,fill:'none',stroke:col,'stroke-width':prep?2.6:1.8,'stroke-linecap':'round','stroke-linejoin':'round',...(P.own?{}:{'stroke-dasharray':'5 5'})},gr);
   el('circle',{cx:c[0][0],cy:c[0][1],r:prep?4.5:3.5,fill:col},gr);
-  if(prep&&top)P.nums.forEach((n,j)=>{const b=el('g',{'data-step':n,class:'stepn'},top),[x,y]=mids[j];
-    el('title',{},b).textContent=t('backTo',{n});
+  // the numbers stay on the last validated turn, for the opponent to read it (a little dimmed, not clickable)
+  P.nums.forEach((n,j)=>{const live=prep&&top,b=live?el('g',{'data-step':n,class:'stepn'},top):el('g',{class:'lpn','data-k':k},top||gr),[x,y]=mids[j];
+    if(live)el('title',{},b).textContent=t('backTo',{n});
     el('circle',{cx:x,cy:y,r:8,fill:P.own?'var(--hl)':'var(--bink)',stroke:'var(--wood)','stroke-width':1.5},b);
     const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,'font-weight':600,fill:'#06211f'},b);tx.textContent=n;});}
 function lastOver(g,L,shown,top){lastEnds=new Map();stepSpots=new Set();if(!L||!L.det)return;
   L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,top);if(shown[end])lastEnds.set(end,k);});
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5});}}
-function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
+function lpFocus(k){const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp,.lpn').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   const hoverTo=i=>{if(i===ui.hover)return;ui.hover=i;renderGame();};   // also with nothing selected: a movable piece shows it can be picked
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const c=e.target.closest('[data-i]'),i=c?+c.dataset.i:-1;hoverTo(i);
@@ -706,7 +708,7 @@ function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;
     const a=q[q.length-2],b=q[q.length-1],dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy);q[q.length-1]={x:b.x-dx/L*25,y:b.y-dy/L*25};
     el('polyline',{points:q.map(p=>p.x+','+p.y).join(' '),fill:'none',stroke:col,'stroke-width':2.6,'stroke-linecap':'round',...(own?{}:{'stroke-dasharray':'5 5'})},g);
     el('circle',{cx:c[0].x,cy:c[0].y,r:4.5,fill:col},g);
-    nums.forEach((n,j)=>{const vert=c[j].x===c[j+1].x,x=(c[j].x+c[j+1].x)/2+(vert?24:0),y=(c[j].y+c[j+1].y)/2+(vert?0:24);
+    nums.forEach((n,j)=>{const vert=c[j].x===c[j+1].x,x=(c[j].x+c[j+1].x)/2,y=(c[j].y+c[j+1].y)/2;
       el('circle',{cx:x,cy:y,r:9,fill:col,stroke:'var(--wood)','stroke-width':1.5},top);
       const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'#06211f'},top);tx.textContent=n;});return g;}
   const dots=sq=>sq.map(([c,r])=>dotAt(c,r));
