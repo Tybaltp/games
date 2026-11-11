@@ -53,11 +53,11 @@ body:has(#setup:not([hidden])) .wrap>header{max-width:520px;width:100%;margin-le
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 /* la zone du fond suit le plateau (bord gauche en --accX ; 72 px en haut, sous l'en-tête ; 24 px à droite et en bas) : à sa
-   gauche, la moitié de sa largeur pour le fondu ; bois en aplat autour du plateau ; fondu à 122° (la coupe des étiquettes) et, sous le plateau, vers le bas */
+   gauche, la moitié de sa largeur pour le fondu ; bois en aplat autour du plateau ; fondu à 122° (la coupe des étiquettes), vers la gauche (pas de bord vertical) et, sous le plateau, vers le bas */
 .accBg::before{content:"";position:absolute;top:0;bottom:0;left:calc(var(--accX) - var(--accW) * .5);width:calc(var(--accW) * 1.5 + 24px);
   background:var(--accImg) right 24px top 72px/var(--accW) var(--accH) no-repeat,var(--accWood);
-  -webkit-mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px));
-  mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px));
+  -webkit-mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px)),linear-gradient(to right,transparent,#000 34%);
+  mask-image:linear-gradient(122deg,transparent 8%,rgb(0 0 0/.55) 38%,#000 62%),linear-gradient(#000 calc(var(--accH) + 72px),transparent calc(var(--accH) + 160px)),linear-gradient(to right,transparent,#000 34%);
   -webkit-mask-composite:source-in;mask-composite:intersect}
 #setup .home .card,#setup .home details#rulesHome{background:color-mix(in srgb,var(--panel) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 #setup .home .card.primary-card{border-color:var(--line);box-shadow:0 10px 40px rgb(0 0 0/.14)}
