@@ -38,9 +38,9 @@ html.nocoords{--board-ar:388/552}
    retenu, ces règles vont dans common/games.css pour les neuf jeux et disparaissent de cette page. */
 html:not(.ingame) .wrap{min-height:calc(100vh - 52px);min-height:calc(100dvh - 52px)}
 #setup:not([hidden]){flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:6vh}
-:root{--accImg:url(img/accueil/gyges.svg)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/accueil/gyges-dark.svg)}}
-:root[data-theme="dark"]{--accImg:url(img/accueil/gyges-dark.svg)}
+:root{--accImg:url(img/accueil/gyges.svg);--accWood:rgb(220,197,156)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}}
+:root[data-theme="dark"]{--accImg:url(img/accueil/gyges-dark.svg);--accWood:rgb(86,65,42)}
 .accBg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 .accBg::before{content:"";position:absolute;inset:0 0 0 auto;width:72%;background:var(--accImg) center/100% 100% no-repeat;
@@ -62,10 +62,12 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 .accTile.cur{border-color:var(--accent);border-width:1.5px}
 @media (max-width:700px){
   /* téléphone : les cadres centrés ; le plateau en bas, retourné (le but et l'anneau gagnant en bas), décalé vers la droite
-     (but aux trois quarts de la largeur) ; fondu du coin bas droit vers le coin haut gauche (la seconde couche efface le bord haut du bois) */
-  .accBg::before{inset:0;width:auto;background-size:auto 88%;background-position:8vw top;transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%),linear-gradient(to bottom,#000 80%,transparent 88%);mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%),linear-gradient(to bottom,#000 80%,transparent 88%);-webkit-mask-composite:source-in;mask-composite:intersect}
+     (but aux trois quarts de la largeur) ; fondu du coin bas droit vers le coin haut gauche ; sous le plateau, le bois en aplat : pas de bord */
+  .accBg::before{inset:0;width:auto;background:var(--accImg) 8vw 4vh/auto 80% no-repeat,var(--accWood);transform:scaleY(-1);-webkit-mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%);mask-image:linear-gradient(to bottom left,#000 22%,rgb(0 0 0/.4) 55%,rgb(0 0 0/.2) 75%,transparent 95%)}
   .accBg::after{background:linear-gradient(to top left,color-mix(in srgb,var(--bg) 20%,transparent) 0,color-mix(in srgb,var(--bg) 50%,transparent) 40%,color-mix(in srgb,var(--bg) 60%,transparent) 100%)}
-  #setup:not([hidden]){padding-bottom:2vh}}
+  /* la description en haut de page, les cadres centrés dans la place qui reste */
+  #setup:not([hidden]){justify-content:flex-start;padding-bottom:2vh}
+  #setup .home{flex:1}#setup .home>.lede{margin-bottom:auto}#setup .home>#rulesHome{margin-bottom:auto}}
 @media (max-width:420px){.accTile{min-height:112px;padding:12px}.accTile b{font-size:1.02rem}}
 </style>
 </head><body>
