@@ -22,10 +22,9 @@
     b.onclick=()=>{if(k==='ana'){homeStep('ana');return;}ms.value=k;ms.onchange();};grid.appendChild(b);}
   $i('playBtn').before(grid);
   grid.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
-  const mark=()=>grid.querySelectorAll('.accTile').forEach(b=>b.classList.toggle('cur',b.dataset.mode===ms.value));mark();
   // the card's title names the chosen mode; « Retour » comes back to the four cards (from Créer / Charger : to Analyser).
   // The sentence under the mode carries its key, so that changing the language translates it (fix to carry into the socle).
-  const base=homeStep;homeStep=function(k){base(k);mark();const h=$i('newTitle');
+  const base=homeStep;homeStep=function(k){base(k);const h=$i('newTitle');
     if(k==='play'){h.dataset.i18n='m_'+ms.value;h.textContent=t(h.dataset.i18n);}
     $i('modeTxt').dataset.i18n='m_'+ms.value+'Txt';};
   $i('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
