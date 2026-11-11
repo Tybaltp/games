@@ -67,9 +67,9 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <style>
 /* accueil : ce qui est propre à Ponte del Diavolo ; le reste dans common/accueil.css. Le fond : la fin d'une partie de l'ordinateur
    au niveau 8 contre lui-même (47 coups, 18 à 14), plateau entier exporté de la page, posé sur le fond de la page. En grand écran l'image dépasse
-   à droite de 15 % de sa largeur (comme Quarto) ; le plateau laisse de l'espace en haut et en bas (9 % de la hauteur de plus de chaque côté) ; html:root pour passer devant common/accueil.css. */
+   à droite de 15 % de sa largeur (comme Quarto) ; le plateau laisse de l'espace en haut et en bas (6,3 % de la hauteur de plus de chaque côté ; 9 % au premier essai, 30 % de vide en moins à la demande de Thibault) ; html:root pour passer devant common/accueil.css. */
 :root{--accImgL:url(../img/accueil/ponte.svg);--accImgD:url(../img/accueil/ponte-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#a8761c;--accTintD:#e0a94a}
-html:root{--accTop:calc(72px + 9vh);--accBot:calc(24px + 9vh);--accX:max(var(--accMinX),calc(100vw - var(--accW) * .85))}
+html:root{--accTop:calc(72px + 6.3vh);--accBot:calc(24px + 6.3vh);--accX:max(var(--accMinX),calc(100vw - var(--accW) * .85))}
 /* cartes de mode : la teinte de l'or de Ponte, plus légère que dans le modèle (fond 4 % au lieu de 9 %, bord 18 % au lieu de 30 %,
    survol 9 % au lieu de 17 %) ; demande de Thibault : en sombre, l'or et le brun des cartes tranchaient trop */
 html #setup .accTile{background:color-mix(in srgb,var(--accTint) 4%,var(--panel));border-color:color-mix(in srgb,var(--accTint) 18%,var(--line))}
