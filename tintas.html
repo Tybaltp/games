@@ -53,6 +53,11 @@ ol.log li{align-items:center}
 ol.log .cap{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-width:0}
 ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 </style>
+<style>
+/* accueil : ce qui est propre à Tintas ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
+:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#6a3790;--accTintD:#a676d4}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="tintas.html"><b id="ttl" style="font-weight:inherit">Tintas</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -656,4 +661,5 @@ coreStart();
 // New game on this device or against the computer: a new random board (core would keep the finished game's)
 $('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,GAME.form('a'));return;}if(role==='test'){startTest(GAME.form('t'));return;}if(role==='local'){startLocal(GAME.form('f'),view.tc);return;}rmSend('ask');};
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
