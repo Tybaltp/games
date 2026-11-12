@@ -83,7 +83,7 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 
 <section class="view" id="setup">
   <div class="home">
-    <p class="lede noinv" data-i18n="lede"></p>
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -361,7 +361,7 @@ function scoreFixed(st){
 // Ponte strings, merged over the shared ones (core.js)
 const PD_I18N={fr:{
  lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9, le plus fort",m_aiTxt:"Dix niveaux, de 0 à 9 : jusqu'au 8, chacun bat le précédent environ trois parties sur quatre ; le 9 réfléchit 10 s par coup.",
- title:"Ponte del Diavolo",lede:"Bâtissez des îles de quatre tuiles et reliez-les par des ponts.",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
+ title:"Ponte del Diavolo",lede:"Bâtissez des îles et reliez-les par des ponts.",by:"Un jeu de Martin Ebel.",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  needConfirm:"Confirmer chaque coup",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Terminer le tour",passEnd:"Passer et terminer",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Terminer",passEndS:"Passer",
  pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
  lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",lg_fixed:"Plus aucun coup ne peut changer le score : fin de la partie.",w_fixed:", plus aucun coup ne peut changer le score",
@@ -384,7 +384,7 @@ const PD_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: up to 8, each one beats the one below about three games in four; level 9 thinks 10 s per move.",
- title:"Ponte del Diavolo",lede:"Build islands of four tiles and link them with bridges.",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
+ title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
  needConfirm:"Confirm each move",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",
  pts:"pts",isl:"isl.",brg:"br.",ptsL:"points",islL:"islands",brgL:"bridges",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
  lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",lg_fixed:"No move can change the score any more: the game is over.",w_fixed:", no move can change the score any more",
@@ -407,7 +407,7 @@ const PD_I18N={fr:{
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: hasta el 8, cada uno gana al anterior unas tres partidas de cada cuatro; el 9 piensa 10 s por jugada.",
- title:"Ponte del Diavolo",lede:"Construye islas de cuatro losetas y únelas con puentes.",firstIs:"Primer jugador (coloca las dos losetas claras de apertura)",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
+ title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",firstIs:"Primer jugador (coloca las dos losetas claras de apertura)",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
  needConfirm:"Confirmar cada jugada",takeLight:"Tomar las claras",playDark:"Jugar las oscuras",endTurn:"Terminar el turno",passEnd:"Pasar y terminar",takeLightS:"Claras",playDarkS:"Oscuras",endTurnS:"Terminar",passEndS:"Pasar",
  pts:"pts",isl:"isl.",brg:"pte.",ptsL:"puntos",islL:"islas",brgL:"puentes",light:"Claras",dark:"Oscuras",mv_bridge:"puente",lg_pass:"pasa",lg_takeL:"toma las claras",lg_dark:"juega las oscuras",
  lg_forced:"{c}: ninguna jugada posible, pasa.",lg_lastTurn:"Las claras han pasado: las oscuras juegan un último turno.",lg_fixed:"Ninguna jugada puede ya cambiar el marcador: fin de la partida.",w_fixed:", ninguna jugada puede ya cambiar el marcador",

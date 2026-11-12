@@ -57,7 +57,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 
 <section class="view" id="setup">
   <div class="home">
-    <p class="lede noinv" data-i18n="lede"></p>
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -239,7 +239,7 @@ function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=
 
 // ---------- strings ----------
 const Q_I18N={fr:{
- title:"Quarto",lede:"Donnez à l'adversaire la pièce qu'il posera ; alignez quatre pièces qui partagent une caractéristique.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",v_persp:"3D en perspective",needConfirm:"Confirmer chaque coup",
+ title:"Quarto",lede:"Alignez quatre pièces qui partagent une caractéristique, avec la pièce que l'adversaire vous donne.",by:"Un jeu de Blaise Müller.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",v_persp:"3D en perspective",needConfirm:"Confirmer chaque coup",
  m_aiTxt:"Six niveaux, de 0 à 5 : chacun bat le précédent environ trois parties sur quatre.",
  lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5, le plus fort",
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
@@ -258,7 +258,7 @@ const Q_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
- title:"Quarto",lede:"Give your opponent the piece they will place; line up four pieces sharing a trait.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",v_persp:"3D perspective",needConfirm:"Confirm each move",
+ title:"Quarto",lede:"Line up four pieces sharing a trait, with the piece your opponent hands you.",by:"A game by Blaise Müller.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",v_persp:"3D perspective",needConfirm:"Confirm each move",
  m_aiTxt:"Six levels, from 0 to 5: each one beats the one below about three games in four.",
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5, the strongest",
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
@@ -277,7 +277,7 @@ const Q_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, six levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
- title:"Quarto",lede:"Da al adversario la pieza que colocará; alinea cuatro piezas que compartan una característica.",viewOpt:"Vista",v_2d:"2D, vista cenital",v_iso:"3D isométrica",v_persp:"3D en perspectiva",needConfirm:"Confirmar cada jugada",
+ title:"Quarto",lede:"Alinea cuatro piezas que compartan una característica, con la pieza que te da el adversario.",by:"Un juego de Blaise Müller.",viewOpt:"Vista",v_2d:"2D, vista cenital",v_iso:"3D isométrica",v_persp:"3D en perspectiva",needConfirm:"Confirmar cada jugada",
  m_aiTxt:"Seis niveles, de 0 a 5: cada uno gana al anterior unas tres partidas de cada cuatro.",
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5, el más fuerte",
  sqOpt:"Variante avanzada: los cuadrados 2 × 2 también ganan",sqOn:"activada en esta partida",sqOff:"desactivada en esta partida",

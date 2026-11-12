@@ -67,7 +67,7 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 
 <section class="view" id="setup">
   <div class="home">
-    <p class="lede noinv" data-i18n="lede"></p>
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -261,7 +261,7 @@ function ArimaaEngine(){
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
  mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
- title:"Arimaa",lede:"Menez un lapin au bout du plateau : pousser, tirer, pièges.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
+ title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
  m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
  setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
@@ -288,7 +288,7 @@ const AR_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
  mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_2:"Silver",
- title:"Arimaa",lede:"Get a rabbit to the far side: push, pull, traps.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
+ title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
  m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
  setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
@@ -315,7 +315,7 @@ const AR_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },es:{
  mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_2:"Plata",
- title:"Arimaa",lede:"Lleva un conejo al otro extremo del tablero: empujar, tirar, trampas.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",goldIs:"Oro (empieza)",
+ title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",goldIs:"Oro (empieza)",
  m_freeTxt:"Los dos bandos en esta pantalla, sin reloj, con deshacer: para probar y analizar.",
  m_aiTxt:"Sharp, el mejor programa de Arimaa de 2015: tres niveles, con deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
  setupGo:"Validar la colocación",setupGoS:"Validar",undoStep:"Deshacer el paso",undoStepS:"−1 paso",endTurn:"Terminar el turno",endTurnS:"Terminar",gold:"Oro",silver:"Plata",t_caps:"Piezas capturadas: {l}",
