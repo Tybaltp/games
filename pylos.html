@@ -55,7 +55,7 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
 
 <section class="view" id="setup">
   <div class="home">
-    <p class="lede noinv" data-i18n="lede"></p>
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -402,7 +402,7 @@ const PY=new Function(PY_SRC+'\nreturn MOTEUR;')();
 const PG=PY.geo(),CELLS=PG.cells,NAME=i=>CELLS[i].name,IDX=n=>PG.byName[n];
 
 const PY_I18N={fr:{
- title:"Pylos",lede:"Une pyramide de billes : posez, montez, économisez vos billes. La dernière, au sommet, gagne.",
+ title:"Pylos",lede:"Bâtissez la pyramide : qui atteint le sommet gagne.",by:"Un jeu de David G. Royffe.",
  variantOpt:"Règle",v_lines:"Reprise au carré et à l'alignement",v_square:"Reprise au carré seulement",
  needConfirm:"Confirmer chaque coup",
  cLight:"Clair",cDark:"Foncé",cLightL:"clair",cDarkL:"foncé",
@@ -433,7 +433,7 @@ const PY_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 },en:{
- title:"Pylos",lede:"A pyramid of balls: place, move up, save your balls. The last one, on top, wins.",
+ title:"Pylos",lede:"Build the pyramid: whoever reaches the top wins.",by:"A game by David G. Royffe.",
  variantOpt:"Rule",v_lines:"Take back on a square or a line",v_square:"Take back on a square only",
  needConfirm:"Confirm each move",
  cLight:"Light",cDark:"Dark",cLightL:"light",cDarkL:"dark",
@@ -464,7 +464,7 @@ const PY_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 },es:{
- title:"Pylos",lede:"Una pirámide de bolas: coloca, sube, ahorra tus bolas. La última, en la cima, gana.",
+ title:"Pylos",lede:"Construye la pirámide: quien llega a la cima gana.",by:"Un juego de David G. Royffe.",
  variantOpt:"Regla",v_lines:"Recuperación por cuadrado y por línea",v_square:"Recuperación solo por cuadrado",
  needConfirm:"Confirmar cada jugada",
  cLight:"Claro",cDark:"Oscuro",cLightL:"claro",cDarkL:"oscuro",
