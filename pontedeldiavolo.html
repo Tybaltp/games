@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ponte del Diavolo</title>
-<script src="common/theme.js?v=4"></script>
+<script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
@@ -64,6 +64,18 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 .hit{fill:transparent;cursor:default}
 .hit.legal,.hit.own{cursor:pointer}
 </style>
+<style>
+/* accueil : ce qui est propre à Ponte del Diavolo ; le reste dans common/accueil.css. Le fond : la fin d'une partie de l'ordinateur
+   au niveau 8 contre lui-même (47 coups, 18 à 14), plateau entier exporté de la page, posé sur le fond de la page. En grand écran l'image dépasse
+   à droite de 15 % de sa largeur (comme Quarto) ; le plateau laisse de l'espace en haut et en bas (6,3 % de la hauteur de plus de chaque côté ; 9 % au premier essai, 30 % de vide en moins à la demande de Thibault) ; html:root pour passer devant common/accueil.css. */
+:root{--accImgL:url(../img/accueil/ponte.svg);--accImgD:url(../img/accueil/ponte-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#a8761c;--accTintD:#e0a94a}
+html:root{--accTop:calc(72px + 6.3vh);--accBot:calc(24px + 6.3vh);--accX:max(var(--accMinX),calc(100vw - var(--accW) * .85))}
+/* cartes de mode : la teinte de l'or de Ponte, plus légère que dans le modèle (fond 4 % au lieu de 9 %, bord 18 % au lieu de 30 %,
+   survol 9 % au lieu de 17 %) ; demande de Thibault : en sombre, l'or et le brun des cartes tranchaient trop */
+html #setup .accTile{background:color-mix(in srgb,var(--accTint) 4%,var(--panel));border-color:color-mix(in srgb,var(--accTint) 18%,var(--line))}
+html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--accTint) 9%,var(--panel));border-color:var(--accTint)}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html"><b id="ttl" style="font-weight:inherit">Ponte <em>del</em> Diavolo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -187,9 +199,9 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=59"></script>
+<script src="common/core.js?v=60"></script>
 <script src="common/codes.js?v=4"></script>
-<script src="common/ai.js?v=1"></script>
+<script src="common/ai.js?v=2"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
 /*ENGINE*/
@@ -894,4 +906,5 @@ try{const sv=LS.get(K('test'),null);if(sv&&sv.doc&&!Array.isArray(sv.moves)){con
   const g=oldGame(JSON.parse(decodeURIComponent(escape(atob(x.slice(7))))));if(!g)throw 0;return g;};}
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>

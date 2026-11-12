@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Volo</title>
-<script src="common/theme.js?v=4"></script>
+<script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
@@ -41,6 +41,14 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 .player .tally span{color:var(--ink);font-weight:500}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 </style>
+<style>
+/* accueil : ce qui est propre à Volo ; le reste dans common/accueil.css. Le fond : une partie de l'entraînement de l'IA, coup 147
+   (choix et cadrage de Thibault), plateau coupé à droite ; sans le cadre du plateau : sa couleur se prolonge partout et se fond ; le bord coupé tombe au bord de l'écran (--accRight à 0 ; html:root
+   pour passer devant common/accueil.css). */
+:root{--accImgL:url(../img/accueil/volo.svg);--accImgD:url(../img/accueil/volo-dark.svg);--accWoodL:rgb(165,198,221);--accWoodD:rgb(16,33,48);--accR:0.75351;--accTintL:#2f6fd6;--accTintD:#6aa2f5}
+html:root{--accRight:0px}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="volo.html"><b id="ttl" style="font-weight:inherit">Volo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -164,9 +172,9 @@ html.ingame:not(.wide) .board{--bp:0px;padding:0;border-radius:12px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=59"></script>
+<script src="common/core.js?v=60"></script>
 <script src="common/codes.js?v=4"></script>
-<script src="common/ai.js?v=1"></script>
+<script src="common/ai.js?v=2"></script>
 <script>
 function VoloEngine(){
   // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
@@ -311,14 +319,26 @@ const enc=m=>m.t==='x'?'x':(m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'
 const txtOf=m=>m.t==='x'?'pass':m.t==='p'?'+'+name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
 // a move awaiting confirmation: « Passer » for a pass, the regions mentioned when the move removes some
 const describe=m=>m.t==='x'?t('pass'):txtOf(m)+(m.keep>=0?' ('+t('regions').toLowerCase()+')':'');
-// st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code
+// st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code.
+// Replaying a move means generating every legal move (flights included) to find the one with that code: costly, and the
+// shared code replays from the start at each step of the navigation (330 ms a step at move 200 of a long game). So the
+// positions already replayed are kept (VR: the codes, the position after each of them, the log, the last move, the
+// result): a new list of moves only replays what follows the longest prefix it shares with them. The rules are ignored
+// (a single rule set). The position returned is a copy (the kept ones are never handed out).
+const VR={codes:[],states:[],log:[],lasts:[null],over:null};
 function voReplay(rules,moves){
-  let st=E.init();const log=[];let last=null,over=null;
-  for(const code of moves){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv){over={w:-1,why:'w_bad'};break;}
-    const r=E.apply(st,mv);st=r.st;let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;
-    log.push({p,txt:t});last={mv,removed:r.removed};
-    const o=E.outcome(st,p,mv);if(o){over=o;break;}}
-  st.turn=st[TURN];return {st,log,last,over};}
+  if(!VR.states.length)VR.states.push(E.init());
+  let L=0;while(L<moves.length&&L<VR.codes.length&&VR.codes[L]===moves[L])L++;
+  if(L===moves.length&&L<VR.codes.length)return voOut(L,null);   // a position already replayed (navigating back)
+  if(L<VR.codes.length){VR.codes.length=L;VR.states.length=L+1;VR.log.length=L;VR.lasts.length=L+1;VR.over=null;}
+  let over=VR.over,bad=null;
+  for(let k=L;k<moves.length&&!over;k++){const st=VR.states[k],code=moves[k],p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);
+    if(!mv){bad={w:-1,why:'w_bad'};break;}
+    const r=E.apply(st,mv);let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;
+    VR.codes.push(code);VR.states.push(r.st);VR.log.push({p,txt:t});VR.lasts.push({mv,removed:r.removed});
+    const o=E.outcome(r.st,p,mv);if(o)over=VR.over=o;}
+  return voOut(VR.codes.length,bad||over);}
+function voOut(n,over){const st=new Int8Array(VR.states[n]);st.turn=st[TURN];return {st,log:VR.log.slice(0,n),last:VR.lasts[n],over};}
 
 // ---------- move preparation ----------
 // ui: sel (the birds selected to fly), hist (the successive selections), basemv (a move that cuts the opponent's birds
@@ -1073,4 +1093,5 @@ const GAME={id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   home:()=>{drawBoard(E.init(),{});}};
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>

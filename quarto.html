@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quarto</title>
-<script src="common/theme.js?v=4"></script>
+<script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
@@ -42,6 +42,14 @@
 /* the box around the board and the reserve: none in light, the panel in dark (--boardbox, --boardline) */
 .board,html.ingame:not(.wide) .board{background:var(--boardbox);border-color:var(--boardline)}
 </style>
+<style>
+/* accueil : ce qui est propre à Quarto ; le reste dans common/accueil.css. Le fond reprend l'image de la carte d'accueil du site
+   (img/cartes/quarto[-dark].svg, sans son dégradé de fond : le plateau repose sur le fond de la page), cadrée sur le plateau entier et sa réserve (fond de la réserve retiré).
+   En grand écran l'image dépasse à droite de 16,5 % de sa largeur (plateau plus visible, coupé à droite ; le bord de l'écran tombe juste avant la dernière colonne de la réserve, sans tranche de pièce) ; html:root pour passer devant common/accueil.css. */
+:root{--accImgL:url(../img/accueil/quarto.svg);--accImgD:url(../img/accueil/quarto-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.87054;--accTintL:#6f8f66;--accTintD:#9cb894}
+html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="quarto.html"><b id="ttl" style="font-weight:inherit">Quarto</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -169,7 +177,7 @@
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=59"></script>
+<script src="common/core.js?v=60"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Quarto: rules =====
@@ -643,4 +651,5 @@ const GAME={id:'quarto',quietWhy:why=>!/^w_(time|resign|agree)$/.test(why),   //
   home:()=>drawBoard(scene(E.init()))};
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
