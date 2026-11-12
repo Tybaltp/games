@@ -46,6 +46,8 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 /* « Comment jouer »: a card over the board, four animated pages (move, push, pull, end of turn) */
 .howto{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}
 .howto[hidden]{display:none}
+/* the language and theme buttons stay usable over the card: they translate or recolour it, it stays open */
+html.htshown header .seg{position:relative;z-index:61}
 .htcard{width:min(420px,100%);max-height:100%;overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .hthead{display:flex;justify-content:space-between;align-items:baseline}.hthead b{font-size:1.05rem}.hthead span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
 #htSvg{width:100%;height:auto;display:block;border-radius:10px;background:var(--wood)}
@@ -663,7 +665,8 @@ function sharpHist(v){const r=arReplay(v,v.moves),k=v.moves.length,tag=k=>(Math.
 // ---------- « Comment jouer » ----------
 // Opens over the board the first time a game is shown on this page (unless « Ne plus montrer » was ticked: kept in
 // localStorage, losing it only brings the card back). Four pages, each with an animation that loops while the page is
-// shown: move, push, pull, end of turn. Arrows, dots or the keyboard (← →, Échap) to browse; « Passer » closes at any time.
+// shown: move, push, pull, end of turn. Arrows, dots or the keyboard (← →) to browse. Only its own button (« Passer »,
+// « C'est parti ») closes it: not a click beside it, nor Échap; a change of language or theme translates or recolours it.
 // The button at the end of « Règles en bref » opens it again.
 const HT={k:0,tok:null,seen:false,N:4},HT_KEY='arimaa-howto-off';
 function htOff(){try{return localStorage.getItem(HT_KEY)==='1';}catch(e){return false;}}
@@ -675,12 +678,11 @@ function htBox(){if(HT.no)return null;let b=$('howto');if(b)return b;b=document.
     '<div class="htfoot"><label><input type="checkbox" id="htNever"><span id="htNeverL"></span></label><button type="button" id="htSkip"></button></div></div>';
   document.body.appendChild(b);
   if(!$('htPrev')||!window.requestAnimationFrame){HT.no=true;return null;}   // a page without a full DOM (the regression tests): no card
-  b.addEventListener('click',e=>{if(e.target===b)htClose();});
   $('htPrev').onclick=()=>htGo(HT.k-1);$('htNext').onclick=()=>htGo(HT.k+1);$('htSkip').onclick=htClose;
   $('htNever').onchange=e=>htSetOff(e.target.checked);
   for(let k=0;k<HT.N;k++){const d=document.createElement('i');d.onclick=()=>htGo(k);$('htDots').appendChild(d);}
   window.addEventListener('keydown',e=>{if(b.hidden)return;const k={ArrowLeft:-1,ArrowRight:1}[e.key];
-    if(k||e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(k)htGo(HT.k+k);else htClose();}},true);
+    if(k){e.preventDefault();e.stopImmediatePropagation();htGo(HT.k+k);}},true);
   new MutationObserver(()=>{if(!b.hidden)htText();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   return b;}
 function htText(){$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+1)+' / '+HT.N;$('htTxt').innerHTML=t('ht_'+(HT.k+1));
@@ -688,9 +690,9 @@ function htText(){$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+
   $('htPrev').disabled=HT.k===0;$('htNext').disabled=HT.k===HT.N-1;
   const last=HT.k===HT.N-1;$('htSkip').textContent=t(last?'ht_done':'ht_skip');$('htSkip').classList.toggle('primary',last);
   Array.from($('htDots').children).forEach((d,k)=>d.classList.toggle('on',k===HT.k));}
-function htShow(k){const b=htBox();if(!b)return;b.hidden=false;$('htNever').checked=htOff();htGo(k||0);$('htNext').focus();}
+function htShow(k){const b=htBox();if(!b)return;b.hidden=false;document.documentElement.classList.add('htshown');$('htNever').checked=htOff();htGo(k||0);$('htNext').focus();}
 function htGo(k){if(k<0||k>=HT.N)return;HT.k=k;htText();htAnim(k);}
-function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;if(HT.tok)HT.tok.live=false;HT.tok=null;}
+function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;}
 function htAuto(){if(HT.seen)return;HT.seen=true;if(!htOff())htShow(0);}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
 
