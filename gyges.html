@@ -168,7 +168,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 function GygesEngine(){
@@ -524,13 +524,12 @@ function txtOf(mv,s){if(mv.t==='x')return t('passW');if(mv.t==='p')return RING[m
     if(last&&mv.rep>=0){out+='⇄'+name(mv.rep);return;}
     if(b[x]&&!last){rem=b[x];bounce=true;}});
   return out;}
-// rules: the game or view object (its adv and setup fields); replay() in core memoises and adds the result
+// rules: the game or view object (its adv and setup fields); replay() in core memoises and adds the result, replayKept
+// keeps the positions replayed
 function gyReplay(rules,moves){const adv=!!(rules&&rules.adv),sm=smOf(rules);
-  let st=E.init(sm);const log=[];let last=null,over=null;
-  for(const code of moves){const p=st.turn,mv=E.dec(code);if(!mv||!E.legal(st,mv,adv)){over={w:-1,why:'w_bad'};break;}
-    const prev=st;st=E.apply(st,mv);log.push({p,txt:txtOf(mv,prev)});last={mv,p,prev};
-    const o=E.outcome(st,p,mv);if(o){over=o;break;}}
-  return {st,log,last,over};}
+  return replayKept(rules,moves,{init:()=>E.init(sm),
+    play(prev,code){const p=prev.turn,mv=E.dec(code);if(!mv||!E.legal(prev,mv,adv))return null;
+      const st=E.apply(prev,mv);return {st,e:{p,txt:txtOf(mv,prev)},last:{mv,p,prev},over:E.outcome(st,p,mv)};}});}
 
 // ---------- game view ----------
 function newUi(){return {sel:-1,path:[],hist:[[[]]],marks:[],bad:false,drop:false,landOk:false,repHover:false,hover:null,pending:null,place:0,placeAuto:false,block:null};}

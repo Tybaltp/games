@@ -186,7 +186,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -348,13 +348,12 @@ let fbSetup=null;
 const setupOf=g=>g&&E.validSetup(g.setup)?g.setup:(fbSetup=fbSetup||E.genSetup());
 const colsTxt=cols=>cols.map(c=>t('cols')[c]).join(', ');
 const txtOf=(seq,st)=>seq==='s'?t('swapLog'):colsTxt(seq.map(i=>st.b[i]));
-// replay() in core memoises and adds the result
-function tiReplay(rules,moves){let st=E.init(setupOf(rules));const log=[];let last=null,over=null;
-  for(const code of moves){const p=st.turn,seq=decT(code),r=seq&&E.play(st,seq);if(!r){over={w:-1,why:'w_bad'};break;}
-    if(seq==='s'){log.push({p,cols:[],kind:'swap',txt:t('swapLog')});st=r.st;continue;}   // the swap: last stays the first move
-    const cols=seq.map(i=>st.b[i]);log.push({p,cols,kind:r.ctx.kind,txt:colsTxt(cols)});last={seq,from:st.pawn};st=r.st;
-    const o=E.outcome(st);if(o){over=o;break;}}
-  return {st,log,last,over};}
+// replay() in core memoises and adds the result, replayKept keeps the positions replayed
+function tiReplay(rules,moves){const setup=setupOf(rules);
+  return replayKept(rules,moves,{init:()=>E.init(setup),
+    play(st,code){const p=st.turn,seq=decT(code),r=seq&&E.play(st,seq);if(!r)return null;
+      if(seq==='s')return {st:r.st,e:{p,cols:[],kind:'swap',txt:t('swapLog')},last:undefined,over:null};   // the swap: last stays the first move
+      const cols=seq.map(i=>st.b[i]);return {st:r.st,e:{p,cols,kind:r.ctx.kind,txt:colsTxt(cols)},last:{seq,from:st.pawn},over:E.outcome(r.st)||null};}});}
 
 // ---------- the turn being prepared ----------
 // ui.seq: the pieces taken so far this turn; ui.pending: the whole turn awaiting confirmation; ui.hover: the piece previewed

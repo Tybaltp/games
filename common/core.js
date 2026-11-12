@@ -19,7 +19,8 @@
 //  rules(src)                    the rule fields of a game or view, normalised: {adv,setup} for Gyges ({} if none)
 //  form(p)                       the rules read from the home form with id prefix p: 'c' link, 'a' computer, 'f' face, 't' free
 //  replay(rules,moves)           {st (with st.turn = seat to move), log:[{p,txt}], last, over:null|{w (-1 draw),why}}
-//                                (an illegal code ends it with {w:-1,why:'w_bad'})
+//                                (an illegal code ends it with {w:-1,why:'w_bad'}); the page's replay calls
+//                                replayKept(rules,moves,{init,play}), which keeps the positions already replayed
 //  legal(st,code,g)              the canonical code of a legal move in st, or null (host-side check)
 //  enc(mv)                       code of a move object (moves sent, AI and hint results)
 //  describe(mv,st)               text of a move played from st (hints, move awaiting confirmation)
@@ -173,6 +174,35 @@ function replay(rules,moves,result){const key=lang+'|'+JSON.stringify(GAME.rules
   const v=GAME.replay(rules,moves);if(!v.over&&result)v.over={w:result.winner,why:result.reason==='time'?'w_time':result.reason==='agree'?'w_agree':'w_resign'};
   memoKey=key;memoVal=v;return v;}
 const sameRules=(a,b)=>JSON.stringify(GAME.rules(a))===JSON.stringify(GAME.rules(b));
+// Replaying with a memory, for GAME.replay. The shared code replays the game at every drawing and at every step of the
+// navigation; from the start each time, a long game makes each step slow (330 ms at move 200 of a Volo game). So the
+// positions already replayed are kept: the codes, the position after each of them, the log, the last move and the end of
+// the game; a new list of moves only replays what follows the longest prefix it shares with them. One line is kept (a
+// list that leaves it drops the rest). The memory holds for one set of rules and one language (the log's texts):
+// another one empties it, and so do a new game, going home and an undo (replayForget).
+// R: init(rules) → the position before the first move; play(st,code,k) → {st,e,last,over} after the k-th move (st:
+// the new position, never the one given, which is not to be changed; e: its log entry; last: the last move shown, or
+// undefined to keep the previous one; over: the end of the game, or null), or null for an illegal code (w_bad).
+// The position and the last move returned are copies: what the callers do to them never reaches the memory.
+const RK={key:null,codes:[],sts:[],log:[],lasts:[],over:null};
+function replayForget(){RK.key=null;RK.codes=[];RK.sts=[];RK.log=[];RK.lasts=[];RK.over=null;}
+function deepCopy(x){if(x===null||typeof x!=='object')return x;
+  if(ArrayBuffer.isView(x)){const c=new x.constructor(x);for(const k in x)if(!/^\d+$/.test(k))c[k]=deepCopy(x[k]);return c;}   // own fields too (st.turn)
+  if(Array.isArray(x))return x.map(deepCopy);
+  if(x instanceof Map)return new Map([...x].map(([k,v])=>[k,deepCopy(v)]));
+  if(x instanceof Set)return new Set([...x].map(deepCopy));
+  if(Object.getPrototypeOf(x)!==Object.prototype)return x;
+  const c={};for(const k of Object.keys(x))c[k]=deepCopy(x[k]);return c;}
+function replayKept(rules,moves,R){const key=lang+'|'+JSON.stringify(GAME.rules(rules));
+  if(key!==RK.key){replayForget();RK.key=key;RK.sts.push(R.init(rules));RK.lasts.push(null);}
+  const C=RK.codes;let L=0;while(L<moves.length&&L<C.length&&C[L]===moves[L])L++;
+  let n=L,bad=null;
+  if(L===C.length||L<moves.length){   // not a position already kept (navigating back): drop what follows L, replay the rest
+    if(L<C.length){C.length=L;RK.sts.length=L+1;RK.log.length=L;RK.lasts.length=L+1;RK.over=null;}
+    for(let k=L;k<moves.length&&!RK.over;k++){const x=R.play(RK.sts[k],moves[k],k);if(!x){bad={w:-1,why:'w_bad'};break;}
+      C.push(moves[k]);RK.sts.push(x.st);RK.log.push(x.e);RK.lasts.push(x.last===undefined?RK.lasts[k]:x.last);RK.over=x.over||null;}
+    n=C.length;}
+  return {st:deepCopy(RK.sts[n]),log:RK.log.slice(0,n),last:deepCopy(RK.lasts[n]),over:deepCopy(bad||(n===C.length?RK.over:null))};}
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
@@ -479,8 +509,8 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
   else if(d.t==='nack'){sending=false;if(C.hold){C.hold=null;if(view)view.myHold=null;resetUi();}if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
 
 // ---------- game view ----------
-function showGame(){$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
-function showSetup(msg){if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
+function showGame(){replayForget();$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
+function showSetup(msg){replayForget();if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');role=null;view=null;mySeat=-1;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;$('joinErr').textContent=msg||'';status(msg||'');}
 function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.stringify(view.result):'',prevSeat=view?view.mySeatSeen:-2;
   view={...g,recvAt:Date.now(),mySeatSeen:mySeat};
   guestSave();
@@ -868,7 +898,7 @@ function aiStep(){if(role!=='ai'||busy||ana())return;const r=replay(view,view.mo
     if(!res||!res.move){renderGame();return;}aiInfo=GAME.evalInfo(res,r.st);aiLast=res;view.draw=null;view.moves=view.moves.concat([GAME.enc(res.move)]);renderGame();aiStep();},wait);});}
 // Undo last move: free play takes back one move; against the computer, back to my last turn before my last move
 const undoOk=r=>role==='test'?view.moves.length>0:role==='ai'?r.log.some(e=>e.p===mySeat):false;
-function doUndo(){if(!view||!canUndo()||GAME.preparing())return;if(role==='test'){testUndo();return;}stopAI();const m=view.moves.slice();
+function doUndo(){if(!view||!canUndo()||GAME.preparing())return;replayForget();if(role==='test'){testUndo();return;}stopAI();const m=view.moves.slice();
   const turnAt=k=>replay(view,m.slice(0,k),null).st.turn;let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
   if(turnAt(k)!==mySeat)k=0;

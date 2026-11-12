@@ -185,7 +185,7 @@ html.htshown header .seg{position:relative;z-index:61}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -379,18 +379,15 @@ function turnDetail(b,s,code){const at=new Map(),paths=new Map(),acts=[];let cur
   return {paths:[...paths.values()],acts};}
 function turnPhrase(det){if(!det||!det.acts.length)return '';const pn=I18N[lang].pn,cap=w=>w.charAt(0).toUpperCase()+w.slice(1);
   return det.acts.map(a=>t(a.k==='P'?'push_t':'pull_t',{A:cap(pn[Math.abs(a.va)-1]),fa:E.sq(a.a),b:pn[Math.abs(a.ve)-1],fb:E.sq(a.e),to:E.sq(a.to)})).join(' · ');}
-// No rule options (rules = {}); replay() in core memoises and adds the result
-function arReplay(rules,moves){
-  let b=new Int8Array(64);const reps=new Map(),log=[];let last=null,over=null;
-  for(let k=0;k<moves.length;k++){const p=k%2,code=moves[k];
-    if(k<2){const r=E.setup(b,p,code);if(!r){over={w:-1,why:'w_bad'};break;}b=r.b;log.push({p,txt:r.toks.join(' ')});last={mv:[],caps:[],setup:true};
-      if(k===1)reps.set(E.bkey(b)+'0',1);continue;}
-    const r=E.turn(b,p,code,reps);if(!r){over={w:-1,why:'w_bad'};break;}
-    const det=turnDetail(b,p,code);
-    b=r.b;const kk=E.bkey(b)+(1-p);reps.set(kk,(reps.get(kk)||0)+1);
-    log.push({p,txt:r.toks.join(' '),det});last={mv:r.mv,caps:r.caps,det};
-    const o=E.outcome(b,p,reps);if(o){over=o;break;}}
-  return {st:{b,turn:moves.length%2,n:moves.length,reps},log,last,over};}
+// No rule options (rules = {}); replay() in core memoises and adds the result, replayKept keeps the positions replayed.
+// st: {b, turn, n (moves played), reps (how many times each position was seen, side to move included)}
+function arReplay(rules,moves){return replayKept(rules,moves,{init:()=>({b:new Int8Array(64),turn:0,n:0,reps:new Map()}),
+  play(st,code,k){const p=k%2,reps=new Map(st.reps),nx=b=>({b,turn:(k+1)%2,n:k+1,reps});
+    if(k<2){const r=E.setup(st.b,p,code);if(!r)return null;if(k===1)reps.set(E.bkey(r.b)+'0',1);
+      return {st:nx(r.b),e:{p,txt:r.toks.join(' ')},last:{mv:[],caps:[],setup:true},over:null};}
+    const r=E.turn(st.b,p,code,reps);if(!r)return null;
+    const det=turnDetail(st.b,p,code),kk=E.bkey(r.b)+(1-p);reps.set(kk,(reps.get(kk)||0)+1);
+    return {st:nx(r.b),e:{p,txt:r.toks.join(' '),det},last:{mv:r.mv,caps:r.caps,det},over:E.outcome(r.b,p,reps)};}});}
 // the host checks every setup and turn with the rules engine before accepting it
 function legalCode(st,code){if(typeof code!=='string')return false;if(st.n<2)return !!E.setup(st.b,st.turn,code);return !!E.turn(st.b,st.turn,code,st.reps);}
 function describe(code,st){const r=st.n<2?E.setup(st.b,st.turn,code):E.turn(st.b,st.turn,code,st.reps);return r?r.toks.join(' '):String(code);}

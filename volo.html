@@ -172,7 +172,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -320,25 +320,12 @@ const txtOf=m=>m.t==='x'?'pass':m.t==='p'?'+'+name(m.at):(m.cells.length>1?name(
 // a move awaiting confirmation: « Passer » for a pass, the regions mentioned when the move removes some
 const describe=m=>m.t==='x'?t('pass'):txtOf(m)+(m.keep>=0?' ('+t('regions').toLowerCase()+')':'');
 // st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code.
-// Replaying a move means generating every legal move (flights included) to find the one with that code: costly, and the
-// shared code replays from the start at each step of the navigation (330 ms a step at move 200 of a long game). So the
-// positions already replayed are kept (VR: the codes, the position after each of them, the log, the last move, the
-// result): a new list of moves only replays what follows the longest prefix it shares with them. The rules are ignored
-// (a single rule set). The position returned is a copy (the kept ones are never handed out).
-const VR={codes:[],states:[],log:[],lasts:[null],over:null};
-function voReplay(rules,moves){
-  if(!VR.states.length)VR.states.push(E.init());
-  let L=0;while(L<moves.length&&L<VR.codes.length&&VR.codes[L]===moves[L])L++;
-  if(L===moves.length&&L<VR.codes.length)return voOut(L,null);   // a position already replayed (navigating back)
-  if(L<VR.codes.length){VR.codes.length=L;VR.states.length=L+1;VR.log.length=L;VR.lasts.length=L+1;VR.over=null;}
-  let over=VR.over,bad=null;
-  for(let k=L;k<moves.length&&!over;k++){const st=VR.states[k],code=moves[k],p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);
-    if(!mv){bad={w:-1,why:'w_bad'};break;}
-    const r=E.apply(st,mv);let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;
-    VR.codes.push(code);VR.states.push(r.st);VR.log.push({p,txt:t});VR.lasts.push({mv,removed:r.removed});
-    const o=E.outcome(r.st,p,mv);if(o)over=VR.over=o;}
-  return voOut(VR.codes.length,bad||over);}
-function voOut(n,over){const st=new Int8Array(VR.states[n]);st.turn=st[TURN];return {st,log:VR.log.slice(0,n),last:VR.lasts[n],over};}
+// Replaying a move means generating every legal move (flights included) to find the one with that code: costly, so
+// the positions already replayed are kept (core: replayKept). The rules are ignored (a single rule set).
+function voReplay(rules,moves){return replayKept(rules,moves,{init:()=>{const st=E.init();st.turn=st[TURN];return st;},
+  play(st,code){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv)return null;
+    const r=E.apply(st,mv);let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;r.st.turn=r.st[TURN];
+    return {st:r.st,e:{p,txt:t},last:{mv,removed:r.removed},over:E.outcome(r.st,p,mv)};}});}
 
 // ---------- move preparation ----------
 // ui: sel (the birds selected to fly), hist (the successive selections), basemv (a move that cuts the opponent's birds

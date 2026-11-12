@@ -394,7 +394,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -563,13 +563,12 @@ const peSgf={gm:4,sz:N,
     if(k<L.length){const x=L[k++];if(!x.XS||!/^[BW]$/.test(x.XS[0]))throw 0;codes.push(x.XS[0]);}
     for(;k<L.length;k++){const n=L[k];if(n.XS)throw 0;codes.push('m'+sgfCell((n.B||n.W)[0]));}
     return codes;}};
-// rules: none (a single rule set); replay() in core memoises and adds the result. The log keeps the move and its
+// rules: none (a single rule set); replay() in core memoises and adds the result, replayKept keeps the positions
+// replayed (applyMv changes the position it is given: each move plays on a copy). The log keeps the move and its
 // colour (its text is written at display time, in the current language).
-function peReplay(rules,moves){const st=newSt(),log=[];let over=null;
-  for(const code of moves){const p=st.turn,mv=dec(code),ph=st.phase;if(!mv||!applyMv(st,mv)){over={w:-1,why:'w_bad'};break;}
-    log.push({p,mv,ph,c:mv.t==='m'?st.B[mv.i]:0,cap:st.lastCap.length/2});
-    if(st.win){over=st.win;break;}}
-  return {st,log,last:null,over};}
+function peReplay(rules,moves){return replayKept(rules,moves,{init:newSt,
+  play(prev,code){const st=cloneSt(prev),p=st.turn,mv=dec(code),ph=st.phase;if(!mv||!applyMv(st,mv))return null;
+    return {st,e:{p,mv,ph,c:mv.t==='m'?st.B[mv.i]:0,cap:st.lastCap.length/2},last:null,over:st.win||null};}});}
 const legalCode=(st,code)=>{const mv=dec(code);return mv&&applyMv(cloneSt(st),mv)?enc(mv):null;};
 const stonesTxt=(s,cols)=>s.map((i,k)=>t('colw_'+cols[k])+' '+coord(i)).join(', ');
 function describe(mv){if(mv.t==='o')return t('d_open',{a:coord(mv.s[0]),b:coord(mv.s[1]),c:coord(mv.s[2])});
