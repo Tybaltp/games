@@ -58,8 +58,12 @@ html.htshown header .seg{position:relative;z-index:61}
 .htopen{margin:.6em 0 0}
 </style>
 <style>
-/* accueil : ce qui est propre à Arimaa ; le reste dans common/accueil.css. Fond (plateau) à venir : ni image ni bois pour l'instant */
-:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accTintL:#2f7d8c;--accTintD:#5fd0c9}
+/* accueil : ce qui est propre à Arimaa ; le reste dans common/accueil.css. Le fond : bot_sharp contre browni3141, Challenge
+   Arimaa 2015, position après 39b (choix de Thibault), dessinée par la page (dernier coup marqué), plateau sans cadre de bois,
+   posé sur le fond de la page, coupé à droite comme la capture de Thibault (colonne h juste après son milieu) ; le bord coupé
+   tombe au bord de l'écran (--accRight à 0 ; html:root pour passer devant common/accueil.css). */
+:root{--accImgL:url(../img/accueil/arimaa.svg);--accImgD:url(../img/accueil/arimaa-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.95303;--accTintL:#2f7d8c;--accTintD:#5fd0c9}
+html:root{--accRight:0px}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
