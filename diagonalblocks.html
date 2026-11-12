@@ -911,7 +911,7 @@ const LEVELS={
   l5:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,time:3000,openPick:6},
   l6:{...MC,sims:1800,c:.4,cellsIn:10,time:3000},
   l7:{...MC,sims:5000,c:.2,cellsIn:20,time:5000},
-  l8:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000}};   // + the exact endgame solver (12.11.2026: 53.8 % against l8 without it)
+  l8:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000,puct:1}};   // + the exact endgame solver and PUCT (12.11.2026, 300 games: 69.8 % against l8 without both, 62.3 % against the solver alone)
 const HINT=LEVELS.l8;
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice()};};
