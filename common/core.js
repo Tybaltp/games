@@ -787,10 +787,11 @@ function sndBind(){try{const o=JSON.parse(localStorage.getItem(K('sound'))||'{}'
   const c=$('sndOn'),r=$('sndVol');c.checked=sndOn;r.value=sndVol;r.disabled=!sndOn;
   c.addEventListener('change',()=>{sndOn=c.checked;r.disabled=!sndOn;sndSave();if(sndOn)tone(660,.18,.05);});
   r.addEventListener('input',()=>{sndVol=+r.value;sndSave();});r.addEventListener('change',()=>tone(660,.18,.05));}
-function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
+function tone(f,d,v){if(!sndOn||sndVol<=0)return;v=Math.max(.0002,(v||.05)*sndVol/50);try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});const t=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
+// the clock's countdown, on my device only while my clock runs: two beeps at 10 s, one at 5, 4, 3, 2, and a longer, higher one at 1
 let cdSec=null;
 function countdown(myRunning,ms){if(!myRunning){cdSec=null;return;}const s=Math.max(0,Math.ceil(ms/1000));
-  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s<=5)tone(s===0?440:880,s===0?.4:.09,.05);}
+  if(cdSec!==null&&s<cdSec){if(cdSec>10&&s<=10){tone(520,.22,.05);setTimeout(()=>tone(520,.22,.05),260);}else if(s>=1&&s<=5)tone(s===1?1175:880,s===1?.32:.09,.05);}
   cdSec=s;}
 function tick(){if(!view||!view.tc)return;const r=replay(view,view.moves,view.result),rem=remaining();
   const sim=simHold(view,r);countdown(mySeat>=0&&view.running&&!r.over&&!sim&&(view.runSeat??r.st.turn)===mySeat,rem[Math.max(0,mySeat)]);
@@ -1266,7 +1267,9 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   {const s=$('side');let y0=null;
     s.addEventListener('touchstart',e=>{y0=document.documentElement.classList.contains('sheet')&&s.scrollTop<=0&&e.touches.length===1?e.touches[0].clientY:null;},{passive:true});
     s.addEventListener('touchend',e=>{if(y0!==null&&s.scrollTop<=0&&e.changedTouches[0].clientY-y0>70)sheet(false);y0=null;},{passive:true});}
-  document.addEventListener('pointerdown',()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
+  // sounds: the browser lets a page play only after a gesture; a context made before one (a move, the clock) stays
+  // suspended, so each gesture wakes it (Mochalunt: each table is a new page, opened without a click)
+  for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>{try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});}catch(e){}},true);
   setInterval(tick,250);
   window.addEventListener('resize',()=>{if(view)renderGame();});
   $('resign').onclick=()=>{$('resignBox').hidden=true;$('resignAsk').hidden=false;};
