@@ -1145,6 +1145,23 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
       b.onclick=()=>{if(D.fullscreenElement)D.exitFullscreen().catch(()=>{});else R.requestFullscreen({navigationUI:'hide'}).catch(()=>{});};
       D.addEventListener('fullscreenchange',()=>b.classList.toggle('on',!!D.fullscreenElement));
       $('optBtn').before(b);}}
+  // The header holds one line (games.css): when the title lacks room it drops « peer to peer », then « games / » for
+  // « ‹ », then shrinks down to --h1min; the CSS ellipsis comes last. Rerun when the header's width, its buttons, the
+  // language or the view (html classes) change.
+  {const D=document,R=D.documentElement,h=D.querySelector('header'),h1=h&&h.querySelector('h1');
+    if(h1){const over=()=>h1.scrollWidth>h1.clientWidth;
+      const fit=()=>{h.classList.remove('hnosub','hshort');h1.style.fontSize='';
+        if(!over())return;h.classList.add('hnosub');if(!over())return;h.classList.add('hshort');if(!over())return;
+        const rem=parseFloat(getComputedStyle(R).fontSize)||16,lo=(parseFloat(getComputedStyle(h1).getPropertyValue('--h1min'))||1.15)*rem;
+        let f=parseFloat(getComputedStyle(h1).fontSize);
+        for(let i=0;i<3&&over()&&f>lo;i++){f=Math.max(lo,Math.floor(f*h1.clientWidth/h1.scrollWidth*10)/10);h1.style.fontSize=f+'px';}};
+      fit();
+      if(window.ResizeObserver){const ro=new ResizeObserver(fit);ro.observe(h);for(const e of h.children)if(e!==h1)ro.observe(e);
+        new MutationObserver(ms=>{for(const m of ms)for(const e of m.addedNodes)if(e.nodeType===1&&e.parentNode===h)ro.observe(e);fit();})
+          .observe(h,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});}
+      else window.addEventListener('resize',fit);
+      new MutationObserver(fit).observe(R,{attributes:true,attributeFilter:['class','lang']});
+      if(D.fonts&&D.fonts.ready)D.fonts.ready.then(fit);}}
   $('sheetBg').onclick=()=>sheet(false);
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('sheet')){e.preventDefault();e.stopImmediatePropagation();sheet(false);}},true);
   {const s=$('side');let y0=null;
