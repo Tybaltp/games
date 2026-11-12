@@ -199,7 +199,7 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -478,11 +478,9 @@ function compare(a,b){return a.pts!==b.pts?Math.sign(a.pts-b.pts):a.islands!==b.
 function result(st){const a=score(st,colorOf(st,0)),b=score(st,colorOf(st,1)),c=compare(a,b),tb=tieNote(a,b),[w,l]=c>=0?[a,b]:[b,a];
   const why=t(c===0?'w_tie':'w_score',{w:w.pts,l:l.pts,tb})+(st.fixed?t('w_fixed'):'');
   return {w:c===0?-1:c>0?0:1,why};}
-function pdReplay(rules,moves){let st=initSt();const log=[];let last=null,over=null;
-  for(const code of moves){const r=step(st,parse(code));if(!r){over={w:-1,why:'w_bad'};break;}
-    st=r.st;log.push(r.e);last={p:r.e.col,m:r.e.m.t==='t'||r.e.m.t==='b'?r.e.m:null};
-    if(st.phase==='over'){over=result(st);break;}}
-  return {st,log,last,over};}
+function pdReplay(rules,moves){return replayKept(rules,moves,{init:initSt,
+  play(prev,code){const r=step(prev,parse(code));if(!r)return null;
+    return {st:r.st,e:r.e,last:{p:r.e.col,m:r.e.m.t==='t'||r.e.m.t==='b'?r.e.m:null},over:r.st.phase==='over'?result(r.st):null};}});}
 
 // ---------- move preparation ----------
 // ui: draft (tiles placed, in order), sel (own tile chosen for a bridge), bridge ({a,b} awaiting confirmation), pending

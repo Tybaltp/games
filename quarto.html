@@ -177,7 +177,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Quarto: rules =====
@@ -231,11 +231,10 @@ let qView=qViewOf(LS.get('quarto-view','iso'));
 const cellName=i=>'abcd'[i%4]+(4-((i/4)|0));
 function pieceName(p){const L=t('traits');return [L[p&1?1:0],L[p&4?3:2],L[p&8?5:4],L[p&2?7:6]].join(' ');}
 function txtOf(mv){const parts=[];if(mv.a>=0)parts.push(cellName(mv.a));if(mv.g>=0)parts.push(t('gives',{p:pieceName(mv.g)}));return parts.join(', ');}
-function qReplay(rules,moves){const sq=!!(rules&&rules.sq);let st=E.init(),last=null,over=null;const log=[];
-  for(const code of moves){if(over)break;const mv=E.dec(code),res=mv&&E.play(st,mv,sq);
-    if(!res){over={w:-1,why:'w_bad'};break;}
-    log.push({p:st.turn,mv,txt:txtOf(mv)});last={p:st.turn,mv,prev:st};st=res.st;over=res.over;}
-  return {st,log,last,over};}
+function qReplay(rules,moves){const sq=!!(rules&&rules.sq);
+  return replayKept(rules,moves,{init:()=>E.init(),
+    play(st,code){const mv=E.dec(code),res=mv&&E.play(st,mv,sq);if(!res)return null;
+      return {st:res.st,e:{p:st.turn,mv,txt:txtOf(mv)},last:{p:st.turn,mv,prev:st},over:res.over||null};}});}
 
 // ---------- strings ----------
 const Q_I18N={fr:{

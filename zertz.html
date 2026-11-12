@@ -190,7 +190,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 function ZertzEngine(size){
@@ -380,17 +380,16 @@ function setBoard(sz){if(sz===SIZE)return;SIZE=sz;E=ENG[sz];({N,M,CAP,POOL,TURN}
 const enc=m=>m.t===1?'x'+m.path.join('.'):'p'+[m.c,m.at,m.rm].join('.');
 const txtOf=m=>m.t===1?m.path.map(name).join('×'):t('L'+m.c)+' '+name(m.at)+(m.rm>=0?' −'+name(m.rm):'');
 function reasonWin(st,p){const c=CAP+p*3;for(let k=0;k<3;k++)if(st[c+k]>=GOAL[k])return 'w_g'+k;return 'w_each';}
-// rules: the game or view object (its size); replay() in core memoises and adds the result. st is the engine's array,
+// rules: the game or view object (its size); replay() in core memoises and adds the result, replayKept keeps the
+// positions already replayed (the board of that size is set at each call, as the drawing reads it). st is the engine's array,
 // with st.turn = the seat to move. The log keeps the move (its text is written at display time, in the current language).
 function zzReplay(rules,moves){setBoard(ringsOf(rules));
-  let st=E.init();const log=[];let last=null,over=null;
-  for(const code of moves){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv){over={w:-1,why:'w_bad'};break;}
-    const before=st;st=E.apply(st,mv);let g=0;
-    if(mv.t===0){for(let k=0;k<6;k++)g+=st[CAP+k]-before[CAP+k];if(before[POOL+mv.c]===0)g++;}
-    log.push({p,mv,g});const removed=[];for(let i=0;i<N;i++)if(before[i]&&!st[i])removed.push(i);last={mv,removed};
-    if(E.won(st,p)){over={w:p,why:reasonWin(st,p)};break;}
-    if(!E.gen(st).length){over={w:p,why:'w_nomove'};break;}}
-  st.turn=st[TURN];return {st,log,last,over};}
+  return replayKept(rules,moves,{init:()=>{const st=E.init();st.turn=st[TURN];return st;},
+    play(before,code){const p=before[TURN],mv=E.gen(before).find(m=>enc(m)===code);if(!mv)return null;
+      const st=E.apply(before,mv);st.turn=st[TURN];let g=0;
+      if(mv.t===0){for(let k=0;k<6;k++)g+=st[CAP+k]-before[CAP+k];if(before[POOL+mv.c]===0)g++;}
+      const removed=[];for(let i=0;i<N;i++)if(before[i]&&!st[i])removed.push(i);
+      return {st,e:{p,mv,g},last:{mv,removed},over:E.won(st,p)?{w:p,why:reasonWin(st,p)}:!E.gen(st).length?{w:p,why:'w_nomove'}:null};}});}
 const logTxt=e=>txtOf(e.mv)+(e.g>0?' ⊕'+e.g:'');
 
 // ---------- game view ----------

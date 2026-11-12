@@ -227,7 +227,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -356,12 +356,11 @@ function outcomeOf(st){const a=st.cnt[E.colorOf(st,0)],b=st.cnt[E.colorOf(st,1)]
 // The position seen by core: turn = the SEAT to move (the engine's turn is the colour to move, kept in ct); es = the
 // engine's own state, for the engine functions that read the colour to move (validate, canSwap)
 const seatSt=es=>({...es,turn:E.seatOf(es,es.turn),ct:es.turn,es});
-// No rule options; replay() in core memoises and adds the result
-function dbReplay(rules,moves){let es=E.init();const log=[];let last=null,over=null;
-  for(const code of moves){const c=es.turn,p=E.seatOf(es,c),mv=dec(code);if(!mv||!E.validate(es,mv)){over={w:-1,why:'w_bad'};break;}
-    es=E.apply(es,mv);log.push({p,c,mv,txt:txtOf(mv)});last={mv,c};
-    if(es.over){over=outcomeOf(es);break;}}
-  return {st:seatSt(es),log,last,over};}
+// No rule options; replay() in core memoises and adds the result, replayKept keeps the positions replayed
+function dbReplay(rules,moves){const r=replayKept(rules,moves,{init:()=>E.init(),
+  play(es,code){const c=es.turn,p=E.seatOf(es,c),mv=dec(code);if(!mv||!E.validate(es,mv))return null;
+    const nx=E.apply(es,mv);return {st:nx,e:{p,c,mv,txt:txtOf(mv)},last:{mv,c},over:nx.over?outcomeOf(nx):null};}});
+  r.st=seatSt(r.st);return r;}
 // Names as the game's messages say them (no « (you) »)
 const plain=s=>solo()?seatName(s):view.names[s]||t(s===0?'p1':'p2');
 
