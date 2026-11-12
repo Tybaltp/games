@@ -237,7 +237,7 @@ header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'â
 .nameov{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 60%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .nameov[hidden]{display:none}
 .startov{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:12px;border-radius:inherit;pointer-events:none}
-.startov:has(>#startCard:not([hidden])){pointer-events:auto;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.startov:has(>#startCard:not([hidden])),.startov:has(>#mAsk:not([hidden])){pointer-events:auto;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .startov .card{width:min(20rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22);text-align:center}
 .startov .card h2{justify-content:center}.startov .card .hint{margin:0}.startov .card .hint:empty{display:none}
 .nameov .card{width:min(22rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22)}
