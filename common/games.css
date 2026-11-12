@@ -363,3 +363,17 @@ html.ingame.chatup:not(.wide) .boardwrap > #chatBox > .voicein:not([hidden]){dis
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox .chatlist{padding:6px 8px;gap:3px}
 html.ingame.chatup:not(.wide) .boardwrap > #chatBox > .voicein{margin-top:8px}
 html.ingame:not(.wide) .boardwrap > #chatBox .chatlist > li:first-child{margin-top:auto}
+/* « Comment jouer » (GAME.howto, common/core.js): a card over the board, its pages animated; the grey behind it does not
+   close it. The language and theme buttons stay usable over it: they translate or recolour it, it stays open. A page
+   may set its picture's background (#htSvg) */
+.howto{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}
+.howto[hidden]{display:none}
+html.htshown header .seg{position:relative;z-index:61}
+.htcard{width:min(420px,100%);max-height:100%;overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.hthead{display:flex;justify-content:space-between;align-items:baseline}.hthead b{font-size:1.05rem}.hthead span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+#htSvg{width:100%;height:auto;display:block;border-radius:10px;background:var(--wood,var(--bg))}
+.htcard p{margin:0;min-height:5.6em;line-height:1.4;font-size:.93rem}
+.htnav{display:flex;align-items:center;justify-content:space-between;gap:8px}.htnav button{min-width:44px;font-size:1.1rem;padding:4px 12px}
+.htdots{display:flex;gap:7px}.htdots i{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer}.htdots i.on{background:var(--accent)}
+.htfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.88rem}.htfoot label{display:flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer}
+.htopen{margin:.6em 0 0}

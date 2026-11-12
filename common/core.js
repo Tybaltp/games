@@ -48,6 +48,9 @@
 //  sgf?                          {gm, sz: the game's SGF number and size · nodes?(r,view) → [{B|W|other prop: value}],
 //                                codes?(nodes) → move codes: a notation of its own · black?(st) → the seat of B};
 //                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value
+//  howto?                       {n, scene(k,A), key?}: the « Comment jouer » card (n pages, texts ht_1…ht_n in i18n;
+//                                scene(k,A) plays page k's animation once, async, replayed while the page is shown;
+//                                A: htKit below); key: the localStorage key of « Ne plus montrer » (default id-howto-off)
 //  sgfHead?(v)                   extra private properties of the file's header {XA: …}: not shown in the game
 //  levels, levelDefault, hintLevel  computer levels {key:opt} (labels lv_key), the default key, the options of hints
 //  aiSrc(), aiPos(st), aiSearch(st,opt), aiOpt?(v), aiView?(st), evalInfo(res,st)  worker source defining
@@ -57,6 +60,7 @@ const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18C={fr:{
+ ht_title:"Comment jouer",ht_skip:"Passer",ht_done:"C'est parti",ht_never:"Ne plus montrer",ht_prev:"Précédent",ht_next:"Suivant",
  fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de l'hôte…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
@@ -84,6 +88,7 @@ const I18C={fr:{
  sgfLoad:"Charger une partie",sgfExport:"Exporter la partie (SGF)",sgfBusy:"Export en cours…",sgfDone:"Fichier SGF enregistré ✓",st_file:"Partie chargée, en lecture seule : parcourez-la avec les flèches ou la liste des coups.",
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
+ ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
  fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the host…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",
  sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
@@ -111,6 +116,7 @@ const I18C={fr:{
  sgfLoad:"Load a game",sgfExport:"Export the game (SGF)",sgfBusy:"Exporting…",sgfDone:"SGF file saved ✓",st_file:"Game loaded, read only: go through it with the arrows or the list of moves.",
  sgfBad:"Unreadable SGF file.",sgfOther:"This file is a game of another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 },es:{
+ ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
  fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_debutant:"Principiante",lv_moyen:"Medio",lv_fort:"Fuerte",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando al anfitrión…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_sent:"Propuesta enviada.",rm_no:"{n} ha rechazado.",
  sub:"entre navegadores",create:"Crear una partida",nick:"Tu nombre",firstIs:"Quién empieza",rnd:"Al azar",me:"Yo",opp:"Mi adversario",tc:"Reloj",tc_none:"Sin reloj",tc_fmt:"{m} min + {s} s por jugada",createBtn:"Crear la partida",
  join:"Unirse a una partida con un código",code:"Código de la partida",play:"Jugar",watch:"Observar",linkHint:"Con un enlace de invitación, la página se conecta sola.",
@@ -147,7 +153,9 @@ function applyStatic(){document.documentElement.lang=lang;document.title=t('titl
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang?'true':'false'));
-  $('rules').innerHTML=t('rules');if($('rulesHome'))$('rulesHome').innerHTML=t('rules').replace(/ \(<span class="\w+State"><\/span>\)/g,'');   // home: the same rules, without « (on in this game) »
+  // the rules, and after them the button that opens « Comment jouer » again (GAME.howto)
+  const RU=GAME.howto?t('rules').replace(/<\/ul>(?![\s\S]*<\/ul>)/,'</ul><p class="htopen"><button type="button" class="htbtn">'+t('ht_title')+'</button></p>'):t('rules');
+  $('rules').innerHTML=RU;if($('rulesHome'))$('rulesHome').innerHTML=RU.replace(/ \(<span class="\w+State"><\/span>\)/g,'');   // home: the same rules, without « (on in this game) »
   const sel=$('cTc');if(sel){const cur=sel.value||LS.get(K('tc'),null)||GAME.tcDefault||'20+10';
     sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
   // face to face: its own time control, no clock by default
@@ -582,7 +590,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   flip=!solo()&&role!=='file'&&meS()===1;   // on one device the board stays put: the players adapt
   const mine=navAt===null&&isMyTurn(r),ns=netSim(r),ms=meSt(r);
   const myTurnNow=mySeat>=0&&!!view.started&&!view.paused&&!r.over&&r.st.turn===mySeat;if(myTurnNow&&!lastMine&&view.moves.length)tone(660,.18,.05);lastMine=myTurnNow;
-  const o=GAME.board({r,d,mine,ms});
+  const o=GAME.board({r,d,mine,ms});htAuto();
   {const L=A?anaLine():view.moves,n=L.length,k=A?view.moves.length:navAt===null?n:navAt,on=A||canNav(r);$('nav').hidden=!on;
     for(const id of ['navBrP','navBrN','navAltU','navAltD'])if($(id))$(id).hidden=!A;
     if(on){$('navPos').textContent=t('nav_pos',{k,n});$('navFirst').disabled=$('navPrev').disabled=k===0;$('navNext').disabled=$('navLast').disabled=k>=n;
@@ -1135,6 +1143,63 @@ function mStart(kind,code,k){MATCH=LS.get('mochalunt-'+code,null);MTK=k;MTW=kind
   H.code=tc;H.wcode=MATCH.wcode?MATCH.wcode+'t'+k:rnd(8);H.guestCid=null;H.game=mTableGame();H.turnStart=Date.now();hostStart(null);return true;}
 
 // ---------- start-up: called by the page once GAME is defined ----------
+// ---------- « Comment jouer » (GAME.howto) ----------
+// A card over the board, opened the first time a game is shown on the page (unless « Ne plus montrer » was ticked: kept
+// in localStorage, losing it only brings the card back). GAME.howto.n pages, each with an animation (GAME.howto.scene)
+// that loops while the page is shown. Arrows, dots or the keyboard (← →) to browse. Its own button (« Passer »,
+// « C'est parti ») or Échap closes it, not a click beside it; a change of language or theme translates or recolours it
+// (the language and theme buttons stay above the grey). The button after « Règles en bref » opens it again.
+const HT={k:0,tok:null,seen:false};
+const htKey=()=>(GAME.howto&&GAME.howto.key)||K('howto-off');
+function htOff(){try{return localStorage.getItem(htKey())==='1';}catch(e){return false;}}
+function htSetOff(v){try{if(v)localStorage.setItem(htKey(),'1');else localStorage.removeItem(htKey());}catch(e){}}
+function htBox(){if(HT.no||!GAME.howto)return null;let b=$('howto');if(b)return b;b=document.createElement('div');b.id='howto';b.className='howto';b.hidden=true;
+  b.setAttribute('role','dialog');b.setAttribute('aria-modal','true');b.setAttribute('aria-labelledby','htT');
+  b.innerHTML='<div class="htcard"><div class="hthead"><b id="htT"></b><span id="htN"></span></div><svg id="htSvg" viewBox="0 0 240 180" aria-hidden="true"></svg>'+
+    '<p id="htTxt" aria-live="polite"></p><div class="htnav"><button type="button" id="htPrev">‹</button><span class="htdots" id="htDots"></span><button type="button" id="htNext">›</button></div>'+
+    '<div class="htfoot"><label><input type="checkbox" id="htNever"><span id="htNeverL"></span></label><button type="button" id="htSkip"></button></div></div>';
+  document.body.appendChild(b);
+  if(!$('htPrev')||!window.requestAnimationFrame){HT.no=true;return null;}   // a page without a full DOM (the regression tests): no card
+  $('htPrev').onclick=()=>htGo(HT.k-1);$('htNext').onclick=()=>htGo(HT.k+1);$('htSkip').onclick=htClose;
+  $('htNever').onchange=e=>htSetOff(e.target.checked);
+  for(let k=0;k<GAME.howto.n;k++){const d=document.createElement('i');d.onclick=()=>htGo(k);$('htDots').appendChild(d);}
+  window.addEventListener('keydown',e=>{if(b.hidden)return;if(document.querySelector('.langdd .menu:not([hidden])'))return;   // Échap closes the language menu first
+    const k={ArrowLeft:-1,ArrowRight:1}[e.key];
+    if(k||e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(k)htGo(HT.k+k);else htClose();}},true);
+  new MutationObserver(()=>{if(!b.hidden)htGo(HT.k);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});   // texts drawn in the animation too
+  return b;}
+function htText(){const N=GAME.howto.n;$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+1)+' / '+N;$('htTxt').innerHTML=t('ht_'+(HT.k+1));
+  $('htNeverL').textContent=t('ht_never');$('htPrev').setAttribute('aria-label',t('ht_prev'));$('htNext').setAttribute('aria-label',t('ht_next'));
+  $('htPrev').disabled=HT.k===0;$('htNext').disabled=HT.k===N-1;
+  const last=HT.k===N-1;$('htSkip').textContent=t(last?'ht_done':'ht_skip');$('htSkip').classList.toggle('primary',last);
+  Array.from($('htDots').children).forEach((d,k)=>d.classList.toggle('on',k===HT.k));}
+function htShow(k){const b=htBox();if(!b)return;b.hidden=false;document.documentElement.classList.add('htshown');$('htNever').checked=htOff();htGo(k||0);$('htNext').focus();}
+function htGo(k){if(k<0||k>=GAME.howto.n)return;HT.k=k;htText();htAnim(k);}
+function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;}
+function htAuto(){if(HT.seen||!GAME.howto)return;HT.seen=true;if(!htOff())htShow(0);}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
+// The kit handed to GAME.howto.scene(k,A): A.svg (the card's picture, its viewBox 240 × 180 unless the scene sets it),
+// A.el(tag,attrs,parent), A.frame(), A.wait(ms), A.tween(o,x,y,ms) (eased), A.mover(g) (o.set(x,y) translates g),
+// A.cursor(x,y) (a mouse pointer, a mover), A.click(cu) (a click felt under it), A.goTo(cu,x,y,ms) (the pointer's tip
+// just beside x,y). The promises reject once the page changes: the scene stops there.
+function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;const svg=$('htSvg');
+  const dead={},NS='http://www.w3.org/2000/svg';
+  const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const x in a)e.setAttribute(x,a[x]);if(p)p.appendChild(e);return e;};
+  const frame=()=>new Promise((res,rej)=>requestAnimationFrame(()=>tok.live?res():rej(dead)));
+  const wait=ms=>new Promise((res,rej)=>setTimeout(()=>tok.live?res():rej(dead),ms));
+  async function tween(o,x,y,ms){const x0=o.x,y0=o.y,t0=performance.now();
+    for(;;){await frame();const u=Math.min(1,(performance.now()-t0)/ms),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;o.set(x0+(x-x0)*e,y0+(y-y0)*e);if(u>=1)return;}}
+  function mover(g){const o={g,x:0,y:0,set(x,y){o.x=x;o.y=y;g.setAttribute('transform','translate('+x+','+y+')');}};return o;}
+  function cursor(x,y){const g=el('g',{},svg),o=mover(g);
+    el('path',{d:'M0 0 L0 19 L5 14.5 L8.5 22 L11.5 20.8 L8 13.5 L14.5 13.5 Z',fill:'#fff',stroke:'#111','stroke-width':1.4,'stroke-linejoin':'round'},g);o.set(x,y);return o;}
+  async function click(cu){const c=el('circle',{cx:cu.x,cy:cu.y,r:4,fill:'none',stroke:'#fff','stroke-width':2}),t0=performance.now();svg.insertBefore(c,cu.g);
+    cu.g.firstChild.setAttribute('transform','scale(.88)');
+    for(;;){await frame();const u=Math.min(1,(performance.now()-t0)/320);c.setAttribute('r',4+14*u);c.setAttribute('opacity',1-u);if(u>=1)break;}
+    cu.g.firstChild.removeAttribute('transform');c.remove();}
+  const goTo=(cu,x,y,ms)=>tween(cu,x+4,y+6,ms||650);
+  const A={svg,el,frame,wait,tween,mover,cursor,click,goTo};
+  (async()=>{try{for(;;){svg.textContent='';svg.setAttribute('viewBox','0 0 240 180');await GAME.howto.scene(k,A);}}catch(e){if(e!==dead)throw e;}})();}
+
 function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en},es:{...I18C.es,...(GAME.i18n.es||{})}};sgfUi();
   if(GAME.levels){level=LS.get(K('level'),null);if(!GAME.levels[level])level=GAME.levelDefault;}
   applyStatic();
