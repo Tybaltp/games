@@ -478,7 +478,12 @@ function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d
 const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function bird(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:18,fill:c?'var(--b2)':'var(--o2)',stroke:c?'var(--b3)':'var(--o3)','stroke-width':1.6},g);if(op)e.setAttribute('opacity',op);}
-const LASTDOT='#13202a';   // the last move's dot on the birds (dark on both colours, in both themes)
+const LASTDOT='#13202a';   // a dark edge (dark on both colours, in both themes)
+// the bird just added: a ring inside it in its own dark tone, and a light halo of its colour around it (the amber rings
+// are for choosing a move)
+function newMark(g,x,y,c){const a={fill:'none','pointer-events':'none'};
+  el('circle',{...a,cx:x,cy:y,r:23.5,stroke:c?'var(--b2)':'var(--o2)','stroke-width':2.2,opacity:.55},g);
+  el('circle',{...a,cx:x,cy:y,r:7.5,stroke:c?'var(--b3)':'var(--o3)','stroke-width':2.6},g);}
 // cur: real position. opt: {legal (moves in cur), interactive, last (the last move, to mark), pv: {hover:mv} (in transparency)
 // or {prov:mv, region, hover} (a provisional move: the board after it, its birds opaque in a dashed frame)}
 function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
@@ -507,7 +512,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
       if(i===opt.hb)el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
       if(ui.sel.length===1&&ui.sel[0]===i)el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
       if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
-      if(lm&&lm.t==='p'&&lm.at===i)el('circle',{cx:x,cy:y,r:4.5,fill:LASTDOT,'pointer-events':'none'},g);
+      if(lm&&lm.t==='p'&&lm.at===i)newMark(g,x,y,c-1);
       if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
         const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
   // hovered: the bird to add, or the birds of the flight where they land, in transparency
@@ -1088,7 +1093,7 @@ function voHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
       sky();bd(0,P(1,1));bd(0,P(1,2));bd(1,P(3,1));bd(1,P(3,3));const cu=cursor(270,200);
       await wait(400);await goTo(cu,P(2,1));await wait(900);
       await goTo(cu,P(2,3));const gh=bd(0,P(2,3),.5);await wait(800);await click(cu);gh.g.remove();bd(0,P(2,3));
-      const dt=el('circle',{cx:P(2,3).x,cy:P(2,3).y,r:4.5,fill:LASTDOT},top);await wait(1900);},
+      newMark(top,P(2,3).x,P(2,3).y,0);await wait(1900);},
     async()=>{ // fly one bird: in a straight line over empty points, landing against my flock
       sky();bd(0,P(0,1));bd(0,P(1,1));bd(1,P(2,0));bd(1,P(4,2));const a=P(3,3),b=P(2,1),Bm=bd(0,a),cu=cursor(270,200);
       await wait(400);await goTo(cu,a);await click(cu);const sel=rg(a),ls=[land(b)];await wait(650);
