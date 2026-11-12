@@ -1168,7 +1168,7 @@ function htBox(){if(HT.no||!GAME.howto)return null;let b=$('howto');if(b)return 
     if(k||e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(k)htGo(HT.k+k);else htClose();}},true);
   new MutationObserver(()=>{if(!b.hidden)htGo(HT.k);}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});   // texts drawn in the animation too
   return b;}
-function htText(){const N=GAME.howto.n;$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+1)+' / '+N;$('htTxt').innerHTML=t('ht_'+(HT.k+1));
+function htText(){const N=GAME.howto.n;$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+1)+' / '+N;$('htTxt').innerHTML=t('ht_'+(HT.k+1),GAME.howto.vars&&GAME.howto.vars());
   $('htNeverL').textContent=t('ht_never');$('htPrev').setAttribute('aria-label',t('ht_prev'));$('htNext').setAttribute('aria-label',t('ht_next'));
   $('htPrev').disabled=HT.k===0;$('htNext').disabled=HT.k===N-1;
   const last=HT.k===N-1;$('htSkip').textContent=t(last?'ht_done':'ht_skip');$('htSkip').classList.toggle('primary',last);
@@ -1178,6 +1178,7 @@ function htGo(k){if(k<0||k>=GAME.howto.n)return;HT.k=k;htText();htAnim(k);}
 function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;}
 function htAuto(){if(HT.seen||!GAME.howto)return;HT.seen=true;if(!htOff())htShow(0);}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
+// GAME.howto.vars(), if given, fills the {name} slots of the texts (read each time a page is drawn).
 // The kit handed to GAME.howto.scene(k,A): A.svg (the card's picture, its viewBox 240 × 180 unless the scene sets it),
 // A.el(tag,attrs,parent), A.frame(), A.wait(ms), A.tween(o,x,y,ms) (eased), A.mover(g) (o.set(x,y) translates g),
 // A.cursor(x,y) (a mouse pointer, a mover), A.click(cu) (a click felt under it), A.goTo(cu,x,y,ms) (the pointer's tip
