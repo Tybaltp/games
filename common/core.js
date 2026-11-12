@@ -777,13 +777,31 @@ function pendClear(){C.pending=null;LS.del(K('p2p-pending'));}
 
 // ---------- computer opponent ----------
 // The search runs in a worker built from the game's source (GAME.aiSrc), so the page stays responsive.
-let worker=null,reqId=0,cbs={},busy='',aiInfo=null,hintMv=null,aiLast=null;   // aiLast: the computer's last search (draw offers)
+let worker=null,pool=[],reqId=0,cbs={},busy='',aiInfo=null,hintMv=null,aiLast=null;   // aiLast: the computer's last search (draw offers)
 function makeWorker(){const src=GAME.aiSrc()+`
-self.onmessage=e=>{const m=e.data,r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}});};`;
-  worker=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));worker.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data.r);};}
-function stopAI(){if(worker)worker.terminate();worker=null;cbs={};busy='';}
+self.onmessage=e=>{const m=e.data;self.__aiRoot=null;const r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy,root:self.__aiRoot||undefined}});};`;
+  const w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));w.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data.r);};return w;}
+function stopAI(){if(worker)worker.terminate();worker=null;for(const w of pool)w.terminate();pool=[];cbs={};busy='';}
+// Several cores (a level's opt.par: a number of workers, or 'auto' for the cores the browser reports less one, at most 8):
+// root parallelism for mcts. Each worker searches the whole budget with its own random numbers (opt.rootOut: common/ai.js
+// leaves its root visits in __aiRoot); the visits are added up by move, the most visited is played (drawn by
+// visits^(1/temp) when opt.temp); a worker that chose it answers, else one is asked to play it (opt.rootPick). A search
+// that made no single mcts call at its root (opening, forced move, several sub-searches) gives worker 0's answer.
+const parN=o=>o.algo!=='mcts'||!o.par?1:o.par==='auto'?Math.max(1,Math.min(8,((typeof navigator!=='undefined'&&navigator.hardwareConcurrency)||2)-1)):Math.max(1,o.par|0);
+function askPar(msg,k,cb){while(pool.length<k)pool.push(makeWorker());const o={...msg.opt,par:0,rootOut:true},R=[];let left=k;
+  const done=()=>{const ok=R.every(r=>r&&r.root&&!r.root.multi);if(!ok){cb(R[0]);return;}
+    const M=new Map();for(const r of R)for(const c of r.root.R){const e=M.get(c.k)||{k:c.k,n:0,w:0,pv:0};e.n+=c.n;e.w+=c.w;if(c.pv)e.pv=c.pv;M.set(c.k,e);}
+    let L=[...M.values()];if(o.solve){const W=L.filter(c=>c.pv===1);if(W.length)L=W;else{const nl=L.filter(c=>c.pv!==-1);if(nl.length)L=nl;else{cb(R[0]);return;}}}
+    L.sort((a,b)=>b.n-a.n);let x=L[0];
+    if(o.temp){const ws=L.map(c=>Math.pow(c.n,1/o.temp));let t=Math.random()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<L.length;i++){t-=ws[i];if(t<=0){x=L[i];break;}}}
+    const q=x.n?x.w/x.n:.5,score=o.solve&&x.pv?x.pv*1000:Math.log(Math.max(1e-3,q)/Math.max(1e-3,1-q))*(o.scale||3);
+    const depth=Math.max(...R.map(r=>r.depth||0)),r=R.find(r=>r.root.k===x.k);
+    if(r){cb({...r,score,depth,root:undefined});return;}
+    const id=++reqId;cbs[id]=p=>cb(p&&{...p,score,depth,root:undefined});pool[0].postMessage({st:msg.st,opt:{...o,rootOut:false,rootPick:x.k},id});};
+  for(let i=0;i<k;i++){const id=++reqId;cbs[id]=r=>{R[i]=r;if(--left===0)done();};pool[i].postMessage({st:msg.st,opt:o,id});}}
 function ask(st,opt,cb){opt={...opt,...(GAME.aiOpt?GAME.aiOpt(view):{})};const msg={st:GAME.aiPos(st),opt};
-  try{if(!worker)makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
+  const k=parN(opt);if(k>1&&typeof Worker!=='undefined'){try{askPar(msg,k,cb);return;}catch(e){for(const w of pool)w.terminate();pool=[];}}
+  try{if(!worker)worker=makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
   catch(e){worker=null;setTimeout(()=>cb(GAME.aiSearch(st,opt)),30);}}   // no worker (some file:// setups): search on the page
 const AK=()=>K('ai');   // the game against the computer, kept across a reload
 const aiView=st=>GAME.aiView?GAME.aiView(st):st;
