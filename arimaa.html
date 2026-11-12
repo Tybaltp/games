@@ -665,8 +665,8 @@ function sharpHist(v){const r=arReplay(v,v.moves),k=v.moves.length,tag=k=>(Math.
 // ---------- « Comment jouer » ----------
 // Opens over the board the first time a game is shown on this page (unless « Ne plus montrer » was ticked: kept in
 // localStorage, losing it only brings the card back). Four pages, each with an animation that loops while the page is
-// shown: move, push, pull, end of turn. Arrows, dots or the keyboard (← →) to browse. Only its own button (« Passer »,
-// « C'est parti ») closes it: not a click beside it, nor Échap; a change of language or theme translates or recolours it.
+// shown: move, push, pull, end of turn. Arrows, dots or the keyboard (← →) to browse. Its own button (« Passer »,
+// « C'est parti ») or Échap closes it, not a click beside it; a change of language or theme translates or recolours it.
 // The button at the end of « Règles en bref » opens it again.
 const HT={k:0,tok:null,seen:false,N:4},HT_KEY='arimaa-howto-off';
 function htOff(){try{return localStorage.getItem(HT_KEY)==='1';}catch(e){return false;}}
@@ -682,7 +682,7 @@ function htBox(){if(HT.no)return null;let b=$('howto');if(b)return b;b=document.
   $('htNever').onchange=e=>htSetOff(e.target.checked);
   for(let k=0;k<HT.N;k++){const d=document.createElement('i');d.onclick=()=>htGo(k);$('htDots').appendChild(d);}
   window.addEventListener('keydown',e=>{if(b.hidden)return;const k={ArrowLeft:-1,ArrowRight:1}[e.key];
-    if(k){e.preventDefault();e.stopImmediatePropagation();htGo(HT.k+k);}},true);
+    if(k||e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(k)htGo(HT.k+k);else htClose();}},true);
   new MutationObserver(()=>{if(!b.hidden)htText();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   return b;}
 function htText(){$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+1)+' / '+HT.N;$('htTxt').innerHTML=t('ht_'+(HT.k+1));
