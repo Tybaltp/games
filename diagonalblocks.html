@@ -792,7 +792,7 @@ function openTab(S,opt){const T=opt.firstTab||FIRST,n=legal(S,0,MV),ks=[];for(le
 function swapTab(S,opt){const T=opt.firstTab||FIRST;let k=-1;for(let j=0;j<NK;j++)if(S.u[0]>>j&1)k=j;
   return k>=0&&T[k]>.5?{m:-1,s:T[k]-.5,depth:1}:null;}
 
-// ----- exact endgame solver (level option solve): alpha-beta to the end on the final cell difference -----
+// ----- exact endgame solver (level option endgame): alpha-beta to the end on the final cell difference -----
 // The colours interact only by covering cells (side contact forbids only one's own colour). R_c: the empty playable
 // cells with no side contact with c, 8-connected to c's anchors through such cells: every cell c can still cover is in
 // R_c. When R_0 and R_1 do not meet, the rest of the game splits: each colour fills its own region alone, whoever moves
@@ -854,9 +854,9 @@ function nega2(S,al,be,ply){const c=S.tm,o=1-c;if(S.ov)return S.cnt[c]-S.cnt[o];
   XK[ix]=ck;XV[ix]=best;XM[ix]=bm;XF[ix]=best<=a0?3:best>=be?2:1;return best;}
 // at the root: a winning move, else a drawing one, proved by null windows (a move is tried against the window (0,1),
 // then (-1,0)); null when every move loses (the normal search keeps playing for the opponent's mistakes), when the
-// position is too big (solve: the most cells both sides could still add) or when the budget runs out
+// position is too big (endgame: the most cells both sides could still add) or when the budget runs out
 function solveRoot(S,opt){const c=S.tm,o=1-c;
-  const ub=Math.min(rem(S.u[c]),region(S,c))+(S.st[o]?0:Math.min(rem(S.u[o]),region(S,o)));if(ub>opt.solve)return null;
+  const ub=Math.min(rem(S.u[c]),region(S,c))+(S.st[o]?0:Math.min(rem(S.u[o]),region(S,o)));if(ub>opt.endgame)return null;
   sNodes=0;sMax=opt.solveNodes||200000;sDead=now()+(opt.solveMs||2000);
   try{buf(0);const L0=MB[0],V0=SB[0],n=legal(S,c,L0);markOpp(S,o);for(let i=0;i<n;i++)V0[i]=cheap(S,c,L0[i],S.n<12);order(L0,V0,n);
     const L=Array.from(L0.subarray(0,n));
@@ -880,7 +880,7 @@ function search(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;
   if(!r){K.start(opt.time);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
     if(!C.length)return null;
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
-    else{if(opt.solve)r=solveRoot(S,opt);if(!r)r=K[opt.algo](S,C,opt);}}
+    else{if(opt.endgame)r=solveRoot(S,opt);if(!r)r=K[opt.algo](S,C,opt);}}
   return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.solved||K.nodes(),solved:!!r.solved};}
 return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fits,toMove,idOf,firstValue,NP,PK:PKA,PCl,
   setEV:o=>{EV={...EV,...o};},setSwap:v=>{SWAP=v;},EV:()=>EV,K};
@@ -897,7 +897,7 @@ return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fi
 // tries, placements sampled per playout ply (the best by the cheap score + rand noise is played) · rand, that noise ·
 // c, UCT exploration · pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · scale, cells per logit · temp,
 // final choice by visits^(1/temp) (0: most visited).
-// Any algo: solve, the exact endgame solver once both sides together can add at most solve cells (it plays a proved win,
+// Any algo: endgame, the exact endgame solver once both sides together can add at most endgame cells (it plays a proved win,
 // else a proved draw, else hands over) · solveNodes, solveMs, its budget.
 // The ladder (10.11.2026, outils/aitools/res/diagonalblocks/niveaux.md, 300 games a pair): each level beats the one
 // below by 74-78 % (draws count half; level 8, the strongest, beats 7 by 61 %). mcts levels stop on sims (time is a cap).
@@ -911,7 +911,7 @@ const LEVELS={
   l5:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,time:3000,openPick:6},
   l6:{...MC,sims:1800,c:.4,cellsIn:10,time:3000},
   l7:{...MC,sims:5000,c:.2,cellsIn:20,time:5000},
-  l8:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,solve:80,solveNodes:100000,solveMs:1000}};   // + the exact endgame solver (12.11.2026: 53.8 % against l8 without it)
+  l8:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000}};   // + the exact endgame solver (12.11.2026: 53.8 % against l8 without it)
 const HINT=LEVELS.l8;
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice()};};
