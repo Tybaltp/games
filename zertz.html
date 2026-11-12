@@ -68,7 +68,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 
 <section class="view" id="setup">
   <div class="home">
-    <p class="lede noinv" data-i18n="lede"></p>
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -307,7 +307,7 @@ const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,tim
 const HINT=LEVELS.fort;
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{
- title:"Zèrtz",lede:"Des billes communes sur un plateau d'anneaux qui rétrécit.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
+ title:"Zèrtz",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
  pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
  c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
@@ -325,7 +325,7 @@ const ZZ_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
- title:"Zèrtz",lede:"Shared marbles on a shrinking board of rings.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
+ title:"Zèrtz",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
  c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
@@ -343,7 +343,7 @@ const ZZ_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
- title:"Zèrtz",lede:"Bolas comunes en un tablero de anillos que se encoge.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",firstIs:"Primer jugador",
+ title:"Zèrtz",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",firstIs:"Primer jugador",
  pool:"Reserva común",poolN:"{n} bolas",poolLbl:"Reserva: {n}",poolLblE:"Reserva vacía",h_empty:"Reserva vacía: cada uno coloca sus propias bolas capturadas.",
  c0:"blanca",c1:"gris",c2:"negra",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmar cada jugada",
  st_capStart:"Captura obligatoria: haz clic en la bola que salta.",st_capPath:"Captura: haz clic en el anillo de llegada (resaltado), o en un anillo ya recorrido para volver a él.",st_remove:"Retira un anillo libre (en rojo), o vuelve a hacer clic en la bola para recuperarla.",

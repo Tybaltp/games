@@ -71,7 +71,7 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
 
 <section class="view" id="setup">
   <div class="home">
-    <p class="lede noinv" data-i18n="lede"></p>
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
@@ -428,7 +428,7 @@ const HINT={...LEVELS.l10,hint:true};
 // Pente strings, merged over the shared ones (core.js)
 const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n,es:'una línea de '+n});
 const PE_I18N={fr:{
- title:"Pente",lede:"Cinq alignés, ou cinq paires capturées. Ouverture Swap2.",
+ title:"Pente",lede:"Cinq alignés, ou dix pierres capturées.",by:"Un jeu de Gary Gabrel.",
  lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10, le plus fort",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre.",
  firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
@@ -453,7 +453,7 @@ const PE_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, onze niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
- title:"Pente",lede:"Five in a row, or capture five pairs. Swap2 opening.",
+ title:"Pente",lede:"Five in a row, or capture ten.",by:"A game by Gary Gabrel.",
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10, the strongest",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four.",
  firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
@@ -478,7 +478,7 @@ const PE_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eleven levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
- title:"Pente",lede:"Cinco en línea, o cinco pares capturados. Apertura Swap2.",
+ title:"Pente",lede:"Cinco en línea, o diez piedras capturadas.",by:"Un juego de Gary Gabrel.",
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10, el más fuerte",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro.",
  firstIs:"Primer jugador (coloca la apertura Swap2)",opener:"¿Quién coloca la apertura Swap2?",needConfirm:"Confirmar cada jugada",
  black:"Negras",white:"Blancas",colw_1:"negra",colw_2:"blanca",captured:"{n} pares capturados de 5",
