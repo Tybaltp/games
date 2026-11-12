@@ -299,7 +299,7 @@ function DBEngine(){
 }
 // Diagonal Blocks strings, merged over the shared ones (core.js)
 const DB_I18N={fr:{
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9, le plus fort",m_aiTxt:"Dix niveaux, de 0 à 9 : chacun bat le précédent environ trois parties sur quatre.",
+ lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10, le plus fort",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre.",
  needConfirm:"Confirmer chaque coup",title:"Diagonal Blocks",lede:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",st_play:"Choisissez une pièce dans votre réserve.",st_playN:"{n} : choisissez une pièce dans votre réserve.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : couvrir le plus de cases possible. Chaque joueur a sa couleur et 21 pièces de 1 à 5 carrés (89 carrés en tout). On peut tourner et retourner les pièces.</li>
  <li><b>Plateau</b> : 14 × 14, chaque coin amputé de 3 cases (184 cases). Deux cases de départ, en gris foncé.</li>
@@ -309,11 +309,11 @@ const DB_I18N={fr:{
  <li><b>Passe forcée</b> : qui ne peut plus poser passe automatiquement ; l'autre continue. La partie finit quand plus personne ne peut poser.</li>
  <li><b>Score</b> : le nombre de cases couvertes. Le plus grand gagne ; égalité possible.</li>
  <li><b>Jouer</b> : choisissez une pièce dans votre réserve, tournez-la (R) ou retournez-la (F). À la souris, le survol montre en transparence où elle irait et un clic la pose ; sur téléphone, un toucher la pose. La pièce posée (cadre en pointillés) attend Confirmer ; cliquer dessus la reprend, cliquer ailleurs la déplace, R ou F la tourne sur place (si elle n'y entre plus, elle quitte le plateau). À la souris, l'option « Confirmer chaque coup » peut être décochée : le clic joue alors la pièce. Les points de couleur signalent vos coins disponibles. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Tourner, Retourner, Échanger, Confirmer ; en partie libre et contre l'ordinateur, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, dix niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, onze niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: each one beats the one below about three games in four.",
+ lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10, the strongest",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four.",
  needConfirm:"Confirm each move",title:"Diagonal Blocks",lede:"Place your polyominoes corner to corner, cover the most squares.",rm_ask:"{n} offers a new game, first player swapped.",firstIs:"Who plays first",placeHint:"Place the piece on the board.",st_play:"Choose a piece from your reserve.",st_playN:"{n}: choose a piece from your reserve.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: cover as many cells as you can. Each player has a colour and 21 pieces of 1 to 5 squares (89 squares in all). Pieces may be rotated and flipped.</li>
  <li><b>Board</b>: 14 × 14 with 3 cells cut from each corner (184 cells). Two start cells, in dark grey.</li>
@@ -323,11 +323,11 @@ const DB_I18N={fr:{
  <li><b>Forced pass</b>: a player who cannot place passes automatically; the other plays on. The game ends when neither can place.</li>
  <li><b>Score</b>: the number of cells covered. Highest wins; a tie is possible.</li>
  <li><b>Playing</b>: pick a piece in your reserve, rotate it (R) or flip it (F). With a mouse, hovering shows in transparency where it would go and a click places it; on a phone, a tap places it. The placed piece (dashed frame) waits for Confirm; clicking it takes it back, clicking elsewhere moves it, R or F turns it where it is (if it no longer fits, it leaves the board). With a mouse, “Confirm each move” can be switched off: the click then plays the piece. Coloured dots mark your available corners. The move commands are in the bar under the board: Reset, Rotate, Flip, Swap, Confirm; in free play and against the computer, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, ten levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eleven levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Two-player adaptation of Diagonal Blocks (Dave Dyer); board size and swap rule chosen for this site.</p>`
 },es:{
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: cada uno gana al anterior unas tres partidas de cada cuatro.",
+ lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10, el más fuerte",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro.",
  needConfirm:"Confirmar cada jugada",title:"Diagonal Blocks",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",firstIs:"Quién empieza",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"↻ Girar",flip:"⇋ Voltear",trayHint:"Elige una pieza; R la gira, F la voltea.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: cubrir el mayor número posible de casillas. Cada jugador tiene su color y 21 piezas de 1 a 5 cuadrados (89 cuadrados en total). Las piezas se pueden girar y voltear.</li>
  <li><b>Tablero</b>: 14 × 14, con 3 casillas recortadas en cada esquina (184 casillas). Dos casillas de salida, en gris oscuro.</li>
@@ -337,7 +337,7 @@ const DB_I18N={fr:{
  <li><b>Pase forzoso</b>: quien ya no puede colocar pasa automáticamente; el otro sigue. La partida termina cuando ya nadie puede colocar.</li>
  <li><b>Puntuación</b>: el número de casillas cubiertas. Gana el mayor; el empate es posible.</li>
  <li><b>Jugar</b>: elige una pieza de tu reserva, gírala (R) o voltéala (F). Con ratón, al pasar por encima se muestra en transparencia dónde iría y un clic la coloca; en el teléfono, un toque la coloca. La pieza colocada (marco de puntos) espera a Confirmar; hacer clic en ella la retira, hacer clic en otro sitio la desplaza, R o F la giran en el sitio (si ya no cabe, sale del tablero). Con ratón, la opción «Confirmar cada jugada» puede desmarcarse: el clic juega entonces la pieza. Los puntos de color señalan tus esquinas disponibles. Los controles de la jugada están en la barra bajo el tablero: Reiniciar, Girar, Voltear, Intercambiar, Confirmar; en partida libre y contra el ordenador, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, diez niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, once niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
  <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptación para dos jugadores de Diagonal Blocks (Dave Dyer); dimensiones del tablero y regla de intercambio elegidas para este sitio.</p>`
 }};
@@ -863,7 +863,10 @@ function solveRoot(S,opt){const c=S.tm,o=1-c;
     const val=(m,al,be)=>{const T=play(copy(S),m);return T.ov?T.cnt[c]-T.cnt[o]:T.tm===c?nega2(T,al,be,1):-nega2(T,-be,-al,1);};
     for(const m of L)if(val(m,0,1)>=1)return {m,s:1001,depth:99,solved:sNodes};
     for(const m of L)if(val(m,-1,0)>=0)return {m,s:0,depth:99,solved:sNodes};
-    return null;}
+    if(!opt.endLoss)return null;
+    // every move loses: the one that loses by the fewest cells (exact; out of budget, back to the normal search)
+    let bm=L[0],best=val(L[0],-999,0);for(let i=1;i<L.length;i++){const v=val(L[i],best,0);if(v>best){best=v;bm=L[i];}}
+    return {m:bm,s:best-1000,depth:99,solved:sNodes};}
   catch(e){if(e instanceof SolveStop)return null;throw e;}}
 // ----- the page's position (aiPos) and moves -----
 const IDX=new Map();for(let id=0;id<NP;id++)IDX.set(PKA[id]+':'+PCl[id].join('.'),id);
@@ -898,9 +901,10 @@ return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fi
 // c, UCT exploration · pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · scale, cells per logit · temp,
 // final choice by visits^(1/temp) (0: most visited).
 // Any algo: endgame, the exact endgame solver once both sides together can add at most endgame cells (it plays a proved win,
-// else a proved draw, else hands over) · solveNodes, solveMs, its budget.
+// else a proved draw, else hands over) · solveNodes, solveMs, its budget · endLoss: when every move loses, the one that loses
+// by the fewest cells instead of handing over.
 // The ladder (10.11.2026, outils/aitools/res/diagonalblocks/niveaux.md, 300 games a pair): each level beats the one
-// below by 74-78 % (draws count half; level 8 beats 7 by 61 %; level 9, the strongest, see below). mcts levels stop on sims (time is a cap).
+// below by 74-78 % (draws count half; level 8 beats 7 by 61 %; level 9 and 10, the strongest, see below). mcts levels stop on sims (time is a cap).
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
 const LEVELS={
   l0:{algo:'greedy',cells:40,temp:1000,openPick:6},
@@ -912,8 +916,9 @@ const LEVELS={
   l6:{...MC,sims:1800,c:.4,cellsIn:10,time:3000},
   l7:{...MC,sims:5000,c:.2,cellsIn:20,time:5000},
   l8:{...MC,sims:15000,c:.2,cellsIn:20,time:5000},
-  l9:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000,puct:1}};   // l8 + the exact endgame solver and PUCT (12.11.2026, 300 games: 69.8 % against l8, 62.3 % against l8 with the solver alone)
-const HINT=LEVELS.l9;
+  l9:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000,puct:1,endLoss:1},   // l8 + the exact endgame solver and PUCT (12.11.2026, 300 games: 69.8 % against l8, 62.3 % against l8 with the solver alone)
+  l10:{...MC,sims:1e9,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000,puct:1,endLoss:1}};   // l9 searching its whole 5 s
+const HINT=LEVELS.l9;   // not l10: a hint should not take 5 s
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice()};};
 let pageAI=null;   // the search on the page itself, when no worker can be made
