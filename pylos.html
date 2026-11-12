@@ -389,7 +389,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=61"></script>
+<script src="common/core.js?v=62"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=1"></script>
 <script>
@@ -775,10 +775,13 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 
 // ---------- the interface with common/core.js ----------
 const homeVariant=()=>PY.rules({variant:LS.get('pylos-variant','lines')}).variant;
+// the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
 const GAME={id:'pylos',size:4,codeTag:'PYLOS1',i18n:PY_I18N,
   rules:g=>PY.rules(g),
   form:p=>{const v=PY.rules({variant:$(p+'Variant').value}).variant;LS.set('pylos-variant',v);return {variant:v};},
-  replay:(r,m)=>PY.replay(r,m),
+  replay:(r,m)=>replayKept(r,m,{init:g=>PY.init(PY.rules(g)),
+    play(prev,mv){const st=deepCopy(prev),code=PY.legal(st,mv);if(code===null)return null;   // as PY.replay, move by move
+      const p=st.turn,res=PY.apply(st,code);return {st,e:{p,txt:res.txt,code},last:{code,cells:res.cells},over:PY.finished(st)};}}),
   legal:(st,code)=>PY.legal(st,code),
   enc:mv=>PY.enc(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:pyBoard,turnStatus:pyTurnStatus,waitStatus:pyWaitStatus,pendText,
