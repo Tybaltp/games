@@ -771,9 +771,10 @@ function coordsSet(on){coordsOn=!!on;document.documentElement.classList.toggle('
 // one appears (once; at the end of a game after a moment, so the last move is seen) and « ⋯ » carries a dot while one is shown.
 // A sheet opened this way closes by itself once those cards are all gone (the game starts, a rematch begins): the board
 // is what matters then. A sheet the player opened or closed is left alone (sheet() clears the flag on close).
-function sheetAttn(){const ids=['inviteBox','startCard','endCard'].filter(id=>!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
+function sheetAttn(){const ids=['inviteBox','endCard'].filter(id=>!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
   $('optBtn').classList.toggle('attn',ids.length>0||V.st==='in');
   if(!$('nameOv').hidden)return;   // the name first: the sheet would cover the frame over the board
+  if(!$('startCard').hidden){if(sheetAttn.auto&&!isWide())sheet(false);return;}   // Start is framed on the board: nothing to cover it
   const prev=sheetAttn.prev||[],fresh=ids.filter(id=>!prev.includes(id));sheetAttn.prev=ids;
   if(isWide())return;
   if(!ids.length&&prev.length&&sheetAttn.auto){sheet(false);return;}
@@ -1118,7 +1119,7 @@ function mUi(){if(!$('startCard')||$('mCard'))return;
   const c1=mk('button',{type:'button',class:'primary',id:'mC1'},cf),c2=mk('button',{type:'button',class:'primary',id:'mC2'},cf);
   const nx=mk('button',{type:'button',class:'primary',id:'mNext',hidden:true},mk('div',{class:'confirm'},c));
   const lv=mk('button',{type:'button',id:'mLive',hidden:true},mk('div',{class:'confirm'},c));mk('ol',{class:'mlist',id:'mList'},c);
-  $('startCard').before(c);
+  $('endCard').before(c);
   c1.onclick=()=>mChooseSend(1);c2.onclick=()=>mChooseSend(2);
   nx.onclick=()=>mGo(MTK+1,MATCH.me?'t':'w');
   lv.onclick=()=>{const P=mPlan(MATCH);let k=0;while(k<P.length&&MATCH.res[k])k++;mGo(Math.min(k,P.length),MATCH.me?'t':'w');};mTexts();}
@@ -1208,6 +1209,8 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   MYID=pickTabId(GAME.id,LS.get(K('p2p-cid'),null));
   {const mh=/^#m[tv]-([a-z0-9]+)-/.exec(location.hash),rec=mh&&LS.get('mochalunt-'+mh[1],null);if(rec&&rec.pid)MYID=rec.pid;}   // a match: one id for all its tables
   mUi();
+  // « Démarrer la partie » : un cadre centré sur le plateau, pas une carte de la colonne
+  {const sc=$('startCard'),bd=sc&&document.querySelector('#game .board');if(bd){const ov=document.createElement('div');ov.className='startov';ov.appendChild(sc);bd.appendChild(ov);}}
   resetUi();
   // host: periodic save, flag fall
   setInterval(()=>{if(role==='guest'&&view&&view.running&&++saveTick%5===0)guestSave();   // the clocks, every second
