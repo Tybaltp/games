@@ -648,7 +648,9 @@ const RAD=l=>R0+l*.015*U;
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 const f1=v=>(+v).toFixed(1);
 let lastPortrait=null;
-function portrait(){const ba=document.querySelector('.boardwrap .boardarea');if(!ba||!ba.clientWidth)return false;return ba.clientHeight>ba.clientWidth*1.05;}
+// the reserves follow the page's layout (decision of 13.11.2026): one column (core, not wide) → above and below the
+// board; the side panel beside the board (wide) → left and right. Nothing else: the board's own proportions do not count
+const portrait=()=>!isWide();
 // a ball: shadow (unless flat), sphere (gradient g0/g1 of the defs), highlight
 function ball(g,x,y,r,c,op,cls,flat){const p=el('g',{transform:`translate(${f1(x)} ${f1(y)})`,'pointer-events':'none'},g);if(op!==undefined)p.setAttribute('opacity',op);if(cls)p.setAttribute('class',cls);
   if(!flat)el('ellipse',{cx:f1(r*.12),cy:f1(r*.22),rx:f1(r*1.02),ry:f1(r*.92),fill:'rgb(0 0 0/.3)'},p);
