@@ -616,6 +616,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     status(t('drawAsk',{n:nm(view.draw.from)}),'turn',[{label:t('decline'),on:()=>drawSend('no')},{label:t('accept'),primary:true,on:()=>drawSend('yes')}]);
   else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
   else if(role==='ai'&&busy)status(t('st_aiThinking'));
+  else if(!view.started&&(role==='host'||role==='guest'||role==='watch'))status('');   // before the game: the frame over the board says it all
   else if(role==='host'&&!view.names[1-mySeat])status(t(view.match?'m_waitOpp':'st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
   else if(!view.started&&typeof view.goIn==='number')status(t('sf_go'));   // as the frame over the board
@@ -663,9 +664,11 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
     // always there in a network game, folded once it has started: a match gives its own pages' links, a spectator only the spectators' link
     const invOn=!(role==='ai'||solo()||role==='file'||(view.match?MTW==='v':!(role==='host'||(mySeat>=0&&C.code)||wC))),rcOn=!(role==='ai'||solo()||!(mySeat>=0&&view.started));ib.hidden=!invOn&&!rcOn;$('invPart').hidden=!invOn;$('rcCard').hidden=!rcOn;{const k=!invOn?'resumeCode':waiting?'invite':'codes',sm=$('inviteSum');if(sm.dataset.i18n!==k||sm.textContent!==t(k)){sm.dataset.i18n=k;sm.textContent=t(k);}}
     if(invOn){if(view.match)fillMatch();else if(role==='watch')fillWatch(C.code);else if(role!=='host'&&C.code)fillCodes(C.code,true);}
-    if(waiting!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',waiting);ib.open=waiting;}
+    const prom=waiting&&!view.match;   // a match: the links stay folded, under the match's card
+    if(prom!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',prom);ib.open=prom;}
+    if(view.match&&$('mCard')){if($('mCard').nextElementSibling!==ib)$('mCard').after(ib);}else
     // waiting: open at the top of the column; once folded, below the commands
-    if(waiting){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('movesBox'))$('movesBox').before(ib);}
+    if(prom){const sc=$('sideScroll');if(sc){if(sc.firstElementChild!==ib)sc.prepend(ib);}else if(ib.previousElementSibling!==$('playersSide'))$('playersSide').after(ib);}else if(ib.nextElementSibling!==$('movesBox'))$('movesBox').before(ib);}
   {const wl=$('watchLine'),net=role==='host'||role==='guest'||role==='watch';
     if(net){const ws=Array.isArray(view.wnames)?view.wnames:[],n=view.watchers||0;
       const items=n?ws.map(x=>x||t('anon')).sort((a,b)=>a.localeCompare(b)):[];
@@ -1142,7 +1145,7 @@ function mRender(r){const card=$('mCard');if(!card)return;const m=view&&view.mat
   $('mScore').textContent=t('m_score',{a:nmOf(MATCH.j1),x:mNum(sc[MATCH.j1]),y:mNum(sc[mOther(MATCH.j1)]),b:nmOf(mOther(MATCH.j1))});
   const ch=mChooser(m,MTK),both=!!(view.names[0]&&view.names[1]),mine=MATCH.me===ch&&mySeat>=0,ask=MTW!=='v'&&!m.chosen&&!view.started&&both;
   $('mAsk').hidden=!(ask&&mine);   // the others read who is choosing in the status bar
-  const ul=$('mList');ul.textContent='';
+  const ul=$('mList');ul.textContent='';ul.style.gridTemplateRows='repeat('+Math.ceil(P.length/2)+',auto)';   // two columns: 1-3 | 4-5
   P.forEach((G,k)=>{const li=document.createElement('li'),res=MATCH.res[k];li.className=k===MTK?'cur':'';
     const a=document.createElement(res&&k!==MTK?'a':'span');a.textContent=(k+1)+'. '+G.name;if(res&&k!==MTK){a.href=G.page+'.html#mv-'+MATCH.code+'-'+k;a.target='_blank';a.rel='noopener';   // another table: always in a new tab
       a.onclick=e=>{e.preventDefault();window.open(a.href,'_blank','noopener');};}

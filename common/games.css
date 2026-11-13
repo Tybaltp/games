@@ -228,11 +228,11 @@ header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'â
 /* Mochalunt: the match card in the side panel (table, score, seat choice, the tables) */
 .mcard h2{font-size:.9rem}
 .mcard .mscore{margin:0;font-weight:650}
-.mlist{margin:0;padding:0;list-style:none;font-size:.85rem;display:flex;flex-direction:column;gap:2px}
-.mlist li{display:flex;justify-content:space-between;gap:8px}
+.mlist{margin:0;padding:0;list-style:none;font-size:.85rem;display:grid;grid-auto-flow:column;grid-template-columns:1fr 1fr;gap:2px 14px}
+.mlist li{display:flex;flex-wrap:wrap;column-gap:6px;min-width:0}
 .mlist li.cur{font-weight:650}
 .mlist a{color:inherit}
-.mlist .mres{color:var(--muted);text-align:right}
+.mlist .mres{color:var(--muted)}
 /* the name asked over the board on arriving by a link (a player: the name the opponent sees; a spectator: a name or none) */
 .nameov{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 60%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .nameov[hidden]{display:none}
