@@ -506,8 +506,16 @@ const CS=60;            // flip (core): the board is turned so that a player's o
 const DC=i=>{let r=(i/6)|0,c=i%6;if(flip){r=5-r;c=5-c;}return [c,r];};
 const X=i=>DC(i)[0]*CS+CS/2,Y=i=>DC(i)[1]*CS+CS/2;
 const HR=26,PR=27,GR=30;                                      // radius of a square's hole, of a piece, of a goal
-const bandY=q=>((q===0)!==flip)?414:-54;
-window.addEventListener('resize',()=>{const b=typeof BAND!=='undefined'&&!!BAND&&isWide();if(b!==!!window.__gBand&&view&&!$('game').hidden){window.__gBand=b;renderGame();}});                      // line behind seat q's row: its reserve, then its goal
+const bandY=q=>((q===0)!==flip)?414:-54;                     // line behind seat q's row: its reserve, then its goal
+// Band layout: the reserves beside the board, outside its frame, need SIDE board units of room on each side (left
+// column edge at le-142, right one at 374+139)
+const SIDE=142;
+function sideFits(){if(typeof BAND==='undefined'||!BAND||!isWide())return false;const s=$('svg'),bd=s&&s.parentNode,ba=bd&&bd.parentNode;
+  if(!ba)return false;const w=s.getBoundingClientRect().width,W=bd.getBoundingClientRect().width;if(!w)return false;
+  return (ba.clientWidth-W)/2>=SIDE*w/(coordsOn?408:388)-(W-w)/2+6;}
+function sideSync(){if(view&&!$('game').hidden&&sideFits()!==!!window.__gSide)renderGame();}
+window.addEventListener('resize',()=>requestAnimationFrame(sideSync));
+if(window.ResizeObserver){const ro=new ResizeObserver(sideSync);ro.observe($('svg').parentNode.parentNode);ro.observe($('svg').parentNode);}
 const goalPt=p=>[180,bandY(1-p)];                             // centre of the goal seat p aims at
 const PT=(x,p)=>x===G?goalPt(p):[X(x),Y(x)];
 const name=i=>'abcdef'[i%6]+(6-((i/6)|0));
@@ -726,16 +734,16 @@ function drawBoard(st,opt){const svg=$('svg');svg.textContent='';const o=opt.o,p
   // linked to every square of the row in front of it
   const setup=E.setup(st),top=bandY(flip?0:1),bot=bandY(flip?1:0);
   // band layout (wide screens): the goals stay in their bands from the start; the reserves go on two columns
-  // beside the board, mine low on the left, the opponent's high on the right
-  const band=typeof BAND!=='undefined'&&!!BAND&&isWide(),le=coordsOn?-34:-14,RX=[le-14-CS*1.5,le-14-CS/2],RXo=[371+14+CS/2,371+14+CS*1.5];
+  // beside the board, mine low on the left, the opponent's high on the right, outside its frame, when the room
+  // around it allows (sideFits); otherwise in front of their rows, as on phones. The board keeps the same size
+  // from the placement to the end of the game.
+  const band=sideFits(),le=coordsOn?-34:-14,RX=[le-14-CS*1.5,le-14-CS/2],RXo=[371+14+CS/2,371+14+CS*1.5];
   el('rect',{x:-11,y:top-38,width:382,height:bot-top+76,rx:16,fill:'var(--wood)',stroke:'var(--wood-edge)','stroke-width':2},svg);
   const links=el('g',{stroke:'var(--grid)','stroke-width':2.4,'stroke-linecap':'round'},svg),ln=(x1,y1,x2,y2)=>el('line',{x1,y1,x2,y2},links);
   for(let a=0;a<6;a++)for(let b=0;b<6;b++){const p=a*CS+CS/2,q=b*CS+CS/2;if(b<5)ln(p,q,p,q+CS);if(a<5)ln(p,q,p+CS,q);}
   if(!setup||band)for(let a=0;a<6;a++){const p=a*CS+CS/2;ln(180,top,p,CS/2);ln(180,bot,p,360-CS/2);}
   // coordinates (core: coordsOn): a–f under the board, 1–6 on its left; without them, a tighter viewBox (--board-ar too)
-  if(band&&setup){const x0=RX[0]-CS/2-8,x1=RXo[1]+CS/2+8,h=coordsOn?573:552;svg.setAttribute('viewBox',`${x0} -96 ${x1-x0} ${h}`);
-    document.documentElement.style.setProperty('--board-ar',`${x1-x0}/${h}`);}
-  else{svg.setAttribute('viewBox',coordsOn?'-34 -96 408 573':'-14 -96 388 552');document.documentElement.style.removeProperty('--board-ar');}
+  svg.setAttribute('viewBox',coordsOn?'-34 -96 408 573':'-14 -96 388 552');svg.style.overflow=band&&setup?'visible':'';window.__gSide=band;
   const lab={'font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--lbl)','text-anchor':'middle'};
   if(coordsOn)for(let j=0;j<6;j++){const c=flip?5-j:j,r=flip?5-j:j;
     el('text',{...lab,x:j*CS+CS/2,y:bot+56},svg).textContent='abcdef'[c];
