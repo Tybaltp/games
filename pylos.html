@@ -29,6 +29,7 @@
   --s0:#e9dcc2;--s0e:#0f0c0a;--s0hi:#fffaf0;--s0lo:#b9a27a;--s1:#241f1b;--s1e:#8c7f72;--s1hi:#7c6d62;--s1lo:#0c0908;
   --wood1:#8a6236;--wood2:#5a3d1d;--wood-edge:#33220f;--dimple:#2c1c0c;--lab:#b59a74;--mk:#f3ead6;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{background:var(--panel);border-radius:14px}
+:root{--mv:#e5402a}   /* the marks of the moves: one colour, seen on the light balls, the dark ones and the wood */
 .board [data-i]{cursor:default}
 .board [data-i].pt{cursor:pointer}
 /* players' cards: « 6 balls in reserve » */
@@ -628,7 +629,12 @@ function fillUsed(d,p){return fillLive(d)&&fill.key===fillKey()&&fill.w===p?fill
 const fillKey=()=>view?PY.rules(view).variant+'|'+view.moves.join(','):null;
 function fillStep(key){if(fill.key!==key||key!==fillKey())return;if(fill.k<fill.n){fill.k++;tone(520+40*fill.k,.06,.03);
     const c=$('pl'+fill.w),x=c&&c.querySelector('.res');if(x&&shown)x.innerHTML=resTxt(shown.d.st.res[fill.w]-fill.k);drawBoard(true);}
-  if(fill.k<fill.n)setTimeout(()=>fillStep(key),340);}
+  if(fill.k<fill.n)setTimeout(()=>fillStep(key),340);
+  else if(sheetLater){sheetLater=false;setTimeout(()=>{if(!$('endCard').hidden&&!$('game').hidden)coreSheet(true);},900);}}
+// on phones, core opens the sheet at the end of the game (sheetAttn): while the page places the winner's balls, it waits
+// until the last one is on the top
+const coreSheet=sheet;let sheetLater=false;
+sheet=function(on){if(on&&fill.key&&fill.key===fillKey()&&fill.k<fill.n){sheetLater=true;return;}return coreSheet.apply(this,arguments);};
 function fillStart(d){const key=fillKey();if(fill.key===key)return;const w=d.over.w,spots=fillSpots(d.st,w);
   fill={key,k:0,n:spots.length,w,spots};setTimeout(()=>fillStep(key),700);}
 
@@ -651,7 +657,19 @@ function ball(g,x,y,r,c,op,cls,flat){const p=el('g',{transform:`translate(${f1(x
 const ring=(g,x,y,r,dash,w,col)=>el('circle',{cx:f1(x),cy:f1(y),r:f1(r),fill:'none',stroke:col||'var(--mk)','stroke-width':w||2,...(dash?{'stroke-dasharray':'5 4'}:{}),'pointer-events':'none'},g);
 // a mark inside a ball (the last move, the chosen ball, the ball being placed): a circle in the other colour, so that
 // marks on neighbouring balls never overlap
-const mark=(g,x,y,l,v,dash,w,col)=>ring(g,x,y,RAD(l)*.52,dash,w||2.5,col||(v?'var(--s0)':'var(--s1)'));
+const mark=(g,x,y,l,v,dash,w,col)=>ring(g,x,y,RAD(l)*.52,dash,w||3,col||'var(--mv)');
+// a move up, in one piece: a circle inside the start spot, a circle inside the ball moved up, a line between them that
+// runs from one circle's outline to the other's (as in Volo; centre to centre when the gap is too short to read);
+// dashed while it is only a preview
+function moveMark(g,from,to,dash){const a=XY(from),b=XY(to),ra=RAD(CELLS[from].l)*.52,rb=RAD(CELLS[to].l)*.52,da=dash?{'stroke-dasharray':'5 4'}:{};
+  const k=el('g',{fill:'none',stroke:'var(--mv)','stroke-width':3,'pointer-events':'none'},g);
+  el('circle',{cx:f1(a[0]),cy:f1(a[1]),r:f1(ra),...da},k);el('circle',{cx:f1(b[0]),cy:f1(b[1]),r:f1(rb),...da},k);
+  const D=Math.hypot(b[0]-a[0],b[1]-a[1]);if(D<1e-6)return k;const ux=(b[0]-a[0])/D,uy=(b[1]-a[1])/D;let s0=0,e0=D;
+  if(D-ra-rb>=16){s0=ra;e0=D-rb;}
+  el('line',{x1:f1(a[0]+ux*s0),y1:f1(a[1]+uy*s0),x2:f1(a[0]+ux*e0),y2:f1(a[1]+uy*e0),'stroke-linecap':dash?'butt':'round',...da},k);return k;}
+// the last move's removals: the fade runs once, when the move arrives; a redraw meanwhile goes on with it, later ones
+// show the faded ball at once
+let fadeAt={key:null,t:0};
 function cross(g,x,y){const k=el('g',{transform:`translate(${f1(x)} ${f1(y)})`,'pointer-events':'none'},g);
   el('line',{x1:-9,y1:-9,x2:9,y2:9,stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round'},k);el('line',{x1:9,y1:-9,x2:-9,y2:9,stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round'},k);}
 function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
@@ -689,8 +707,8 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
   // coordinates (core: coordsOn): the column letters under the base, the row numbers on its left
   if(coordsOn){for(let x=0;x<4;x++){const e=el('text',{x:f1((x+.5)*U),y:f1(4.5*U+14),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String.fromCharCode(97+x);}
     for(let y=0;y<4;y++){const e=el('text',{x:f1(-.5*U-10),y:f1((y+.5)*U+4),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String(y+1);}}
-  // the balls, level by level; the empty spots that can be clicked get a target; the transparent ball (hidden ball) keeps
-  // a dashed outline
+  // the balls, level by level; the empty spots that can be clicked get a target; the transparent ball (hidden ball) has
+  // no outline (decision of 13.11.2026)
   const layers=[0,1,2,3].map(()=>el('g',{},svg));
   const lastMv=view&&sh&&sh.d.last?parseCode(sh.d.last.code):null,lastP=lastMv&&sh.d.log.length?sh.d.log[sh.d.log.length-1].p:-1;
   const showLast=!!lastMv&&!prov&&!(mine&&prepared())&&!fk;
@@ -699,23 +717,22 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
     const see=c.l>=2&&(i===xray||i===xrayH),drop=fl&&fillTick&&fk&&fill.spots[fk-1]===i;
     const k=ball(drop?el('g',{class:'drop'},g):g,x,y,RAD(c.l),v,see?.28:undefined);k.setAttribute('pointer-events','all');k.setAttribute('data-i',i);k.setAttribute('data-b','');
     if(act.has(i))k.setAttribute('class','pt');
-    if(see)ring(g,x,y,RAD(c.l),true,1.5,v?'var(--s1e)':'var(--s0e)');}
+}
   // the ghosts: the balls being taken back (dashed, a cross), the last move's removals (fading)
   const top=el('g',{'pointer-events':'none'},svg);
   for(const i of remGhost){const [x,y]=XY(i),c=CELLS[i];ball(top,x,y,RAD(c.l),p,.45);cross(top,x,y);}
   if(mine&&ui.main&&ui.bonus)for(const i of ui.rem){el('circle',{cx:f1(XY(i)[0]),cy:f1(XY(i)[1]),r:f1(.4*U),fill:'transparent','data-i':i,class:'pt'},svg);}
-  if(showLast){for(const i of lastMv.rem){const [x,y]=XY(i),c=CELLS[i];if(disp[i]!==-1)continue;ball(top,x,y,RAD(c.l),lastP,undefined,'fade');cross(top,x,y);}
-    if(lastMv.from>=0){const a=XY(lastMv.from),bb=XY(lastMv.to),r1=RAD(CELLS[lastMv.from].l)*.9,r2=RAD(CELLS[lastMv.to].l)+5;ring(top,a[0],a[1],r1,true,2);
-      const dx=bb[0]-a[0],dy=bb[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
-      el('line',{x1:f1(a[0]+ux*r1),y1:f1(a[1]+uy*r1),x2:f1(bb[0]-ux*r2),y2:f1(bb[1]-uy*r2),stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round',opacity:.8},top);}
-    {const [x,y]=XY(lastMv.to);mark(top,x,y,CELLS[lastMv.to].l,lastP);}}
+  if(showLast){const gone=el('g',{id:'gone'},top),fk2=sh.d.log.length+'|'+sh.d.last.code,now=Date.now();
+    if(fadeAt.key!==fk2)fadeAt={key:fk2,t:now};const age=now-fadeAt.t;
+    for(const i of lastMv.rem){const [x,y]=XY(i),c=CELLS[i];if(disp[i]!==-1)continue;
+      const k=ball(gone,x,y,RAD(c.l),lastP,age<1800?undefined:.3,age<1800?'fade':undefined);if(age<1800&&age>0)k.style.animationDelay=-age+'ms';cross(gone,x,y);}
+    if(lastMv.from>=0)moveMark(top,lastMv.from,lastMv.to,false);
+    else{const [x,y]=XY(lastMv.to);mark(top,x,y,CELLS[lastMv.to].l,lastP);}}
   // the end of a blocked game: a halo on the last ball placed (the top, once done)
   if(fk){const i=fill.spots[fk-1],[x,y]=XY(i);mark(top,x,y,CELLS[i].l,fill.w,false,undefined,fk===fill.n?'var(--accent)':undefined);}
   // the preparation: the chosen ball (accent ring), the provisional ball (dashed ring), a lift's start (dashed)
-  if(mine&&ui.sel>=0&&!ui.main){const [x,y]=XY(ui.sel);mark(top,x,y,CELLS[ui.sel].l,p,false,3,'var(--accent)');}
-  if(prov){const [x,y]=XY(prov.to);mark(top,x,y,CELLS[prov.to].l,p,true);
-    if(prov.from>=0){const a=XY(prov.from),bb=[x,y],r1=RAD(CELLS[prov.from].l)*.9;ring(top,a[0],a[1],r1,true,2);
-      const dx=bb[0]-a[0],dy=bb[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;el('line',{x1:f1(a[0]+ux*r1),y1:f1(a[1]+uy*r1),x2:f1(x-ux*(RAD(CELLS[prov.to].l)+5)),y2:f1(y-uy*(RAD(CELLS[prov.to].l)+5)),stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round',opacity:.8},top);}}
+  if(mine&&ui.sel>=0&&!ui.main){const [x,y]=XY(ui.sel);mark(top,x,y,CELLS[ui.sel].l,p,true);}
+  if(prov){if(prov.from>=0)moveMark(top,prov.from,prov.to,true);else{const [x,y]=XY(prov.to);mark(top,x,y,CELLS[prov.to].l,p,true);}}
   // analysis: the other variations of the move shown, a hollow mark
   for(const [i] of alt){const [x,y]=XY(i);el('circle',{cx:f1(x),cy:f1(y),r:f1(.18*U),fill:'none',stroke:'var(--mk)','stroke-width':2.2,'pointer-events':'none'},top);}
   // the reserves: the number, then the balls left, overlapping (a column on each side, or a row above and below)
@@ -732,12 +749,14 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
 let hovDim=null;
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
   if(hovDim){hovDim.removeAttribute('opacity');hovDim=null;}
+  const gone=$('gone');if(gone)gone.style.display='';
   if(sh&&sh.mine&&i>=0&&!sending&&ui.main&&ui.bonus&&ui.rem.length<2&&!ui.rem.includes(i)&&lastAct.has(i)){
     const k=$('svg').querySelector(`[data-b][data-i="${i}"]`);if(k){k.setAttribute('opacity',.45);hovDim=k;const [x,y]=XY(i);cross(g,x,y);}return;}
   if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||ui.main)return;const ms=sh.ms,p=ms.turn,L=legalsOf(ms);
   if(!prepared()&&altCells().has(i))return;
   const ok=ui.sel>=0?L.some(m=>m.from===ui.sel&&m.to===i):ms.b[i]===-1&&L.some(m=>m.from===-1&&m.to===i);
-  if(!ok)return;const [x,y]=XY(i);ball(g,x,y,RAD(CELLS[i].l),p,.5);}
+  if(!ok)return;const [x,y]=XY(i);ball(g,x,y,RAD(CELLS[i].l),p,.5);if(gone)gone.style.display='none';
+  if(ui.sel>=0)moveMark(g,ui.sel,i,true);}
 window.addEventListener('resize',()=>{if(!view||$('game').hidden)return;if(portrait()!==lastPortrait)renderGame();});
 
 // ---------- computer opponent ----------
