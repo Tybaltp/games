@@ -1175,7 +1175,7 @@ function mStart(kind,code,k){MATCH=LS.get('mochalunt-'+code,null);MTK=k;MTW=kind
     view={...soloView(res.rules||{},null),names,moves:res.moves,result:null,match:{code,k,excl:MATCH.excl,j1:MATCH.j1,seats:res.seats,chosen:true}};
     {const rr=GAME.replay(view,view.moves);if(!rr.over&&res.w)view.result={winner:res.w==='d'?-1:res.seats.indexOf(res.w),reason:res.why==='w_time'?'time':res.why==='w_agree'?'agree':'resign'};}
     navAt=null;resetUi();hintMv=null;showGame();renderGame();return true;}
-  if(kind==='w'){clientStart(tc,nickGet()||t('spectator'),true);return true;}
+  if(kind==='w'){clientStart(tc,typeof MATCH.wname==='string'?MATCH.wname:nickGet()||t('spectator'),true);return true;}   // the name chosen on the match's page (empty: anonymous)
   const saved=LS.get(K('p2p-host'),null);
   if(saved&&saved.code===tc&&saved.game&&saved.game.match){hostStart(saved);return true;}
   const sg=LS.get(K('p2p-guest'),null);if(sg&&sg.code===tc){clientStart(tc,MATCH.name,false);return true;}

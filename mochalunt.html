@@ -55,6 +55,17 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .matches li{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:8px}
 .matches .acts{display:flex;gap:6px;flex:none}
 .matches li:first-child{border-top:0;padding-top:0}
+/* an invitation (to play or to watch): the action first, in one block; the programme after it, one line per table */
+.act h2{font-size:1.3rem;line-height:1.25;margin:0}
+.act .who{color:var(--muted);margin:0}
+.act .go{display:flex;gap:8px;align-items:flex-end}.act .go label{flex:1;min-width:0}
+.act .go button{flex:none;font-size:1rem;padding:9px 22px}
+@media (max-width:520px){.act .go{flex-direction:column;align-items:stretch}.act .go button{padding:11px 16px}}
+.prog{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.prog li{display:flex;align-items:center;gap:12px}
+.prog .gc{width:68px;flex:none;border-radius:7px}.prog .gc .ct{display:none}
+.prog .tx{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.prog .tx b{font-weight:650}.prog .tx span{color:var(--muted);font-size:.85rem}
 </style>
 </head>
 <body>
@@ -91,18 +102,25 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 
 <!-- an invitation -->
 <section id="vJoin" hidden>
-  <form class="panel" id="joinForm">
-    <h2 data-i18n="joinT"></h2>
-    <p class="hint" id="joinJ1"></p>
-    <ol class="plan" id="joinPlan"></ol>
-    <label><span data-i18n="name"></span><input id="jName" maxlength="24" autocomplete="nickname"></label>
-    <button class="primary" type="submit" data-i18n="joinBtn"></button>
+  <form class="panel act" id="joinForm">
+    <h2 id="joinT"></h2>
+    <p class="who" id="joinWho"></p>
+    <div class="go"><label><span data-i18n="name"></span><input id="jName" maxlength="24" autocomplete="nickname" enterkeyhint="go"></label>
+      <button class="primary" type="submit" data-i18n="joinBtn"></button></div>
   </form>
+  <div class="panel"><h2 data-i18n="prog"></h2><ol class="prog" id="joinPlan"></ol></div>
 </section>
 
 <!-- a spectator: looking for the table in play -->
 <section id="vWatch" hidden>
-  <div class="panel"><h2 data-i18n="watchT"></h2><p class="hint" id="watchMsg"></p><button type="button" id="watchRetry" data-i18n="retry" hidden></button></div>
+  <form class="panel act" id="watchForm">
+    <h2 id="watchT"></h2>
+    <p class="who" id="watchWho"></p>
+    <div class="go" id="watchGo"><label><span data-i18n="nameOpt"></span><input id="wName" maxlength="24" autocomplete="nickname" enterkeyhint="go"></label>
+      <button class="primary" type="submit" data-i18n="watchBtn"></button></div>
+    <p class="hint" id="watchMsg" hidden></p><button type="button" id="watchRetry" data-i18n="retry" hidden></button>
+  </form>
+  <div class="panel"><h2 data-i18n="prog"></h2><ol class="prog" id="watchPlan"></ol></div>
 </section>
 
 <!-- the result -->
@@ -122,7 +140,7 @@ const I18N={
  fr:{lede:"Match entre deux joueurs, une partie par jeu, dans l'ordre du tournoi.",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
   fmtAll:"Match individuel : les 5 jeux",fmtTeam:"Match par équipe : 4 jeux",excl:"Jeu retiré",j1:"Joueur 1 du match",j1Rnd:"Tirage au sort",j1Me:"Moi",j1Opp:"Mon adversaire",
   j1Hint:"Le joueur 1 choisit sa place aux tables 1, 3 et 5 ; l'autre aux tables 2 et 4.",create:"Créer le match",madeT:"Match créé",invLink:"Lien d'invitation, à envoyer à votre adversaire",
-  watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinBtn:"Rejoindre le match",
+  watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinTn:"{n} vous invite à un match Mochalunt",watchTn:"{n} vous invite à suivre un match Mochalunt",joinWho:"{g} jeux · vous choisissez votre place aux tables {t}",watchWho:"{g} jeux, une table par jeu",and:" et ",prog:"Le programme",watchBtn:"Suivre le match",nameOpt:"Votre nom (facultatif : sans nom, vous restez anonyme)",joinBtn:"Rejoindre le match",
   watchT:"Suivre un match Mochalunt",watchFind:"Recherche de la table en cours…",watchNone:"Aucune table n'est ouverte pour l'instant : les joueurs ne sont pas encore à une table.",retry:"Réessayer",
   resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",del:"Supprimer",delQ:"Supprimer le match contre {n} de cet appareil ?",result:"Résultat",
   drawn:"nulle",won:"{n} gagne",live:"à jouer",tableN:"table {k} / {n}",table:"Table {k}",vs:"contre {n}",opp:"votre adversaire",you:"vous",
@@ -130,7 +148,7 @@ const I18N={
  en:{lede:"A match between two players, one game each, in the tournament's order.",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
   fmtAll:"Individual match: the 5 games",fmtTeam:"Team match: 4 games",excl:"Game left out",j1:"Match's Player 1",j1Rnd:"Random draw",j1Me:"Me",j1Opp:"My opponent",
   j1Hint:"Player 1 chooses their seat at tables 1, 3 and 5; the other at tables 2 and 4.",create:"Create the match",madeT:"Match created",invLink:"Invitation link, to send to your opponent",
-  watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinBtn:"Join the match",
+  watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinTn:"{n} invites you to a Mochalunt match",watchTn:"{n} invites you to follow a Mochalunt match",joinWho:"{g} games · you choose your seat at tables {t}",watchWho:"{g} games, one table each",and:" and ",prog:"The programme",watchBtn:"Follow the match",nameOpt:"Your name (optional: without one, you stay anonymous)",joinBtn:"Join the match",
   watchT:"Follow a Mochalunt match",watchFind:"Looking for the table in play…",watchNone:"No table is open yet: the players are not at a table.",retry:"Try again",
   resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",result:"Result",
   drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",table:"Table {k}",vs:"against {n}",opp:"your opponent",you:"you",
@@ -138,7 +156,7 @@ const I18N={
  es:{lede:"Encuentro entre dos jugadores, una partida por juego, en el orden del torneo.",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
   fmtAll:"Encuentro individual: los 5 juegos",fmtTeam:"Encuentro por equipos: 4 juegos",excl:"Juego excluido",j1:"Jugador 1 del encuentro",j1Rnd:"Sorteo",j1Me:"Yo",j1Opp:"Mi adversario",
   j1Hint:"El jugador 1 elige su sitio en las mesas 1, 3 y 5; el otro en las mesas 2 y 4.",create:"Crear el encuentro",madeT:"Encuentro creado",invLink:"Enlace de invitación, para enviar a tu adversario",
-  watchLink:"Enlace para los espectadores",copy:"Copiar",copied:"Copiado",goFirst:"Ir a la primera mesa",joinT:"Te han invitado a un encuentro Mochalunt",joinBtn:"Unirse al encuentro",
+  watchLink:"Enlace para los espectadores",copy:"Copiar",copied:"Copiado",goFirst:"Ir a la primera mesa",joinT:"Te han invitado a un encuentro Mochalunt",joinTn:"{n} te invita a un encuentro Mochalunt",watchTn:"{n} te invita a seguir un encuentro Mochalunt",joinWho:"{g} juegos · eliges tu sitio en las mesas {t}",watchWho:"{g} juegos, una mesa por juego",and:" y ",prog:"El programa",watchBtn:"Seguir el encuentro",nameOpt:"Tu nombre (opcional: sin nombre, sigues anónimo)",joinBtn:"Unirse al encuentro",
   watchT:"Seguir un encuentro Mochalunt",watchFind:"Buscando la mesa en curso…",watchNone:"Ninguna mesa está abierta por ahora: los jugadores aún no están en una mesa.",retry:"Reintentar",
   resT:"Resultado del encuentro",wins:"{n} gana {x}–{y}",tie:"Empate {x}–{y}",sofar:"Marcador: {a} {x} – {y} {b}",resume:"Reanudar",del:"Eliminar",delQ:"¿Eliminar el encuentro contra {n} de este dispositivo?",result:"Resultado",
   drawn:"tablas",won:"{n} gana",live:"por jugar",tableN:"mesa {k} / {n}",table:"Mesa {k}",vs:"contra {n}",opp:"tu adversario",you:"tú",
@@ -166,6 +184,12 @@ function gameCard(g,k,cap,href){const li=document.createElement('li'),c=document
   const p=document.createElement('p'),b=document.createElement('b');p.className='gm';b.textContent=t('table',{k:k+1});p.append(b,cap);li.append(c,p);return li;}
 // the match's tables: the game left out does not appear
 function planList(ol,excl){ol.innerHTML='';plan(excl).forEach((g,k)=>ol.appendChild(gameCard(g,k,g.tc+(g.note?' · '+t(g.note):''))));}
+// the programme of an invitation: one line per table, a small card, the table, the game, its clock and rule
+function progList(ol,excl){ol.innerHTML='';plan(excl).forEach((g,k)=>{const li=document.createElement('li'),c=document.createElement('span');c.className='gc c-'+g.cls;
+  for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
+  const tx=document.createElement('span'),b=document.createElement('b'),d=document.createElement('span');tx.className='tx';
+  b.textContent=t('table',{k:k+1})+' · '+g.name;d.textContent=g.tc+(g.note?' · '+t(g.note):'');tx.append(b,d);li.append(c,tx);ol.appendChild(li);});}
+const listAnd=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+t('and')+a[a.length-1];
 function show(v){for(const id of ['vHome','vMade','vJoin','vWatch','vRes'])$(id).hidden=id!==v;$('err').textContent='';}
 
 // ---------- home ----------
@@ -190,24 +214,33 @@ $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('nName'
   const rec={code:rnd(6),wcode:rnd(8),excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now()};
   LS.set('mochalunt-'+rec.code,rec);made(rec);});
 function made(rec){show('vMade');const base=location.href.split('#')[0];
-  $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec)+'-'+rec.wcode;$('watchLink').value=base+'#watch-'+rec.wcode+'-'+tail(rec);   // two codes: the spectators' does not give the players'
+  const nm='~'+encodeURIComponent(rec.name);   // the host's name, after a ~ (links without it still work)
+  $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec)+'-'+rec.wcode+nm;$('watchLink').value=base+'#watch-'+rec.wcode+'-'+tail(rec)+nm;   // two codes: the spectators' does not give the players'
   $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});planList($('madePlan'),rec.excl);
   $('madeGo').onclick=()=>{location.href=tableUrl(rec,0,'t');};}
 
 // ---------- an invitation ----------
-function join(code,x,wcode){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
+function join(code,x,wcode,host){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
   const old=recOf(code);if(old&&old.me){location.replace(tableUrl(old,nextK(old),'t'));return;}
-  show('vJoin');planList($('joinPlan'),p.excl);$('joinJ1').textContent=t('j1Is',{n:p.j1==='i'?t('you'):t('opp')});$('jName').value=LS.get('games-name','');
+  show('vJoin');const P=plan(p.excl),mine=P.map((g,k)=>k).filter(k=>(k%2===0?p.j1:other(p.j1))==='i').map(k=>k+1);   // the tables where I choose my seat
+  $('joinT').textContent=host?t('joinTn',{n:host}):t('joinT');$('joinWho').textContent=t('joinWho',{g:P.length,t:listAnd(mine)});
+  progList($('joinPlan'),p.excl);$('jName').value=LS.get('games-name','');
   $('joinForm').onsubmit=e=>{e.preventDefault();const nm=$('jName').value.trim().slice(0,24);if(!nm){$('jName').focus();return;}LS.set('games-name',nm);
-    const rec={code,wcode:wcode||null,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:{i:nm},res:{},at:Date.now()};LS.set('mochalunt-'+code,rec);location.href=tableUrl(rec,0,'t');};}
+    const rec={code,wcode:wcode||null,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:host?{c:host,i:nm}:{i:nm},res:{},at:Date.now()};LS.set('mochalunt-'+code,rec);location.href=tableUrl(rec,0,'t');};}
 
 // ---------- a spectator: the open table, from the last one back ----------
-function watch(code,x){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
+function watch(code,x,host){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
   let rec=recOf(code);if(!rec){rec={code,excl:p.excl,j1:p.j1,me:null,res:{},names:{}};LS.set('mochalunt-'+code,rec);}
-  show('vWatch');$('watchMsg').textContent=t('watchFind');$('watchRetry').hidden=true;
+  show('vWatch');$('watchT').textContent=host?t('watchTn',{n:host}):t('watchT');$('watchWho').textContent=t('watchWho',{g:plan(rec.excl).length});
+  progList($('watchPlan'),rec.excl);$('watchGo').hidden=false;$('watchMsg').hidden=true;$('watchRetry').hidden=true;
+  $('wName').value=typeof rec.wname==='string'?rec.wname:LS.get('games-name','');
+  // the name the players will see (empty: anonymous), kept with the match: its tables take it (common/core.js)
+  $('watchForm').onsubmit=e=>{e.preventDefault();const nm=$('wName').value.trim().slice(0,24);rec.wname=nm;if(nm)LS.set('games-name',nm);LS.set('mochalunt-'+code,rec);
+    $('watchGo').hidden=true;findTable(code,rec);};}
+function findTable(code,rec){$('watchMsg').hidden=false;$('watchMsg').textContent=t('watchFind');$('watchRetry').hidden=true;
   if(typeof Peer==='undefined'){$('watchMsg').textContent=t('noPeer');return;}
   const P=plan(rec.excl),me=new Peer({debug:0});let k=P.length-1,done=false;
-  const next=()=>{if(done)return;if(k<0){done=true;try{me.destroy();}catch(e){}$('watchMsg').textContent=t('watchNone');$('watchRetry').hidden=false;$('watchRetry').onclick=()=>watch(code,x);return;}
+  const next=()=>{if(done)return;if(k<0){done=true;try{me.destroy();}catch(e){}$('watchMsg').textContent=t('watchNone');$('watchRetry').hidden=false;$('watchRetry').onclick=()=>findTable(code,rec);return;}
     const kk=k--,c=me.connect(P[kk].id+'-p2p-'+code+'t'+kk,{reliable:true});let to=setTimeout(()=>{try{c.close();}catch(e){}next();},5000);
     c.on('open',()=>{clearTimeout(to);done=true;try{c.close();me.destroy();}catch(e){}location.href=tableUrl(rec,kk,'w');});};
   me.on('open',next);me.on('error',e=>{if(e.type==='peer-unavailable'){next();}});}
@@ -225,9 +258,10 @@ function result(code){const rec=recOf(code);if(!rec||rec.excl===undefined){home(
 // ---------- start ----------
 function texts(){document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));}
+const hostOf=x=>{try{return x?decodeURIComponent(x).trim().slice(0,24):'';}catch(e){return '';}};
 function route(){const h=location.hash;let m;
-  if((m=/^#join-([a-z0-9]+)-([a-z0-9]+)(?:-([a-z0-9]+))?$/.exec(h)))join(m[1],m[2],m[3]);
-  else if((m=/^#watch-([a-z0-9]+)-([a-z0-9]+)$/.exec(h)))watch(m[1],m[2]);
+  if((m=/^#join-([a-z0-9]+)-([a-z0-9]+)(?:-([a-z0-9]+))?(?:~(.*))?$/.exec(h)))join(m[1],m[2],m[3],hostOf(m[4]));
+  else if((m=/^#watch-([a-z0-9]+)-([a-z0-9]+)(?:~(.*))?$/.exec(h)))watch(m[1],m[2],hostOf(m[3]));
   else if((m=/^#res-([a-z0-9]+)$/.exec(h)))result(m[1]);
   else home();}
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;LS.set('games-lang',lang);texts();route();});
