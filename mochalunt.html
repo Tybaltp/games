@@ -82,7 +82,8 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 main:has(#vHome:not([hidden])){min-height:100vh;min-height:100svh;display:flex;flex-direction:column;padding-bottom:24px}
 #vHome{flex:1;display:flex;flex-direction:column}
 .hub{display:flex;flex-direction:column;gap:12px;width:100%;max-width:26rem;margin:auto;padding:28px 0}
-.logo{display:block;width:100%;max-width:34rem;margin:0 auto}.logo img{display:block;width:100%;height:auto;border-radius:10px}
+.logo{display:block;width:100%;max-width:34rem;margin:0 auto}
+@media (orientation:landscape){.logo{max-width:26rem}}   /* wide window: the picture as wide as the buttons */.logo img{display:block;width:100%;height:auto;border-radius:10px}
 a.hb{display:block;text-align:center;font-weight:600;font-size:1.05rem;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);text-decoration:none}
 a.hb:hover,a.hb:focus-visible{border-color:var(--accent);outline:none}
 a.hb.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}a.hb.primary:hover{background:var(--accent);border-color:var(--accent)}
