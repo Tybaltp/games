@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=39">
+<link rel="stylesheet" href="common/games.css?v=47">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -227,7 +227,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=62"></script>
+<script src="common/core.js?v=74"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -926,7 +926,8 @@ function dbEvalInfo(r,st){if(st.es.n<2)return null;const s=r.score;if(r.forced)r
   return {k:Math.abs(s)<1.5?'ai_eq':s>0?(s>6?'ai_much':'ai_better'):(s<-6?'ai_muchWorse':'ai_worse'),d:r.depth};}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
-  rules:()=>({}),form:()=>({}),
+  rules:()=>({}),form:()=>({}),swapRule:()=>true,   // a Mochalunt table: the choice of seat says what the swap gives
+  
   replay:dbReplay,
   legal:(st,code)=>{const mv=dec(code);return mv&&E.validate(st.es,mv)?enc(mv):null;},
   enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
