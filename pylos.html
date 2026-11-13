@@ -735,8 +735,8 @@ window.addEventListener('resize',()=>{if(!view||$('game').hidden)return;if(portr
 // ---------- computer opponent ----------
 // The search (AISearch, common/ai.js) on Pylos: the engine's own states and legal moves; a static evaluation in points:
 // 10 per ball of reserve more than the opponent, 1.5 per free ball (it can be moved up or taken back), 3 per square of
-// one's colour one ball away from completion (6 when it is one's turn), the opposite for the opponent. Lines (the default
-// rule) are not evaluated: the search only sees them through the take-backs they produce.
+// one's colour one ball away from completion (6 when it is one's turn), the opposite for the opponent; with the default
+// rule ('lines'), the same for a line (row or column: four balls on the base, three on the second level) one ball away.
 /*AI*/
 function PylosAI(M){
 'use strict';
@@ -747,6 +747,7 @@ function play(S,m){const T=clone(S);M.apply(T,m.code);return T;}
 const done=S=>!!M.finished(S);
 function result(S,p){const f=M.finished(S);if(!f)return 0;const q=1-p;return f.w===p?1000+S.res[p]-S.res[q]:-(1000+S.res[q]-S.res[p]);}
 const supported=(b,i)=>g.below[i].every(k=>b[k]!==-1);
+const LINES=[...new Set(g.lines.flat())];   // each row and column once (the variant 'lines')
 function evalS(S,p){const b=S.b,q=1-p;let v=10*(S.res[p]-S.res[q]),fp=0,fq=0;
   for(let i=0;i<N;i++){if(b[i]<0)continue;let free=true;for(const j of g.above[i])if(b[j]>=0){free=false;break;}if(free){if(b[i]===p)fp++;else fq++;}}
   v+=1.5*(fp-fq);
@@ -754,6 +755,10 @@ function evalS(S,p){const b=S.b,q=1-p;let v=10*(S.res[p]-S.res[q]),fp=0,fq=0;
     for(const k of bl){if(b[k]===p)cp++;else if(b[k]===q)cq++;else e=k;}
     if(e<0||!supported(b,e))continue;
     if(cp===3&&cq===0)v+=S.turn===p?6:3;else if(cq===3&&cp===0)v-=S.turn===q?6:3;}
+  if(S.variant==='lines')for(const ln of LINES){let cp=0,cq=0,e=-1,n=0;
+    for(const k of ln){if(b[k]===p)cp++;else if(b[k]===q)cq++;else{e=k;n++;}}
+    if(n!==1||!supported(b,e))continue;
+    if(cq===0)v+=S.turn===p?6:3;else if(cp===0)v-=S.turn===q?6:3;}
   return v;}
 // every legal move, best first by the evaluation after it
 function gen(S){const me=S.turn,out=[];
