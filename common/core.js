@@ -1215,7 +1215,8 @@ function htText(){const N=GAME.howto.n;$('htT').textContent=t('ht_title');$('htN
 function htShow(k){const b=htBox();if(!b)return;b.hidden=false;document.documentElement.classList.add('htshown');$('htNever').checked=htOff();htGo(k||0);$('htNext').focus();}
 function htGo(k){if(k<0||k>=GAME.howto.n)return;HT.k=k;htText();htAnim(k);}
 function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;}
-function htAuto(){if(HT.seen||!GAME.howto)return;HT.seen=true;if(!htOff())htShow(0);}
+// never by itself at a spectator (a game by link, a Mochalunt table or one looked back on): the button of « Règles en bref » only
+function htAuto(){if(HT.seen||!GAME.howto||role==='watch'||(MATCH&&!MATCH.me))return;HT.seen=true;if(!htOff())htShow(0);}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
 // GAME.howto.vars(), if given, fills the {name} slots of the texts (read each time a page is drawn).
 // The kit handed to GAME.howto.scene(k,A): A.svg (the card's picture, its viewBox 240 × 180 unless the scene sets it),
