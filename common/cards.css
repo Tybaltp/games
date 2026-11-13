@@ -14,6 +14,11 @@ a.gc:focus-visible{outline:2px solid var(--gacc);outline-offset:3px}
 .gc .art,.gc .bar{position:absolute;right:0;top:0;bottom:0;width:76%}
 .gc .art{background:var(--img) center/cover no-repeat;clip-path:polygon(calc(52% + 6px) 0,100% 0,100% 100%,6px 100%)}
 .gc .bar{background:var(--gacc);clip-path:polygon(52% 0,calc(52% + 6px) 0,6px 100%,0 100%)}
+/* a frame over the card's edge, so that the cards stand out from the page (decision of Thibault, 13.11.2026): dark on the
+   light page, light on the dark one */
+.gc::after{content:"";position:absolute;inset:0;z-index:4;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1.5px rgb(0 0 0/.38)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gc::after{box-shadow:inset 0 0 0 1.5px rgb(255 255 255/.38)}}
+:root[data-theme="dark"] .gc::after{box-shadow:inset 0 0 0 1.5px rgb(255 255 255/.38)}
 .c-pente{--gbg:#e8d1d1;--gink:#1B211F;--gacc:#9C2E3A;--img:url(../img/cartes/pente.svg)}
 .c-ponte{--gbg:#ece4d9;--gink:#1d2729;--gacc:#a8761c;--img:url(../img/cartes/ponte.svg)}
 .c-zertz{--gbg:#c5dce2;--gink:#1c282d;--gacc:#5b8792;--img:url(../img/cartes/zertz.svg)}
