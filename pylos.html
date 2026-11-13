@@ -649,6 +649,9 @@ function ball(g,x,y,r,c,op,cls,flat){const p=el('g',{transform:`translate(${f1(x
   el('circle',{r:f1(r),fill:`url(#g${c})`,stroke:c?'var(--s1e)':'var(--s0e)','stroke-width':1},p);
   el('ellipse',{cx:f1(-r*.32),cy:f1(-r*.38),rx:f1(r*.26),ry:f1(r*.16),fill:'#fff',opacity:c?.35:.75,transform:'rotate(-30)'},p);return p;}
 const ring=(g,x,y,r,dash,w,col)=>el('circle',{cx:f1(x),cy:f1(y),r:f1(r),fill:'none',stroke:col||'var(--mk)','stroke-width':w||2,...(dash?{'stroke-dasharray':'5 4'}:{}),'pointer-events':'none'},g);
+// a mark inside a ball (the last move, the chosen ball, the ball being placed): a circle in the other colour, so that
+// marks on neighbouring balls never overlap
+const mark=(g,x,y,l,v,dash,w,col)=>ring(g,x,y,RAD(l)*.52,dash,w||2.5,col||(v?'var(--s0)':'var(--s1)'));
 function cross(g,x,y){const k=el('g',{transform:`translate(${f1(x)} ${f1(y)})`,'pointer-events':'none'},g);
   el('line',{x1:-9,y1:-9,x2:9,y2:9,stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round'},k);el('line',{x1:9,y1:-9,x2:-9,y2:9,stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round'},k);}
 function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
@@ -699,18 +702,18 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
     if(see)ring(g,x,y,RAD(c.l),true,1.5,v?'var(--s1e)':'var(--s0e)');}
   // the ghosts: the balls being taken back (dashed, a cross), the last move's removals (fading)
   const top=el('g',{'pointer-events':'none'},svg);
-  for(const i of remGhost){const [x,y]=XY(i),c=CELLS[i];ball(top,x,y,RAD(c.l),p,.45);ring(top,x,y,RAD(c.l)+4,true,2);cross(top,x,y);}
+  for(const i of remGhost){const [x,y]=XY(i),c=CELLS[i];ball(top,x,y,RAD(c.l),p,.45);cross(top,x,y);}
   if(mine&&ui.main&&ui.bonus)for(const i of ui.rem){el('circle',{cx:f1(XY(i)[0]),cy:f1(XY(i)[1]),r:f1(.4*U),fill:'transparent','data-i':i,class:'pt'},svg);}
   if(showLast){for(const i of lastMv.rem){const [x,y]=XY(i),c=CELLS[i];if(disp[i]!==-1)continue;ball(top,x,y,RAD(c.l),lastP,undefined,'fade');cross(top,x,y);}
     if(lastMv.from>=0){const a=XY(lastMv.from),bb=XY(lastMv.to),r1=RAD(CELLS[lastMv.from].l)*.9,r2=RAD(CELLS[lastMv.to].l)+5;ring(top,a[0],a[1],r1,true,2);
       const dx=bb[0]-a[0],dy=bb[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
       el('line',{x1:f1(a[0]+ux*r1),y1:f1(a[1]+uy*r1),x2:f1(bb[0]-ux*r2),y2:f1(bb[1]-uy*r2),stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round',opacity:.8},top);}
-    {const [x,y]=XY(lastMv.to);ring(top,x,y,RAD(CELLS[lastMv.to].l)+5,false,3);}}
+    {const [x,y]=XY(lastMv.to);mark(top,x,y,CELLS[lastMv.to].l,lastP);}}
   // the end of a blocked game: a halo on the last ball placed (the top, once done)
-  if(fk){const i=fill.spots[fk-1],[x,y]=XY(i);ring(top,x,y,RAD(CELLS[i].l)+5,false,3,fk===fill.n?'var(--accent)':undefined);}
+  if(fk){const i=fill.spots[fk-1],[x,y]=XY(i);mark(top,x,y,CELLS[i].l,fill.w,false,undefined,fk===fill.n?'var(--accent)':undefined);}
   // the preparation: the chosen ball (accent ring), the provisional ball (dashed ring), a lift's start (dashed)
-  if(mine&&ui.sel>=0&&!ui.main){const [x,y]=XY(ui.sel);ring(top,x,y,RAD(CELLS[ui.sel].l)+4,false,3,'var(--accent)');}
-  if(prov){const [x,y]=XY(prov.to);ring(top,x,y,RAD(CELLS[prov.to].l)+4,true,2.5);
+  if(mine&&ui.sel>=0&&!ui.main){const [x,y]=XY(ui.sel);mark(top,x,y,CELLS[ui.sel].l,p,false,3,'var(--accent)');}
+  if(prov){const [x,y]=XY(prov.to);mark(top,x,y,CELLS[prov.to].l,p,true);
     if(prov.from>=0){const a=XY(prov.from),bb=[x,y],r1=RAD(CELLS[prov.from].l)*.9;ring(top,a[0],a[1],r1,true,2);
       const dx=bb[0]-a[0],dy=bb[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;el('line',{x1:f1(a[0]+ux*r1),y1:f1(a[1]+uy*r1),x2:f1(x-ux*(RAD(CELLS[prov.to].l)+5)),y2:f1(y-uy*(RAD(CELLS[prov.to].l)+5)),stroke:'var(--mk)','stroke-width':2.5,'stroke-linecap':'round',opacity:.8},top);}}
   // analysis: the other variations of the move shown, a hollow mark
@@ -725,7 +728,12 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
       for(let k=0;k<n;k++)ball(svg,(.3+k*.27)*U,cy,rr,q,undefined,undefined,true);}}
   el('g',{id:'hov','pointer-events':'none'},svg);drawHover();}
 // Under the mouse: the ball to place (or the chosen ball moved up), in transparency, only where it is legal
+// While choosing the balls to take back: the ball under the mouse turns transparent, with the cross, as it will be
+let hovDim=null;
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
+  if(hovDim){hovDim.removeAttribute('opacity');hovDim=null;}
+  if(sh&&sh.mine&&i>=0&&!sending&&ui.main&&ui.bonus&&ui.rem.length<2&&!ui.rem.includes(i)&&lastAct.has(i)){
+    const k=$('svg').querySelector(`[data-b][data-i="${i}"]`);if(k){k.setAttribute('opacity',.45);hovDim=k;const [x,y]=XY(i);cross(g,x,y);}return;}
   if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||ui.main)return;const ms=sh.ms,p=ms.turn,L=legalsOf(ms);
   if(!prepared()&&altCells().has(i))return;
   const ok=ui.sel>=0?L.some(m=>m.from===ui.sel&&m.to===i):ms.b[i]===-1&&L.some(m=>m.from===-1&&m.to===i);
