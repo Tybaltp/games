@@ -775,7 +775,8 @@ function chatUp(on){const R=document.documentElement,b=$('chatBox');on=!!on&&!!b
 let coordsOn=LS.get('games-coords',true)!==false;
 function coordsSet(on){coordsOn=!!on;document.documentElement.classList.toggle('nocoords',!coordsOn);}
 // Cards that must not be missed (invitation while waiting, Start, end of game): on phones, the sheet opens by itself when
-// one appears (once; at the end of a game after a moment, so the last move is seen) and « ⋯ » carries a dot while one is shown.
+// one appears (once), except the end of game (decision of Thibault, 13.11.2026: the board stays in view; « ⋯ » says the
+// rest), and « ⋯ » carries a dot while one is shown.
 // A sheet opened this way closes by itself once those cards are all gone (the game starts, a rematch begins): the board
 // is what matters then. A sheet the player opened or closed is left alone (sheet() clears the flag on close).
 function sheetAttn(){const ids=['inviteBox','endCard','mNext'].filter(id=>$(id)&&!$(id).hidden&&(id!=='inviteBox'||$(id).classList.contains('prominent')));
@@ -785,8 +786,7 @@ function sheetAttn(){const ids=['inviteBox','endCard','mNext'].filter(id=>$(id)&
   const prev=sheetAttn.prev||[],fresh=ids.filter(id=>!prev.includes(id));sheetAttn.prev=ids;
   if(isWide())return;
   if(!ids.length&&prev.length&&sheetAttn.auto){sheet(false);return;}
-  if(!fresh.length)return;sheetAttn.auto=true;
-  if(fresh.length===1&&fresh[0]==='endCard')setTimeout(()=>{if(!$('endCard').hidden&&!$('game').hidden)sheet(true);},1200);else sheet(true);}
+  if(!fresh.some(id=>id!=='endCard'))return;sheetAttn.auto=true;sheet(true);}
 let audioCtx=null,lastMine=false;
 let sndOn=true,sndVol=50;
 function sndSave(){try{localStorage.setItem(K('sound'),JSON.stringify({on:sndOn,vol:sndVol}));}catch(e){}}

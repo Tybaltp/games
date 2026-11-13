@@ -396,7 +396,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=74"></script>
+<script src="common/core.js?v=75"></script>
 <script src="common/codes.js?v=4"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -629,12 +629,7 @@ function fillUsed(d,p){return fillLive(d)&&fill.key===fillKey()&&fill.w===p?fill
 const fillKey=()=>view?PY.rules(view).variant+'|'+view.moves.join(','):null;
 function fillStep(key){if(fill.key!==key||key!==fillKey())return;if(fill.k<fill.n){fill.k++;tone(520+40*fill.k,.06,.03);
     const c=$('pl'+fill.w),x=c&&c.querySelector('.res');if(x&&shown)x.innerHTML=resTxt(shown.d.st.res[fill.w]-fill.k);drawBoard(true);}
-  if(fill.k<fill.n)setTimeout(()=>fillStep(key),340);
-  else if(sheetLater){sheetLater=false;setTimeout(()=>{if(!$('endCard').hidden&&!$('game').hidden)coreSheet(true);},900);}}
-// on phones, core opens the sheet at the end of the game (sheetAttn): while the page places the winner's balls, it waits
-// until the last one is on the top
-const coreSheet=sheet;let sheetLater=false;
-sheet=function(on){if(on&&fill.key&&fill.key===fillKey()&&fill.k<fill.n){sheetLater=true;return;}return coreSheet.apply(this,arguments);};
+  if(fill.k<fill.n)setTimeout(()=>fillStep(key),340);}
 function fillStart(d){const key=fillKey();if(fill.key===key)return;const w=d.over.w,spots=fillSpots(d.st,w);
   fill={key,k:0,n:spots.length,w,spots};setTimeout(()=>fillStep(key),700);}
 
