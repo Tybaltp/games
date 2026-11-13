@@ -9,27 +9,27 @@
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
 <link rel="stylesheet" href="common/games.css?v=47">
 <style>
-/* Pylos palette « bois et billes » (light, dark), the board and the balls; the shared layout is in common/games.css.
+/* Pylos palette « terre cuite et poirier » (light, dark; decision of 13.11.2026: clay page, pear-wood board without grain
+   but with its frame, teal accent and move marks), the board and the balls; the shared layout is in common/games.css.
    Seat 0 is Light (ivory, starts), seat 1 is Dark (ebony). */
 :root{
-  --bg:#efe6d6;--panel:#f8f2e6;--ink:#2b2117;--muted:#7a6a55;--line:#dccfb8;
-  --accent:#b0612a;--accent-ink:#ffffff;--danger:#b3261e;
-  --s0:#efe4cc;--s0e:#8f7f62;--s0hi:#fffaf0;--s0lo:#c9b48c;--s1:#2d2622;--s1e:#1a1512;--s1hi:#8a7b70;--s1lo:#120e0c;
-  --wood1:#cfa266;--wood2:#ab7a3f;--wood-edge:#7d5526;--dimple:#7f5a2d;--lab:#7d5e36;--mk:#2b2117;
+  --bg:#e8cbb5;--panel:#f6e7db;--ink:#2b1a12;--muted:#7c5f50;--line:#d6b6a0;
+  --accent:#0c7f7a;--accent-ink:#ffffff;--danger:#b3261e;
+  --s0:#f3e9d6;--s0e:#8a775a;--s0hi:#fffdf6;--s0lo:#cdb992;--s1:#33261f;--s1e:#150e0b;--s1hi:#8c776a;--s1lo:#140d0a;
+  --wood1:#cf8f68;--wood2:#ad6842;--wood-edge:#6c3a20;--frame:#7a4324;--dimple:#70391d;--lab:#7c5f50;--mk:#2b1a12;--mv:#0fa39a;
   --board-ar:8.3/6.25;color-scheme:light;   /* set by the page: landscape or portrait layout */
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#1b1612;--panel:#262019;--ink:#efe6d6;--muted:#a99a86;--line:#3b3128;
-  --accent:#e0945a;--accent-ink:#1b1209;--danger:#ef8579;
-  --s0:#e9dcc2;--s0e:#0f0c0a;--s0hi:#fffaf0;--s0lo:#b9a27a;--s1:#241f1b;--s1e:#8c7f72;--s1hi:#7c6d62;--s1lo:#0c0908;
-  --wood1:#8a6236;--wood2:#5a3d1d;--wood-edge:#33220f;--dimple:#2c1c0c;--lab:#b59a74;--mk:#f3ead6;color-scheme:dark;}}
+  --bg:#1e1410;--panel:#2a1d17;--ink:#f2e2d6;--muted:#b19586;--line:#402d24;
+  --accent:#3f9f97;--accent-ink:#ffffff;--danger:#ef8579;
+  --s0:#ecdfc8;--s0e:#120b08;--s0hi:#fffdf6;--s0lo:#bca57c;--s1:#2a1f19;--s1e:#8e7a6d;--s1hi:#7d695d;--s1lo:#0f0907;
+  --wood1:#935a3b;--wood2:#643722;--wood-edge:#2e170c;--frame:#3d2012;--dimple:#2c150a;--lab:#b19586;--mk:#f2e2d6;--mv:#3fb3aa;color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#1b1612;--panel:#262019;--ink:#efe6d6;--muted:#a99a86;--line:#3b3128;
-  --accent:#e0945a;--accent-ink:#1b1209;--danger:#ef8579;
-  --s0:#e9dcc2;--s0e:#0f0c0a;--s0hi:#fffaf0;--s0lo:#b9a27a;--s1:#241f1b;--s1e:#8c7f72;--s1hi:#7c6d62;--s1lo:#0c0908;
-  --wood1:#8a6236;--wood2:#5a3d1d;--wood-edge:#33220f;--dimple:#2c1c0c;--lab:#b59a74;--mk:#f3ead6;color-scheme:dark;}
+  --bg:#1e1410;--panel:#2a1d17;--ink:#f2e2d6;--muted:#b19586;--line:#402d24;
+  --accent:#3f9f97;--accent-ink:#ffffff;--danger:#ef8579;
+  --s0:#ecdfc8;--s0e:#120b08;--s0hi:#fffdf6;--s0lo:#bca57c;--s1:#2a1f19;--s1e:#8e7a6d;--s1hi:#7d695d;--s1lo:#0f0907;
+  --wood1:#935a3b;--wood2:#643722;--wood-edge:#2e170c;--frame:#3d2012;--dimple:#2c150a;--lab:#b19586;--mk:#f2e2d6;--mv:#3fb3aa;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{background:var(--panel);border-radius:14px}
-:root{--mv:#e5402a}   /* the marks of the moves: one colour, seen on the light balls, the dark ones and the wood */
 .board [data-i]{cursor:default}
 .board [data-i].pt{cursor:pointer}
 /* players' cards: « 6 balls in reserve » */
@@ -52,7 +52,7 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
 <style>
 /* accueil : ce qui est propre à Pylos ; le reste dans common/accueil.css. Pas encore d'image de fond (Thibault la fera) :
    les cartes de mode prennent la couleur de l'étiquette de Pylos sur l'accueil du site (common/cards.css). */
-:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#b0612a;--accTintD:#e0945a}
+:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#0c7f7a;--accTintD:#3f9f97}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
@@ -682,10 +682,11 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
   for(const p of [0,1]){const g=el('radialGradient',{id:'g'+p,cx:'35%',cy:'30%',r:'75%'},defs);
     el('stop',{offset:'0',style:`stop-color:var(--s${p}hi)`},g);el('stop',{offset:'.55',style:`stop-color:var(--s${p})`},g);el('stop',{offset:'1',style:`stop-color:var(--s${p}lo)`},g);}
   const wg=el('linearGradient',{id:'wood',x1:'0',y1:'0',x2:'1',y2:'1'},defs);el('stop',{offset:'0',style:'stop-color:var(--wood1)'},wg);el('stop',{offset:'1',style:'stop-color:var(--wood2)'},wg);
-  // the board: a wooden plate with its grain, the hollows of the base
+  // the board: a wooden plate, its frame, the hollows of the base
   el('rect',{x:-.5*U,y:-.5*U,width:5*U,height:5*U,rx:14,fill:'url(#wood)',stroke:'var(--wood-edge)','stroke-width':2},svg);
-  const grain=el('g',{opacity:.18,stroke:'var(--wood-edge)','stroke-width':1.2,fill:'none','pointer-events':'none'},svg);
-  for(let k=0;k<9;k++){const y=-.4*U+k*.6*U;el('path',{d:`M${f1(-.45*U)} ${f1(y)} C ${f1(U)} ${f1(y-6)}, ${f1(2.5*U)} ${f1(y+8)}, ${f1(4.45*U)} ${f1(y+2)}`},grain);}
+  // no grain; a darker frame inside the edge, with a fine line
+  el('rect',{x:f1(-.5*U+6),y:f1(-.5*U+6),width:f1(5*U-12),height:f1(5*U-12),rx:9,fill:'none',stroke:'var(--frame)','stroke-width':11,opacity:.55,'pointer-events':'none'},svg);
+  el('rect',{x:f1(-.5*U+13.5),y:f1(-.5*U+13.5),width:f1(5*U-27),height:f1(5*U-27),rx:4,fill:'none',stroke:'var(--wood-edge)','stroke-width':1,opacity:.6,'pointer-events':'none'},svg);
   const mine=!!(sh&&sh.mine),ms=sh&&sh.ms,p=mine?ms.turn:-1,L=mine?legalsOf(ms):[],alt=sh?altCells():new Map();
   // the position drawn: the action being prepared applied (its ball dashed), the balls taken back as ghosts
   const disp=b.slice();let prov=null,remGhost=[];
