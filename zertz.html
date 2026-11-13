@@ -29,7 +29,6 @@
 /* the plate under the rings, on every screen (the light rings need it) */
 .board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 40%,var(--plate),var(--plate-edge));border-color:var(--plate-edge)}
 html.ingame:not(.wide) .board{border-radius:14px}
-#htSvg{background:radial-gradient(120% 90% at 50% 40%,var(--plate),var(--plate-edge))}   /* « Comment jouer »: the same plate */
 .ring{cursor:pointer}
 /* the marbles belong to nobody: no seat colour on the players' cards, the captures instead */
 .player .dot{display:none}
@@ -316,7 +315,7 @@ const ZZ_I18N={fr:{
  st_placeOwn:"Réserve vide : posez une de vos billes capturées.",st_placeOwnN:"{n} : réserve vide, posez une de vos billes capturées.",
  draw:"Partie interrompue : {why}.",
  w_g0:"4 billes blanches",w_g1:"5 billes grises",w_g2:"6 billes noires",w_each:"3 billes de chaque couleur",w_nomove:"l'adversaire n'a plus de coup",
- ht_wL:"à gauche du plateau",ht_wU:"sous le plateau",ht_1:"<b>Poser une bille</b> Choisir la couleur {where}, cliquer sur un anneau vide, puis sur l'anneau à retirer.",ht_2:"<b>Prendre</b> Cliquer sur la bille encadrée, puis sur son anneau d'arrivée. Un clic par saut.",rules:`<summary>Règles en bref</summary><ul>
+ rules:`<summary>Règles en bref</summary><ul>
  <li>Les billes sont communes aux deux joueurs. Si une prise est possible, elle est obligatoire.</li>
  <li><b>Poser</b> : posez une bille de la réserve sur un anneau vide, puis retirez un anneau libre (vide, au bord, qui peut glisser hors du plateau).</li>
  <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
@@ -334,7 +333,7 @@ const ZZ_I18N={fr:{
  st_placeOwn:"Pool empty: place one of your captured marbles.",st_placeOwnN:"{n}: pool empty, place one of your captured marbles.",
  draw:"Game interrupted: {why}.",
  w_g0:"4 white marbles",w_g1:"5 grey marbles",w_g2:"6 black marbles",w_each:"3 marbles of each colour",w_nomove:"the opponent has no move left",
- ht_wL:"on the left of the board",ht_wU:"under the board",ht_1:"<b>Place a marble</b> Pick the colour {where}, click an empty ring, then the ring to remove.",ht_2:"<b>Capture</b> Click the framed marble, then its landing ring. One click per jump.",rules:`<summary>Rules in brief</summary><ul>
+ rules:`<summary>Rules in brief</summary><ul>
  <li>Marbles are shared by both players. If a capture is possible, it is mandatory.</li>
  <li><b>Place</b>: put a marble from the pool on an empty ring, then remove a free ring (empty, on the edge, able to slide off the board).</li>
  <li><b>Capture</b>: a marble jumps over a neighbour onto the empty ring just behind it; the capture continues as long as possible.</li>
@@ -352,7 +351,7 @@ const ZZ_I18N={fr:{
  st_placeOwn:"Reserva vacía: coloca una de tus bolas capturadas.",st_placeOwnN:"{n}: reserva vacía, coloca una de tus bolas capturadas.",
  draw:"Partida interrumpida: {why}.",
  w_g0:"4 bolas blancas",w_g1:"5 bolas grises",w_g2:"6 bolas negras",w_each:"3 bolas de cada color",w_nomove:"el adversario ya no tiene jugadas",
- ht_wL:"a la izquierda del tablero",ht_wU:"bajo el tablero",ht_1:"<b>Colocar una canica</b> Elige el color {where}, haz clic en un anillo vacío y luego en el anillo que retirar.",ht_2:"<b>Capturar</b> Haz clic en la canica enmarcada y luego en su anillo de llegada. Un clic por salto.",rules:`<summary>Reglas en breve</summary><ul>
+ rules:`<summary>Reglas en breve</summary><ul>
  <li>Las bolas son comunes a los dos jugadores. Si una captura es posible, es obligatoria.</li>
  <li><b>Colocar</b>: coloca una bola de la reserva en un anillo vacío, y luego retira un anillo libre (vacío, en el borde, que pueda deslizarse fuera del tablero).</li>
  <li><b>Capturar</b>: una bola salta por encima de una vecina hasta el anillo vacío justo detrás; la captura continúa mientras sea posible.</li>
@@ -450,7 +449,6 @@ function poolSvg(items,fromCap){const svg=$('svg'),vb=svg.getAttribute('viewBox'
     marble(g,bx+bw/2,y+bh*.42,it.k);
     const tx=el('text',{x:bx+bw/2,y:y+bh*.42+48,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':22,fill:'var(--ring)'},g);tx.textContent=String(it.v);
     el('title',{},g).textContent=CN(it.k);if(it.ok)g.addEventListener('click',it.pick);});}
-window.addEventListener('resize',()=>{const hb=$('howto');if(hb&&!hb.hidden&&zzHtBand!==null&&zBandOn()!==zzHtBand)htGo(HT.k);});
 window.addEventListener('resize',()=>{if(zBandOn()===$('poolBar').hidden||!view||$('game').hidden)return;renderGame();});
 // Nothing engaged: Undo last move / Hint · something engaged (a marble placed, a capture started, a first tap): Reset
 function zzTurnStatus({r,o,prep,idle,RST}){
@@ -562,56 +560,8 @@ function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textCont
       el('path',{d:`M${x-d} ${y-d}L${x+d} ${y+d}M${x+d} ${y-d}L${x-d} ${y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round','pointer-events':'none'},svg);}}
   if(pv&&pv.mv.t===1){if(pv.mv.path.length>1)capLine(pv.mv.path,true);}else if(ui.path)path(ui.path);}
 
-// ---------- « Comment jouer » (GAME.howto; the card itself: common/core.js) ----------
-// Two pages, each a patch of rings with the colour picker beside it (where the game has it) and a mouse pointer that moves and clicks, the same
-// frames, crosses and capture lines as in the game: place and remove a ring, capture.
-let zzHtBand=null;   // the layout the card was drawn for: redrawn when the window crosses it
-function zzHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
-  const band=zzHtBand=zBandOn();svg.setAttribute('viewBox',band?'-72 -34 392 240':'0 0 320 240');
-  const P=(c,r)=>({x:40+60*c+(r%2?30:0),y:34+52*r});
-  let lay,top,mid;const rings=new Map();
-  function patch(skip){rings.clear();
-    for(let r=0;r<3;r++)for(let c=0;c<(r%2?4:5);c++){const p=P(c,r),key=c+','+r;
-      if(skip&&skip.includes(key)){el('circle',{cx:p.x,cy:p.y,r:26,fill:'none',stroke:'var(--ghost)','stroke-width':1},svg);continue;}
-      const g=el('g',{},svg);el('circle',{cx:0,cy:0,r:30,fill:'var(--ring)'},g);el('circle',{cx:0,cy:0,r:15,fill:'var(--ring-hole)'},g);
-      const o=mover(g);o.set(p.x,p.y);rings.set(key,o);}
-    mid=el('g',{},svg);lay=el('g',{},svg);top=el('g',{},svg);}
-  function mb(c,p,op){const g=el('g',{},lay);marble(g,0,0,c,op);const o=mover(g);o.set(p.x,p.y);return o;}
-  const fr=(p,col,dash)=>el('circle',{cx:p.x,cy:p.y,r:27,fill:'none',stroke:col,'stroke-width':3,...(dash?{'stroke-dasharray':'4 4'}:{})},top);
-  const cross=(p,g)=>{const d=7;return el('path',{d:`M${p.x-d} ${p.y-d}L${p.x+d} ${p.y+d}M${p.x+d} ${p.y-d}L${p.x-d} ${p.y+d}`,stroke:'var(--danger)','stroke-width':3,'stroke-linecap':'round'},g||top);};
-  const rmMark=p=>{const g=el('g',{},mid);fr(p,'var(--danger)');g.appendChild(top.lastChild);cross(p,g);return g;};
-  // the colour picker where the game has it: a column on the left of the rings, both centred on the same line (wide
-  // screens), else a row under them;
-  // the colour picked framed
-  let pk,sel;function picker(on){const g=el('g',{},svg),sm=(m,x,y)=>m.setAttribute('transform',`translate(${x*.4} ${y*.4}) scale(.6)`);let pts;
-    if(zzHtBand){pts=[0,1,2].map(c=>({x:-40,y:7+70*c}));[6,8,10].forEach((n,c)=>{const y=-19+70*c;
-        el('rect',{x:-64,y,width:48,height:62,rx:8,fill:'none',stroke:'var(--ghost)','stroke-width':1},g);const m=el('g',{},g);marble(m,-40,y+26,c);sm(m,-40,y+26);
-        el('text',{x:-40,y:y+54,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,fill:'var(--ring)'},g).textContent=n;});
-      pk=el('rect',{x:-64,y:-19+70*on,width:48,height:62,rx:8,fill:'none',stroke:'var(--accent)','stroke-width':2.5},g);sel=c=>pk.setAttribute('y',-19+70*c);}
-    else{pts=[124,160,196].map(x=>({x,y:212}));pts.forEach((p,c)=>{const m=el('g',{},g);marble(m,p.x,p.y,c);sm(m,p.x,p.y);});
-      pk=el('rect',{x:pts[on].x-17,y:195,width:34,height:34,rx:7,fill:'none',stroke:'var(--accent)','stroke-width':2.5},g);sel=c=>pk.setAttribute('x',pts[c].x-17);}
-    return pts;}
-  const goTo=(cu,p,ms)=>A.goTo(cu,p.x,p.y,ms);
-  async function lift(o,dx){const x0=o.x;for(let u=0;u<=1.001;u+=.08){o.set(x0+dx*u,o.y);o.g.setAttribute('opacity',1-u);await A.frame();}o.g.remove();}
-  const S=[
-    async()=>{ // place: a colour, an empty ring, then a free ring to remove
-      patch();mb(2,P(1,0));mb(1,P(2,2));const pts=picker(2),cu=cursor(290,200);
-      await wait(400);await goTo(cu,pts[0]);await click(cu);sel(0);await wait(400);
-      const at=P(2,1);await goTo(cu,at);await click(cu);const m=mb(0,at),f=fr(at,'var(--accent)',true);
-      const rm=[P(4,0),P(4,2),P(0,2)].map(rmMark);await wait(700);
-      await goTo(cu,P(4,0));await wait(500);await click(cu);rm.forEach(x=>x.remove());await lift(rings.get('4,0'),40);f.remove();fr(at,'var(--accent)');
-      el('circle',{cx:P(4,0).x,cy:P(4,0).y,r:26,fill:'none',stroke:'var(--danger)','stroke-width':2},mid);await wait(1800);},
-    async()=>{ // capture: the marble jumps, the marble jumped over is taken; the capture goes on while it can
-      patch();const a=P(0,0),b=P(2,0),c=P(3,2),M=mb(0,a),T1=mb(1,P(1,0)),T2=mb(2,P(2,1));mb(2,P(4,0));picker(0);const cu=cursor(290,200);
-      const st=fr(a,'var(--accent)');await wait(500);await goTo(cu,a);await click(cu);let tg=fr(b,'var(--accent)');await wait(500);
-      await goTo(cu,b);await click(cu);tg.remove();await tween(M,b.x,b.y,380);const x1=cross(P(1,0));T1.g.setAttribute('opacity',.35);tg=fr(c,'var(--accent)');
-      const l1=el('polyline',{points:`${a.x},${a.y} ${b.x},${b.y}`,fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linecap':'round','stroke-dasharray':'6 6'},mid);await wait(700);
-      await goTo(cu,c);await click(cu);tg.remove();st.remove();await tween(M,c.x,c.y,380);const x2=cross(P(2,1));T2.g.setAttribute('opacity',.35);
-      l1.setAttribute('points',`${a.x},${a.y} ${b.x},${b.y} ${c.x},${c.y}`);l1.removeAttribute('stroke-dasharray');l1.setAttribute('stroke-width',3);fr(c,'var(--accent)');
-      await wait(500);await Promise.all([lift(T1,0),lift(T2,0)]);await wait(1600);}];
-  return S[k]();}
 // ---------- the interface with common/core.js ----------
-const GAME={howto:{titled:true,n:2,scene:zzHowto,vars:()=>({where:t(zBandOn()?'ht_wL':'ht_wU')})},id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
+const GAME={id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
   sgf:{gm:22},   // Zèrtz has an SGF number but no notation defined: the moves are the page's codes
   rules:g=>{const n=ringsOf(g);return {size:n,rings:n};},
   form:p=>{const n=+$(p+'Size').value;return {size:ENG[n]?n:48,rings:ENG[n]?n:48};},

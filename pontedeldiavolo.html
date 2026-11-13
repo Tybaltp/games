@@ -368,7 +368,7 @@ const PD_I18N={fr:{
  st_opening:"Posez les deux tuiles claires d'ouverture.",st_pie:"Prenez-vous les clairs, ou jouez-vous les foncés ?",st_oneLeft:"Plus de case pour une seconde tuile : finissez votre tour avec une seule.",st_lastTurn:"Les clairs ont passé : c'est votre dernier tour.",
  pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",
  w_score:"{w} à {l}{tb}",w_tie:"égalité parfaite, {w} à {l}{tb}",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
- ht_1:"<b>Poser</b> Cliquer sur deux cases d'eau. Cliquer sur une tuile posée ce tour la retire.",ht_2:"<b>Où poser</b> Au survol, la tuile n'apparaît que là où elle peut aller.",ht_3:"<b>Pont</b> Sélectionner une de vos tuiles, puis cliquer sur l'autre extrémité.",rules:`<summary>Règles en bref</summary><ul>
+ rules:`<summary>Règles en bref</summary><ul>
  <li>À votre tour, posez <b>deux tuiles</b> de votre couleur, ou <b>un pont</b>.</li>
  <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
  <li>Une île ne peut toucher aucune autre tuile de sa couleur, même en diagonale. Les couleurs différentes ne se gênent jamais.</li>
@@ -391,7 +391,7 @@ const PD_I18N={fr:{
  st_opening:"Place the two opening light tiles.",st_pie:"Do you take Light, or play Dark?",st_oneLeft:"No square left for a second tile: end your turn with just one.",st_lastTurn:"Light passed: this is your last turn.",
  pend_pass:"Pass: Dark will play one last turn.",pend_passEnd:"Pass and end the game.",
  w_score:"{w} to {l}{tb}",w_tie:"a perfect tie, {w} to {l}{tb}",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
- ht_1:"<b>Place</b> Click two water squares. Clicking a tile placed this turn takes it back.",ht_2:"<b>Where to place</b> On hover, the tile only shows where it may go.",ht_3:"<b>Bridge</b> Select one of your tiles, then click the other end.",rules:`<summary>Rules in brief</summary><ul>
+ rules:`<summary>Rules in brief</summary><ul>
  <li>On your turn, place <b>two tiles</b> of your colour, or <b>one bridge</b>.</li>
  <li><b>Island</b>: exactly 4 orthogonally connected tiles. Fewer than 4: a <b>sandbank</b>. Never more than 4.</li>
  <li>An island may not touch any other tile of its colour, not even diagonally. Different colours never block each other.</li>
@@ -414,7 +414,7 @@ const PD_I18N={fr:{
  st_opening:"Coloca las dos losetas claras de apertura.",st_pie:"¿Tomas las claras o juegas las oscuras?",st_oneLeft:"No queda casilla para una segunda loseta: termina tu turno con una sola.",st_lastTurn:"Las claras han pasado: es tu último turno.",
  pend_pass:"Pasar: las oscuras jugarán un último turno.",pend_passEnd:"Pasar y terminar la partida.",
  w_score:"{w} a {l}{tb}",w_tie:"empate perfecto, {w} a {l}{tb}",tb_isl:" (decidido por las islas)",tb_brg:" (decidido por los puentes)",
- ht_1:"<b>Colocar</b> Haz clic en dos casillas de agua. Un clic en una loseta puesta este turno la retira.",ht_2:"<b>Dónde colocar</b> Al pasar el ratón, la loseta solo aparece donde puede ir.",ht_3:"<b>Puente</b> Selecciona una de tus losetas y luego haz clic en el otro extremo.",rules:`<summary>Reglas en breve</summary><ul>
+ rules:`<summary>Reglas en breve</summary><ul>
  <li>En tu turno, coloca <b>dos losetas</b> de tu color, o <b>un puente</b>.</li>
  <li><b>Isla</b>: exactamente 4 losetas unidas ortogonalmente. Menos de 4: un <b>banco de arena</b>. Nunca más de 4.</li>
  <li>Una isla no puede tocar ninguna otra loseta de su color, ni siquiera en diagonal. Los colores distintos nunca se estorban.</li>
@@ -870,59 +870,10 @@ let pageAI=null;   // the search on the page itself, when no worker can be made
 function pdEvalInfo(r,st){if(st.phase!=='play')return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
   return {k:Math.abs(s)<1?'ai_eq':s>0?(s>4?'ai_much':'ai_better'):(s<-4?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
-// ---------- « Comment jouer » (GAME.howto; the card itself: common/core.js) ----------
-// Three pages, each a corner of the lagoon (6 × 4 squares, drawn at the board's scale) with a mouse pointer that moves
-// and clicks, the same tiles, frames and bridges as on the board: two tiles, an island, a bridge.
-function pdHowto(k,A){const {svg,wait,cursor,click}=A,NSv='http://www.w3.org/2000/svg';
-  const el=(n,a,p)=>{const e=document.createElementNS(NSv,n);for(const x in a)e.setAttribute(x,a[x]);if(p)p.appendChild(e);return e;};
-  svg.setAttribute('viewBox','0 0 480 360');
-  const C=80,X=c=>c*C,Y=r=>20+r*C,g=5,li=12,ctr=([c,r])=>({x:X(c)+C/2,y:Y(r)+C/2});
-  el('rect',{x:0,y:0,width:480,height:360,fill:'var(--water)'},svg);
-  const grid=el('g',{stroke:'var(--grid)','stroke-width':1.5},svg);
-  for(let c=1;c<6;c++)el('line',{x1:X(c),y1:0,x2:X(c),y2:360},grid);for(let r=0;r<=4;r++)el('line',{x1:0,y1:Y(r),x2:480,y2:Y(r)},grid);
-  const tl=el('g',{},svg),fx=el('g',{},svg),br=el('g',{},svg);
-  const own={1:[],2:[]};
-  // the tiles of colour p: an outline under a plain fill, neighbours joined into one shape; a diamond on each island
-  function draw(){tl.textContent='';
-    for(const p of [1,2]){const cs=own[p],has=(c,r)=>cs.some(q=>q[0]===c&&q[1]===r),o=6;
-      for(const [inf,f] of [[1.5,p===1?'var(--stone-edge)':'var(--trach-edge)'],[0,p===1?'var(--stone)':'var(--trach)']])for(const [c,r] of cs){
-        el('rect',{x:X(c)+g-inf,y:Y(r)+g-inf,width:C-2*g+2*inf,height:C-2*g+2*inf,rx:5,fill:f},tl);
-        if(has(c+1,r))el('rect',{x:X(c)+C-g-o,y:Y(r)+g-inf,width:2*g+2*o,height:C-2*g+2*inf,fill:f},tl);
-        if(has(c,r+1))el('rect',{x:X(c)+g-inf,y:Y(r)+C-g-o,width:C-2*g+2*inf,height:2*g+2*o,fill:f},tl);
-        if(has(c+1,r)&&has(c,r+1)&&has(c+1,r+1))el('rect',{x:X(c)+C-g-o,y:Y(r)+C-g-o,width:2*g+2*o,height:2*g+2*o,fill:f},tl);}
-      const seen=new Set();for(const q of cs){const k0=q.join();if(seen.has(k0))continue;const grp=[q],st=[q];seen.add(k0);
-        while(st.length){const [c,r]=st.pop();for(const [dc,dr] of [[1,0],[-1,0],[0,1],[0,-1]]){const n=cs.find(z=>z[0]===c+dc&&z[1]===r+dr);if(n&&!seen.has(n.join())){seen.add(n.join());grp.push(n);st.push(n);}}}
-        if(grp.length===4){const cx=grp.reduce((s,z)=>s+ctr(z).x,0)/4,cy=grp.reduce((s,z)=>s+ctr(z).y,0)/4;
-          el('path',{d:`M${cx} ${cy-9} L${cx+9} ${cy} L${cx} ${cy+9} L${cx-9} ${cy} Z`,fill:'var(--accent)',opacity:.9},tl);}}}}
-  const ghost=([c,r])=>el('rect',{x:X(c)+g,y:Y(r)+g,width:C-2*g,height:C-2*g,rx:5,fill:'var(--stone)',opacity:.5},fx);
-  // a dashed frame round one square, or round two neighbouring squares at once
-  function frame(a,b){let c0=a[0],r0=a[1],w=1,h=1;if(b){c0=Math.min(a[0],b[0]);r0=Math.min(a[1],b[1]);w=a[1]===b[1]?2:1;h=3-w;}
-    return el('rect',{x:X(c0)+li,y:Y(r0)+li,width:w*C-2*li,height:h*C-2*li,rx:4,fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-dasharray':'7 5'},fx);}
-  function bridge(a,b,op){const p=ctr(a),q=ctr(b),G=el('g',{opacity:op||1},br);
-    el('line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,stroke:'var(--oak-edge)','stroke-width':20,'stroke-linecap':'round'},G);
-    el('line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,stroke:'var(--oak)','stroke-width':16,'stroke-linecap':'round'},G);return G;}
-  const goTo=(cu,q,ms)=>{const p=ctr(q);return A.goTo(cu,p.x-14,p.y-14,ms);};
-  async function put(cu,q){await goTo(cu,q);const gh=ghost(q);await wait(650);await click(cu);gh.remove();own[1].push(q);draw();}
-  const S=[
-    async()=>{ // two tiles of my colour on two water squares
-      own[2]=[[4,0],[4,1]];own[1]=[[0,3]];draw();const cu=cursor(440,330);
-      await wait(400);await put(cu,[1,1]);let f=frame([1,1]);await wait(300);
-      await put(cu,[2,1]);f.remove();frame([1,1],[2,1]);await wait(1900);},
-    async()=>{ // the fourth tile makes an island; nothing may touch it in my colour, not even at a corner
-      own[2]=[[4,2],[5,2]];own[1]=[[1,1],[2,1],[1,2]];draw();const cu=cursor(440,330);
-      await wait(400);await put(cu,[2,2]);frame([2,2]);await wait(800);
-      await goTo(cu,[3,3]);await wait(900);await goTo(cu,[3,0]);await wait(900);
-      await put(cu,[5,0]);frame([5,0]);await wait(1900);},
-    async()=>{ // a bridge: one of my tiles, then the other end; it spans water only
-      own[2]=[[3,3],[4,3],[5,3]];own[1]=[[0,0],[1,0],[0,1],[1,1],[3,1],[4,1],[3,2],[4,2]];draw();const cu=cursor(440,330);
-      await wait(400);await goTo(cu,[1,1]);await click(cu);const f1=frame([1,1]);await wait(500);
-      await goTo(cu,[3,1]);const gb=bridge([1,1],[3,1],.5);await wait(800);await click(cu);gb.remove();
-      frame([3,1]);bridge([1,1],[3,1]);await wait(1900);}];
-  return S[k]();}
 // ---------- the interface with common/core.js ----------
 $('needConfirm').checked=LS.get('pdd-confirmEach',true)!==false;
 $('needConfirm').onchange=e=>LS.set('pdd-confirmEach',e.target.checked);
-const GAME={howto:{titled:true,n:3,scene:pdHowto},id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
+const GAME={id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
   rules:()=>({}),form:()=>({}),
   replay:pdReplay,
   legal:(st,code)=>{const m=parse(code);return m&&step(st,m)?enc(m):null;},
