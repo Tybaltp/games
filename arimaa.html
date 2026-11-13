@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=42">
+<link rel="stylesheet" href="common/games.css?v=43">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -176,7 +176,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=67"></script>
+<script src="common/core.js?v=68"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -253,7 +253,7 @@ function ArimaaEngine(){
 }
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
- mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
+ mq_q:"Voulez-vous jouer Or (premier) ou Argent ?",mq_1:"Or",mq_p1:"Or",mq_p2:"Argent",mq_2:"Argent",
  title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
  m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
@@ -280,7 +280,7 @@ const AR_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
- mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_2:"Silver",
+ mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_p1:"Gold",mq_p2:"Silver",mq_2:"Silver",
  title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
  m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
@@ -307,7 +307,7 @@ const AR_I18N={fr:{
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },es:{
- mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_2:"Plata",
+ mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_p1:"con Oro",mq_p2:"con Plata",mq_2:"Plata",
  title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",goldIs:"Oro (empieza)",
  m_freeTxt:"Los dos bandos en esta pantalla, sin reloj, con deshacer: para probar y analizar.",
  m_aiTxt:"Sharp, el mejor programa de Arimaa de 2015: tres niveles, con deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
