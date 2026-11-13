@@ -240,8 +240,10 @@ header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'â
 .startov:has(>#startCard:not([hidden])){pointer-events:auto;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 .startov .card{width:min(20rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22);text-align:center}
 .startov .card h2{justify-content:center}.startov .card .hint{margin:0}.startov .card .hint:empty{display:none}
-.startov .sfmsg{margin:0;font-weight:600}
-.startov .sfbig{font-size:3.6rem;font-weight:700;line-height:1;margin:4px 0;color:var(--accent);font-variant-numeric:tabular-nums}
+.startov .sfmsg{margin:0;font-weight:700;color:var(--ink)}
+.startov .sfbig{font-size:3.6rem;font-weight:700;line-height:1;margin:4px 0;color:#a87a0c;font-variant-numeric:tabular-nums}   /* gold, in both themes */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .startov .sfbig{color:#e8b84a}}
+:root[data-theme="dark"] .startov .sfbig{color:#e8b84a}
 .startov .sfbig.pop{animation:sfpop .45s ease-out}
 @keyframes sfpop{from{transform:scale(1.5);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.startov .sfbig.pop{animation:none}}
