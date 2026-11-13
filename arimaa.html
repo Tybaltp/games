@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=46">
+<link rel="stylesheet" href="common/games.css?v=47">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -176,7 +176,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=72"></script>
+<script src="common/core.js?v=73"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -265,7 +265,7 @@ const AR_I18N={fr:{
  pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",pull_t:"{A} {fa} tire {b} {fb} en {to}",
  st_pushPull:"Choisissez la case où va la pièce poussée ; votre pièce prend sa place. Survolez une case pour voir le résultat.",
  st_pullBy:"Tirer : choisissez la pièce qui tire (cerclée).",st_pullTo:"Choisissez où va la pièce qui tire : la pièce tirée prend la case qu'elle quitte.",backTo:"Revenir avant le pas {n}",
- ht_sent:"Coup envoyé ✓",ht_1:"<b>Déplacer</b> : cliquez la pièce à déplacer, puis sa case d'arrivée, à une ou plusieurs cases (4 pas par tour en tout). En survolant une case, vous voyez le résultat avant de cliquer.",ht_2:"<b>Pousser</b> (2 pas) : cliquez d'abord la pièce qui pousse, puis la pièce adverse à pousser (voisine et plus faible), puis sa case d'arrivée. Votre pièce prend sa place.",ht_3:"<b>Tirer</b> (2 pas) : cliquez la pièce adverse à tirer, puis votre pièce qui la tire, puis la case où va votre pièce. La pièce tirée prend la case libérée.",ht_4:"<b>Fin du tour</b> : après vos 4 pas (ou moins), confirmez l'envoi de votre coup avec « Terminer le tour ». Jusque-là rien ne part : « Annuler le pas » et « Réinitialiser » reviennent en arrière.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
+ ht_1:"<b>Déplacer</b> Sélectionner la pièce puis cliquer sur sa destination.",ht_2:"<b>Pousser</b> Sélectionner la pièce qui pousse puis la pièce poussée. Choisir la case d'arrivée.",ht_3:"<b>Tirer</b> Sélectionner la pièce tirée puis la pièce qui tire. Choisir la case d'arrivée.",ht_4:"<b>Fin du tour</b> Après 4 pas ou moins, <span class='bt'>Terminer le tour</span>. Sinon, <span class='bt'>Annuler le pas</span> ou <span class='bt'>Réinitialiser</span>.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
@@ -292,7 +292,7 @@ const AR_I18N={fr:{
  pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
  st_pushPull:"Choose the square the pushed piece goes to; your piece takes its place. Hover a square to see the result.",
  st_pullBy:"Pull: choose the piece that pulls (ringed).",st_pullTo:"Choose where the pulling piece goes: the pulled piece takes the square it leaves.",backTo:"Go back to before step {n}",
- ht_sent:"Move sent ✓",ht_1:"<b>Move</b>: click the piece to move, then its arrival square, one or more squares away (4 steps per turn in all). Hovering a square shows the result before you click.",ht_2:"<b>Push</b> (2 steps): click first the piece that pushes, then the opposing piece to push (adjacent and weaker), then its arrival square. Your piece takes its place.",ht_3:"<b>Pull</b> (2 steps): click the opposing piece to pull, then your piece that pulls it, then the square your piece goes to. The pulled piece takes the square it left.",ht_4:"<b>End of turn</b>: after your 4 steps (or fewer), confirm sending your move with “End turn”. Until then nothing is sent: “Undo step” and “Reset” go back.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
+ ht_1:"<b>Move</b> Select the piece, then click its destination.",ht_2:"<b>Push</b> Select the pushing piece, then the pushed piece. Choose the arrival square.",ht_3:"<b>Pull</b> Select the pulled piece, then the pulling piece. Choose the arrival square.",ht_4:"<b>End of turn</b> After 4 steps or fewer, <span class='bt'>End turn</span>. Otherwise, <span class='bt'>Undo step</span> or <span class='bt'>Reset</span>.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
@@ -319,7 +319,7 @@ const AR_I18N={fr:{
  pn:["conejo","gato","perro","caballo","camello","elefante"],push_t:"{A} {fa} empuja {b} {fb} a {to}",pull_t:"{A} {fa} tira de {b} {fb} a {to}",
  st_pushPull:"Elige la casilla adonde va la pieza empujada; tu pieza ocupa su lugar. Pasa el ratón por una casilla para ver el resultado.",
  st_pullBy:"Tirar: elige la pieza que tira (rodeada).",st_pullTo:"Elige adónde va la pieza que tira: la pieza tirada ocupa la casilla que deja.",backTo:"Volver antes del paso {n}",
- ht_sent:"Jugada enviada ✓",ht_1:"<b>Mover</b>: haz clic en la pieza que quieres mover y luego en su casilla de llegada, a una o varias casillas (4 pasos por turno en total). Al pasar el ratón por una casilla ves el resultado antes de hacer clic.",ht_2:"<b>Empujar</b> (2 pasos): haz clic primero en la pieza que empuja, luego en la pieza adversaria que quieres empujar (vecina y más débil) y luego en su casilla de llegada. Tu pieza ocupa su lugar.",ht_3:"<b>Tirar</b> (2 pasos): haz clic en la pieza adversaria de la que quieres tirar, luego en tu pieza que tira y luego en la casilla adonde va tu pieza. La pieza tirada ocupa la casilla liberada.",ht_4:"<b>Fin del turno</b>: tras tus 4 pasos (o menos), confirma el envío de tu jugada con «Terminar el turno». Hasta entonces no se envía nada: «Deshacer el paso» y «Reiniciar» vuelven atrás.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
+ ht_1:"<b>Mover</b> Selecciona la pieza y haz clic en su destino.",ht_2:"<b>Empujar</b> Selecciona la pieza que empuja y luego la pieza empujada. Elige la casilla de llegada.",ht_3:"<b>Tirar</b> Selecciona la pieza tirada y luego la pieza que tira. Elige la casilla de llegada.",ht_4:"<b>Fin del turno</b> Tras 4 pasos o menos, <span class='bt'>Terminar el turno</span>. Si no, <span class='bt'>Deshacer el paso</span> o <span class='bt'>Reiniciar</span>.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: llevar uno de tus conejos a la última fila, la del bando adversario (fila 8 para Oro, fila 1 para Plata).</li>
  <li><b>Piezas</b>, de la más fuerte a la más débil: <b>E</b> elefante, <b>M</b> camello, <b>H</b> caballo (×2), <b>D</b> perro (×2), <b>C</b> gato (×2), <b>R</b> conejo (×8). Letras según la notación inglesa.</li>
@@ -705,13 +705,12 @@ function arHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
       const btn=(x,w,label,primary)=>{const g=el('g',{},lay);const r=el('rect',{x,y:98,width:w,height:30,rx:7,fill:primary?'var(--hl)':'none',stroke:'var(--hl)','stroke-width':1.4},g);
         const tx=el('text',{x:x+w/2,y:118,'text-anchor':'middle','font-size':12.5,'font-weight':primary?600:400,fill:primary?'#06211f':'var(--hl)'},g);tx.textContent=label;return {g,r};};
       btn(10,92,t('reset'),false);const go=btn(110,120,t('endTurn'),true);
-      const sent=el('text',{x:120,y:160,'text-anchor':'middle','font-size':14,fill:'var(--hl)',opacity:0},lay);sent.textContent=t('ht_sent');
       const cu=cursor(200,170);
       for(const p of pips){await wait(420);p.c.setAttribute('fill','var(--hl)');p.tx.setAttribute('fill','#06211f');}
-      await wait(300);await tween(cu,176,116,700);await click(cu);go.r.setAttribute('opacity',.6);await wait(200);sent.setAttribute('opacity',1);await wait(1800);}];
+      await wait(300);await tween(cu,176,116,700);await click(cu);go.r.setAttribute('opacity',.6);await wait(2000);}];
   return S1[k]();}
 // ---------- the interface with common/core.js ----------
-const GAME={id:'arimaa',howto:{n:4,scene:arHowto},size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
+const GAME={id:'arimaa',howto:{n:4,scene:arHowto,titled:true},size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
   rules:()=>({}),form:()=>({}),
   replay:arReplay,
   legal:(st,code)=>legalCode(st,code)?code:null,

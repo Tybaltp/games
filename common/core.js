@@ -1196,7 +1196,7 @@ const htKey=()=>(GAME.howto&&GAME.howto.key)||K('howto-off');
 function htOff(){try{return localStorage.getItem(htKey())==='1';}catch(e){return false;}}
 function htSetOff(v){try{if(v)localStorage.setItem(htKey(),'1');else localStorage.removeItem(htKey());}catch(e){}}
 function htBox(){if(HT.no||!GAME.howto)return null;let b=$('howto');if(b)return b;b=document.createElement('div');b.id='howto';b.className='howto';b.hidden=true;
-  b.setAttribute('role','dialog');b.setAttribute('aria-modal','true');b.setAttribute('aria-labelledby','htT');
+  if(GAME.howto.titled)b.classList.add('titled');b.setAttribute('role','dialog');b.setAttribute('aria-modal','true');b.setAttribute('aria-labelledby','htT');
   b.innerHTML='<div class="htcard"><div class="hthead"><b id="htT"></b><span id="htN"></span></div><svg id="htSvg" viewBox="0 0 240 180" aria-hidden="true"></svg>'+
     '<p id="htTxt" aria-live="polite"></p><div class="htnav"><button type="button" id="htPrev">‹</button><span class="htdots" id="htDots"></span><button type="button" id="htNext">›</button></div>'+
     '<div class="htfoot"><label><input type="checkbox" id="htNever"><span id="htNeverL"></span></label><button type="button" id="htSkip"></button></div></div>';
@@ -1221,6 +1221,8 @@ function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;docum
 // never by itself at a spectator (a game by link, a Mochalunt table or one looked back on): the button of « Règles en bref » only
 function htAuto(){if(HT.seen||!GAME.howto||role==='watch'||(MATCH&&!MATCH.me))return;HT.seen=true;if(!htOff())htShow(0);}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
+// GAME.howto.titled: short texts, « <b>Action</b>Instruction », the action on its own line, all centred (games.css);
+// <span class="bt">Label</span> draws a button's name as the page's buttons.
 // GAME.howto.vars(), if given, fills the {name} slots of the texts (read each time a page is drawn).
 // The kit handed to GAME.howto.scene(k,A): A.svg (the card's picture, its viewBox 240 × 180 unless the scene sets it),
 // A.el(tag,attrs,parent), A.frame(), A.wait(ms), A.tween(o,x,y,ms) (eased), A.mover(g) (o.set(x,y) translates g),
