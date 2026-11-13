@@ -21,7 +21,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;gap:12p
 h1{font-size:1.8rem;margin:0}
 h1 a{color:var(--muted);text-decoration:none;font-size:1rem;font-weight:500}
 h2{font-size:1.05rem;margin:0 0 10px}
-.lede{color:var(--muted);margin:2px 0 0}
+.lede{color:var(--muted);margin:2px 0 0}.lede a{color:var(--accent)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:visible;flex:none;margin-top:6px}
 .seg button{font:inherit;font-size:.8rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:6px 10px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
@@ -96,7 +96,7 @@ h2 .n{color:var(--muted);font-weight:500}
 </head>
 <body>
 <main>
-<header><div><h1><a href="index.html">games /</a> Mochalunt</h1><p class="lede" data-i18n="lede"></p></div>
+<header><div><h1><a href="index.html">games /</a> Mochalunt</h1><p class="lede"><span data-i18n="lede"></span> <span data-i18n="more"></span> <a href="https://www.abstrakta.info/mochalunt-2026.html" target="_blank" rel="noopener">Mochalunt</a></p></div>
 <div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div></header>
 
 <!-- home: three ways in -->
@@ -190,7 +190,7 @@ const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',cls:'arimaa',tc:'20 min + 
 // the editions: a year, a round, its five games in the tournament's order (only one so far, the games above)
 const EDITIONS=[{y:2026,r:7,games:MOCHA}];
 const I18N={
- fr:{review:"Revoir",over:"terminé",ed:"{y}, ronde {r}",started:"commencé le {d}",hRes:"Reprendre un match",noRes:"Aucun match interrompu.",noMine:"Aucun match sur cet appareil.",mineHint:"Les matchs sont gardés dans ce navigateur : ils disparaissent si ses données sont effacées.",year:"Année",round:"Ronde",roundN:"Ronde {r}",tables:"Les tables",j1Hint:"Le joueur 1 choisit sa place aux tables {a} ; l'autre aux tables {b}.",lede:"Match entre deux joueurs, une partie par jeu, dans l'ordre du tournoi.",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
+ fr:{review:"Revoir",over:"terminé",ed:"{y}, ronde {r}",started:"commencé le {d}",hRes:"Reprendre un match",noRes:"Aucun match interrompu.",noMine:"Aucun match sur cet appareil.",mineHint:"Les matchs sont gardés dans ce navigateur : ils disparaissent si ses données sont effacées.",year:"Année",round:"Ronde",roundN:"Ronde {r}",tables:"Les tables",j1Hint:"Le joueur 1 choisit sa place aux tables {a} ; l'autre aux tables {b}.",lede:"Jouez et revoyez vos matchs Mochalunt.",more:"Plus d'infos :",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
   fmtAll:"Match individuel : les 5 jeux",fmtTeam:"Match par équipe : 4 jeux",excl:"Jeu retiré",j1:"Joueur 1 du match",j1Rnd:"Tirage au sort",j1Me:"Moi",j1Opp:"Mon adversaire",
   create:"Créer le match",madeT:"Match créé",invLink:"Lien d'invitation, à envoyer à votre adversaire",
   watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinTn:"{n} vous invite à un match Mochalunt",watchTn:"{n} vous invite à suivre un match Mochalunt",joinWho:"{g} jeux · vous choisissez votre place aux tables {t}",watchWho:"{g} jeux, une table par jeu",and:" et ",prog:"Le programme",watchBtn:"Suivre le match",nameOpt:"Votre nom (facultatif : sans nom, vous restez anonyme)",joinBtn:"Rejoindre le match",
@@ -198,7 +198,7 @@ const I18N={
   resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",del:"Supprimer",delQ:"Supprimer le match contre {n} de cet appareil ?",result:"Résultat",
   drawn:"nulle",won:"{n} gagne",live:"à jouer",tableN:"table {k} / {n}",table:"Table {k}",vs:"contre {n}",opp:"votre adversaire",you:"vous",
   j1Is:"Joueur 1 du match : {n}.",swap:"règle du swap",adv:"règle avancée",bad:"Ce lien de match n'est pas valide.",unknown:"Ce match n'est pas connu sur cet appareil.",noPeer:"Impossible de charger PeerJS : vérifiez la connexion."},
- en:{review:"Review",over:"finished",ed:"{y}, round {r}",started:"started {d}",hRes:"Resume a match",noRes:"No interrupted match.",noMine:"No match on this device.",mineHint:"Matches are kept in this browser: they disappear if its data is cleared.",year:"Year",round:"Round",roundN:"Round {r}",tables:"The tables",j1Hint:"Player 1 chooses their seat at tables {a}; the other at tables {b}.",lede:"A match between two players, one game each, in the tournament's order.",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
+ en:{review:"Review",over:"finished",ed:"{y}, round {r}",started:"started {d}",hRes:"Resume a match",noRes:"No interrupted match.",noMine:"No match on this device.",mineHint:"Matches are kept in this browser: they disappear if its data is cleared.",year:"Year",round:"Round",roundN:"Round {r}",tables:"The tables",j1Hint:"Player 1 chooses their seat at tables {a}; the other at tables {b}.",lede:"Play and review your Mochalunt matches.",more:"More info:",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
   fmtAll:"Individual match: the 5 games",fmtTeam:"Team match: 4 games",excl:"Game left out",j1:"Match's Player 1",j1Rnd:"Random draw",j1Me:"Me",j1Opp:"My opponent",
   create:"Create the match",madeT:"Match created",invLink:"Invitation link, to send to your opponent",
   watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinTn:"{n} invites you to a Mochalunt match",watchTn:"{n} invites you to follow a Mochalunt match",joinWho:"{g} games · you choose your seat at tables {t}",watchWho:"{g} games, one table each",and:" and ",prog:"The programme",watchBtn:"Follow the match",nameOpt:"Your name (optional: without one, you stay anonymous)",joinBtn:"Join the match",
@@ -206,7 +206,7 @@ const I18N={
   resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",result:"Result",
   drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",table:"Table {k}",vs:"against {n}",opp:"your opponent",you:"you",
   j1Is:"Match's Player 1: {n}.",swap:"swap rule",adv:"advanced rule",bad:"This match link is not valid.",unknown:"This match is not known on this device.",noPeer:"PeerJS could not be loaded: check the connection."},
- es:{review:"Revisar",over:"terminado",ed:"{y}, ronda {r}",started:"empezado el {d}",hRes:"Reanudar un encuentro",noRes:"Ningún encuentro interrumpido.",noMine:"Ningún encuentro en este dispositivo.",mineHint:"Los encuentros se guardan en este navegador: desaparecen si se borran sus datos.",year:"Año",round:"Ronda",roundN:"Ronda {r}",tables:"Las mesas",j1Hint:"El jugador 1 elige su lugar en las mesas {a}; el otro en las mesas {b}.",lede:"Encuentro entre dos jugadores, una partida por juego, en el orden del torneo.",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
+ es:{review:"Revisar",over:"terminado",ed:"{y}, ronda {r}",started:"empezado el {d}",hRes:"Reanudar un encuentro",noRes:"Ningún encuentro interrumpido.",noMine:"Ningún encuentro en este dispositivo.",mineHint:"Los encuentros se guardan en este navegador: desaparecen si se borran sus datos.",year:"Año",round:"Ronda",roundN:"Ronda {r}",tables:"Las mesas",j1Hint:"El jugador 1 elige su lugar en las mesas {a}; el otro en las mesas {b}.",lede:"Juega y revisa tus encuentros Mochalunt.",more:"Más información:",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
   fmtAll:"Encuentro individual: los 5 juegos",fmtTeam:"Encuentro por equipos: 4 juegos",excl:"Juego excluido",j1:"Jugador 1 del encuentro",j1Rnd:"Sorteo",j1Me:"Yo",j1Opp:"Mi adversario",
   create:"Crear el encuentro",madeT:"Encuentro creado",invLink:"Enlace de invitación, para enviar a tu adversario",
   watchLink:"Enlace para los espectadores",copy:"Copiar",copied:"Copiado",goFirst:"Ir a la primera mesa",joinT:"Te han invitado a un encuentro Mochalunt",joinTn:"{n} te invita a un encuentro Mochalunt",watchTn:"{n} te invita a seguir un encuentro Mochalunt",joinWho:"{g} juegos · eliges tu sitio en las mesas {t}",watchWho:"{g} juegos, una mesa por juego",and:" y ",prog:"El programa",watchBtn:"Seguir el encuentro",nameOpt:"Tu nombre (opcional: sin nombre, sigues anónimo)",joinBtn:"Unirse al encuentro",
