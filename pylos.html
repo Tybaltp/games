@@ -48,6 +48,12 @@ ol.log li{align-items:center}
 ol.log .pym{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0;font-family:var(--f-mono)}
 ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
 </style>
+<style>
+/* accueil : ce qui est propre à Pylos ; le reste dans common/accueil.css. Pas encore d'image de fond (Thibault la fera) :
+   les cartes de mode prennent la couleur de l'étiquette de Pylos sur l'accueil du site (common/cards.css). */
+:root{--accImgL:none;--accImgD:none;--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#b0612a;--accTintD:#e0945a}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=1">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pylos.html"><b id="ttl" style="font-weight:inherit">Pylos</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -794,4 +800,5 @@ const GAME={id:'pylos',size:4,codeTag:'PYLOS1',i18n:PY_I18N,
 for(const p of ['c','a','f','t'])if($(p+'Variant')){$(p+'Variant').value=homeVariant();$(p+'Variant').addEventListener('change',e=>LS.set('pylos-variant',e.target.value));}
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
