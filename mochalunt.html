@@ -77,12 +77,14 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .mp .gi{position:absolute;left:6.5cqw;top:27cqw;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:.15em;line-height:1.15;font-size:max(10px,5cqw);text-shadow:0 0 3px var(--gbg),0 0 3px var(--gbg)}
 .mp .gi b{font-weight:700;font-size:.92em;color:var(--gbg);background:var(--gink);border-radius:999px;padding:.05em .55em;text-shadow:none}
 .mp .gi span{font-weight:600}.mp .gi i{font-style:normal;opacity:.8}
-/* home: three tiles, side by side on a wide screen */
-.hub{display:grid;grid-template-columns:1fr;gap:14px}
-@media (min-width:720px){.hub{grid-template-columns:repeat(3,1fr)}}
-a.tile{color:inherit;text-decoration:none;margin:0;gap:4px;transition:border-color .15s}
-a.tile:hover,a.tile:focus-visible{border-color:var(--accent);outline:none}
-a.tile h2{margin:0}a.tile.new h2{color:var(--accent)}
+/* home: three buttons, one under the other */
+.hub{display:flex;flex-direction:column;gap:12px;max-width:26rem;margin-top:8px}
+a.hb{display:block;text-align:center;font-weight:600;font-size:1.05rem;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);text-decoration:none}
+a.hb:hover,a.hb:focus-visible{border-color:var(--accent);outline:none}
+a.hb.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}a.hb.primary:hover{background:var(--accent);border-color:var(--accent)}
+/* a match in a list: who and the score on the first line, the details under it */
+.matches li{flex-wrap:wrap}.matches .mi{display:flex;flex-direction:column;min-width:0;flex:1 1 15rem;line-height:1.35}
+.matches .mi b{font-weight:650}.matches .mi span{color:var(--muted);font-size:.85rem}
 h2 .n{color:var(--muted);font-weight:500}
 .crumb{margin:0 0 10px;font-size:.9rem}.crumb a{color:var(--muted);text-decoration:none}.crumb a:hover{color:var(--ink)}
 /* a new match: two frames, one under the other; on a wide screen the settings on the left, the tables on the right */
@@ -100,9 +102,9 @@ h2 .n{color:var(--muted);font-weight:500}
 <!-- home: three ways in -->
 <section id="vHome">
   <nav class="hub">
-    <a class="panel tile" href="#resume"><h2><span data-i18n="hRes"></span> <span class="n" id="hResN"></span></h2><p class="hint" data-i18n="hResD"></p></a>
-    <a class="panel tile" href="#mine"><h2><span data-i18n="mine"></span> <span class="n" id="hMineN"></span></h2><p class="hint" data-i18n="hMineD"></p></a>
-    <a class="panel tile new" href="#new"><h2 data-i18n="newT"></h2><p class="hint" data-i18n="hNewD"></p></a>
+    <a class="hb" href="#resume" data-i18n="hRes"></a>
+    <a class="hb" href="#mine" data-i18n="mine"></a>
+    <a class="hb primary" href="#new" data-i18n="newT"></a>
   </nav>
 </section>
 
@@ -188,7 +190,7 @@ const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',cls:'arimaa',tc:'20 min + 
 // the editions: a year, a round, its five games in the tournament's order (only one so far, the games above)
 const EDITIONS=[{y:2026,r:7,games:MOCHA}];
 const I18N={
- fr:{hRes:"Reprendre un match",hResD:"Les matchs interrompus où chacun a déjà joué",hMineD:"Tous les matchs gardés sur cet appareil",hNewD:"Choisir l'édition, puis créer le lien à envoyer",noRes:"Aucun match interrompu.",noMine:"Aucun match sur cet appareil.",mineHint:"Les matchs sont gardés dans ce navigateur : ils disparaissent si ses données sont effacées.",year:"Année",round:"Ronde",roundN:"Ronde {r}",tables:"Les tables",j1Hint:"Le joueur 1 choisit sa place aux tables {a} ; l'autre aux tables {b}.",lede:"Match entre deux joueurs, une partie par jeu, dans l'ordre du tournoi.",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
+ fr:{review:"Revoir",over:"terminé",ed:"{y}, ronde {r}",started:"commencé le {d}",hRes:"Reprendre un match",noRes:"Aucun match interrompu.",noMine:"Aucun match sur cet appareil.",mineHint:"Les matchs sont gardés dans ce navigateur : ils disparaissent si ses données sont effacées.",year:"Année",round:"Ronde",roundN:"Ronde {r}",tables:"Les tables",j1Hint:"Le joueur 1 choisit sa place aux tables {a} ; l'autre aux tables {b}.",lede:"Match entre deux joueurs, une partie par jeu, dans l'ordre du tournoi.",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
   fmtAll:"Match individuel : les 5 jeux",fmtTeam:"Match par équipe : 4 jeux",excl:"Jeu retiré",j1:"Joueur 1 du match",j1Rnd:"Tirage au sort",j1Me:"Moi",j1Opp:"Mon adversaire",
   create:"Créer le match",madeT:"Match créé",invLink:"Lien d'invitation, à envoyer à votre adversaire",
   watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinTn:"{n} vous invite à un match Mochalunt",watchTn:"{n} vous invite à suivre un match Mochalunt",joinWho:"{g} jeux · vous choisissez votre place aux tables {t}",watchWho:"{g} jeux, une table par jeu",and:" et ",prog:"Le programme",watchBtn:"Suivre le match",nameOpt:"Votre nom (facultatif : sans nom, vous restez anonyme)",joinBtn:"Rejoindre le match",
@@ -196,7 +198,7 @@ const I18N={
   resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",del:"Supprimer",delQ:"Supprimer le match contre {n} de cet appareil ?",result:"Résultat",
   drawn:"nulle",won:"{n} gagne",live:"à jouer",tableN:"table {k} / {n}",table:"Table {k}",vs:"contre {n}",opp:"votre adversaire",you:"vous",
   j1Is:"Joueur 1 du match : {n}.",swap:"règle du swap",adv:"règle avancée",bad:"Ce lien de match n'est pas valide.",unknown:"Ce match n'est pas connu sur cet appareil.",noPeer:"Impossible de charger PeerJS : vérifiez la connexion."},
- en:{hRes:"Resume a match",hResD:"Interrupted matches where both players have moved",hMineD:"All the matches kept on this device",hNewD:"Choose the edition, then create the link to send",noRes:"No interrupted match.",noMine:"No match on this device.",mineHint:"Matches are kept in this browser: they disappear if its data is cleared.",year:"Year",round:"Round",roundN:"Round {r}",tables:"The tables",j1Hint:"Player 1 chooses their seat at tables {a}; the other at tables {b}.",lede:"A match between two players, one game each, in the tournament's order.",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
+ en:{review:"Review",over:"finished",ed:"{y}, round {r}",started:"started {d}",hRes:"Resume a match",noRes:"No interrupted match.",noMine:"No match on this device.",mineHint:"Matches are kept in this browser: they disappear if its data is cleared.",year:"Year",round:"Round",roundN:"Round {r}",tables:"The tables",j1Hint:"Player 1 chooses their seat at tables {a}; the other at tables {b}.",lede:"A match between two players, one game each, in the tournament's order.",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
   fmtAll:"Individual match: the 5 games",fmtTeam:"Team match: 4 games",excl:"Game left out",j1:"Match's Player 1",j1Rnd:"Random draw",j1Me:"Me",j1Opp:"My opponent",
   create:"Create the match",madeT:"Match created",invLink:"Invitation link, to send to your opponent",
   watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinTn:"{n} invites you to a Mochalunt match",watchTn:"{n} invites you to follow a Mochalunt match",joinWho:"{g} games · you choose your seat at tables {t}",watchWho:"{g} games, one table each",and:" and ",prog:"The programme",watchBtn:"Follow the match",nameOpt:"Your name (optional: without one, you stay anonymous)",joinBtn:"Join the match",
@@ -204,7 +206,7 @@ const I18N={
   resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",result:"Result",
   drawn:"draw",won:"{n} wins",live:"to play",tableN:"table {k} / {n}",table:"Table {k}",vs:"against {n}",opp:"your opponent",you:"you",
   j1Is:"Match's Player 1: {n}.",swap:"swap rule",adv:"advanced rule",bad:"This match link is not valid.",unknown:"This match is not known on this device.",noPeer:"PeerJS could not be loaded: check the connection."},
- es:{hRes:"Reanudar un encuentro",hResD:"Los encuentros interrumpidos en los que ambos ya han jugado",hMineD:"Todos los encuentros guardados en este dispositivo",hNewD:"Elegir la edición y crear el enlace para enviar",noRes:"Ningún encuentro interrumpido.",noMine:"Ningún encuentro en este dispositivo.",mineHint:"Los encuentros se guardan en este navegador: desaparecen si se borran sus datos.",year:"Año",round:"Ronda",roundN:"Ronda {r}",tables:"Las mesas",j1Hint:"El jugador 1 elige su lugar en las mesas {a}; el otro en las mesas {b}.",lede:"Encuentro entre dos jugadores, una partida por juego, en el orden del torneo.",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
+ es:{review:"Revisar",over:"terminado",ed:"{y}, ronda {r}",started:"empezado el {d}",hRes:"Reanudar un encuentro",noRes:"Ningún encuentro interrumpido.",noMine:"Ningún encuentro en este dispositivo.",mineHint:"Los encuentros se guardan en este navegador: desaparecen si se borran sus datos.",year:"Año",round:"Ronda",roundN:"Ronda {r}",tables:"Las mesas",j1Hint:"El jugador 1 elige su lugar en las mesas {a}; el otro en las mesas {b}.",lede:"Encuentro entre dos jugadores, una partida por juego, en el orden del torneo.",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
   fmtAll:"Encuentro individual: los 5 juegos",fmtTeam:"Encuentro por equipos: 4 juegos",excl:"Juego excluido",j1:"Jugador 1 del encuentro",j1Rnd:"Sorteo",j1Me:"Yo",j1Opp:"Mi adversario",
   create:"Crear el encuentro",madeT:"Encuentro creado",invLink:"Enlace de invitación, para enviar a tu adversario",
   watchLink:"Enlace para los espectadores",copy:"Copiar",copied:"Copiado",goFirst:"Ir a la primera mesa",joinT:"Te han invitado a un encuentro Mochalunt",joinTn:"{n} te invita a un encuentro Mochalunt",watchTn:"{n} te invita a seguir un encuentro Mochalunt",joinWho:"{g} juegos · eliges tu sitio en las mesas {t}",watchWho:"{g} juegos, una mesa por juego",and:" y ",prog:"El programa",watchBtn:"Seguir el encuentro",nameOpt:"Tu nombre (opcional: sin nombre, sigues anónimo)",joinBtn:"Unirse al encuentro",
@@ -257,17 +259,25 @@ function begun(r){if(Object.keys(r.res||{}).length)return true;const P=plan(r.ex
   const tc=r.code+'t'+k,h=LS.get(P[k].id+'-p2p-host',null),g=LS.get(P[k].id+'-p2p-guest',null);
   return !!(h&&h.code===tc&&h.game&&(h.game.moves||[]).length>=2||g&&g.code===tc&&g.view&&(g.view.moves||[]).length>=2);}
 const interrupted=r=>nextK(r)<plan(r.excl).length&&begun(r);
-function home(){show('vHome');history.replaceState(null,'',location.pathname);const R=myRecs();
-  $('hResN').textContent='('+R.filter(interrupted).length+')';$('hMineN').textContent='('+R.length+')';}
-// one line per match: the opponent, where it stands, the score; Resume (or Result), and Delete in My matches
-function matchList(ul,recs,del){ul.innerHTML='';
-  for(const r of recs){const P=plan(r.excl),k=nextK(r),sc=score(r),li=document.createElement('li'),sp=document.createElement('span');
-    sp.textContent=t('vs',{n:nameOf(r,other(r.me))})+' · '+(k<P.length?t('tableN',{k:k+1,n:P.length})+' · '+P[k].name:t('result'))+' · '+num(sc[r.me])+'–'+num(sc[other(r.me)]);
-    const b=document.createElement('button');b.type='button';b.className=k<P.length?'primary':'';b.textContent=k<P.length?t('resume'):t('result');b.onclick=()=>{location.href=tableUrl(r,k,'t');};
-    const bx=document.createElement('span');bx.className='acts';bx.append(b);
-    // removing a match: only from this device (its record and its tables' saved games); the other player keeps theirs
-    if(del){const d=document.createElement('button');d.type='button';d.textContent=t('del');d.onclick=()=>{if(!confirm(t('delQ',{n:nameOf(r,other(r.me))})))return;forget(r);mine();};bx.append(d);}
-    li.append(sp,bx);ul.appendChild(li);}}
+function home(){show('vHome');history.replaceState(null,'',location.pathname);}
+// dates in the page's language; the match's start (t0; older records: their last save)
+const loc=()=>lang==='fr'?'fr-FR':lang==='es'?'es-ES':'en-GB';
+const fDate=x=>new Intl.DateTimeFormat(loc(),{day:'numeric',month:'long',year:'numeric'}).format(new Date(x));
+const fWhen=x=>new Intl.DateTimeFormat(loc(),{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(x));
+const edOf=r=>{const m=/^(\d{4})-(\d+)$/.exec(r.ed||'');return m?{y:+m[1],r:+m[2]}:EDITIONS[0];};
+// one line per match: the opponent and the score, then the details; Resume in Resume a match, Review and Delete in My matches
+function matchList(ul,recs,all){ul.innerHTML='';
+  for(const r of recs){const P=plan(r.excl),k=nextK(r),sc=score(r),e=edOf(r),li=document.createElement('li'),mi=document.createElement('span'),b0=document.createElement('b'),d0=document.createElement('span');
+    mi.className='mi';b0.textContent=t('vs',{n:nameOf(r,other(r.me))})+' · '+num(sc[r.me])+'–'+num(sc[other(r.me)]);
+    const st=k<P.length?t('tableN',{k:k+1,n:P.length})+' · '+P[k].name:t('over');
+    d0.textContent=all?[fDate(r.t0||r.at),t('ed',{y:e.y,r:e.r}),st].join(' · '):t('started',{d:fWhen(r.t0||r.at)})+' · '+st;mi.append(b0,d0);
+    const bx=document.createElement('span');bx.className='acts';
+    const btn=(txt,cls,f)=>{const b=document.createElement('button');b.type='button';b.textContent=txt;if(cls)b.className=cls;b.onclick=f;bx.append(b);};
+    if(all){btn(t('review'),'',()=>{location.href='mochalunt.html#res-'+r.code;});
+      // removing a match: only from this device (its record and its tables' saved games); the other player keeps theirs
+      btn(t('del'),'',()=>{if(!confirm(t('delQ',{n:nameOf(r,other(r.me))})))return;forget(r);mine();});}
+    else btn(t('resume'),'primary',()=>{location.href=tableUrl(r,k,'t');});
+    li.append(mi,bx);ul.appendChild(li);}}
 function resumeV(){show('vResume');const R=myRecs().filter(interrupted);matchList($('resumeList'),R,false);$('resumeNone').hidden=!!R.length;}
 function mine(){show('vMine');const R=myRecs();matchList($('mineList'),R,true);$('mineNone').hidden=!!R.length;}
 function newMatch(){show('vNew');$('nName').value=LS.get('games-name','');
@@ -284,7 +294,7 @@ function forget(r){const ids=['mochalunt-'+r.code],tb=new RegExp('^'+r.code+'t\\
   for(const k of ids)try{localStorage.removeItem(k);}catch(e){}}
 $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('nName').value.trim().slice(0,24);if(!nm){$('nName').focus();return;}LS.set('games-name',nm);
   const team=$('nFmt').value==='team',jv=$('nJ1').value;
-  const rec={code:rnd(6),wcode:rnd(8),ed:$('nYear').value+'-'+$('nRound').value,excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now()};
+  const rec={code:rnd(6),wcode:rnd(8),ed:$('nYear').value+'-'+$('nRound').value,excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now(),t0:Date.now()};
   LS.set('mochalunt-'+rec.code,rec);history.replaceState(null,'','#made-'+rec.code);made(rec);});
 function made(rec){show('vMade');const base=location.href.split('#')[0];
   const nm='~'+encodeURIComponent(rec.name);   // the host's name, after a ~ (links without it still work)
@@ -299,7 +309,7 @@ function join(code,x,wcode,host){const p=parseTail(x);if(!p){home();$('err').tex
   $('joinT').textContent=host?t('joinTn',{n:host}):t('joinT');$('joinWho').textContent=t('joinWho',{g:P.length,t:listAnd(mine)});
   progList($('joinPlan'),p.excl);$('jName').value=LS.get('games-name','');
   $('joinForm').onsubmit=e=>{e.preventDefault();const nm=$('jName').value.trim().slice(0,24);if(!nm){$('jName').focus();return;}LS.set('games-name',nm);
-    const rec={code,wcode:wcode||null,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:host?{c:host,i:nm}:{i:nm},res:{},at:Date.now()};LS.set('mochalunt-'+code,rec);location.href=tableUrl(rec,0,'t');};}
+    const rec={code,wcode:wcode||null,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:host?{c:host,i:nm}:{i:nm},res:{},at:Date.now(),t0:Date.now()};LS.set('mochalunt-'+code,rec);location.href=tableUrl(rec,0,'t');};}
 
 // ---------- a spectator: the open table, from the last one back ----------
 function watch(code,x,host){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
