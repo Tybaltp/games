@@ -66,7 +66,17 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .prog .gc{width:68px;flex:none;border-radius:7px}.prog .gc .ct{display:none}
 .prog .tx{display:flex;flex-direction:column;line-height:1.3;min-width:0}
 .prog .tx b{font-weight:650}.prog .tx span{color:var(--muted);font-size:.85rem}
-@media (min-width:600px){.prog.two{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}}
+/* the match's tables as small cards, three then two (or two by two): the table, the clock and the rule written in the
+   card, under the game's name; the picture narrowed to leave them room */
+.mp{list-style:none;margin:2px 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mp li{grid-column:span 2}.mp li:last-child:nth-child(odd){grid-column:2/span 2}
+@media (min-width:600px){.mp[data-n="5"]{grid-template-columns:repeat(6,1fr)}.mp[data-n="5"] li:nth-child(4){grid-column:2/span 2}.mp[data-n="5"] li:nth-child(5){grid-column:4/span 2}}
+.mp .gc{border-radius:10px}
+.mp .gc .art,.mp .gc .bar{width:54%}@media (max-width:599px){.mp .gc .art,.mp .gc .bar{width:46%}}
+.mp .gc .ct{font-size:11cqw}.mp .c-dblocks .ct{font-size:8.6cqw}
+.mp .gi{position:absolute;left:6.5cqw;bottom:6cqw;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:.15em;line-height:1.15;font-size:max(10px,5cqw);text-shadow:0 0 3px var(--gbg),0 0 3px var(--gbg)}
+.mp .gi b{font-weight:700;font-size:.92em;color:var(--gbg);background:var(--gink);border-radius:999px;padding:.05em .55em;text-shadow:none}
+.mp .gi span{font-weight:600}.mp .gi i{font-style:normal;opacity:.8}
 /* my matches: a panel that folds; its state is kept on this device */
 details.mine{display:block}
 details.mine summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
@@ -92,7 +102,7 @@ details.mine[open] .matches{margin-top:12px}
     <label id="nExclW" hidden><span data-i18n="excl"></span><select id="nExcl"></select></label>
     <label><span data-i18n="j1"></span><select id="nJ1"><option value="c" data-i18n="j1Me"></option><option value="i" data-i18n="j1Opp"></option><option value="rnd" data-i18n="j1Rnd"></option></select></label>
     <p class="hint" data-i18n="j1Hint"></p>
-    <ol class="prog two" id="nPlan"></ol>
+    <ol class="mp" id="nPlan"></ol>
     <button class="primary" type="submit" data-i18n="create"></button>
   </form>
 </section>
@@ -104,7 +114,7 @@ details.mine[open] .matches{margin-top:12px}
     <p class="hint" id="madeJ1"></p>
     <label><span data-i18n="invLink"></span><span class="link"><input id="invLink" readonly><button type="button" data-copy="invLink" data-i18n="copy"></button></span></label>
     <label><span data-i18n="watchLink"></span><span class="link"><input id="watchLink" readonly><button type="button" data-copy="watchLink" data-i18n="copy"></button></span></label>
-    <ol class="prog two" id="madePlan"></ol>
+    <ol class="mp" id="madePlan"></ol>
     <button class="primary" type="button" id="madeGo" data-i18n="goFirst"></button>
   </div>
 </section>
@@ -191,6 +201,13 @@ function gameCard(g,k,cap,href){const li=document.createElement('li'),c=document
   const ct=document.createElement('span');ct.className='ct';ct.textContent=g.card||g.name;c.append(ct);
   for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
   const p=document.createElement('p'),b=document.createElement('b');p.className='gm';b.textContent=t('table',{k:k+1});p.append(b,cap);li.append(c,p);return li;}
+// the match's tables on the home page and once created: the card, with the table, its clock and rule written in it
+function mpList(ol,excl){ol.innerHTML='';const P=plan(excl);ol.dataset.n=P.length;P.forEach((g,k)=>{const li=document.createElement('li'),c=document.createElement('div');c.className='gc c-'+g.cls;
+  const ct=document.createElement('span');ct.className='ct';ct.textContent=g.card||g.name;c.append(ct);
+  for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
+  const gi=document.createElement('span'),b=document.createElement('b'),tc=document.createElement('span');gi.className='gi';b.textContent=t('table',{k:k+1});tc.textContent=g.tc;gi.append(b,tc);
+  if(g.note){const n=document.createElement('i');n.textContent=t(g.note);gi.append(n);}
+  c.append(gi);li.append(c);ol.appendChild(li);});}
 // the programme of an invitation: one line per table, a small card, the table, the game, its clock and rule
 function progList(ol,excl){ol.innerHTML='';plan(excl).forEach((g,k)=>{const li=document.createElement('li'),c=document.createElement('span');c.className='gc c-'+g.cls;
   for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
@@ -202,7 +219,7 @@ function show(v){for(const id of ['vHome','vMade','vJoin','vWatch','vRes'])$(id)
 // ---------- home ----------
 function home(){show('vHome');history.replaceState(null,'',location.pathname);$('nName').value=LS.get('games-name','');
   const ex=$('nExcl');ex.innerHTML=MOCHA.map((g,i)=>`<option value="${i}">${g.name}</option>`).join('');
-  const upd=()=>{const team=$('nFmt').value==='team';$('nExclW').hidden=!team;progList($('nPlan'),team?+ex.value:-1);};
+  const upd=()=>{const team=$('nFmt').value==='team';$('nExclW').hidden=!team;mpList($('nPlan'),team?+ex.value:-1);};
   $('nFmt').onchange=upd;ex.onchange=upd;upd();
   // my matches: those of this device, the latest first
   const recs=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('mochalunt-')){const r=LS.get(k,null);if(r&&r.me&&r.excl!==undefined)recs.push(r);}}
@@ -224,7 +241,7 @@ $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('nName'
 function made(rec){show('vMade');const base=location.href.split('#')[0];
   const nm='~'+encodeURIComponent(rec.name);   // the host's name, after a ~ (links without it still work)
   $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec)+'-'+rec.wcode+nm;$('watchLink').value=base+'#watch-'+rec.wcode+'-'+tail(rec)+nm;   // two codes: the spectators' does not give the players'
-  $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});progList($('madePlan'),rec.excl);
+  $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});mpList($('madePlan'),rec.excl);
   $('madeGo').onclick=()=>{location.href=tableUrl(rec,0,'t');};}
 
 // ---------- an invitation ----------
