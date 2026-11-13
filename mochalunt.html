@@ -66,6 +66,15 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .prog .gc{width:68px;flex:none;border-radius:7px}.prog .gc .ct{display:none}
 .prog .tx{display:flex;flex-direction:column;line-height:1.3;min-width:0}
 .prog .tx b{font-weight:650}.prog .tx span{color:var(--muted);font-size:.85rem}
+@media (min-width:600px){.prog.two{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}}
+/* my matches: a panel that folds; its state is kept on this device */
+details.mine{display:block}
+details.mine summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+details.mine summary::-webkit-details-marker{display:none}
+details.mine summary::before{content:'▶';color:var(--muted);font-size:.7rem;width:1em;text-align:center;transition:transform .15s}
+details.mine[open] summary::before{transform:rotate(90deg)}
+details.mine summary h2{margin:0}details.mine h2 .n{color:var(--muted);font-weight:500}
+details.mine[open] .matches{margin-top:12px}
 </style>
 </head>
 <body>
@@ -75,7 +84,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 
 <!-- home: my matches, a new match -->
 <section id="vHome">
-  <div class="panel" id="mineCard" hidden><h2 data-i18n="mine"></h2><ul class="matches" id="mineList"></ul></div>
+  <details class="panel mine" id="mineCard" hidden><summary><h2><span data-i18n="mine"></span> <span class="n" id="mineN"></span></h2></summary><ul class="matches" id="mineList"></ul></details>
   <form class="panel" id="newForm">
     <h2 data-i18n="newT"></h2>
     <label><span data-i18n="name"></span><input id="nName" maxlength="24" autocomplete="nickname"></label>
@@ -83,7 +92,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
     <label id="nExclW" hidden><span data-i18n="excl"></span><select id="nExcl"></select></label>
     <label><span data-i18n="j1"></span><select id="nJ1"><option value="c" data-i18n="j1Me"></option><option value="i" data-i18n="j1Opp"></option><option value="rnd" data-i18n="j1Rnd"></option></select></label>
     <p class="hint" data-i18n="j1Hint"></p>
-    <ol class="plan" id="nPlan"></ol>
+    <ol class="prog two" id="nPlan"></ol>
     <button class="primary" type="submit" data-i18n="create"></button>
   </form>
 </section>
@@ -95,7 +104,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
     <p class="hint" id="madeJ1"></p>
     <label><span data-i18n="invLink"></span><span class="link"><input id="invLink" readonly><button type="button" data-copy="invLink" data-i18n="copy"></button></span></label>
     <label><span data-i18n="watchLink"></span><span class="link"><input id="watchLink" readonly><button type="button" data-copy="watchLink" data-i18n="copy"></button></span></label>
-    <ol class="plan" id="madePlan"></ol>
+    <ol class="prog two" id="madePlan"></ol>
     <button class="primary" type="button" id="madeGo" data-i18n="goFirst"></button>
   </div>
 </section>
@@ -182,8 +191,6 @@ function gameCard(g,k,cap,href){const li=document.createElement('li'),c=document
   const ct=document.createElement('span');ct.className='ct';ct.textContent=g.card||g.name;c.append(ct);
   for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
   const p=document.createElement('p'),b=document.createElement('b');p.className='gm';b.textContent=t('table',{k:k+1});p.append(b,cap);li.append(c,p);return li;}
-// the match's tables: the game left out does not appear
-function planList(ol,excl){ol.innerHTML='';plan(excl).forEach((g,k)=>ol.appendChild(gameCard(g,k,g.tc+(g.note?' · '+t(g.note):''))));}
 // the programme of an invitation: one line per table, a small card, the table, the game, its clock and rule
 function progList(ol,excl){ol.innerHTML='';plan(excl).forEach((g,k)=>{const li=document.createElement('li'),c=document.createElement('span');c.className='gc c-'+g.cls;
   for(const x of ['bar','art']){const e=document.createElement('span');e.className=x;c.append(e);}
@@ -195,11 +202,12 @@ function show(v){for(const id of ['vHome','vMade','vJoin','vWatch','vRes'])$(id)
 // ---------- home ----------
 function home(){show('vHome');history.replaceState(null,'',location.pathname);$('nName').value=LS.get('games-name','');
   const ex=$('nExcl');ex.innerHTML=MOCHA.map((g,i)=>`<option value="${i}">${g.name}</option>`).join('');
-  const upd=()=>{const team=$('nFmt').value==='team';$('nExclW').hidden=!team;planList($('nPlan'),team?+ex.value:-1);};
+  const upd=()=>{const team=$('nFmt').value==='team';$('nExclW').hidden=!team;progList($('nPlan'),team?+ex.value:-1);};
   $('nFmt').onchange=upd;ex.onchange=upd;upd();
   // my matches: those of this device, the latest first
   const recs=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('mochalunt-')){const r=LS.get(k,null);if(r&&r.me&&r.excl!==undefined)recs.push(r);}}
-  recs.sort((a,b)=>(b.at||0)-(a.at||0));const ul=$('mineList');ul.innerHTML='';$('mineCard').hidden=!recs.length;
+  recs.sort((a,b)=>(b.at||0)-(a.at||0));const ul=$('mineList');ul.innerHTML='';$('mineCard').hidden=!recs.length;$('mineN').textContent='('+recs.length+')';
+  const mc=$('mineCard');mc.open=LS.get('games-mochalunt-mine',true);mc.ontoggle=()=>LS.set('games-mochalunt-mine',mc.open);
   for(const r of recs){const P=plan(r.excl),k=nextK(r),sc=score(r),li=document.createElement('li'),sp=document.createElement('span');
     sp.textContent=t('vs',{n:nameOf(r,other(r.me))})+' · '+(k<P.length?t('tableN',{k:k+1,n:P.length})+' · '+P[k].name:t('result'))+' · '+num(sc[r.me])+'–'+num(sc[other(r.me)]);
     const b=document.createElement('button');b.type='button';b.className=k<P.length?'primary':'';b.textContent=k<P.length?t('resume'):t('result');b.onclick=()=>{location.href=tableUrl(r,k,'t');};
@@ -216,7 +224,7 @@ $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('nName'
 function made(rec){show('vMade');const base=location.href.split('#')[0];
   const nm='~'+encodeURIComponent(rec.name);   // the host's name, after a ~ (links without it still work)
   $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec)+'-'+rec.wcode+nm;$('watchLink').value=base+'#watch-'+rec.wcode+'-'+tail(rec)+nm;   // two codes: the spectators' does not give the players'
-  $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});planList($('madePlan'),rec.excl);
+  $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});progList($('madePlan'),rec.excl);
   $('madeGo').onclick=()=>{location.href=tableUrl(rec,0,'t');};}
 
 // ---------- an invitation ----------
