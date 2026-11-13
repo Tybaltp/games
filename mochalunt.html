@@ -77,6 +77,13 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .mp .gi{position:absolute;left:6.5cqw;top:27cqw;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:.15em;line-height:1.15;font-size:max(10px,5cqw);text-shadow:0 0 3px var(--gbg),0 0 3px var(--gbg)}
 .mp .gi b{font-weight:700;font-size:.92em;color:var(--gbg);background:var(--gink);border-radius:999px;padding:.05em .55em;text-shadow:none}
 .mp .gi span{font-weight:600}.mp .gi i{font-style:normal;opacity:.8}
+/* the new match: one column, the games under the settings (the button last); on a wide screen the settings on the
+   left, the games on the right, the page widened for it */
+.nf{display:flex;flex-direction:column;gap:10px}.nset{display:contents}
+.nf .primary{order:2}
+@media (min-width:960px){main:has(#vHome:not([hidden])){max-width:68rem}
+  .nf{display:grid;grid-template-columns:minmax(16rem,22rem) 1fr;gap:20px;align-items:start}
+  .nset{display:flex;flex-direction:column;gap:10px}.nf .primary{order:0;margin-top:4px}}
 /* my matches: a panel that folds; its state is kept on this device */
 details.mine{display:block}
 details.mine summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
@@ -97,13 +104,14 @@ details.mine[open] .matches{margin-top:12px}
   <details class="panel mine" id="mineCard" hidden><summary><h2><span data-i18n="mine"></span> <span class="n" id="mineN"></span></h2></summary><ul class="matches" id="mineList"></ul></details>
   <form class="panel" id="newForm">
     <h2 data-i18n="newT"></h2>
+    <div class="nf"><div class="nset">
     <label><span data-i18n="name"></span><input id="nName" maxlength="24" autocomplete="nickname"></label>
     <label><span data-i18n="fmt"></span><select id="nFmt"><option value="all" data-i18n="fmtAll"></option><option value="team" data-i18n="fmtTeam"></option></select></label>
     <label id="nExclW" hidden><span data-i18n="excl"></span><select id="nExcl"></select></label>
     <label><span data-i18n="j1"></span><select id="nJ1"><option value="c" data-i18n="j1Me"></option><option value="i" data-i18n="j1Opp"></option><option value="rnd" data-i18n="j1Rnd"></option></select></label>
     <p class="hint" data-i18n="j1Hint"></p>
-    <ol class="mp" id="nPlan"></ol>
     <button class="primary" type="submit" data-i18n="create"></button>
+    </div><ol class="mp" id="nPlan"></ol></div>
   </form>
 </section>
 
