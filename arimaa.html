@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=39">
+<link rel="stylesheet" href="common/games.css?v=46">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -43,19 +43,6 @@ ol.log .desc{grid-column:2 / -1;color:var(--muted);font-family:var(--f-body);fon
 #svg.lpfocus .lp{opacity:.12}
 #svg.lpfocus .lp.on{opacity:1}
 #svg .stepn{cursor:pointer}#svg .stepn:hover circle{stroke:var(--hl);stroke-width:2.5}
-/* « Comment jouer »: a card over the board, four animated pages (move, push, pull, end of turn) */
-.howto{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}
-.howto[hidden]{display:none}
-/* the language and theme buttons stay usable over the card: they translate or recolour it, it stays open */
-html.htshown header .seg{position:relative;z-index:61}
-.htcard{width:min(420px,100%);max-height:100%;overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
-.hthead{display:flex;justify-content:space-between;align-items:baseline}.hthead b{font-size:1.05rem}.hthead span{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
-#htSvg{width:100%;height:auto;display:block;border-radius:10px;background:var(--wood)}
-.htcard p{margin:0;min-height:5.6em;line-height:1.4;font-size:.93rem}
-.htnav{display:flex;align-items:center;justify-content:space-between;gap:8px}.htnav button{min-width:44px;font-size:1.1rem;padding:4px 12px}
-.htdots{display:flex;gap:7px}.htdots i{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer}.htdots i.on{background:var(--accent)}
-.htfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.88rem}.htfoot label{display:flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer}
-.htopen{margin:.6em 0 0}
 </style>
 <style>
 /* accueil : ce qui est propre à Arimaa ; le reste dans common/accueil.css. Le fond : bot_sharp contre browni3141, Challenge
@@ -189,7 +176,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=62"></script>
+<script src="common/core.js?v=72"></script>
 <script src="common/codes.js?v=4"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -266,7 +253,7 @@ function ArimaaEngine(){
 }
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
- mq_q:"Voulez-vous jouer l'Or (premier) ou l'Argent ?",mq_1:"L'Or",mq_2:"L'Argent",
+ mq_q:"Voulez-vous jouer Or (premier) ou Argent ?",mq_1:"Or",mq_p1:"Or",mq_p2:"Argent",mq_2:"Argent",
  title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
  m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation : pour essayer et analyser.",
  m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
@@ -278,7 +265,7 @@ const AR_I18N={fr:{
  pn:["lapin","chat","chien","cheval","chameau","éléphant"],push_t:"{A} {fa} pousse {b} {fb} en {to}",pull_t:"{A} {fa} tire {b} {fb} en {to}",
  st_pushPull:"Choisissez la case où va la pièce poussée ; votre pièce prend sa place. Survolez une case pour voir le résultat.",
  st_pullBy:"Tirer : choisissez la pièce qui tire (cerclée).",st_pullTo:"Choisissez où va la pièce qui tire : la pièce tirée prend la case qu'elle quitte.",backTo:"Revenir avant le pas {n}",
- ht_title:"Comment jouer",ht_skip:"Passer",ht_done:"C'est parti",ht_never:"Ne plus montrer",ht_prev:"Précédent",ht_next:"Suivant",ht_sent:"Coup envoyé ✓",ht_1:"<b>Déplacer</b> : cliquez la pièce à déplacer, puis sa case d'arrivée, à une ou plusieurs cases (4 pas par tour en tout). En survolant une case, vous voyez le résultat avant de cliquer.",ht_2:"<b>Pousser</b> (2 pas) : cliquez d'abord la pièce qui pousse, puis la pièce adverse à pousser (voisine et plus faible), puis sa case d'arrivée. Votre pièce prend sa place.",ht_3:"<b>Tirer</b> (2 pas) : cliquez la pièce adverse à tirer, puis votre pièce qui la tire, puis la case où va votre pièce. La pièce tirée prend la case libérée.",ht_4:"<b>Fin du tour</b> : après vos 4 pas (ou moins), confirmez l'envoi de votre coup avec « Terminer le tour ». Jusque-là rien ne part : « Annuler le pas » et « Réinitialiser » reviennent en arrière.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
+ ht_sent:"Coup envoyé ✓",ht_1:"<b>Déplacer</b> : cliquez la pièce à déplacer, puis sa case d'arrivée, à une ou plusieurs cases (4 pas par tour en tout). En survolant une case, vous voyez le résultat avant de cliquer.",ht_2:"<b>Pousser</b> (2 pas) : cliquez d'abord la pièce qui pousse, puis la pièce adverse à pousser (voisine et plus faible), puis sa case d'arrivée. Votre pièce prend sa place.",ht_3:"<b>Tirer</b> (2 pas) : cliquez la pièce adverse à tirer, puis votre pièce qui la tire, puis la case où va votre pièce. La pièce tirée prend la case libérée.",ht_4:"<b>Fin du tour</b> : après vos 4 pas (ou moins), confirmez l'envoi de votre coup avec « Terminer le tour ». Jusque-là rien ne part : « Annuler le pas » et « Réinitialiser » reviennent en arrière.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
  <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
@@ -290,10 +277,10 @@ const AR_I18N={fr:{
  <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
  <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat ; sur écran tactile, un toucher joue le pas. Les cases possibles s'allument dès qu'une pièce est choisie. Une pièce déjà déplacée dans le tour peut repartir : il suffit de la recliquer. Chaque pas préparé est numéroté sur le plateau ; cliquer un numéro revient juste avant ce pas. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; en partie libre, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i> (Sharp), trois niveaux, avec annulation ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul><p class="htopen"><button type="button" class="htbtn">Comment jouer</button></p>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
- mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_2:"Silver",
+ mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_p1:"Gold",mq_p2:"Silver",mq_2:"Silver",
  title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
  m_freeTxt:"Both sides on this screen, no clock, with undo: to try things and analyse.",
  m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
@@ -305,7 +292,7 @@ const AR_I18N={fr:{
  pn:["rabbit","cat","dog","horse","camel","elephant"],push_t:"{A} {fa} pushes {b} {fb} to {to}",pull_t:"{A} {fa} pulls {b} {fb} to {to}",
  st_pushPull:"Choose the square the pushed piece goes to; your piece takes its place. Hover a square to see the result.",
  st_pullBy:"Pull: choose the piece that pulls (ringed).",st_pullTo:"Choose where the pulling piece goes: the pulled piece takes the square it leaves.",backTo:"Go back to before step {n}",
- ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",ht_sent:"Move sent ✓",ht_1:"<b>Move</b>: click the piece to move, then its arrival square, one or more squares away (4 steps per turn in all). Hovering a square shows the result before you click.",ht_2:"<b>Push</b> (2 steps): click first the piece that pushes, then the opposing piece to push (adjacent and weaker), then its arrival square. Your piece takes its place.",ht_3:"<b>Pull</b> (2 steps): click the opposing piece to pull, then your piece that pulls it, then the square your piece goes to. The pulled piece takes the square it left.",ht_4:"<b>End of turn</b>: after your 4 steps (or fewer), confirm sending your move with “End turn”. Until then nothing is sent: “Undo step” and “Reset” go back.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
+ ht_sent:"Move sent ✓",ht_1:"<b>Move</b>: click the piece to move, then its arrival square, one or more squares away (4 steps per turn in all). Hovering a square shows the result before you click.",ht_2:"<b>Push</b> (2 steps): click first the piece that pushes, then the opposing piece to push (adjacent and weaker), then its arrival square. Your piece takes its place.",ht_3:"<b>Pull</b> (2 steps): click the opposing piece to pull, then your piece that pulls it, then the square your piece goes to. The pulled piece takes the square it left.",ht_4:"<b>End of turn</b>: after your 4 steps (or fewer), confirm sending your move with “End turn”. Until then nothing is sent: “Undo step” and “Reset” go back.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
  <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
@@ -317,10 +304,10 @@ const AR_I18N={fr:{
  <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
  <li><b>Playing</b>: click one of your pieces, then its arrival square; hovering a square previews the result; on a touch screen, a tap plays the step. The possible squares light up as soon as a piece is chosen. A piece already moved in this turn can move on: just click it again. Each prepared step is numbered on the board; clicking a number goes back to just before that step. The turn's commands are in the bar under the board: Reset, Undo step, End turn; in free play, Undo last move. Setup: click two of your squares to swap their pieces, then Confirm the setup.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i> (Sharp), three levels, with undo; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul><p class="htopen"><button type="button" class="htbtn">How to play</button></p>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },es:{
- mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_2:"Plata",
+ mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_p1:"con Oro",mq_p2:"con Plata",mq_2:"Plata",
  title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",goldIs:"Oro (empieza)",
  m_freeTxt:"Los dos bandos en esta pantalla, sin reloj, con deshacer: para probar y analizar.",
  m_aiTxt:"Sharp, el mejor programa de Arimaa de 2015: tres niveles, con deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
@@ -332,7 +319,7 @@ const AR_I18N={fr:{
  pn:["conejo","gato","perro","caballo","camello","elefante"],push_t:"{A} {fa} empuja {b} {fb} a {to}",pull_t:"{A} {fa} tira de {b} {fb} a {to}",
  st_pushPull:"Elige la casilla adonde va la pieza empujada; tu pieza ocupa su lugar. Pasa el ratón por una casilla para ver el resultado.",
  st_pullBy:"Tirar: elige la pieza que tira (rodeada).",st_pullTo:"Elige adónde va la pieza que tira: la pieza tirada ocupa la casilla que deja.",backTo:"Volver antes del paso {n}",
- ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",ht_sent:"Jugada enviada ✓",ht_1:"<b>Mover</b>: haz clic en la pieza que quieres mover y luego en su casilla de llegada, a una o varias casillas (4 pasos por turno en total). Al pasar el ratón por una casilla ves el resultado antes de hacer clic.",ht_2:"<b>Empujar</b> (2 pasos): haz clic primero en la pieza que empuja, luego en la pieza adversaria que quieres empujar (vecina y más débil) y luego en su casilla de llegada. Tu pieza ocupa su lugar.",ht_3:"<b>Tirar</b> (2 pasos): haz clic en la pieza adversaria de la que quieres tirar, luego en tu pieza que tira y luego en la casilla adonde va tu pieza. La pieza tirada ocupa la casilla liberada.",ht_4:"<b>Fin del turno</b>: tras tus 4 pasos (o menos), confirma el envío de tu jugada con «Terminar el turno». Hasta entonces no se envía nada: «Deshacer el paso» y «Reiniciar» vuelven atrás.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
+ ht_sent:"Jugada enviada ✓",ht_1:"<b>Mover</b>: haz clic en la pieza que quieres mover y luego en su casilla de llegada, a una o varias casillas (4 pasos por turno en total). Al pasar el ratón por una casilla ves el resultado antes de hacer clic.",ht_2:"<b>Empujar</b> (2 pasos): haz clic primero en la pieza que empuja, luego en la pieza adversaria que quieres empujar (vecina y más débil) y luego en su casilla de llegada. Tu pieza ocupa su lugar.",ht_3:"<b>Tirar</b> (2 pasos): haz clic en la pieza adversaria de la que quieres tirar, luego en tu pieza que tira y luego en la casilla adonde va tu pieza. La pieza tirada ocupa la casilla liberada.",ht_4:"<b>Fin del turno</b>: tras tus 4 pasos (o menos), confirma el envío de tu jugada con «Terminar el turno». Hasta entonces no se envía nada: «Deshacer el paso» y «Reiniciar» vuelven atrás.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: llevar uno de tus conejos a la última fila, la del bando adversario (fila 8 para Oro, fila 1 para Plata).</li>
  <li><b>Piezas</b>, de la más fuerte a la más débil: <b>E</b> elefante, <b>M</b> camello, <b>H</b> caballo (×2), <b>D</b> perro (×2), <b>C</b> gato (×2), <b>R</b> conejo (×8). Letras según la notación inglesa.</li>
@@ -344,7 +331,7 @@ const AR_I18N={fr:{
  <li><b>Final</b>: al final de un turno, gana primero el jugador que tiene un conejo en su última fila (el que acaba de jugar pasa antes que el otro); si no, pierde el que ya no tiene conejos; si no, pierde el que debe jugar y no tiene ninguna jugada permitida. Un turno que produjera por tercera vez la misma posición, con el mismo jugador al turno, está prohibido.</li>
  <li><b>Jugar</b>: haz clic en una de tus piezas y luego en su casilla de llegada; al pasar el ratón por una casilla, la vista previa muestra el resultado; en pantalla táctil, un toque juega el paso. Las casillas posibles se iluminan en cuanto se elige una pieza. Una pieza ya movida en el turno puede seguir: basta con volver a hacer clic en ella. Cada paso preparado lleva un número en el tablero; hacer clic en un número vuelve justo antes de ese paso. Los mandos del turno están en la barra bajo el tablero: Reiniciar, Deshacer el paso, Terminar el turno; en partida libre, Deshacer la última jugada. Colocación: haz clic en dos de tus casillas para intercambiar sus piezas y luego en Validar la colocación.</li>
  <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i> (Sharp), tres niveles, con deshacer; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul><p class="htopen"><button type="button" class="htbtn">Cómo jugar</button></p>
+ <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa es un juego de Omar Syed (2002). Reglas: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 }};
 // Piece drawings: Thibault's set (Dropbox « SVG Arimaa/Retouchés »): each drawing is the whole piece, in a 4358×4358
@@ -415,7 +402,7 @@ function endState(r,pv){if(!pv.used)return 'none';if(E.bkey(pv.b)===E.bkey(r.st.
 function setupBoard(r){if(!ui.setup)ui.setup=E.DEFAULT[mySeat].split('');const b=r.st.b.slice();E.SETUP_SQ[mySeat].forEach((i,k)=>{b[i]=(E.LET.indexOf(ui.setup[k])+1)*E.sgn(mySeat);});return b;}
 // core's renderGame: the board, then the bar under it for my turn (turnStatus) and the opponent's (waitStatus)
 let shownD=null;   // position shown (live or navigated), for the captured pieces under the players
-function arBoard({r,d,mine}){shownD=d;htAuto();const o={setup:r.st.n<2,pv:null,es:'none'};
+function arBoard({r,d,mine}){shownD=d;const o={setup:r.st.n<2,pv:null,es:'none'};
   if(navAt!==null)drawBoard({real:d.st.b,shown:d.st.b,last:d.last});
   else if(mine&&o.setup)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
   else if(mine){const pv=preview(r);o.pv=pv;o.es=endState(r,pv);
@@ -663,54 +650,15 @@ const aiSearch=${sharpSearch};
 function sharpHist(v){const r=arReplay(v,v.moves),k=v.moves.length,tag=k=>(Math.floor(k/2)+1)+(k%2?'s':'g');
   return r.log.map((e,i)=>tag(i)+' '+e.txt).concat([tag(k)]).join('\n');}
 
-// ---------- « Comment jouer » ----------
-// Opens over the board the first time a game is shown on this page (unless « Ne plus montrer » was ticked: kept in
-// localStorage, losing it only brings the card back). Four pages, each with an animation that loops while the page is
-// shown: move, push, pull, end of turn. Arrows, dots or the keyboard (← →) to browse. Its own button (« Passer »,
-// « C'est parti ») or Échap closes it, not a click beside it; a change of language or theme translates or recolours it.
-// The button at the end of « Règles en bref » opens it again.
-const HT={k:0,tok:null,seen:false,N:4},HT_KEY='arimaa-howto-off';
-function htOff(){try{return localStorage.getItem(HT_KEY)==='1';}catch(e){return false;}}
-function htSetOff(v){try{if(v)localStorage.setItem(HT_KEY,'1');else localStorage.removeItem(HT_KEY);}catch(e){}}
-function htBox(){if(HT.no)return null;let b=$('howto');if(b)return b;b=document.createElement('div');b.id='howto';b.className='howto';b.hidden=true;
-  b.setAttribute('role','dialog');b.setAttribute('aria-modal','true');b.setAttribute('aria-labelledby','htT');
-  b.innerHTML='<div class="htcard"><div class="hthead"><b id="htT"></b><span id="htN"></span></div><svg id="htSvg" viewBox="0 0 240 180" aria-hidden="true"></svg>'+
-    '<p id="htTxt" aria-live="polite"></p><div class="htnav"><button type="button" id="htPrev">‹</button><span class="htdots" id="htDots"></span><button type="button" id="htNext">›</button></div>'+
-    '<div class="htfoot"><label><input type="checkbox" id="htNever"><span id="htNeverL"></span></label><button type="button" id="htSkip"></button></div></div>';
-  document.body.appendChild(b);
-  if(!$('htPrev')||!window.requestAnimationFrame){HT.no=true;return null;}   // a page without a full DOM (the regression tests): no card
-  $('htPrev').onclick=()=>htGo(HT.k-1);$('htNext').onclick=()=>htGo(HT.k+1);$('htSkip').onclick=htClose;
-  $('htNever').onchange=e=>htSetOff(e.target.checked);
-  for(let k=0;k<HT.N;k++){const d=document.createElement('i');d.onclick=()=>htGo(k);$('htDots').appendChild(d);}
-  window.addEventListener('keydown',e=>{if(b.hidden)return;const k={ArrowLeft:-1,ArrowRight:1}[e.key];
-    if(k||e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(k)htGo(HT.k+k);else htClose();}},true);
-  new MutationObserver(()=>{if(!b.hidden)htText();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-  return b;}
-function htText(){$('htT').textContent=t('ht_title');$('htN').textContent=(HT.k+1)+' / '+HT.N;$('htTxt').innerHTML=t('ht_'+(HT.k+1));
-  $('htNeverL').textContent=t('ht_never');$('htPrev').setAttribute('aria-label',t('ht_prev'));$('htNext').setAttribute('aria-label',t('ht_next'));
-  $('htPrev').disabled=HT.k===0;$('htNext').disabled=HT.k===HT.N-1;
-  const last=HT.k===HT.N-1;$('htSkip').textContent=t(last?'ht_done':'ht_skip');$('htSkip').classList.toggle('primary',last);
-  Array.from($('htDots').children).forEach((d,k)=>d.classList.toggle('on',k===HT.k));}
-function htShow(k){const b=htBox();if(!b)return;b.hidden=false;document.documentElement.classList.add('htshown');$('htNever').checked=htOff();htGo(k||0);$('htNext').focus();}
-function htGo(k){if(k<0||k>=HT.N)return;HT.k=k;htText();htAnim(k);}
-function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;}
-function htAuto(){if(HT.seen)return;HT.seen=true;if(!htOff())htShow(0);}
-document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
-
-// The animations: a corner of the board (4 × 3 squares), the pieces drawn as on the board, a mouse pointer that moves
+// ---------- « Comment jouer » (the card itself: common/core.js) ----------
+// GAME.howto.scene, the animations: a corner of the board (4 × 3 squares), the pieces drawn as on the board, a mouse pointer that moves
 // and clicks; the same rings and dots as in the game. Each page's scene replays in a loop until the page changes.
-function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;const svg=$('htSvg');
-  const dead={};
-  const frame=()=>new Promise((res,rej)=>requestAnimationFrame(()=>tok.live?res():rej(dead)));
-  const wait=ms=>new Promise((res,rej)=>setTimeout(()=>tok.live?res():rej(dead),ms));
+function arHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
   const P=(c,r)=>({x:c*60+30,y:r*60+30});
-  async function tween(o,x,y,ms){const x0=o.x,y0=o.y,t0=performance.now();
-    for(;;){await frame();const u=Math.min(1,(performance.now()-t0)/ms),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;o.set(x0+(x-x0)*e,y0+(y-y0)*e);if(u>=1)return;}}
   let lay,top;
   function scene(){svg.textContent='';svg.setAttribute('viewBox','0 0 240 180');
     for(let r=0;r<3;r++)for(let c=0;c<4;c++)el('rect',{x:c*60,y:r*60,width:60,height:60,fill:'var(--sq)',stroke:'var(--gridl)','stroke-width':1.2},svg);
     lay=el('g',{},svg);top=el('g',{},svg);}
-  function mover(g){const o={g,x:0,y:0,set(x,y){o.x=x;o.y=y;g.setAttribute('transform','translate('+x+','+y+')');}};return o;}
   function pc(L,gold,c,r,op){const g=el('g',{},lay);if(op!==undefined)g.setAttribute('opacity',op);pieceArt(g,L,0,0,23,gold);const o=mover(g),p=P(c,r);o.set(p.x,p.y);return o;}
   const ringAt=(c,r,a)=>{const p=P(c,r);return el('circle',{cx:p.x,cy:p.y,r:a.r||27,fill:'none',stroke:a.c||'var(--hl)','stroke-width':a.w||3},top);};
   const dotAt=(c,r)=>{const p=P(c,r);return el('circle',{cx:p.x,cy:p.y,r:4.5,fill:'var(--hl)',opacity:.8},top);};
@@ -724,13 +672,7 @@ function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;
       el('circle',{cx:x,cy:y,r:9,fill:col,stroke:'var(--wood)','stroke-width':1.5},top);
       const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,'font-weight':600,fill:'#06211f'},top);tx.textContent=n;});return g;}
   const dots=sq=>sq.map(([c,r])=>dotAt(c,r));
-  function cursor(x,y){const g=el('g',{},svg),o=mover(g);
-    el('path',{d:'M0 0 L0 19 L5 14.5 L8.5 22 L11.5 20.8 L8 13.5 L14.5 13.5 Z',fill:'#fff',stroke:'#111','stroke-width':1.4,'stroke-linejoin':'round'},g);o.set(x,y);return o;}
-  async function click(cu){const c=el('circle',{cx:cu.x,cy:cu.y,r:4,fill:'none',stroke:'#fff','stroke-width':2},top),t0=performance.now();
-    cu.g.firstChild.setAttribute('transform','scale(.88)');
-    for(;;){await frame();const u=Math.min(1,(performance.now()-t0)/320);c.setAttribute('r',4+14*u);c.setAttribute('opacity',1-u);if(u>=1)break;}
-    cu.g.firstChild.removeAttribute('transform');c.remove();}
-  const goTo=(cu,c,r,ms)=>{const p=P(c,r);return tween(cu,p.x+4,p.y+6,ms||650);};
+  const goTo=(cu,c,r,ms)=>{const p=P(c,r);return A.goTo(cu,p.x,p.y,ms);};
   const slide=(o,c,r,ms)=>{const p=P(c,r);return tween(o,p.x,p.y,ms||300);};
   const S1=[
     async()=>{ // move: the horse walks two squares to the right
@@ -767,9 +709,9 @@ function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;
       const cu=cursor(200,170);
       for(const p of pips){await wait(420);p.c.setAttribute('fill','var(--hl)');p.tx.setAttribute('fill','#06211f');}
       await wait(300);await tween(cu,176,116,700);await click(cu);go.r.setAttribute('opacity',.6);await wait(200);sent.setAttribute('opacity',1);await wait(1800);}];
-  (async()=>{try{for(;;)await S1[k]();}catch(e){if(e!==dead)throw e;}})();}
+  return S1[k]();}
 // ---------- the interface with common/core.js ----------
-const GAME={id:'arimaa',size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
+const GAME={id:'arimaa',howto:{n:4,scene:arHowto},size:'arimaa',codeTag:'ARIMAA1',i18n:AR_I18N,
   rules:()=>({}),form:()=>({}),
   replay:arReplay,
   legal:(st,code)=>legalCode(st,code)?code:null,
