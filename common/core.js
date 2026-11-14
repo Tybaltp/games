@@ -1004,14 +1004,14 @@ function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
 function nameOv(kind){const ov=$('nameOv');ov.dataset.k=kind;ov.hidden=!kind;if(!kind)return;const w=kind==='watch';
   const set=(id,k)=>{$(id).dataset.i18n=k;$(id).textContent=t(k);};
   set('nameOvT',w?'watchT':'invitedT');set('nameOvTxt',w?'watchTxt':'invitedTxt');set('nameOvGo',w?'watch':'play');$('nameOvAnon').hidden=!w;
-  const n=$('nameOvIn');n.value=nickGet();n.focus();n.select();}
+  const n=$('nameOvIn');n.value=nickGet();if(!htOpen()){n.focus();n.select();}}
 function nameOvDone(anon){const ov=$('nameOv'),w=ov.dataset.k==='watch',v=anon?'':nmClean($('nameOvIn').value);ov.hidden=true;
   if(v)nickSet(v);
   if(w){C.name=v;LS.set(K('p2p-watch'),{code:C.code,name:v});if(C.conn&&C.conn.open)C.conn.send({t:'wname',name:v});}
   else if(v){C.name=v;if(C.conn&&C.conn.open)C.conn.send({t:'name',name:v});guestSave();}
   if(view)renderGame();}
 function aiPlay(code){if(view.result)return;view.draw=null;view.moves=view.moves.concat([code]);resetUi();hintMv=null;aiInfo=null;renderGame();aiStep();}
-function aiStep(){if(role!=='ai'||busy||ana())return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
+function aiStep(){if(role!=='ai'||busy||ana()||HT.hold)return;const r=replay(view,view.moves,view.result);if(r.over||r.st.turn===mySeat)return;
   const n=view.moves.length,t0=Date.now();busy='ai';renderGame();
   ask(aiView(r.st),GAME.levels[level],res=>{const wait=Math.max(0,400-(Date.now()-t0));setTimeout(()=>{if(role!=='ai'||view.moves.length!==n||busy!=='ai')return;busy='';
     if(!res||!res.move){renderGame();return;}aiInfo=GAME.evalInfo(res,r.st);aiLast=res;view.draw=null;view.moves=view.moves.concat([GAME.enc(res.move)]);renderGame();aiStep();},wait);});}
@@ -1171,7 +1171,7 @@ function aiResume(id){const sv=LS.get(K('ai-'+id),null);if(!sv||!sv.view)return 
   if(sv.level&&GAME.levels&&GAME.levels[sv.level]){level=sv.level;for(const x of ['aLevel','gLevel'])if($(x))$(x).value=level;}   // the game's own level
   view={...sv.view,recvAt:Date.now()};resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();return true;}
 function localResume(id){const sv=LS.get(K('local-'+id),null);if(!sv||!sv.view||!Array.isArray(sv.view.moves))return false;stopAI();navAt=null;role='local';SGID=id;C.stop=true;setHash('local-'+id);
-  view={...sv.view,elapsed:0,recvAt:Date.now()};const r=replay(view,view.moves,view.result);mySeat=r.st.turn;resetUi();hintMv=null;showGame();renderGame();return true;}
+  view={...sv.view,elapsed:0,recvAt:Date.now()};const r=replay(view,view.moves,view.result);mySeat=r.st.turn;view.running=!r.over&&localRuns(r.st);resetUi();hintMv=null;showGame();renderGame();return true;}
 // a link game: as its host (the table again, or the guest of whoever holds it now) or as its guest, the latest save
 function saveResume(e){if(e.mode==='ai')aiResume(e.id);else if(e.mode==='local')localResume(e.id);else if(e.host)hostStart(e.s);else clientStart(e.id,e.s.name||nickGet()||t('p2'),false);}
 // the list (#resumeCard): one line per game, who and when, the rules, the move; three shown, the others on demand
@@ -1201,7 +1201,7 @@ function init(){GAME.home();saveMigrate();saveRender();
   if(!(sg&&sg.code===m[2])){const r=codeRead(m[2]);if(r.e){setHash('');$('joinD').open=true;$('joinErr').textContent=t(r.e);return;}if(r.g.id!==GAME.id){location.replace(codeHref({...r,w:r.w||m[1]==='watch'}));return;}}
   if(typeof Peer==='undefined'){status(t('noPeer'));return;}
   // a player comes back to their game at once; on a first visit the name is asked over the board (known to the host: not asked)
-  if(m[1]==='join'){const back=!!(sg&&sg.code===m[2]);clientStart(m[2],back&&sg.name||nickGet()||t('p2'),false);if(!back)C.ask=true;return;}
+  if(m[1]==='join'){const back=!!(sg&&sg.code===m[2]);clientStart(m[2],back&&sg.name||nickGet()||t('p2'),false);if(!back)C.ask=HT.want=true;return;}
   const wr=LS.get(K('p2p-watch'),null);if(wr&&wr.code===m[2]){clientStart(m[2],wr.name||'',true);return;}
   clientStart(m[2],'',true);nameOv('watch');}
 
@@ -1243,7 +1243,7 @@ function mChoose(s,c){const g=H.game,m=g.match;if(!m||m.chosen||g.started||!g.na
   if((s===0)!==(c===1)){g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();m.seats.reverse();g.ready.reverse();mySeat=1-mySeat;
     if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
   m.chosen=true;hostBroadcast(true);}
-function mChooseSend(c){if(role==='host')mChoose(mySeat,c);else if(C.conn&&C.conn.open)C.conn.send({t:'mchoose',c});}
+function mChooseSend(c){if(htOpen())return;if(role==='host')mChoose(mySeat,c);else if(C.conn&&C.conn.open)C.conn.send({t:'mchoose',c});}
 // Each state seen: the record takes the names, the finished tables known elsewhere, and this table's result once over
 function mSync(r){const m=view&&view.match;if(!m||!MATCH)return;let ch=false;
   if(MATCH.excl===undefined||MATCH.j1===undefined){MATCH.excl=m.excl;MATCH.j1=m.j1;ch=true;}
@@ -1297,16 +1297,19 @@ function mStart(kind,code,k){MATCH=LS.get('mochalunt-'+code,null);MTK=k;MTW=kind
   const saved=LS.get(K('p2p-host'),null);
   if(saved&&saved.code===tc&&saved.game&&saved.game.match){hostStart(saved);return true;}
   const sg=LS.get(K('p2p-guest'),null);if(sg&&sg.code===tc){clientStart(tc,MATCH.name,false);return true;}
-  H.code=tc;H.wcode=MATCH.wcode?MATCH.wcode+'t'+k:rnd(8);H.guestCid=null;H.game=mTableGame();H.turnStart=Date.now();hostStart(null);return true;}
+  H.code=tc;H.wcode=MATCH.wcode?MATCH.wcode+'t'+k:rnd(8);H.guestCid=null;H.game=mTableGame();H.turnStart=Date.now();HT.want=true;hostStart(null);return true;}
 
 // ---------- start-up: called by the page once GAME is defined ----------
 // ---------- « Comment jouer » (GAME.howto) ----------
-// A card over the board, opened the first time a game is shown on the page (unless « Ne plus montrer » was ticked: kept
+// A card over the board, opened on a new game (unless « Ne plus montrer » was ticked: kept
 // in localStorage, losing it only brings the card back). GAME.howto.n pages, each with an animation (GAME.howto.scene)
 // that loops while the page is shown. Arrows, dots or the keyboard (← →) to browse. Its own button (« Passer »,
 // « C'est parti ») or Échap closes it, not a click beside it; a change of language or theme translates or recolours it
 // (the language and theme buttons stay above the grey). The button after « Règles en bref » opens it again.
-const HT={k:0,tok:null,seen:false};
+// It opens on a new game only (HT.want: the forms of the home page, a first arrival by a link, a new Mochalunt table),
+// never on a reload, a game resumed or a rematch. While it is open on a new game (HT.hold) the game waits: no Start
+// button or choice of seat by link, no clock face to face, no first move of the computer; closing it starts the game.
+const HT={k:0,tok:null,want:false,hold:false};
 // GAME.howto.off: the card exists but is not shown (no button, never opens by itself); #howto in the address opens it
 function htOn(){return !!GAME.howto&&(!GAME.howto.off||/(^|[#&?])howto\b/.test(location.hash+location.search));}
 const htKey=()=>(GAME.howto&&GAME.howto.key)||K('howto-off');
@@ -1334,9 +1337,17 @@ function htText(){const N=GAME.howto.n;$('htT').textContent=t('ht_title');$('htN
   Array.from($('htDots').children).forEach((d,k)=>d.classList.toggle('on',k===HT.k));}
 function htShow(k){const b=htBox();if(!b)return;b.hidden=false;document.documentElement.classList.add('htshown');$('htNever').checked=htOff();htGo(k||0);$('htNext').focus();}
 function htGo(k){if(k<0||k>=GAME.howto.n)return;HT.k=k;htText();htAnim(k);}
-function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;}
-// never by itself at a spectator (a game by link, a Mochalunt table or one looked back on): the button of « Règles en bref » only
-function htAuto(){if(HT.seen||!htOn()||role==='watch'||(MATCH&&!MATCH.me))return;HT.seen=true;if(!htOff()||GAME.howto.off)htShow(0);}
+function htClose(){const b=$('howto');if(!b||b.hidden)return;b.hidden=true;document.documentElement.classList.remove('htshown');if(HT.tok)HT.tok.live=false;HT.tok=null;if(HT.hold){HT.hold=false;htBegin();}}
+const htOpen=()=>{const b=$('howto');return !!b&&!b.hidden;};
+// never by itself at a spectator (a game by link, a Mochalunt table or one looked back on): the button of « Règles en bref » only;
+// by link, only before the start (a player arriving in a game already started is not shown it)
+function htAuto(){if(!HT.want||!htOn()||!view||role==='watch'||mySeat<0||(MATCH&&!MATCH.me))return;HT.want=false;if((role==='host'||role==='guest')&&view.started)return;
+  if(htOff()&&!GAME.howto.off||!htBox())return;HT.hold=true;
+  if(role==='local'&&view.running){view.clock=remaining();view.running=false;view.elapsed=0;view.recvAt=Date.now();}   // face to face: no clock before it is closed
+  htShow(0);}
+// the card closed: the new game starts (face to face, the clock; against the computer, its first move)
+function htBegin(){if(!view)return;if(role==='local'&&!view.result){const r=replay(view,view.moves,view.result);view.running=!r.over&&localRuns(r.st);view.elapsed=0;view.recvAt=Date.now();}
+  renderGame();if(role==='ai')aiStep();if($('nameOv')&&!$('nameOv').hidden){$('nameOvIn').focus();$('nameOvIn').select();}}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.htbtn')){e.preventDefault();htShow(0);}});
 // GAME.howto.titled: short texts, « <b>Action</b>Instruction », the action on its own line, all centred (games.css);
 // <span class="bt">Label</span> draws a button's name as the page's buttons.
@@ -1443,7 +1454,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   $('resignYes').onclick=()=>{$('resignBox').hidden=false;$('resignAsk').hidden=true;
     if(role==='ai'||solo()){if(!view.result){if(role==='local')localFreeze();view.result={winner:1-mySeat,reason:'resign'};stopAI();hintMv=null;resetUi();renderGame();}return;}
     if(role==='host'){if(!H.game.result&&H.game.started){H.game.result={winner:1-mySeat,reason:'resign'};hostBroadcast();}}else if(C.conn&&C.conn.open)C.conn.send({t:'resign'});else status(t('st_noHost2'));};
-  $('startBtn').onclick=()=>{if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
+  $('startBtn').onclick=()=>{if(htOpen())return;if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
   $('newGame').onclick=()=>{if(role==='ai'){startAI(1-meS(),GAME.rules(view));return;}if(role==='test'){startTest(GAME.rules(view));return;}
     if(role==='local'){startLocal(GAME.rules(view),view.tc);return;}rmSend('ask');};
   $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
@@ -1468,8 +1479,8 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden&&role!=='ai'&&role!=='local';
   $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
   $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
-  if($('testForm'))$('testForm').addEventListener('submit',e=>{e.preventDefault();startTest(GAME.form('t'));});
-  if($('faceForm'))$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tcx=TCS.find(x=>x.id===$('fTc').value)||TCS[TCS.length-1];LS.set(K('local-tc'),tcx.id);
+  if($('testForm'))$('testForm').addEventListener('submit',e=>{e.preventDefault();HT.want=true;startTest(GAME.form('t'));});
+  if($('faceForm'))$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tcx=TCS.find(x=>x.id===$('fTc').value)||TCS[TCS.length-1];LS.set(K('local-tc'),tcx.id);HT.want=true;
     startLocal(GAME.form('f'),tcx.id==='none'?null:{base:tcx.base,inc:tcx.inc});});
   $('playBtn').onclick=()=>homeStep('play');$('anaBtn').onclick=()=>homeStep('ana');
   $('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
@@ -1503,7 +1514,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
       vv.addEventListener('resize',kb);vv.addEventListener('scroll',kb);kb();}}window.addEventListener('resize',()=>chatFit());
   $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
   if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
-    if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);startAI(aiFirst(),GAME.form('a'));});}
+    if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);HT.want=true;startAI(aiFirst(),GAME.form('a'));});}
   document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
     const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t(b.dataset.i18n||'copy'),1500);};
     try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}});
@@ -1514,7 +1525,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
     const names=first==='host'?[nm,'']:['',nm];
     const th=[null,null];th[first==='host'?0:1]=hh(MYID);
     Object.assign(H,{code:newCode(7),wcode:newCode(9),guestCid:null,game:{size:GAME.size,...GAME.form('c'),hold:null,tc,first,names,moves:[],clock:[tc?tc.base:0,tc?tc.base:0],running:false,result:null,started:false,ready:[false,false],th,paused:false,ver:0}});
-    H.turnStart=Date.now();hostStart(null);});
+    H.turnStart=Date.now();HT.want=true;hostStart(null);});
   $('joinForm').addEventListener('submit',e=>{e.preventDefault();joinClick(false);});$('jCode').addEventListener('input',()=>{$('joinErr').textContent='';});
   $('jWatch').onclick=()=>joinClick(true);
   init();sndBind();}
