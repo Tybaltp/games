@@ -386,11 +386,10 @@ function tiWaitStatus({r}){if(r.over)return false;
   if(E.canSwap(r.st)){status(t('st_swapWait',{n:seatName(r.st.turn)}));return true;}
   if(swapped(r)){status(t('st_swappedW',{n:seatName(1-r.st.turn),m:seatName(r.st.turn)}));return true;}
   return false;}
-// The swap waits for Confirm turn like a turn, unless « Confirm each move » is off
+// The swap (an opening choice) always waits for Confirm, whatever « Confirm each move » says (C14)
 function doSwap(){if(!view||preparing())return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!E.canSwap(r.st))return;
   if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;}
-  if($('needConfirm').checked){ui.pending='s';ui.hover=-1;renderGame();return;}
-  resetUi();send('s');}
+  ui.pending='s';ui.hover=-1;renderGame();}
 // End turn. The button (auto false) is the player's own decision to stop: the turn is sent at once. A turn that ends by itself
 // (auto: nothing left to take) awaits confirmation when it took several pieces (a long sequence), or with the option
 // « Confirm each move » for a single piece; never when it wins the game.
