@@ -25,7 +25,7 @@ Règles générales ; chaque jeu les applique selon son contexte.
 ## D. Disposition
 15. Écran fixe sans défilement (disposition commune, tiroir « ⋯ » sur téléphone). La barre d'actions prend la hauteur dont elle a besoin : sur grand écran, ce qui la suit descend ; en vertical, le plateau ne change jamais de taille, sa place est calculée pour laisser sous lui la plus grande barre possible (sauf DBD, disposition propre).
 16. Plateau le plus grand possible.
-17. En Face à face et en Libre, le plateau ne tourne pas (par lien et contre l'ordinateur, le second joueur le voit retourné).
+17. En Face à face et en analyse, le plateau ne tourne pas (par lien et contre l'ordinateur, le second joueur le voit retourné).
 
 ## E. Informations
 18. Le dernier coup est toujours repérable.

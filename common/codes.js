@@ -4,8 +4,9 @@
 // saved games), and when it is typed the dash may be left out, capitals and spaces are fine. The former codes (one
 // letter, 6 or 8 characters, until 11.2026) are still read: 6/8 and 7/9 characters never overlap. Mochalunt matches go
 // by their links only (mochalunt.html#join-<code>-…): their codes are not game codes.
-const CODE_GAMES={pe:{id:'pente',page:'pente',old:'p'},pd:{id:'pdd',page:'pontedeldiavolo',old:'d'},ze:{id:'zertz',page:'zertz',old:'z'},gy:{id:'gyges',page:'gyges',old:'g'},
-  ar:{id:'arimaa',page:'arimaa',old:'a'},vo:{id:'volo',page:'volo',old:'v'},ti:{id:'tintas',page:'tintas',old:'t'},db:{id:'dblk',page:'diagonalblocks',old:'b'},qu:{id:'quarto',page:'quarto',old:'q'},py:{id:'pylos',page:'pylos',old:'l'}};
+// n: the game's name (messages)
+const CODE_GAMES={pe:{id:'pente',n:'Pente',page:'pente',old:'p'},pd:{id:'pdd',n:'Ponte del Diavolo',page:'pontedeldiavolo',old:'d'},ze:{id:'zertz',n:'Zèrtz',page:'zertz',old:'z'},gy:{id:'gyges',n:'Gygès',page:'gyges',old:'g'},
+  ar:{id:'arimaa',n:'Arimaa',page:'arimaa',old:'a'},vo:{id:'volo',n:'Volo',page:'volo',old:'v'},ti:{id:'tintas',n:'Tintas',page:'tintas',old:'t'},db:{id:'dblk',n:'Diagonal Blocks',page:'diagonalblocks',old:'b'},qu:{id:'quarto',n:'Quarto',page:'quarto',old:'q'},py:{id:'pylos',n:'Pylos',page:'pylos',old:'l'}};
 // games still on their branch (letters kept for them): tw Tumbleweed (old w), sl Slither (s), ay Ayu (y), si Siam (m)
 // the game of a code without its dash (new: 7 or 9 characters, former: 6 or 8), null if none; a spectators' code
 const codeGame=c=>{c=String(c||'');if(c.length===7||c.length===9)return CODE_GAMES[c.slice(0,2)]||null;

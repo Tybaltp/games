@@ -178,8 +178,9 @@ ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 .navmid{display:flex;flex-direction:column;align-items:center;gap:2px}
 .navbar .navalt{min-width:0;padding:0 18px;font-size:.62rem;line-height:1.5}
 .navbar button:disabled{opacity:.35;cursor:default}
+@media (max-width:400px){.navbar{gap:2px}.navbar button:not(.navalt){min-width:34px;padding:6px 4px}}   /* a phone, in analysis: seven buttons and « Jugada 44 / 44 » on one line */
 ol.log .alt{color:var(--accent);margin-left:2px}
-.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
+.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted);white-space:nowrap}
 details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 details summary{cursor:pointer;font-weight:600}
 details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
@@ -222,7 +223,7 @@ header.hnosub h1>span[data-i18n="sub"]{display:none}
 header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'‹';font-size:1.3rem;margin-right:.25em}header.hshort h1 .sep{display:none}
 
 /* action bar: a button's short label shows only when the full labels don't fit (core.js fitBtns) */
-.notice .btns.measure>button{flex-shrink:0;max-width:none}
+.notice .btns.measure{flex-wrap:nowrap!important}.notice .btns.measure>button{flex:none!important;max-width:none!important}   /* !important: a page's own rule on the buttons must not upset the measure */
 /* buttons that overflow even with their short labels: two rows, the bar grows (fitBtns) */
 .notice.rows2{height:auto;min-height:var(--barH);align-items:stretch}.notice.rows2 .btns{flex-wrap:wrap;justify-content:center}.notice.rows2 .btns button{flex:1 1 auto}.notice .bs{display:none}.notice.short .bl{display:none}.notice.short .bs{display:inline}
 /* Mochalunt: the match card in the side panel (table, score, seat choice, the tables) */

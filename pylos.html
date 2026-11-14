@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=49">
+<link rel="stylesheet" href="common/games.css?v=50">
 <style>
 /* Pylos palette « terre cuite et poirier » (light, dark; decision of 13.11.2026: clay page, pear-wood board without grain
    but with its frame, teal accent and move marks), the board and the balls; the shared layout is in common/games.css.
@@ -83,7 +83,7 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
       <p class="hint" id="modeTxt" hidden></p>
       <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
       <div class="picks" id="anaPick" hidden>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">New analysis</b><span data-i18n="a_freeTxt">Both sides on this screen: stepping back, variations, hints.</span></button>
         <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
@@ -390,8 +390,8 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=81"></script>
-<script src="common/codes.js?v=5"></script>
+<script src="common/core.js?v=82"></script>
+<script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
 // ===== Pylos (David G. Royffe, 1993): the page around the engine =====
@@ -413,7 +413,7 @@ const PY_I18N={fr:{
  st_bonusL:"Carré ou alignement à votre couleur : reprenez une ou deux de vos billes libres, en les cliquant.",
  pend_more:"Coup : {m}. Une seconde reprise est possible : cliquez une autre bille libre, ou confirmez.",
  d_place:"poser en {a}",d_lift:"monter {a} en {b}",d_rem:", reprendre {r}",d_and:" et ",
- l_lift:"monte",l_rem:"reprend {r}",
+ l_rem:"reprend {r}",
  res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
  rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_no:"Continuer",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
@@ -444,7 +444,7 @@ const PY_I18N={fr:{
  st_bonusL:"A square or a line of your colour: take back one or two of your free balls by clicking them.",
  pend_more:"Move: {m}. A second take-back is possible: click another free ball, or confirm.",
  d_place:"place on {a}",d_lift:"move {a} up to {b}",d_rem:", take back {r}",d_and:" and ",
- l_lift:"moves up",l_rem:"takes back {r}",
+ l_rem:"takes back {r}",
  res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
  rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_no:"Keep playing",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
@@ -475,7 +475,7 @@ const PY_I18N={fr:{
  st_bonusL:"Cuadrado o línea de tu color: recupera una o dos de tus bolas libres, pulsándolas.",
  pend_more:"Jugada: {m}. Puedes recuperar una segunda bola: pulsa otra bola libre, o confirma.",
  d_place:"colocar en {a}",d_lift:"subir {a} a {b}",d_rem:", recuperar {r}",d_and:" y ",
- l_lift:"sube",l_rem:"recupera {r}",
+ l_rem:"recupera {r}",
  res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
  rep_ask:"Has repetido la misma posición tres veces. ¿Quieres proponer tablas?",rep_no:"Continuar",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
