@@ -62,7 +62,7 @@ const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.pa
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18C={fr:{
  ht_title:"Comment jouer",ht_skip:"Passer",ht_done:"C'est parti",ht_never:"Ne plus montrer",ht_prev:"Précédent",ht_next:"Suivant",
- fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de la table…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_sent:"Proposition envoyée.",rm_no:"{n} a refusé.",rm_away:"{n} n'est plus connecté.",
+ fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de la table…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_wait:"En attente de la réponse de {n}.",close:"Fermer",rm_no:"{n} a refusé.",rm_away:"{n} n'est plus connecté.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",m_free:"Libre",m_freeTxt:"Les deux camps sur cet écran, sans pendule, avec annulation et suggestions : pour essayer et analyser.",localBtn:"Commencer la partie",
@@ -89,7 +89,7 @@ const I18C={fr:{
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
- fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_sent:"Offer sent.",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
+ fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_wait:"Waiting for {n}'s answer.",close:"Close",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
  sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",m_free:"Free play",m_freeTxt:"Both sides on this screen, no clock, with undo and hints: to try things and analyse.",localBtn:"Start the game",
@@ -116,7 +116,7 @@ const I18C={fr:{
  sgfBad:"Unreadable SGF file.",sgfOther:"This file is a game of another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 },es:{
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
- fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_debutant:"Principiante",lv_moyen:"Medio",lv_fort:"Fuerte",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_sent:"Propuesta enviada.",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
+ fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_debutant:"Principiante",lv_moyen:"Medio",lv_fort:"Fuerte",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_wait:"Esperando la respuesta de {n}.",close:"Cerrar",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
  sub:"entre navegadores",create:"Crear una partida",nick:"Tu nombre",firstIs:"Quién empieza",rnd:"Al azar",me:"Yo",opp:"Mi adversario",tc:"Reloj",tc_none:"Sin reloj",tc_fmt:"{m} min + {s} s por jugada",createBtn:"Crear la partida",
  join:"Unirse a una partida con un código",code:"Código de la partida",play:"Jugar",watch:"Observar",linkHint:"Con un enlace de invitación, la página se conecta sola.",
  pickOpp:"¿Contra quién?",back:"Volver",m_link:"Invitar con un enlace",m_linkTxt:"Un adversario en otro dispositivo, con un enlace o un código.",m_ai:"Ordenador",m_aiTxt:"Tres niveles, para entrenarse.",m_face:"Cara a cara",m_faceTxt:"Dos jugadores en la misma pantalla, con reloj si quieres.",m_free:"Libre",m_freeTxt:"Los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias: para probar y analizar.",localBtn:"Empezar la partida",
@@ -226,7 +226,8 @@ const H={};             // host-only state
 // does not apply is left out, never shown disabled.
 // Rich status texts: a game may mark pictures in a text with U+2063 (GAME.rich(txt) gives {node(), plain})
 const richOf=txt=>GAME.rich&&typeof txt==='string'&&txt.includes('\u2063')?GAME.rich(txt):null;
-function status(txt,cls,btns){const s=$('status'),rt=richOf(txt);s.className='status'+(cls?' '+cls:'');if(rt){s.textContent='';s.append(rt.node());}else s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
+let barLast={txt:'',cls:'',btns:[]};   // the bar's last message, for the offers laid over it (renderGame)
+function status(txt,cls,btns){barLast={txt:txt||'',cls:cls||'',btns:(btns||[]).filter(Boolean)};const s=$('status'),rt=richOf(txt);s.className='status'+(cls?' '+cls:'');if(rt){s.textContent='';s.append(rt.node());}else s.textContent=txt;if($('game').hidden)s.hidden=!txt;   // home: only for a message
   const n=$('notice');if(!n)return;btns=(btns||[]).filter(Boolean);n.className='notice on'+(cls?' '+cls:'')+(btns.length?' has-btns':'');n.textContent='';
   if(txt){const sp=document.createElement('span');sp.className='msg';if(rt){sp.append(rt.node());sp.title=rt.plain;}else{sp.textContent=txt;sp.title=txt;}n.appendChild(sp);}
   if(btns.length){const bx=document.createElement('div');bx.className='btns';n.appendChild(bx);
@@ -244,7 +245,7 @@ function fitBtns(){const n=$('notice'),bx=n&&n.querySelector('.btns');if(!bx)ret
   if(bx.querySelector('.bs')){n.classList.add('short');if(!over())return;}
   n.classList.add('rows2');}
 
-function quiet(){const n=$('notice');if(n){n.className='notice';n.textContent='';}bandSync(true);}
+function quiet(){barLast={txt:'',cls:'',btns:[]};const n=$('notice');if(n){n.className='notice';n.textContent='';}bandSync(true);}
 function peerOpts(){return {debug:1};}
 function newPeer(id){return id?new Peer(id,peerOpts()):new Peer(peerOpts());}
 
@@ -300,6 +301,7 @@ function drawSend(op){if(!view)return;const r=replay(view,view.moves,view.result
   if(role==='ai'&&op==='ask'&&!view.draw&&!r.over){const a=aiLast;
     if(a&&!a.policy&&!a.forced&&typeof a.score==='number'&&a.score<.3){stopAI();hintMv=null;resetUi();view.draw=null;view.result={winner:-1,reason:'agree'};}
     else view.draw={from:mySeat,st:'no'};renderGame();}}
+const RMX={shut:false};   // the rematch frame closed by its cross (until the offer changes)
 function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});else status(t('st_noHost2'));}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
@@ -594,6 +596,7 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
   view={...g,recvAt:Date.now(),mySeatSeen:mySeat};
   guestSave();
   if(prevLen!==g.moves.length||prevRes!==JSON.stringify(g.result)||prevSeat!==mySeat)resetUi();
+  if(prevRes&&prevRes!=='null'&&!g.result&&!g.moves.length)sheet(false);   // a rematch begins: the board, not the panel
   renderGame();}
 // The guest's copy of the game (every state received, and every second while the clocks run): shown at once on return,
 // and used to take over if the host does not come back
@@ -679,8 +682,6 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat,le
   const idle=[undoB,hintB];
   if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
     status(r.over.w<0?t('draw'+q,{why:t(r.over.why)}):r.over.w===meS()&&!solo()&&role!=='file'?t('youWin'+q,{why:t(r.over.why)}):t('wins'+q,{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);}
-  else if(view.draw&&view.draw.st==='ask'&&navAt===null&&(role==='local'||(mySeat>=0&&view.draw.from!==mySeat)))
-    status(t('drawAsk',{n:nm(view.draw.from)}),'turn',[{label:t('decline'),on:()=>drawSend('no')},{label:t('accept'),primary:true,on:()=>drawSend('yes')}]);
   else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
   else if(role==='ai'&&busy)status(t('st_aiThinking'));
   else if(!view.started&&(role==='host'||role==='guest'||role==='watch'))status('');   // before the game: the frame over the board says it all
@@ -698,6 +699,13 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat,le
   else if(mine)GAME.turnStatus({r,o,ms,prep,idle,undoB,RST});
   else if(navAt===null){if(!(GAME.waitStatus&&GAME.waitStatus({r,ns})))status(t('st_turn',{n:nm(r.st.turn)}));}
   else quiet();
+  // the offers, over the bar's own message, its buttons kept (a move being prepared): a rematch I offered (waiting,
+  // declined); a draw offered to me (Decline / Accept), or by me (waiting, declined), until the next move
+  {const S=barLast,dv=view.draw,rm=view.rematch;
+    if(r.over){if(mySeat>=0&&rm&&rm.from===mySeat&&(role==='host'||role==='guest')&&!view.match&&(rm.st==='ask'||rm.st==='no'))status(S.txt+' '+t(rm.st==='ask'?'rm_wait':'rm_no',{n:nm(1-mySeat)}),S.cls,S.btns);}
+    else if(dv&&!A&&navAt===null&&mySeat>=0){const keep=mine&&role!=='local';
+      if(dv.st==='ask'&&(role==='local'||dv.from!==mySeat))status(t('drawAsk',{n:nm(dv.from)})+(keep?' '+S.txt:''),'turn',[{label:t('decline'),on:()=>drawSend('no')},{label:t('accept'),primary:!(keep&&S.btns.length),on:()=>drawSend('yes')},...(keep?S.btns:[])]);
+      else if(dv.st==='ask'||dv.st==='no'&&(role==='local'||dv.from===mySeat))status(t(dv.st==='ask'?'drawWait':'drawNo',{n:nm(1-dv.from)})+(mine?' '+S.txt:''),mine?S.cls:'',mine?S.btns:[]);}}
   if(role==='guest'&&C.pending&&C.pending.shown&&!r.over)status(t('st_waitHost'));
   else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'),'',mine&&prep?[RST]:null);
   else if(role==='watch'&&C.lostSince&&!C.stop)status(t('st_lostWatch'));
@@ -747,10 +755,13 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat,le
   $('endCard').hidden=!r.over&&role!=='file'&&!(A&&(role==='local'||role==='ai'));   // the analysis of a game over keeps the way to a new one   // a game read from a file: always the way back home
   {const pl=mySeat>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-mySeat]||t(mySeat?'p1':'p2');
     const away=role==='host'?!view.guestOn:role==='guest'&&!(C.conn&&C.conn.open);   // the opponent gone after the end: no rematch for now
-    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_sent'):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):away&&r.over?t('rm_away',{n:opp}):'';
+    const asked=!!rm&&rm.st==='ask',mineRm=!!rm&&rm.from===mySeat,txt=asked?(mineRm?t('rm_wait',{n:opp}):t('rm_ask',{n:opp})):rm&&rm.st==='no'&&mineRm?t('rm_no',{n:opp}):away&&r.over?t('rm_away',{n:opp}):'';
     $('rmTxt').textContent=txt;$('rmTxt').hidden=!pl||!txt;$('rmBox').hidden=!pl||asked;$('rmAsk').hidden=!pl||!asked||mineRm;$('rmWait').hidden=!pl||!asked||!mineRm;
     $('newGame').disabled=role==='host'?!view.guestOn:role==='guest'?!(C.conn&&C.conn.open):false;
-    if(view.match)for(const id of ['rmTxt','rmBox','rmAsk','rmWait'])$(id).hidden=true;}   // a match: the next table instead of a rematch
+    if(view.match)for(const id of ['rmTxt','rmBox','rmAsk','rmWait'])$(id).hidden=true;
+    // a rematch offered to me: also in a frame over the board, until answered or closed (it stays in the end card)
+    const recv=pl&&asked&&!mineRm&&!view.match;if(!recv)RMX.shut=false;
+    if($('rmOv')){$('rmOv').hidden=!recv||RMX.shut;if(recv){$('rmOvTxt').textContent=t('rm_ask',{n:opp});$('rmOvNo').textContent=t('decline');$('rmOvYes').textContent=t('accept');$('rmOvX').title=t('close');$('rmOvX').setAttribute('aria-label',t('close'));}}}   // a match: the next table instead of a rematch
   if(view.match)$('endCard').hidden=true;   // and no way home (« Accueil ») during a match: the match card leads on
   const ol=$('log');ol.textContent='';
   // analysis: the whole line (the path, then the first child at each branching); a move with variations: ◆ and their number
@@ -1388,6 +1399,10 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
       h.removeAttribute('data-i18n');h.id='sfT';h.after(mk('div','sfBig','sfbig'),mk('p','sfMsg','sfmsg'));   // its steps: sfRender
       if($('mAsk'))$('sfMsg').after($('mAsk'));$('startTxt').before(mk('p','sfChoice','hint'));}
     if(bd){const ov=document.createElement('div');ov.className='startov';ov.appendChild(sc);bd.appendChild(ov);}}   // and a match's choice of seat
+  // a rematch offered to me: a frame over the board (renderGame), with a cross to close it without answering
+  {const bd=document.querySelector('#game .board');if(bd){const o=document.createElement('div');o.className='rmov';o.id='rmOv';o.hidden=true;o.setAttribute('role','dialog');o.setAttribute('aria-labelledby','rmOvTxt');
+    o.innerHTML='<div class="card"><button type="button" class="rmx" id="rmOvX">×</button><p class="sfmsg" id="rmOvTxt"></p><div class="confirm"><button type="button" id="rmOvNo"></button><button type="button" class="primary" id="rmOvYes"></button></div></div>';bd.appendChild(o);
+    $('rmOvX').onclick=()=>{RMX.shut=true;o.hidden=true;};$('rmOvNo').onclick=()=>rmSend('no');$('rmOvYes').onclick=()=>{sheet(false);rmSend('yes');};}}
   resetUi();
   // host: periodic save, flag fall
   setInterval(()=>{if(role==='guest'&&view&&view.running&&++saveTick%5===0)guestSave();   // the clocks, every second
@@ -1457,7 +1472,7 @@ function coreStart(){if(window.ResizeObserver&&$('notice'))new ResizeObserver(()
   $('startBtn').onclick=()=>{if(htOpen())return;if(role==='host')hostReady(mySeat);else if(C.conn&&C.conn.open)C.conn.send({t:'start'});else status(t('st_noHost2'));};
   $('newGame').onclick=()=>{if(role==='ai'){startAI(1-meS(),GAME.rules(view));return;}if(role==='test'){startTest(GAME.rules(view));return;}
     if(role==='local'){startLocal(GAME.rules(view),view.tc);return;}rmSend('ask');};
-  $('rmYes').onclick=()=>rmSend('yes');$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
+  $('rmYes').onclick=()=>{sheet(false);rmSend('yes');};$('rmNo').onclick=()=>rmSend('no');$('rmCancel').onclick=()=>rmSend('cancel');
   $('navFirst').onclick=()=>ana()?anaGo(0):navGo(0);
   $('navPrev').onclick=()=>ana()?anaGo(view.moves.length-1):navGo((navAt===null?view.moves.length:navAt)-1);
   $('navNext').onclick=()=>ana()?anaGo(view.moves.length+1):navGo(navAt===null?null:navAt+1);

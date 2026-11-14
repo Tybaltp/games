@@ -249,6 +249,13 @@ header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'â
 @keyframes sfpop{from{transform:scale(1.5);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.startov .sfbig.pop{animation:none}}
 #mAsk:not([hidden]){display:flex;flex-direction:column;gap:8px}
+/* a rematch offered to me (core.js, renderGame): a frame over the board, as the start frame, with a cross to close it */
+.rmov{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:12px;border-radius:inherit;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.rmov[hidden]{display:none}
+.rmov .card{position:relative;width:min(20rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22);text-align:center}
+.rmov .sfmsg{margin:4px 22px 0;font-weight:700;color:var(--ink)}
+.rmov .rmx{position:absolute;top:4px;right:4px;width:30px;height:30px;padding:0;border:0;background:none;font-size:1.25rem;line-height:1;color:var(--muted);cursor:pointer}
+.rmov .rmx:hover{color:var(--ink)}
 .mqopt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.mqopt button{flex:none}.mqopt small{font-size:.72rem;line-height:1.3;color:var(--muted)}
 .nameov .card{width:min(22rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22)}
 .nameov h2{margin:0;font-size:1.05rem}.nameov .hint{margin:0}
