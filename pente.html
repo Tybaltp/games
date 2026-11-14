@@ -387,8 +387,8 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=84"></script>
-<script src="common/codes.js?v=6"></script>
+<script src="common/core.js?v=85"></script>
+<script src="common/codes.js?v=7"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -638,6 +638,7 @@ function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(a
   if(busy==='hint')stopAI();if(hintMv)hintMv=null;
   const st=meSt(r),cols=placing(st);if(!cols){renderGame();return;}
   const k=ui.tent.indexOf(i);
+  if(k>=0&&ui.pending&&GAME.again(ui.pending)){pendAgain();return;}   // the stone awaiting confirmation, clicked again: played (C14)
   if(k>=0){ui.tent.splice(k,1);ui.tc.splice(k,1);ui.pending=null;renderGame();return;}
   if(st.B[i]){renderGame();return;}
   if(ui.tent.length<cols.length){ui.tc.push(nextCol(cols));ui.tent.push(i);}else if(cols.length===1){ui.tent=[i];ui.tc=[cols[0]];}else{renderGame();return;}
@@ -676,8 +677,12 @@ const P=k=>PAD+k*CELL,PX=i=>P(i%N),PY=i=>P((i/N)|0);
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // Flat stones, go-diagram style: plain fill, thin outline
 function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===1?'var(--pb)':'var(--pw)',stroke:c===1?'var(--pbe)':'var(--pwe)','stroke-width':Math.max(1,SR*.07)},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
-// A provisional stone (clicked, not played yet), or a suggested one: opaque, a dashed ring inside it
-function ghost(g,i,c){stone(g,i,c);el('circle',{cx:PX(i),cy:PY(i),r:SR*.74,fill:'none',stroke:MK,'stroke-width':2,'stroke-dasharray':'4 3'},g);}
+// Markers, as in the other games (charte A2, A3): a ring inside the stone, dashed on a provisional stone (clicked, not
+// played yet) or a suggested one, solid on the last stone played
+function ring(g,i,dashed){el('circle',{cx:PX(i),cy:PY(i),r:SR*.66,fill:'none',stroke:MK,'stroke-width':2.8,...(dashed?{'stroke-dasharray':'4 3'}:{})},g);}
+function ghost(g,i,c){stone(g,i,c);ring(g,i,true);}
+// The stones a provisional or suggested stone at i would capture (they are drawn in transparency)
+function capPrev(ms,i,c){if(i<0||!ms||ms.B[i])return new Set();return new Set(capture(ms.B.slice(),i,c));}
 function hintRing(g,i){el('circle',{cx:PX(i),cy:PY(i),r:SR*.85,fill:'none',stroke:MK,'stroke-width':2,'stroke-dasharray':'2 3'},g);}
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const m=coordsOn?PAD:CELL*.75,x0=PAD-m,w=SZ-2*(PAD-m);
@@ -687,16 +692,17 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('path',{d,stroke:'var(--pgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
   el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'var(--pgrid)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
   for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'var(--pstar)'},svg);
-  el('circle',{cx:P(7),cy:P(7),r:CELL*.28,fill:'none',stroke:'var(--pgrid)','stroke-width':1.2,'vector-effect':'non-scaling-stroke'},svg);
   // coordinates (core: coordsOn): letters under the board, numbers on its left
   if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Figtree, system-ui, sans-serif','font-weight':600,'font-size':CELL*.36,fill:'rgba(58,40,20,.7)'},svg);e.textContent=s;};
     for(let k=0;k<N;k++){lab(P(k),SZ-PAD*.45,LET[k]);lab(PAD*.45,P(k),String(N-k));}}
   const sh=shown;
   if(sh&&view){const st=sh.d.st,g=el('g',{},svg);
-    for(let i=0;i<NN;i++)if(st.B[i])stone(g,i,st.B[i]);
-    // the last action: a dot on its stones, a cross on the stones it captured; kept until the next move is played
+    // a single stone being played (provisional or suggested): the stones it would capture in transparency
+    const ms=sh.ms,cp=!sh.mine||!ms||ms.phase!=='play'?new Set():hintOn()?(hintMv.t==='m'?capPrev(ms,hintMv.i,ms.toMove):new Set()):sh.cols&&sh.cols.length===1&&ui.tent.length===1?capPrev(ms,ui.tent[0],sh.cols[0]):new Set();
+    for(let i=0;i<NN;i++)if(st.B[i])stone(g,i,st.B[i],cp.has(i)?.35:undefined);
+    // the last action: a solid ring on its stones, a cross on the stones it captured; kept until the next move is played
     for(const i of st.lastCap){if(st.B[i])continue;const x=PX(i),y=PY(i),q=CELL*.18;el('path',{d:`M${x-q} ${y-q}L${x+q} ${y+q}M${x+q} ${y-q}L${x-q} ${y+q}`,stroke:MK,'stroke-width':2,fill:'none'},g);}
-    for(const i of st.last)if(st.B[i])el('circle',{cx:PX(i),cy:PY(i),r:SR*.24,fill:MK},g);
+    for(const i of st.last)if(st.B[i])ring(g,i,false);
     // analysis: the other variations of the last stone, in transparency with a hollow mark (a click switches to one)
     {const ac=altCells(),lc=st.last.length===1?st.B[st.last[0]]:0;for(const i of ac.keys())if(!st.B[i]){if(lc)stone(g,i,lc,.4);el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:MK,'stroke-width':2.4},g);}}
     // a suggestion shown is drawn like provisional stones; « take White, then play X » rings X
@@ -747,6 +753,7 @@ const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   enc,describe:mv=>describe(mv),newUi,preparing:prepared,cancel:cancelPrep,
   sgf:peSgf,
   board:peBoard,turnStatus:peTurnStatus,waitStatus:peWaitStatus,
+  again:mv=>mv.t==='m',
   pendText:mv=>mv.t==='m'?[t('st_tentative',{c:coord(mv.i)}),t('confirm1')]:[t('pend_stones',{m:stonesTxt(mv.s,mv.t==='o'?[1,2,1]:[1,2])}),t('confirmN')],
   playerCard,
   logText:e=>logTxt(e),
