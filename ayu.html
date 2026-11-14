@@ -11,20 +11,20 @@
 <style>
 /* Ayu palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
-  --bg:#dde1e8;--panel:#eef0f4;--ink:#1c2130;--muted:#5d6475;--line:#c4cad6;
-  --accent:#4a5fa8;--accent-ink:#ffffff;--danger:#b3261e;
+  --bg:#e9e3e5;--panel:#f4eff1;--ink:#2a1d23;--muted:#6e5f66;--line:#d6c9ce;
+  --accent:#b8195c;--accent-ink:#ffffff;--danger:#b3261e;
   --sboard:#e2cf9f;--sgrid:rgba(60,42,18,.7);--slab:rgba(60,42,18,.75);
-  --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.75);--mk:#c0392b;--sel:#2f6fd6;
+  --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.85);--sstar:rgba(60,42,18,.85);--mk:#b8195c;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#15171c;--panel:#1e2129;--ink:#e3e6ee;--muted:#959cac;--line:#2d3240;
-  --accent:#8ea0e6;--accent-ink:#10142a;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#e5483a;--sel:#2f6fd6;color-scheme:dark;}}
+  --bg:#1a1518;--panel:#251d21;--ink:#ede4e8;--muted:#a8989f;--line:#3a2e34;
+  --accent:#e0558e;--accent-ink:#2a0a17;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#15171c;--panel:#1e2129;--ink:#e3e6ee;--muted:#959cac;--line:#2d3240;
-  --accent:#8ea0e6;--accent-ink:#10142a;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#e5483a;--sel:#2f6fd6;color-scheme:dark;}
+  --bg:#1a1518;--panel:#251d21;--ink:#ede4e8;--muted:#a8989f;--line:#3a2e34;
+  --accent:#e0558e;--accent-ink:#2a0a17;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
 /* players' cards: the seat's colour (it changes with the swap) and its units */
@@ -42,7 +42,7 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
 <style>
 /* accueil : ce qui est propre à Ayu ; le reste dans common/accueil.css. Le fond : le plateau entier en cours de partie,
    sur le fond de la page (première version rapide, à revoir) ; cadres de mode à la couleur de l'étiquette du jeu (common/cards.css). */
-:root{--accImgL:url(../img/accueil/ayu.svg);--accImgD:url(../img/accueil/ayu-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#4a5fa8;--accTintD:#8ea0e6}
+:root{--accImgL:url(../img/accueil/ayu.svg);--accImgD:url(../img/accueil/ayu-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#b8195c;--accTintD:#e0558e}
 </style>
 <link rel="stylesheet" href="common/accueil.css?v=4">
 </head><body>
@@ -393,31 +393,36 @@ function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)r
   for(const c of anaAlts()){const m=/-([a-z]\d+)$/.exec(c);if(m){const i=AY.parse(n,m[1]);if(i>=0)out.set(i,c);}}return out;}
 
 // ---------- drawing ----------
-const NS='http://www.w3.org/2000/svg',CELL=40,SR=CELL*.44;
+const NS='http://www.w3.org/2000/svg',CELL=40,SR=CELL*.47;let SW=1;
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 let G={n:11,pad:CELL};
 const PX=i=>G.pad+(i%G.n)*CELL,PY=i=>G.pad+(G.n-1-Math.floor(i/G.n))*CELL;
-function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===0?'var(--sb)':'var(--sw)',stroke:c===0?'var(--sbe)':'var(--swe)','stroke-width':1.6},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
-const dashRing=(g,i,col)=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.72,fill:'none',stroke:col||'var(--mk)','stroke-width':2.2,'stroke-dasharray':'4 3'},g);
+function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===0?'var(--sb)':'var(--sw)',stroke:c===0?'var(--sbe)':'var(--swe)','stroke-width':SW},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
+const MKW=2.2,ring=(g,i,dot)=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.7,fill:'none',stroke:'var(--mk)','stroke-width':MKW,...(dot?{'stroke-dasharray':'4 3'}:{})},g);
+function moveMark(g,f,t,dot){const x0=PX(f),y0=PY(f),x1=PX(t),y1=PY(t),L=Math.hypot(x1-x0,y1-y0)||1,k=SR*.7/L;
+  el('circle',{cx:x0,cy:y0,r:CELL*.1,fill:'var(--mk)'},g);
+  el('line',{x1:x0,y1:y0,x2:x1-(x1-x0)*k,y2:y1-(y1-y0)*k,stroke:'var(--mk)','stroke-width':MKW,'stroke-linecap':'round'},g);
+  ring(g,t,dot);}
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const sh=shown,st=sh&&view?sh.d.st:AY.init(AY.rules(view||{size:homeSize()})),n=st.size;
   G={n,pad:coordsOn?CELL*1.05:CELL*.7};const W=2*G.pad+(n-1)*CELL;
-  svg.setAttribute('viewBox',`0 0 ${W} ${W}`);document.documentElement.style.setProperty('--board-ar','1/1');
+  svg.setAttribute('viewBox',`0 0 ${W} ${W}`);SW=W*.002;document.documentElement.style.setProperty('--board-ar','1/1');
   el('rect',{x:0,y:0,width:W,height:W,fill:'var(--sboard)'},svg);
   const a=G.pad,b=G.pad+(n-1)*CELL;let d='';for(let k=0;k<n;k++){const v=G.pad+k*CELL;d+=`M${a} ${v}H${b}M${v} ${a}V${b}`;}
   el('path',{d,stroke:'var(--sgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
+  {const e=n>11?3:2,h=[e,(n-1)/2,n-1-e];for(const x of h)for(const y of h)if(x===y||x+y===n-1)el('circle',{cx:G.pad+x*CELL,cy:G.pad+y*CELL,r:CELL*.11,fill:'var(--sstar)'},svg);}
   if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':CELL*.3,fill:'var(--slab)'},svg);e.textContent=s;};
     for(let k=0;k<n;k++){lab(G.pad+k*CELL,W-CELL*.3,String.fromCharCode(97+k));lab(CELL*.3,G.pad+(n-1-k)*CELL,String(k+1));}}
   const g=el('g',{'pointer-events':'none'},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?AY.toMove(ms):-1;
   let F=-1,T=-1;if(mine&&hintOn()){const m=/^([a-z]\d+)-([a-z]\d+)$/.exec(String(hintMv));if(m){F=AY.parse(n,m[1]);T=AY.parse(n,m[2]);}}else if(mine){F=ui.f;T=ui.t;}
   const b2=st.b.slice();if(F>=0&&T>=0){b2[F]=-1;b2[T]=c;}
   for(let i=0;i<n*n;i++)if(b2[i]>=0)stone(g,i,b2[i]);
-  if(F>=0&&T>=0){stone(g,F,c,.3);el('line',{x1:PX(F),y1:PY(F),x2:PX(T),y2:PY(T),stroke:'var(--mk)','stroke-width':2.2,'stroke-dasharray':'4 3','stroke-linecap':'round'},g);dashRing(g,T);}
-  else if(F>=0){dashRing(g,F,'var(--sel)');for(const tt of targets(ms,F))el('circle',{cx:PX(tt),cy:PY(tt),r:CELL*.1,fill:'var(--sel)',opacity:.75},g);}
-  // the last move: a thin line from where the stone came, a dot on it
+  // markers, one colour (--mk): the stone chosen, a dotted ring; moved, a dot where it was and a solid line to its ring,
+  // the ring dotted until the move is played, then solid (the last move)
+  if(F>=0&&T>=0)moveMark(g,F,T,true);
+  else if(F>=0){ring(g,F,true);for(const tt of targets(ms,F))el('circle',{cx:PX(tt),cy:PY(tt),r:CELL*.1,fill:'var(--mk)',opacity:.75},g);}
   const last=sh?sh.d.last:null;
-  if(view&&last&&last.kind==='move'&&F<0){el('line',{x1:PX(last.f),y1:PY(last.f),x2:PX(last.t),y2:PY(last.t),stroke:'var(--mk)','stroke-width':2,'stroke-linecap':'round',opacity:.8},g);
-    el('circle',{cx:PX(last.f),cy:PY(last.f),r:SR*.16,fill:'var(--mk)'},g);el('circle',{cx:PX(last.t),cy:PY(last.t),r:SR*.24,fill:'var(--mk)'},g);}
+  if(view&&last&&last.kind==='move'&&F<0)moveMark(g,last.f,last.t,false);
   for(const [i] of (sh?altCells():new Map()))el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.4},g);
   el('g',{id:'hov','pointer-events':'none'},svg);
   const hit=el('g',{fill:'transparent'},svg),tg=mine&&ui.f>=0?targets(ms,ui.f):[];
