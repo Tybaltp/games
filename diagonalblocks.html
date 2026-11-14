@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=50">
+<link rel="stylesheet" href="common/games.css?v=51">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -102,7 +102,7 @@ html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop 
    L'image est un coin du plateau : son bord droit et son bas tombent au bord de l'écran (html:root : plus fort que common/accueil.css, chargé après). */
 html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil/dblocks-dark.svg);--accWoodL:#f0e1e5;--accWoodD:#1a1315;--accR:1.03024;--accRight:0px;--accBot:0px;--accTintL:#9c2457;--accTintD:#d4588a}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=3">
+<link rel="stylesheet" href="common/accueil.css?v=4">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="diagonalblocks.html"><b id="ttl" style="font-weight:inherit">Diagonal Blocks</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -223,7 +223,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=82"></script>
+<script src="common/core.js?v=84"></script>
 <script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
