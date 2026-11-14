@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Siam</title>
-<script src="common/theme.js?v=4"></script>
+<script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=39">
+<link rel="stylesheet" href="common/games.css?v=51">
 <style>
 /* Siam palette (light, dark), board, animals and rocks; the shared layout is in common/games.css */
 :root{
@@ -43,6 +43,12 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 .notice.dirs .btns{flex-wrap:wrap;justify-content:center;row-gap:4px}
 @media (max-width:560px){.notice.dirs{height:auto;min-height:var(--barH);align-items:stretch}}
 </style>
+<style>
+/* accueil : ce qui est propre à Siam ; le reste dans common/accueil.css. Le fond : le plateau entier en cours de partie,
+   sur le fond de la page (première version rapide, à revoir) ; cadres de mode à la couleur de l'étiquette du jeu (common/cards.css). */
+:root{--accImgL:url(../img/accueil/siam.svg);--accImgD:url(../img/accueil/siam-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1.01124;--accTintL:#a0522d;--accTintD:#e0915f}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=4">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="siam.html"><b id="ttl" style="font-weight:inherit">Siam</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -54,29 +60,24 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
         <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
-        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
-            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="si-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
             <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
             <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+            <p class="hint err" id="joinErr"></p>
           </form>
           <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-        </details>
-        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
-          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="SIAM1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
-            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
-            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
-    
         </details>
       </div>
       <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
       <p class="hint" id="modeTxt" hidden></p>
       <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
       <div class="picks" id="anaPick" hidden>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">New analysis</b><span data-i18n="a_freeTxt">Both sides on this screen: stepping back, variations, hints.</span></button>
         <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
       </div>
       
@@ -105,7 +106,6 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
         <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
       </form>
     </div>
-    <p class="hint err" id="joinErr"></p>
     
     
     
@@ -136,7 +136,6 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -166,9 +165,9 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=62"></script>
-<script src="common/codes.js?v=4"></script>
-<script src="common/ai.js?v=1"></script>
+<script src="common/core.js?v=83"></script>
+<script src="common/codes.js?v=6"></script>
+<script src="common/ai.js?v=2"></script>
 <script>
 // ===== Siam (Didier Dhorbait, Ferti, 2005) =====
 // Rules kept (from memory and public summaries; to be checked against the publisher's rules): a 5 × 5 board; three rocks
@@ -289,7 +288,7 @@ const SM_I18N={fr:{
  <li><b>Victoire</b> : un rocher poussé hors du plateau termine la partie. Gagne le camp de l'animal le plus proche du rocher, derrière lui dans la file, qui regarde dans le sens de la poussée, même si ce n'est pas lui qui a poussé.</li>
  <li><b>Cartes joueurs</b> : le camp de chacun et ses animaux en réserve.</li>
  <li><b>Jouer</b> : cliquez un de vos animaux (ou une case libre du bord, ou « Faire entrer ») ; les cases où il peut aller sont marquées d'un point. Cliquez-en une : l'animal s'y pose à titre provisoire (cadre en pointillés), tourné dans le sens du déplacement ; les flèches de la barre changent son orientation, puis Confirmer. Une poussée garde l'orientation et, sans « Confirmer chaque coup », part aussitôt. Animal sélectionné : flèches pour le tourner sur place, « Sortir » au bord.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 },en:{
@@ -312,7 +311,7 @@ const SM_I18N={fr:{
  <li><b>Winning</b>: a rock pushed off the board ends the game. The camp of the animal nearest the rock, behind it in the row, facing the push wins, even if it is not the one that pushed.</li>
  <li><b>Player cards</b>: each player's camp and animals in reserve.</li>
  <li><b>Playing</b>: click one of your animals (or a free edge square, or “Bring in”); the squares it can go to are marked with a dot. Click one: the animal is placed there provisionally (dashed frame), facing the way it moved; the bar's arrows change its direction, then Confirm. A push keeps its direction and, without “Confirm each move”, goes at once. Animal selected: arrows to turn it on the spot, “Leave” from the edge.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 },es:{
@@ -335,7 +334,7 @@ const SM_I18N={fr:{
  <li><b>Victoria</b>: una roca empujada fuera del tablero termina la partida. Gana el bando del animal más cercano a la roca, detrás de ella en la fila, que mira en el sentido del empuje, aunque no sea él quien ha empujado.</li>
  <li><b>Tarjetas de jugador</b>: el bando de cada uno y sus animales en reserva.</li>
  <li><b>Jugar</b>: haz clic en uno de tus animales (o en una casilla libre del borde, o en «Hacer entrar»); las casillas adonde puede ir se marcan con un punto. Haz clic en una: el animal se coloca allí provisionalmente (marco de puntos), orientado en el sentido del desplazamiento; las flechas de la barra cambian su orientación, y luego Confirmar. Un empuje conserva la orientación y, sin «Confirmar cada jugada», se hace de inmediato. Animal seleccionado: flechas para girarlo en el sitio, «Sacar» en el borde.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
  <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 }};
@@ -532,4 +531,5 @@ const GAME={id:'siam',size:5,codeTag:'SIAM1',i18n:SM_I18N,
   evalInfo};
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
