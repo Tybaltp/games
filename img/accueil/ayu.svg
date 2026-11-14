@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 456 456" role="img" aria-label="Ayu, position de départ">
+<rect x="-200" y="-200" width="856" height="856" fill="#e2cf9f"/>
+<path d="M28 28H428M28 28V428M28 68H428M68 28V428M28 108H428M108 28V428M28 148H428M148 28V428M28 188H428M188 28V428M28 228H428M228 28V428M28 268H428M268 28V428M28 308H428M308 28V428M28 348H428M348 28V428M28 388H428M388 28V428M28 428H428M428 28V428" stroke="rgba(60,42,18,.7)" stroke-width="1" fill="none"/>
+<circle cx="108" cy="108" r="4.4" fill="rgba(60,42,18,.85)"/>
+<circle cx="108" cy="348" r="4.4" fill="rgba(60,42,18,.85)"/>
+<circle cx="228" cy="228" r="4.4" fill="rgba(60,42,18,.85)"/>
+<circle cx="348" cy="108" r="4.4" fill="rgba(60,42,18,.85)"/>
+<circle cx="348" cy="348" r="4.4" fill="rgba(60,42,18,.85)"/>
+<circle cx="68" cy="428" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="148" cy="428" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="228" cy="428" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="308" cy="428" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="388" cy="428" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="28" cy="388" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="108" cy="388" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="188" cy="388" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="268" cy="388" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="348" cy="388" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="428" cy="388" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="68" cy="348" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="148" cy="348" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="228" cy="348" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="308" cy="348" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="388" cy="348" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="28" cy="308" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="108" cy="308" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="188" cy="308" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="268" cy="308" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="348" cy="308" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="428" cy="308" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="68" cy="268" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="148" cy="268" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="228" cy="268" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="308" cy="268" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="388" cy="268" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="28" cy="228" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="108" cy="228" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="188" cy="228" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="268" cy="228" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="348" cy="228" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="428" cy="228" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="68" cy="188" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="148" cy="188" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="228" cy="188" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="308" cy="188" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="388" cy="188" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="28" cy="148" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="108" cy="148" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="188" cy="148" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="268" cy="148" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="348" cy="148" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="428" cy="148" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="68" cy="108" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="148" cy="108" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="228" cy="108" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="308" cy="108" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="388" cy="108" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="28" cy="68" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="108" cy="68" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="188" cy="68" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="268" cy="68" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="348" cy="68" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="428" cy="68" r="18.8" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width="0.912"/>
+<circle cx="68" cy="28" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="148" cy="28" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="228" cy="28" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="308" cy="28" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+<circle cx="388" cy="28" r="18.8" fill="#1c1f1e" stroke="#000" stroke-width="0.912"/>
+</svg>
