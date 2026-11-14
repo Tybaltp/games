@@ -78,7 +78,7 @@ const I18C={fr:{
  noPeer:"La bibliothèque de connexion n'a pas pu se charger : vérifiez votre accès Internet, puis rechargez la page.",
  st_open:"Ouverture de la table…",st_lostMm:"Contact perdu avec le service de mise en relation, reconnexion…",st_noMm:"Pas de connexion au service de mise en relation. Vérifiez votre accès Internet.",
  st_conn:"Connexion à la table…",st_none:"Aucune partie ne répond à ce code.",retry:"Réessayer",st_nack:"Coup refusé : la position a changé. Rejouez.",st_noHost2:"Pas de connexion à la table pour le moment : réessayez dans un instant.",
- t_refused:"Deux joueurs sont déjà dans cette partie. Vous pouvez l'observer : cliquez Observer.",
+ t_refused:"Deux joueurs sont déjà dans cette partie.",watchThis:"Observer cette partie",t_dup:"Cette partie est ouverte dans un autre onglet.",seat_ask:"Quelqu'un veut reprendre la place de {n} depuis un autre appareil.",seat_wait:"Cette place est tenue par un autre appareil : {n} doit accepter que vous la repreniez. En attente de sa réponse…",seat_no:"Votre adversaire a refusé que vous repreniez cette place.",seat_gone:"Le joueur de cette place est revenu : la demande est annulée.",
  draw:"Nulle : {why}.",youWin:"Vous gagnez : {why}.",wins:"{n} gagne : {why}.",drawQ:"Nulle.",youWinQ:"Vous gagnez.",winsQ:"{n} gagne.",st_waitOpp:"En attente de votre adversaire : envoyez-lui le code de la partie.",
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Votre adversaire ne répond plus, reconnexion… Les pendules sont arrêtées.",st_lostWatch:"La table ne répond plus, nouvel essai…",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
@@ -105,7 +105,7 @@ const I18C={fr:{
  noPeer:"The connection library could not load: check your Internet access, then reload the page.",
  st_open:"Opening the table…",st_lostMm:"Lost contact with the matchmaking service, reconnecting…",st_noMm:"No connection to the matchmaking service. Check your Internet access.",
  st_conn:"Connecting to the table…",st_none:"No game answers to this code.",retry:"Try again",st_nack:"Move rejected: the position has changed. Play again.",st_noHost2:"No connection to the table right now: try again in a moment.",
- t_refused:"Two players are already in this game. You can still watch it: click Watch.",
+ t_refused:"Two players are already in this game.",watchThis:"Watch this game",t_dup:"This game is open in another tab.",seat_ask:"Someone wants to take {n}'s seat from another device.",seat_wait:"This seat is held on another device: {n} must agree to let you take it. Waiting for their answer…",seat_no:"Your opponent declined to let you take this seat.",seat_gone:"The player in this seat is back: the request is cancelled.",
  draw:"Draw: {why}.",youWin:"You win: {why}.",wins:"{n} wins: {why}.",drawQ:"Draw.",youWinQ:"You win.",winsQ:"{n} wins.",st_waitOpp:"Waiting for your opponent: send them the game code.",
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Your opponent is not responding, reconnecting… The clocks are stopped.",st_lostWatch:"The table is not responding, trying again…",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
@@ -132,7 +132,7 @@ const I18C={fr:{
  noPeer:"La biblioteca de conexión no se ha podido cargar: comprueba tu acceso a Internet y recarga la página.",
  st_open:"Abriendo la mesa…",st_lostMm:"Contacto perdido con el servicio de conexión, reconectando…",st_noMm:"Sin conexión con el servicio de conexión. Comprueba tu acceso a Internet.",
  st_conn:"Conectando con la mesa…",st_none:"Ninguna partida responde a este código.",retry:"Reintentar",st_nack:"Jugada rechazada: la posición ha cambiado. Vuelve a jugar.",st_noHost2:"Sin conexión con la mesa por ahora: vuelve a intentarlo en un momento.",
- t_refused:"Ya hay dos jugadores en esta partida. Puedes observarla: pulsa Observar.",
+ t_refused:"Ya hay dos jugadores en esta partida.",watchThis:"Observar esta partida",t_dup:"Esta partida está abierta en otra pestaña.",seat_ask:"Alguien quiere ocupar el puesto de {n} desde otro dispositivo.",seat_wait:"Este puesto está ocupado en otro dispositivo: {n} tiene que aceptar que lo retomes. Esperando su respuesta…",seat_no:"Tu adversario no ha aceptado que retomes este puesto.",seat_gone:"El jugador de este puesto ha vuelto: la solicitud se ha cancelado.",
  draw:"Tablas: {why}.",youWin:"Ganas: {why}.",wins:"{n} gana: {why}.",drawQ:"Tablas.",youWinQ:"Ganas.",winsQ:"{n} gana.",st_waitOpp:"Esperando a tu adversario: envíale el código de la partida.",
  st_pausedHost:"{n} no responde. Los relojes están parados hasta que vuelva.",st_pausedGuest:"Tu adversario no responde, reconectando… Los relojes están parados.",st_lostWatch:"La mesa no responde, nuevo intento…",st_pausedWatch:"Un jugador está desconectado. Los relojes están parados.",
  st_waitBoth:"Esperando a que los dos jugadores empiecen.",st_waitClick:"Esperando a que {n} pulse Empezar la partida.",st_bothHere:"Los dos jugadores están aquí. Pulsad Empezar la partida, cada uno por su lado.",
@@ -311,6 +311,8 @@ const PID=c=>GAME.id+'-p2p-'+c;
 // next attempt (1 s later), at once (0.25 s) when the other said it was leaving (bye). Only one page can hold the
 // table's PeerJS id: a host merely slow keeps it, the attempt fails (unavailable-id) and the guest joins it again.
 const NET_PING=1000,NET_SILENT=3000,NET_RETRY=1000,NET_TAKE=1000,TAKE={at:0};
+// this page (two tabs may share an identity: a duplicated tab copies sessionStorage)
+const INST=Date.now().toString(36)+'.'+Math.round(performance.now()*1000).toString(36);
 // a new game's codes begin with the game's two letters (common/codes.js), so that the home page knows which page opens
 // them: 7 characters for the players, 9 for the spectators, without the dash that codeShow adds
 const newCode=n=>Object.keys(CODE_GAMES).find(k=>CODE_GAMES[k].id===GAME.id)+rnd(n-2);
@@ -322,7 +324,7 @@ function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+M
 // spectator says bye too (absent at once)
 function netBye(){try{if(role==='host'&&H.game&&H.conns){hostSave();for(const c of H.conns)if(c.open)c.send({t:'bye'});if(peer&&!peer.destroyed)peer.disconnect();if(H.wpeer&&!H.wpeer.destroyed)H.wpeer.disconnect();}
   else if((role==='guest'||role==='watch')&&C.conn&&C.conn.open&&!C.stop)C.conn.send({t:'bye'});}catch(e){}}
-function hostSave(){const g=H.game;LS.set(K('p2p-host'),{code:H.code,wcode:H.wcode,guestCid:H.guestCid,game:g,savedAt:Date.now(),elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});if(g.match&&MATCH){MATCH.cur=MTK;MATCH.at=Date.now();mSave();}}
+function hostSave(){const g=H.game;LS.set(K('p2p-host'),{cid:MYID,code:H.code,wcode:H.wcode,guestCid:H.guestCid,game:g,savedAt:Date.now(),elapsed:g.running&&!g.paused&&!g.result?Date.now()-H.turnStart:0});if(g.match&&MATCH){MATCH.cur=MTK;MATCH.at=Date.now();mSave();}}
 function hostReady(s){const g=H.game;if(g.started||g.result||!g.names[0]||!g.names[1]||(g.match&&!g.match.chosen))return;g.ready[s]=true;
   hostJoinLog(H.guestConn);if(g.ready[0]&&g.ready[1]&&!g.goAt){g.goAt=Date.now()+GO_MS;setTimeout(hostGo,GO_MS);}hostBroadcast();}
 // both have clicked: « La partie commence », 3, 2, 1, then the clocks start (the host keeps the time: g.goAt)
@@ -340,12 +342,12 @@ function hostWatchPeer(){wpeerStop();if(!H.wcode)return;const wp=newPeer(PID(H.w
     conn.on('data',d=>{if(H.wpeer===wp)hostOnData(conn,d);});conn.on('close',()=>{if(H.wpeer===wp)hostDrop(conn);});conn.on('error',()=>{if(H.wpeer===wp)hostDrop(conn);});});
   wp.on('disconnected',()=>{if(H.wpeer!==wp)return;setTimeout(()=>{try{if(!wp.destroyed)wp.reconnect();}catch(e){}},1500);});
   wp.on('error',()=>{});}
-function hostStart(saved){role='host';CH={seen:-1,key:''};H.conns=new Set();H.watchers=new Set();H.guestConn=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
-  if(saved){Object.assign(H,{code:saved.code,wcode:saved.wcode,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);}
+function hostStart(saved){role='host';CH={seen:-1,key:''};H.conns=new Set();H.watchers=new Set();H.guestConn=null;H.seatReq=null;C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);
+  if(saved){Object.assign(H,{code:saved.code,wcode:saved.wcode,guestCid:saved.guestCid,game:saved.game});H.turnStart=Date.now()-(saved.elapsed||0);if(saved.cid)MYID=saved.cid;}   // the identity this game knows
   if(!H.wcode)H.wcode=newCode(9);
   H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);Object.assign(g0,GAME.rules(g0));if(!Array.isArray(g0.chat))g0.chat=[];
   if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
-  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0)mySeat=g0.first==='host'?0:1;
+  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0){mySeat=g0.first==='host'?0:1;g0.th[mySeat]=hh(MYID);}
   // reloaded at the opponent's turn: their clock ran meanwhile on their screen (no jump back when the state comes)
   if(saved&&saved.savedAt&&g0.running&&!g0.paused&&!g0.result){const r=replay(g0,g0.moves,g0.result);if(!r.over&&r.st.turn!==mySeat&&!simHold(g0,r))H.turnStart-=Math.min(30000,Math.max(0,Date.now()-saved.savedAt));}
   if(g0.ready[0]&&g0.ready[1]&&!g0.started&&!g0.goAt&&!g0.result)g0.goAt=Date.now()+GO_MS;   // both had clicked, the countdown lost: it starts again
@@ -372,7 +374,7 @@ function becomeHost(){if(!view)return;if(V.st!=='off')voiceStop('',false);const 
   if(pm&&H.game.tc)H.game.clock[mySeat]+=H.game.tc.inc;   // my move the host never confirmed: kept, with its increment
   if(H.game.th.indexOf(hh(MYID))<0)H.game.th[mySeat]=hh(MYID);
   hostAway(1-mySeat,false);H.turnStart=Date.now();hostStart(null);}
-function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.guestConn===conn){H.guestConn=null;hostAway(conn.seat,false);if(V.st!=='off')voiceStop(t('vEnd'),false);}hostBroadcast();}
+function hostDrop(conn){H.conns.delete(conn);H.watchers.delete(conn);if(H.seatReq&&H.seatReq.conn===conn)H.seatReq=null;if(H.guestConn===conn){H.guestConn=null;hostAway(conn.seat,false);if(V.st!=='off')voiceStop(t('vEnd'),false);}hostBroadcast();}
 // A player's absence and return in the log (once the game has started, until it is over): leaving while it is the turn
 // of the player here, the line is held back until their move (chatHeld), and dropped if the other comes back first
 function hostAway(s,back){const g=H.game;if(!g||!g.started||s<0)return;const r=replay(g,g.moves,g.result);if(r.over){g.away=null;return;}if(!g.chat)g.chat=[];
@@ -382,23 +384,36 @@ function hostAway(s,back){const g=H.game;if(!g||!g.started||s<0)return;const r=r
 function hostReject(conn,why){try{conn.send({t:'reject',why});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},800);}
 // A spectator's arrival, said once per name (they may reconnect, the host may change)
 function hostWatchLog(n){const g=H.game;if(!n)return;if(!g.wseen)g.wseen=[];if(g.wseen.includes(n))return;g.wseen.push(n);if(g.wseen.length>50)g.wseen.shift();hostLog('lg_watch',{n},true);}
-// conn takes seat s (known: the player of that seat comes back)
-function hostSeat(conn,d,s,known){const g=H.game;
+// conn takes seat s (known: the player of that seat comes back; took: a request accepted, the name kept)
+function hostSeat(conn,d,s,known,took){const g=H.game;
   if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
-  g.th[s]=hh(d.cid);H.guestCid=d.cid;H.guestConn=conn;conn.seat=s;H.conns.add(conn);if(d.name)g.names[s]=String(d.name).slice(0,24);
+  if(known&&H.seatReq&&H.seatReq.conn!==conn&&H.seatReq.s===s){hostReject(H.seatReq.conn,'seat_gone');H.seatReq=null;}   // the player is back: the request lapses
+  g.th[s]=hh(d.cid);H.guestCid=d.cid;H.guestConn=conn;conn.seat=s;conn.inst=d.inst;H.conns.add(conn);if(d.name&&!took)g.names[s]=String(d.name).slice(0,24);
       const o=d.s;if(o&&typeof o==='object'&&o.size===g.size&&sameRules(o,g)&&Array.isArray(o.moves)&&o.moves.length>g.moves.length&&g.moves.every((x,k)=>o.moves[k]===x)){
         g.moves=o.moves.slice();g.clock=o.clock.slice();g.result=o.result||null;g.started=!!o.started;g.running=!!o.started;g.paused=true;H.turnStart=Date.now();}
       // a move the guest validated in a simultaneous phase that this host does not have (the host took over, or reloaded without it)
       else if(o&&typeof o==='object'&&typeof o.myHold==='string'&&!g.moves.length&&simMode(o)===simMode(g))hostHold(s,o.myHold);
-  if(known)hostAway(s,true);
-  if(!known){conn.jpend=true;if(!d.ask)hostJoinLog(conn);}
-  conn.send({t:'welcome',role:'guest',seat:s,known});hostBroadcast();}
+  if(known||took)hostAway(s,true);
+  if(!known&&!took){conn.jpend=true;if(!d.ask)hostJoinLog(conn);}
+  conn.send({t:'welcome',role:'guest',seat:s,known:known||!!took});hostBroadcast();}
+// a request for the seat of a player no longer connected, answered by the player here (Accept / Decline)
+function seatAnswer(yes){const q=H.seatReq;H.seatReq=null;if(!q||role!=='host')return;
+  if(q.conn.open){if(yes&&!(H.guestConn&&H.guestConn.open)){hostSeat(q.conn,{cid:q.cid,inst:q.inst},q.s,false,true);return;}hostReject(q.conn,yes?'seat_gone':'seat_no');}
+  hostBroadcast();}
 function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping'){try{conn.send({t:'pong'});}catch(e){}return;}if(d.t==='pong')return;const g=H.game;
   if(d.t==='bye'){try{conn.close();}catch(e){}hostDrop(conn);return;}   // the page is closing: absent at once
   if(d.t==='hello'){if(conn.watchOnly)d={...d,role:'watch'};
     const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;const known=s>=0;   // known: this player already had the seat (they come back)
-    if(d.role==='play'&&s<0){s=g.th[1-mySeat]?-1:1-mySeat;}
-    if(d.role==='play'&&s>=0&&s!==mySeat){hostSeat(conn,d,s,known);return;}
+    const gc=H.guestConn,live=!!gc&&gc!==conn&&gc.open&&Date.now()-(gc.lastSeen||0)<NET_SILENT;   // the guest seat's player is connected
+    // the same player in another tab (same identity, another page) while the first one is there: that one stops
+    if(known&&(s===mySeat||live&&gc.inst!==d.inst)){hostReject(conn,'t_dup');return;}
+    // a newcomer by the invitation link: the free seat, or the seat of a player no longer connected: at once before the
+    // start, with the agreement of the player here once it has started (or is counting down)
+    if(d.role==='play'&&s<0){const o=1-mySeat,other=!!H.seatReq&&H.seatReq.conn!==conn&&H.seatReq.conn.open;
+      if(!g.th[o])s=o;
+      else if(!live&&!other){if(g.started||g.goAt){H.seatReq={conn,cid:d.cid,inst:d.inst,s:o};conn.send({t:'seatWait',n:g.names[mySeat]||''});tone(520,.12,.05);hostBroadcast();return;}
+        s=o;g.ready[o]=false;}}
+    if(d.role==='play'&&s>=0){hostSeat(conn,d,s,known,false);return;}
     if(d.role==='play'){hostReject(conn,'t_refused');return;}
     conn.wname=nmClean(d.name);hostWatchLog(conn.wname);H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
   // a name chosen once connected (the frame over the board): a spectator's (empty: anonymous), the guest's
@@ -509,7 +524,7 @@ function chatRender(){const b=$('chatBox'),net=role==='host'||role==='guest'||ro
   const L=Array.isArray(view.chat)?view.chat:[],ul=$('chatList'),anonW=role==='watch'&&!C.name,r=replay(view,view.moves,view.result);
   if(CH.seen<0||chatShown())CH.seen=chatMsgs();
   const u=chatUnread();$('chatSum').textContent=u?t('chatN',{n:u}):t('chat');
-  $('chatForm').hidden=anonW;$('chatName').hidden=!anonW;$('chatIn').placeholder=t('chatPh');
+  $('chatForm').hidden=anonW||!!C.refused;$('chatName').hidden=!anonW;$('chatIn').placeholder=t('chatPh');
   const op=r.over||(view.match&&!view.started),h=$('chatHint'),hk=op?'':role==='watch'?'chatHintW':'chatHintP';h.hidden=!hk;if(hk)h.textContent=t(hk);
   chatBtnSync();const key=L.length+'|'+(L.length?JSON.stringify(L[L.length-1]):'')+'|'+lang;if(CH.key===key)return;CH.key=key;ul.textContent='';
   if(!L.length){const li=document.createElement('li');li.className='hint';li.textContent=t('chatEmpty');ul.appendChild(li);}
@@ -528,6 +543,7 @@ function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4)
   $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+codeShow(code));
   role='watch';mySeat=-1;view=null;showGame();status(t('st_conn'));clientWait();
   const sv=LS.get(K('p2p-guest'),null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
+  if(!asWatch&&sv&&sv.code===code&&sv.cid){MYID=sv.cid;C.cid=MYID;}   // the identity this game knows (another tab of this browser may have given this one another)
   if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
   {const pd=LS.get(K('p2p-pending'),null);if(!asWatch&&pd&&pd.code===code&&view&&view.moves.length===pd.n){C.pending={n:pd.n,code:pd.mv,at:Date.now(),sent:0};pendView();sending=true;renderGame();}}
   const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
@@ -539,7 +555,7 @@ function clientWait(){const c1=C;C.none=false;clearTimeout(C.nt);C.nt=setTimeout
 function clientNone(){status(t('st_none'),'',[{label:t('retry'),primary:true,on:()=>{clientWait();status(t('st_conn'));clearTimeout(C.t);C.t=null;if(peer&&peer.open)clientConnect();else clientRetry();}},{label:t('home'),on:()=>$('homeBtn').onclick()}]);}
 function clientConnect(){if(C.stop||!peer||!peer.open)return;const conn=peer.connect(C.host,{reliable:true});C.conn=conn;clearTimeout(C.ct);
   C.ct=setTimeout(()=>{if(C.conn===conn&&!conn.open)clientLost();},7000);
-  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,name:C.name,ask:!!C.ask,s:mySeat>=0&&view?(C.pending&&C.pending.base||view):null});C.lastSeen=Date.now();
+  conn.on('open',()=>{clearTimeout(C.ct);C.retry=0;conn.send({t:'hello',role:C.play?'play':'watch',cid:C.cid,inst:INST,name:C.name,ask:!!C.ask,s:mySeat>=0&&view?(C.pending&&C.pending.base||view):null});C.lastSeen=Date.now();
     if(C.pending){C.pending.sent=Date.now();conn.send({t:'move',n:C.pending.n,code:C.pending.code});}});   // a move confirmed during the cut
   conn.on('data',d=>{if(C.conn===conn)clientOnData(d);});
   conn.on('close',()=>{if(C.conn===conn&&!C.stop)clientLost();});}
@@ -554,13 +570,21 @@ function clientRetry(ms){if(C.stop)return;if(C.t){if(ms==null)return;clearTimeou
 function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now();if(d.t==='ping'){try{if(C.conn&&C.conn.open)C.conn.send({t:'pong'});}catch(e){}return;}if(d.t==='pong')return;
   // the host is leaving (its page closes or reloads): the guest takes the table over at once, a spectator tries again
   if(d.t==='bye'){const c=C.conn;C.conn=null;try{c&&c.close();}catch(e){}if(role==='guest'&&mySeat>=0)C.lostSince=Date.now()-NET_TAKE;clientLost(250);return;}
+  // the seat asked for is held by a player no longer connected: the player there is asked
+  if(d.t==='seatWait'){clearTimeout(C.nt);C.none=false;status(t('seat_wait',{n:d.n||'…'}));return;}
   if(d.t==='welcome'){role=d.role;mySeat=d.seat;if(d.note)status(d.note);if(C.ask&&role==='guest'){C.ask=false;if(!d.known)nameOv('play');}}
   else if(d.t==='voice'){if(role==='guest')voiceOnMsg(d.op);}
-  else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);try{peer.destroy();}catch(e){}showSetup(t(d.why));$('jCode').value=C.code;}
+  else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);clearTimeout(C.nt);try{peer.destroy();}catch(e){}clientRefused(d.why);}
   else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();
     if(C.hold&&(d.game.myHold===C.hold.code||d.game.moves.length))C.hold=null;
     showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}mVoiceAuto();}
   else if(d.t==='nack'){sending=false;if(C.hold){C.hold=null;if(view)view.myHold=null;resetUi();}if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
+
+// Refused by the table: two players already there (t_refused), a request declined (seat_no) or lapsed (seat_gone):
+// « Observer cette partie » and Home; the same player in another tab (t_dup): this page stops, Home only
+function clientRefused(why){const code=C.code,dup=why==='t_dup';if(!dup){const sg=LS.get(K('p2p-guest'),null);if(sg&&sg.code===code){LS.del(K('p2p-guest'));LS.del(K('p2p-pending'));}}
+  if(V.st!=='off')voiceStop('',false);nameOv('');C.pending=null;C.refused=why;role='watch';mySeat=-1;sending=false;if(view)renderGame();else refusedBar();}   // the position shown stays, frozen
+function refusedBar(){const code=C.code;status(t(C.refused),'',[C.refused==='t_dup'?null:{label:t('watchThis'),primary:true,on:()=>{const w=nickGet();clientStart(code,w,true);LS.set(K('p2p-watch'),{code,name:w});if(!w)nameOv('watch');}},{label:t('home'),on:()=>$('homeBtn').onclick()}]);}
 
 // ---------- game view ----------
 function showGame(){replayForget();$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
@@ -573,7 +597,7 @@ function showState(g){const prevLen=view?view.moves.length:-1,prevRes=view?JSON.
 // The guest's copy of the game (every state received, and every second while the clocks run): shown at once on return,
 // and used to take over if the host does not come back
 function guestSave(){if(role!=='guest'||mySeat<0||!view)return;const g=view;
-  if(g.result&&!g.match)LS.del(K('p2p-guest'));else LS.set(K('p2p-guest'),{code:C.code,seat:mySeat,name:C.name,savedAt:Date.now(),view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0,wnames:[]}});}
+  if(g.result&&!g.match)LS.del(K('p2p-guest'));else LS.set(K('p2p-guest'),{code:C.code,cid:C.cid,seat:mySeat,name:C.name,savedAt:Date.now(),view:{...view,running:false,elapsed:0,clock:remaining(),paused:!!view.started,guestOn:false,watchers:0,wnames:[]}});}
 function resetUi(){ui=GAME.newUi();}
 // Simultaneous phase between two devices: both players choose at once (the moves list is still empty)
 const netSim=r=>(role==='host'||role==='guest'||role==='watch')&&simHold(view,r);
@@ -677,6 +701,8 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat});
   else if(role==='guest'&&C.nackAt&&Date.now()-C.nackAt<5000&&!r.over)status(t('st_nack'),'',mine&&prep?[RST]:null);
   else if(role==='watch'&&C.lostSince&&!C.stop)status(t('st_lostWatch'));
   if(V.st==='in'&&mySeat>=0)status(t('vInvite',{n:vNm()}),'turn',[{label:t('decline'),on:()=>voiceAnswer(false)},{label:t('accept'),primary:true,on:()=>voiceAnswer(true)}]);
+  if(C.refused&&role==='watch')refusedBar();
+  if(role==='host'&&H.seatReq&&mySeat>=0)status(t('seat_ask',{n:nm(H.seatReq.s)}),'turn',[{label:t('decline'),on:()=>seatAnswer(false)},{label:t('accept'),primary:true,on:()=>seatAnswer(true)}]);
   const wide=window.matchMedia(WIDE).matches&&!BAND;$('playersTop').hidden=wide;$('playersSide').hidden=!wide;
   const editing=!!document.activeElement&&document.activeElement.classList.contains('nmEdit');   // a name being typed: the cards stay
   if(!editing){$('playersTop').textContent='';$('playersSide').textContent='';}const host=wide?$('playersSide'):$('playersTop');
@@ -857,7 +883,7 @@ function tick(){if(view&&typeof view.goIn==='number'&&!view.started)sfRender(rep
 let sfBigWas='';
 function sfRender(r){const sc=$('startCard');if(!sc||!view)return;const net=role==='host'||role==='guest'||role==='watch';
   const on=net&&!r.over&&!view.started;sc.hidden=!on;if(!on){sc.dataset.stage='';clearTimeout(sfRender.t);return;}
-  const nm=seatName,pl=mySeat>=0,m=view.match,both=!!(view.names[0]&&view.names[1]),ch=m&&!m.chosen?mChooser(m,MTK):null;
+  const nm=seatName,pl=mySeat>=0,m=view.match,both=!!(view.names[0]&&view.names[1])&&(role==='guest'?!!(C.conn&&C.conn.open)&&!C.lostSince:!!view.guestOn),ch=m&&!m.chosen?mChooser(m,MTK):null;   // both connected
   const goLeft=typeof view.goIn==='number'?view.recvAt+view.goIn-Date.now():null;
   const stage=goLeft!==null?'go':!both?'wait':ch?'choose':'start';sc.dataset.stage=stage;
   const me=stage==='choose'&&pl&&!!MATCH&&MATCH.me===ch&&MTW!=='v',rd=pl&&!!(view.ready&&view.ready[mySeat]);
