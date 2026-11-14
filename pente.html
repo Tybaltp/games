@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=47">
+<link rel="stylesheet" href="common/games.css?v=50">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -63,7 +63,7 @@ h1{font-weight:400;letter-spacing:0}
 /* l'image zoome et glisse (--peX, --peY, --peW, --peH, posés par le script) ; le fondu garde le cadre du modèle commun */
 html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop));background-size:var(--peW,var(--accW)) var(--peH,var(--accH))}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=1">
+<link rel="stylesheet" href="common/accueil.css?v=3">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html"><b id="ttl" style="font-weight:inherit">Pente</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -75,29 +75,24 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
         <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
-        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
-            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="pe-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
             <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
             <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+            <p class="hint err" id="joinErr"></p>
           </form>
           <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-        </details>
-        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
-          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PENTE1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
-            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
-            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
-    
         </details>
       </div>
       <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
       <p class="hint" id="modeTxt" hidden></p>
       <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
       <div class="picks" id="anaPick" hidden>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">New analysis</b><span data-i18n="a_freeTxt">Both sides on this screen: stepping back, variations, hints.</span></button>
         <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
       </div>
       
@@ -126,7 +121,6 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
         <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
       </form>
     </div>
-    <p class="hint err" id="joinErr"></p>
     
     
     
@@ -157,7 +151,6 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -394,8 +387,8 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=75"></script>
-<script src="common/codes.js?v=4"></script>
+<script src="common/core.js?v=82"></script>
+<script src="common/codes.js?v=6"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -436,7 +429,7 @@ const PE_I18N={fr:{
  n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
  st_play:"À vous de jouer ({color}).",st_openOther:"{name} pose l'ouverture.",st_chooseOther:"{name} choisit : Noir, Blanc, ou 2 pierres de plus.",
  st_choose1Other:"{name} choisit sa couleur.",st_turnC:"Au tour de {name} ({color}).",
- st_tentative:"Coup en {c} : confirmez pour le jouer.",pend_stones:"Pierres : {m}. Confirmez pour les jouer.",confirm1:"Confirmer",confirmN:"Confirmer les pierres",
+ st_tentative:"Coup en {c} : confirmez pour le jouer.",pend_stones:"Pierres : {m}. Confirmez pour les jouer.",confirm1:"Confirmer",pend_pick:"{c} : confirmez votre choix.",confirmN:"Confirmer les pierres",
  bBlack:"Noir",bWhite:"Blanc",bAdd:"+2 pierres",takeBlack:"Prendre Noir",takeBlackSub:"Blanc joue le prochain coup.",takeWhite:"Prendre Blanc",takeWhiteSub:"Le prendre, c'est jouer le prochain coup.",
  add2:"Ajouter 2 pierres",add2Sub:"1 noire puis 1 blanche ; {name} choisit ensuite.",
  d_open:"noire {a}, blanche {b}, noire {c}",d_add:"2 pierres de plus, noire {a} et blanche {b}",d_B:"Prendre les noirs",d_W:"Prendre les blancs",d_Wn:"Prendre les blancs et jouer {c}",
@@ -449,8 +442,8 @@ const PE_I18N={fr:{
  <li>Cinq paires capturées gagnent.</li>
  <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
  <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
- <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; sur écran tactile, un premier toucher la pose à titre provisoire ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Confirmer, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, onze niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture, les 2 pierres de plus et le choix Noir ou Blanc attendent toujours Confirmer, même si « Confirmer chaque coup » est décoché. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, onze niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  title:"Pente",lede:"Five in a row, or capture ten.",by:"A game by Gary Gabrel.",
@@ -461,7 +454,7 @@ const PE_I18N={fr:{
  n_add2:"Add 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_openN:"{name} places the opening: 2 black and 1 white ({n}/3).",n_add2N:"{who} adds 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_choose1:"{name} added a black and a white stone: choose your colour.",
  st_play:"Your move ({color}).",st_openOther:"{name} is placing the opening.",st_chooseOther:"{name} is choosing: Black, White, or 2 more stones.",
  st_choose1Other:"{name} is choosing a colour.",st_turnC:"{name} to move ({color}).",
- st_tentative:"Move at {c}: confirm to play it.",pend_stones:"Stones: {m}. Confirm to play them.",confirm1:"Confirm",confirmN:"Confirm stones",
+ st_tentative:"Move at {c}: confirm to play it.",pend_stones:"Stones: {m}. Confirm to play them.",confirm1:"Confirm",pend_pick:"{c}: confirm your choice.",confirmN:"Confirm stones",
  bBlack:"Black",bWhite:"White",bAdd:"+2 stones",takeBlack:"Take Black",takeBlackSub:"White plays the next move.",takeWhite:"Take White",takeWhiteSub:"Taking it means playing the next move.",
  add2:"Add 2 stones",add2Sub:"1 black, then 1 white; {name} then chooses.",
  d_open:"black {a}, white {b}, black {c}",d_add:"2 more stones, black {a} and white {b}",d_B:"Take black",d_W:"Take white",d_Wn:"Take white and play {c}",
@@ -474,8 +467,8 @@ const PE_I18N={fr:{
  <li>Capturing five pairs wins.</li>
  <li>Swap2: the first player places 2 black stones and 1 white. The second player takes Black, takes White, or adds 1 black and 1 white and lets the first player choose. White moves next.</li>
  <li>Fischer clock: base time for each player, increment added after every action. Running out of time loses the game.</li>
- <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; on a touch screen, a first tap places it provisionally; a winning move is played at once). Clicking a provisional stone removes it; in the opening and the 2 more stones the order does not matter: the next stone takes the colour of the one removed. The opening and the 2 more stones always wait for Confirm, even with “Confirm each move” off. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eleven levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; a winning move is played at once). Clicking a provisional stone removes it; in the opening and the 2 more stones the order does not matter: the next stone takes the colour of the one removed. The opening, the 2 more stones and the Black or White choice always wait for Confirm, even with “Confirm each move” off. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eleven levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
  title:"Pente",lede:"Cinco en línea, o diez piedras capturadas.",by:"Un juego de Gary Gabrel.",
@@ -486,7 +479,7 @@ const PE_I18N={fr:{
  n_add2:"Añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_openN:"{name} coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_add2N:"{who} añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_choose1:"{name} ha añadido una negra y una blanca: elige tu color.",
  st_play:"Te toca jugar ({color}).",st_openOther:"{name} coloca la apertura.",st_chooseOther:"{name} elige: Negras, Blancas o 2 piedras más.",
  st_choose1Other:"{name} elige su color.",st_turnC:"Le toca a {name} ({color}).",
- st_tentative:"Jugada en {c}: confirma para jugarla.",pend_stones:"Piedras: {m}. Confirma para jugarlas.",confirm1:"Confirmar",confirmN:"Confirmar las piedras",
+ st_tentative:"Jugada en {c}: confirma para jugarla.",pend_stones:"Piedras: {m}. Confirma para jugarlas.",confirm1:"Confirmar",pend_pick:"{c}: confirma tu elección.",confirmN:"Confirmar las piedras",
  bBlack:"Negras",bWhite:"Blancas",bAdd:"+2 piedras",takeBlack:"Tomar Negras",takeBlackSub:"Blancas hacen la siguiente jugada.",takeWhite:"Tomar Blancas",takeWhiteSub:"Tomarlas es hacer la siguiente jugada.",
  add2:"Añadir 2 piedras",add2Sub:"1 negra y luego 1 blanca; {name} elige después.",
  d_open:"negra {a}, blanca {b}, negra {c}",d_add:"2 piedras más, negra {a} y blanca {b}",d_B:"Tomar las negras",d_W:"Tomar las blancas",d_Wn:"Tomar las blancas y jugar {c}",
@@ -499,8 +492,8 @@ const PE_I18N={fr:{
  <li>Cinco pares capturados ganan.</li>
  <li>Swap2: el primer jugador coloca 2 negras y 1 blanca. El segundo toma Negras, toma Blancas, o añade 1 negra y 1 blanca y deja elegir al primero. Después juegan Blancas.</li>
  <li>Reloj Fischer: tiempo base para cada uno, incremento añadido tras cada acción. Tiempo agotado: partida perdida.</li>
- <li><b>Jugar</b>: haz clic en una intersección para colocar una piedra (al pasar el ratón, se muestra en transparencia; en pantalla táctil, un primer toque la coloca de forma provisional; una jugada ganadora se juega enseguida). Hacer clic en una piedra provisional la retira; en la apertura y en las 2 piedras más, el orden no importa: la piedra siguiente toma el color de la retirada. La apertura y las 2 piedras más esperan siempre Confirmar, aunque «Confirmar cada jugada» esté desmarcado. Los mandos de la jugada están en la barra de acciones: Negras, Blancas o +2 piedras para la elección de Swap2, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, once niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Jugar</b>: haz clic en una intersección para colocar una piedra (al pasar el ratón, se muestra en transparencia; una jugada ganadora se juega enseguida). Hacer clic en una piedra provisional la retira; en la apertura y en las 2 piedras más, el orden no importa: la piedra siguiente toma el color de la retirada. La apertura, las 2 piedras más y la elección Negras o Blancas esperan siempre Confirmar, aunque «Confirmar cada jugada» esté desmarcado. Los mandos de la jugada están en la barra de acciones: Negras, Blancas o +2 piedras para la elección de Swap2, Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, once niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
  <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
 }};
 for(let n=6;n<=9;n++){const l=LINES(n);PE_I18N.fr['w_line'+n]=l.fr;PE_I18N.en['w_line'+n]=l.en;PE_I18N.es['w_line'+n]=l.es;}
@@ -622,7 +615,7 @@ function peTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.t
 function peWaitStatus({r}){const st=r.st,n=seatName(st.turn);
   status(st.phase==='open'?t('st_openOther',{name:n}):st.phase==='choose'?t('st_chooseOther',{name:n}):st.phase==='choose1'?t('st_choose1Other',{name:n}):t('st_turnC',{name:n,color:CN(st.toMove)}));return true;}
 function pick(c){if(busy==='hint')stopAI();hintMv=null;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const st=meSt(r);
-  if(st.phase!=='choose'&&st.phase!=='choose1')return;send({t:c});}
+  if(st.phase!=='choose'&&st.phase!=='choose1')return;ui.pending={t:c};renderGame();}   // a choice of colour always waits for Confirm (C14)
 // Players' cards (built by core): the seat's colour instead of the seat dot, the pairs it captured
 function playerCard(el,p,d){const st=d.st,col=st.color[p],dot=el.querySelector&&el.querySelector('.dot');
   if(dot){dot.className='dot pst '+(col===1?'b':col===2?'w':'u');dot.title=col?CN(col):'';}
@@ -634,21 +627,21 @@ function playerCard(el,p,d){const st=d.st,col=st.color[p],dot=el.querySelector&&
 const prepared=()=>ui.tent.length>0||ui.add2||!!ui.pending;
 // Reset: drop the whole prepared move (stones and the +2 choice), back to the plain board of the current position
 function cancelPrep(){clearTent();ui.add2=false;ui.pending=null;ui.hover=-1;renderGame();}
-// A click on an intersection: places the next provisional stone (a single stone moves to the new place); on a
-// provisional stone, removes it alone, and the next stone placed takes its colour (with « Confirm each move » off, a
-// click on a single provisional stone plays it). Complete: the move waits for Confirm, or a single stone is played at once
-// (confirmation off, not on a touch screen); the opening and the 2 more stones always wait for Confirm.
+// A click (or a tap: B10) on an intersection: places the next provisional stone (a single stone moves to the new place);
+// on a provisional stone, removes it alone, and the next stone placed takes its colour. Complete: the move waits for
+// Confirm, or a single stone is played at once (confirmation off, mouse and touch alike); the opening and the 2 more
+// stones always wait for Confirm.
 // Analysis (core): the other variations of the stone shown are marked; a click on one switches to it
 function altCells(){const out=new Map();if(typeof anaAlts!=='function')return out;for(const c of anaAlts()){const m=dec(c);if(m&&m.t==='m')out.set(m.i,c);}return out;}
-function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(busy==='hint')stopAI();if(hintMv)hintMv=null;
   const st=meSt(r),cols=placing(st);if(!cols){renderGame();return;}
   const k=ui.tent.indexOf(i);
-  if(k>=0){if(!confirmOn()&&cols.length===1){commit(st,cols);return;}ui.tent.splice(k,1);ui.tc.splice(k,1);ui.pending=null;renderGame();return;}
+  if(k>=0){ui.tent.splice(k,1);ui.tc.splice(k,1);ui.pending=null;renderGame();return;}
   if(st.B[i]){renderGame();return;}
   if(ui.tent.length<cols.length){ui.tc.push(nextCol(cols));ui.tent.push(i);}else if(cols.length===1){ui.tent=[i];ui.tc=[cols[0]];}else{renderGame();return;}
-  if(ui.tent.length===cols.length){if(!confirmOn()&&!touch&&cols.length===1||winsNow(st,ui.tent)){commit(st,cols);return;}ui.pending=makeMv(st,ordered(cols));}else ui.pending=null;
+  if(ui.tent.length===cols.length){if(!confirmOn()&&cols.length===1||winsNow(st,ui.tent)){commit(st,cols);return;}ui.pending=makeMv(st,ordered(cols));}else ui.pending=null;
   renderGame();}
 // A stone that wins at once (five in a row, or the fifth pair) is played without confirmation
 function winsNow(st,s){if(st.phase!=='play'||s.length!==1)return false;const w=cloneSt(st);return applyMv(w,{t:'m',i:s[0]})&&!!w.win&&w.win.w===st.turn;}
@@ -657,9 +650,7 @@ $('needConfirm').checked=(()=>{try{return localStorage.getItem('pente-confirm')!
 $('needConfirm').onchange=e=>{try{localStorage.setItem('pente-confirm',e.target.checked?'1':'0');}catch(x){}
   // switched off with a complete move waiting: it is played (the opening and the 2 more stones always wait for Confirm)
   if(!e.target.checked&&ui.pending&&ui.pending.t==='m'&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;clearTent();ui.add2=false;ui.pending=null;send(mv);}}};
-let lastPT='mouse';
-$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
-$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
+$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i);});
 // With a mouse, hovering shows the stone to place in transparency (only that layer is redrawn)
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
@@ -747,12 +738,6 @@ function fromOld(S){try{const f=S.first,o=f==='H'?'G':'H',L=S.log||[],op=L.filte
   const rs=S.result&&(S.result.code==='resign'||S.result.code==='time')?{winner:S.result.winner===f?0:1,reason:S.result.code}:null;
   if(peReplay({},mv).over&&peReplay({},mv).over.why==='w_bad')return null;
   return {moves:mv,result:rs,first:f,names:S.names?[S.names[f]||'',S.names[o]||'']:['',''],clock:S.clocks?[S.clocks[f]||0,S.clocks[o]||0]:[0,0],tc:S.tc||null,started:S.phase!=='wait'};}catch(e){return null;}}
-// A resume code of the former page (PENTE1. + the old state): rewritten in the shared format before the shared code reads it
-function oldCode(v){v=String(v||'').replace(/\s+/g,'');if(v.indexOf('PENTE1.')!==0)return null;let p;try{p=JSON.parse(decodeURIComponent(escape(atob(v.slice(7)))));}catch(e){return null;}
-  if(!p||!Array.isArray(p.B)||Array.isArray(p.moves))return null;const g=fromOld(p);if(!g)return null;
-  const q={size:N,tc:g.tc,first:g.first==='H'?'host':'guest',names:g.names,moves:g.moves,clock:g.clock,result:g.result,started:g.started};
-  return 'PENTE1.'+btoa(unescape(encodeURIComponent(JSON.stringify(q))));}
-$('rForm').addEventListener('submit',()=>{const c=oldCode($('rIn').value);if(c)$('rIn').value=c;});   // before core's own handler
 
 // ---------- the interface with common/core.js ----------
 const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
@@ -762,7 +747,7 @@ const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   enc,describe:mv=>describe(mv),newUi,preparing:prepared,cancel:cancelPrep,
   sgf:peSgf,
   board:peBoard,turnStatus:peTurnStatus,waitStatus:peWaitStatus,
-  pendText:mv=>mv.t==='m'?[t('st_tentative',{c:coord(mv.i)}),t('confirm1')]:[t('pend_stones',{m:stonesTxt(mv.s,mv.t==='o'?[1,2,1]:[1,2])}),t('confirmN')],
+  pendText:mv=>mv.t==='B'||mv.t==='W'?[t('pend_pick',{c:t(mv.t==='B'?'takeBlack':'takeWhite')}),t('confirm1')]:mv.t==='m'?[t('st_tentative',{c:coord(mv.i)}),t('confirm1')]:[t('pend_stones',{m:stonesTxt(mv.s,mv.t==='o'?[1,2,1]:[1,2])}),t('confirmN')],
   playerCard,
   logText:e=>logTxt(e),
   home:()=>{shown=null;drawBoard();},
