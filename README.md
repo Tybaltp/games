@@ -2,7 +2,7 @@
 
 Jeux de plateau à deux, joués de navigateur à navigateur : https://tybaltp.github.io/games/
 
-Dix jeux : Arimaa, Diagonal Blocks, Gygès, Pente, Ponte del Diavolo, Pylos, Quarto, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
+Onze jeux : Arimaa, Ayu, Diagonal Blocks, Gygès, Pente, Ponte del Diavolo, Pylos, Quarto, Tintas, Volo, Zèrtz. Chaque jeu tient dans une seule page HTML, posée sur un socle commun. Le site est statique, sans compilation ni dépendance à installer : on modifie les fichiers, on les pousse, GitHub Pages publie.
 
 ## Branches
 
@@ -18,7 +18,7 @@ img/cartes/           images des cartes de l'accueil (un morceau de plateau par 
 common/core.js        tout ce qui n'est pas propre à un jeu (ci-dessous)
 common/games.css      styles communs : accueil, écran de jeu fixe, barre d'actions, tiroir « ⋯ », cartes des joueurs
 common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS),
-                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks, Volo et Pylos
+                      interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks, Volo, Pylos et Ayu
 CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
 volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau », bloc /*NN*/ de volo.html), produits par
                       ~/volo-ia ; le worker charge onnxruntime-web depuis jsDelivr (repli unpkg, puis MCTS 3 s hors ligne)

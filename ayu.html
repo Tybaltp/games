@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ayu</title>
+<script src="common/theme.js?v=5"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
+<link rel="stylesheet" href="common/games.css?v=51">
+<style>
+/* Ayu palette (light, dark), board and stones; the shared layout is in common/games.css */
+:root{
+  --bg:#e9e3e5;--panel:#f4eff1;--ink:#2a1d23;--muted:#6e5f66;--line:#d6c9ce;
+  --accent:#b8195c;--accent-ink:#ffffff;--danger:#b3261e;
+  --sboard:#e2cf9f;--sgrid:rgba(60,42,18,.7);--slab:rgba(60,42,18,.75);
+  --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.85);--sstar:rgba(60,42,18,.85);--mk:#b8195c;
+  --board-ar:1/1;color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1a1518;--panel:#251d21;--ink:#ede4e8;--muted:#a8989f;--line:#3a2e34;
+  --accent:#e0558e;--accent-ink:#2a0a17;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#1a1518;--panel:#251d21;--ink:#ede4e8;--muted:#a8989f;--line:#3a2e34;
+  --accent:#e0558e;--accent-ink:#2a0a17;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}
+.board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
+.board .pt{cursor:pointer}
+/* players' cards: the seat's colour (it changes with the swap) and its units */
+.dot.sst{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
+.player .who{padding:2px 0 2px 2px}
+.sst.b{background:var(--sb);border:1px solid #000;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.sst.w{background:var(--sw);border:1px solid rgba(0,0,0,.6)}
+.player .units{font-size:.78rem;color:var(--muted);white-space:nowrap}
+.mini{display:inline-block;width:11px;height:11px;border-radius:50%;box-sizing:border-box;flex:none;vertical-align:-1px}
+.mini.b{background:var(--sb);border:1px solid #000}.mini.w{background:var(--sw);border:1px solid rgba(0,0,0,.55)}
+ol.log li{align-items:center}
+ol.log .aym{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+ol.log .aym .tag{color:var(--muted);font-size:.72rem}
+</style>
+<style>
+/* accueil : ce qui est propre à Ayu ; le reste dans common/accueil.css. Le fond : le plateau entier en cours de partie,
+   sur le fond de la page (première version rapide, à revoir) ; cadres de mode à la couleur de l'étiquette du jeu (common/cards.css). */
+:root{--accImgL:url(../img/accueil/ayu.svg);--accImgD:url(../img/accueil/ayu-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#b8195c;--accTintD:#e0558e}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=4">
+</head><body>
+<div class="wrap">
+<header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="ayu.html"><b id="ttl" style="font-weight:inherit">Ayu</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
+<div class="status" id="status" aria-live="polite">Loading…</div>
+
+<section class="view" id="setup">
+  <div class="home">
+    <p class="lede noinv"><span data-i18n="lede"></span> <span data-i18n="by"></span></p>
+    <div class="card primary-card" id="newCard">
+      <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
+      <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
+        <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
+        <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
+        <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
+          <form class="form" id="joinForm">
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="ay-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+            <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
+            <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+            <p class="hint err" id="joinErr"></p>
+          </form>
+          <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
+        </details>
+      </div>
+      <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
+      <p class="hint" id="modeTxt" hidden></p>
+      <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
+      <div class="picks" id="anaPick" hidden>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">New analysis</b><span data-i18n="a_freeTxt">Both sides on this screen: stepping back, variations, hints.</span></button>
+        <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
+      </div>
+      
+      
+      <form class="form" id="createForm" hidden>
+        
+        <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
+        <label class="toggle" for="cSwap"><input type="checkbox" id="cSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
+        <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
+      </form>
+      <form class="form" id="aiForm" hidden>
+        <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
+        <label class="toggle" for="aSwap"><input type="checkbox" id="aSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
+      </form>
+      <form class="form" id="faceForm" hidden>
+        <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
+        <label class="toggle" for="fSwap"><input type="checkbox" id="fSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="testForm" hidden>
+        <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
+        <label class="toggle" for="tSwap"><input type="checkbox" id="tSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+      </form>
+      <form class="form" id="loadForm" hidden>
+        <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
+        <p class="hint err" id="sgfErr"></p>
+        <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
+      </form>
+    </div>
+    
+    
+    
+    
+    <details id="rulesHome" class="noinv"></details>
+  </div>
+</section>
+
+<section class="view" id="game" hidden>
+<main>
+  <div class="boardwrap">
+    <div class="players" id="playersTop"><div class="player" id="pl0"></div><div class="player" id="pl1"></div></div>
+    <div class="boardarea"><div class="board"><svg id="svg" viewBox="0 0 700 700" role="img" aria-label="Ayu board"></svg></div></div>
+    <div class="navbar" id="nav" hidden><button type="button" id="navFirst" data-i18n-t="nav_first">⏮︎</button><button type="button" id="navBrP" data-i18n-t="nav_brP" hidden>⏪︎</button><button type="button" id="navPrev" data-i18n-t="nav_prev">◀</button><span class="navmid"><button type="button" class="navalt" id="navAltU" data-i18n-t="nav_altU" hidden>▲</button><span class="navpos" id="navPos"></span><button type="button" class="navalt" id="navAltD" data-i18n-t="nav_altD" hidden>▼</button></span><button type="button" id="navNext" data-i18n-t="nav_next">▶</button><button type="button" id="navBrN" data-i18n-t="nav_brN" hidden>⏩︎</button><button type="button" id="navLast" data-i18n-t="nav_last">⏭︎</button></div>
+    <div class="notice" id="notice"></div>
+    <form class="nameov" id="nameOv" hidden><div class="card"><h2 id="nameOvT"></h2><p class="hint" id="nameOvTxt"></p><div class="form"><label for="nameOvIn"><span data-i18n="nick">Your name</span><input id="nameOvIn" maxlength="24" autocomplete="nickname" class="txt"></label></div><div class="confirm"><button type="submit" class="primary" id="nameOvGo"></button><button type="button" id="nameOvAnon" data-i18n="anon" hidden>Anonymous</button></div></div></form>
+  </div>
+  <aside class="side" id="side" tabindex="-1">
+    <div class="players side-only" id="playersSide"></div>
+    <!-- wide screens: the action bar (#notice) is moved here, under the players (layoutMode); the rest scrolls -->
+    <div class="sidescroll" id="sideScroll">
+    <details id="inviteBox" hidden><summary id="inviteSum" data-i18n="invite">Invite</summary>
+      <div id="invPart">
+      <!-- one row per code: the code in clear, then « copy the code » and « copy the link » (the links stay in hidden fields) -->
+      <div id="linksBox" class="vh" hidden><div id="oppLink"><input id="codeP" readonly tabindex="-1" aria-hidden="true"></div><div id="watchLinkBox"><input id="codeW" readonly tabindex="-1" aria-hidden="true"></div></div>
+      <div class="coderow" id="codePBox"><span class="hint" data-i18n="cGame">Opponent</span><input class="codetxt" id="codeC" readonly aria-label="Game code"><span class="cbtns"><button type="button" data-copy="codeC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeP" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <div class="coderow" id="codeWBox"><span class="hint" data-i18n="cWatch">Spectators</span><input class="codetxt" id="codeWC" readonly aria-label="Code for spectators"><span class="cbtns"><button type="button" data-copy="codeWC" data-i18n="cCode" data-i18n-t="copyCode">Code</button><button type="button" class="lnk" data-copy="codeW" data-i18n="cLink" data-i18n-t="copyLink">Link</button></span></div>
+      <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
+      <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
+      </div>
+    </details>
+    <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
+    <div class="card" id="endCard" hidden>
+      <p class="hint" id="rmTxt" hidden></p>
+      <div class="confirm" id="rmBox"><button type="button" class="primary" id="newGame" data-i18n="rematch">Rematch</button></div>
+      <div class="confirm" id="rmAsk" hidden><button type="button" id="rmNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="rmYes" data-i18n="accept">Accept</button></div>
+      <div class="confirm" id="rmWait" hidden><button type="button" id="rmCancel" data-i18n="cancel">Cancel</button></div>
+      <div class="confirm"><button type="button" id="homeBtn" data-i18n="home">Home</button></div>
+    </div>
+    <details class="chat" id="chatBox" hidden open><summary id="chatSum" data-i18n="chat">Chat</summary><p class="wline" id="watchLine"></p><ul class="chatlist" id="chatList" aria-live="polite"></ul><p class="hint" id="chatHint" hidden></p><form class="chatform" id="chatForm" autocomplete="off"><input id="chatIn" class="txt" maxlength="200" aria-label="Message"><button type="submit" id="chatGo" data-i18n="chatSend">Send</button></form><button type="button" id="chatName" data-i18n="chatName" hidden>Choose a name to write</button><div class="voicein" id="voiceBox" hidden><button type="button" id="voiceAsk" data-i18n="vAsk">Offer voice chat</button><p class="hint" id="voiceTxt" hidden></p><div class="confirm" id="voiceIn" hidden><button type="button" id="voiceNo" data-i18n="decline">Decline</button><button type="button" class="primary" id="voiceYes" data-i18n="accept">Accept</button></div><button type="button" id="voiceCancel" data-i18n="cancel" hidden>Cancel</button><div class="voicectl" id="voiceCtl" hidden><button type="button" id="voiceMute">🎙</button><input type="range" id="voiceVol" min="0" max="100" step="5"><button type="button" class="danger" id="voiceHang" data-i18n="vHang">Hang up</button></div></div></details>
+    <details class="opts" id="myCard" hidden open><summary data-i18n="options">Options</summary>
+      <div class="confirm" id="resignBox"><button type="button" class="danger" id="resign" data-i18n="resign">Resign</button></div>
+      <div class="confirm" id="resignAsk" hidden><button type="button" id="resignNo" data-i18n="resignNo">Keep playing</button><button type="button" class="danger" id="resignYes" data-i18n="resignYes">Confirm resignation</button></div>
+      <div id="aiBox" hidden style="display:flex;flex-direction:column;gap:8px">
+        <label class="lvl" for="gLevel"><span data-i18n="level">Level</span><select id="gLevel"></select></label>
+        <p class="hint" id="aiInfo"></p>
+      </div>
+      <label class="toggle" for="needConfirm"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
+      <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
+    </details>
+    <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
+    <details id="rules"></details>
+    </div>
+  </aside>
+</main>
+<div class="sheetbg" id="sheetBg" hidden></div>
+</section>
+</div>
+<script src="common/core.js?v=85"></script>
+<script src="common/codes.js?v=6"></script>
+<script src="common/ai.js?v=2"></script>
+<script>
+// ===== Ayu (Luis Bolaños Mures, 2011) =====
+// Rules kept: an odd square board (11 × 11 by default; 9, 11 or 13), on the points; « neighbour » = orthogonal. Start (to
+// be checked on the rules' diagram): Black on the points (even column b, d, f…, odd row 1, 3, 5…), White on the points
+// (odd column a, c, e…, even row 2, 4…); 30 stones each on 11 × 11. A unit: a lone stone, or a group of neighbouring
+// stones of one colour. Black moves first. A move (code « c3-c4 »): a lone stone goes to an empty neighbouring point; a
+// stone of a group goes to an empty point neighbouring the same group, and the group stays in one piece after the move.
+// Distance rule: the move must reduce the distance between the unit moved and the nearest friendly unit (the number of
+// empty points on the shortest orthogonal path joining them, that is the number of moves to join them); a move that
+// joins the unit to another always reduces it. Swap (option, off by default): after Black's first move, White may change
+// sides (« swap »). The player who has no legal move on their turn wins (usually: all their stones in one group). A
+// position repeated with the same player to move: a draw.
+function AyuEngine(){
+ const BLACK=0,WHITE=1,ORTH=[[1,0],[-1,0],[0,1],[0,-1]],SIZES=[9,11,13];
+ function rules(src){const n=+(src&&src.size);return{size:SIZES.includes(n)?n:11,swap:!!(src&&src.swap)};}
+ // point i = x + n*y; x column (a… left to right), y row (0 = bottom); name « c3 »
+ const name=(n,i)=>String.fromCharCode(97+i%n)+(Math.floor(i/n)+1);
+ function parse(n,s){const m=/^([a-z])(\d+)$/.exec(s);if(!m)return -1;const x=m[1].charCodeAt(0)-97,y=+m[2]-1;
+  return x>=0&&x<n&&y>=0&&y<n?x+n*y:-1;}
+ const nbCache={};
+ function nbs(n){if(nbCache[n])return nbCache[n];const out=[];
+  for(let i=0;i<n*n;i++){const x=i%n,y=(i-x)/n,a=[];for(const[dx,dy]of ORTH){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<n&&Y<n)a.push(X+n*Y);}out.push(a);}
+  return nbCache[n]=out;}
+ function init(r){const n=r.size,b=new Int8Array(n*n).fill(-1);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if(x%2===1&&y%2===0)b[x+n*y]=BLACK;else if(x%2===0&&y%2===1)b[x+n*y]=WHITE;}
+  return{size:n,swap:r.swap,b,col:[BLACK,WHITE],turn:0,ply:0,seen:{}};}
+ const toMove=st=>st.col[st.turn];
+ // the unit (points) holding i on the board b
+ function unitOf(n,b,i){const N=nbs(n),c=b[i],out=[i],seen=new Uint8Array(n*n);seen[i]=1;
+  for(let k=0;k<out.length;k++)for(const j of N[out[k]])if(!seen[j]&&b[j]===c){seen[j]=1;out.push(j);}
+  return out;}
+ // distance from the unit u (colour c) to the nearest friendly unit: empty points on the shortest path; Infinity if none
+ function dist(n,b,u,c){const N=nbs(n),inU=new Uint8Array(n*n);u.forEach(i=>inU[i]=1);
+  const d=new Int16Array(n*n).fill(-1);let q=[];
+  for(const i of u)for(const j of N[i])if(b[j]===-1&&d[j]<0){d[j]=1;q.push(j);}
+  for(let k=0;k<q.length;k++){const i=q[k];
+   for(const j of N[i]){if(b[j]===c&&!inU[j])return d[i];if(b[j]===-1&&d[j]<0){d[j]=d[i]+1;q.push(j);}}}
+  return Infinity;}
+ // the board after the move f→t, or null if it is illegal
+ function after(st,f,t){const n=st.size,b=st.b,c=toMove(st),N=nbs(n);
+  if(f<0||t<0||b[f]!==c||b[t]!==-1)return null;
+  const u=unitOf(n,b,f);
+  const nb=b.slice();nb[f]=-1;nb[t]=c;
+  if(u.length===1){if(!N[f].includes(t))return null;}
+  else{
+   const rest=u.filter(i=>i!==f);if(!N[t].some(j=>rest.includes(j)))return null;      // next to the same group
+   const u2=unitOf(n,nb,t);if(!rest.every(i=>u2.includes(i)))return null;               // the group still in one piece
+  }
+  const u2=unitOf(n,nb,t);
+  if(u2.length>u.length)return nb;                       // joined to another unit
+  const before=dist(n,b,u,c),aft=dist(n,nb,u2,c);
+  return aft<before?nb:null;}
+ function legalMoves(st){const n=st.size,b=st.b,c=toMove(st),N=nbs(n),out=[];
+  for(let f=0;f<n*n;f++){if(b[f]!==c)continue;const u=unitOf(n,b,f),cand=new Set();
+   for(const i of u)for(const j of N[i])if(b[j]===-1)cand.add(j);
+   for(const t of cand)if(after(st,f,t))out.push([f,t]);}
+  return out;}
+ function legal(st,code){if(typeof code!=='string')return null;code=code.trim().toLowerCase();
+  if(code==='swap')return st.swap&&st.ply===1?'swap':null;
+  const m=/^([a-z]\d+)-([a-z]\d+)$/.exec(code);if(!m)return null;
+  const n=st.size,f=parse(n,m[1]),t=parse(n,m[2]);
+  return after(st,f,t)?name(n,f)+'-'+name(n,t):null;}
+ const key=st=>st.turn+':'+st.col[st.turn]+':'+st.b.join('');
+ // {st, log:[{p (seat),s,code,kind,c,f,t}], last, over:null|{w (-1 draw),why}}
+ function replay(r,moves){r=rules(r);const st=init(r),log=[];let last=null,over=null;st.seen[key(st)]=1;
+  const check=()=>{if(!legalMoves(st).length)return{w:st.turn,why:'w_stuck'};   // no move: the player to move wins
+   const k=key(st);if(st.seen[k])return{w:-1,why:'w_rep'};st.seen[k]=1;return null;};
+  for(const m of moves||[]){if(over)break;const code=legal(st,m);
+   if(code===null){over={w:-1,why:'w_bad'};break;}
+   const s=st.turn,c=toMove(st);let res;
+   if(code==='swap'){st.col=[st.col[1],st.col[0]];st.turn=0;res={kind:'swap',c};}
+   else{const [f,t]=code.split('-').map(x=>parse(st.size,x));st.b=after(st,f,t);st.turn=1-st.turn;res={kind:'move',c,f,t};}
+   st.ply++;log.push({p:s,s,code,...res});last={code,...res};over=check();}
+  if(!moves||!moves.length){if(!legalMoves(st).length)over={w:st.turn,why:'w_stuck'};}
+  return{st,log,last,over};}
+ return{BLACK,WHITE,SIZES,nbs,rules,init,name,parse,toMove,unitOf,dist,after,legalMoves,legal,replay};
+}
+const AY=AyuEngine();
+
+// ===== Ayu: the page's side of common/core.js =====
+const AY_I18N={fr:{
+ lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
+ title:"Ayu",lede:"Des pierres éparpillées partout : rassemblez les vôtres.",by:"Un jeu de Luis Bolaños Mures.",
+ sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
+ firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
+ cB:"noir",cW:"blanc",units:"{n} unités",unit1:"1 unité",unitsT:"Unités : pierres seules ou groupes. Une seule unité, le plus souvent : plus de coup, c'est gagné.",
+ swap:"Échanger",swapT:"Échanger : vous prenez le camp noir et le coup joué ; votre adversaire joue Blanc.",
+ st_play:"À vous ({c}) : choisissez une pierre à déplacer.",st_playN:"{name} ({c}) : choisissez une pierre à déplacer.",st_swapQ:" Ou échangez.",
+ st_sel:"Choisissez où elle va (points marqués).",st_selNone:"Cette pierre ne peut pas bouger : choisissez-en une autre.",
+ st_turnC:"Au tour de {name} ({c}).",
+ pend:"{f} → {t}.",confirm1:"Confirmer",
+ d_move:"{f} → {t}",d_swap:"échange",l_swap:"échange",
+ w_stuck:"plus aucun coup possible",w_rep:"position répétée",
+ ai_swapped:"Ordinateur : échange.",
+ boardLbl:"Plateau d'Ayu",
+ rules:`<summary>Règles en bref</summary><ul>
+ <li><b>Matériel</b> : un plateau de 11 × 11 intersections (9 × 9 ou 13 × 13 au choix). Au départ, les pierres noires et blanches alternent en quinconce : 30 de chaque couleur en 11 × 11. Noir commence.</li>
+ <li><b>Unités</b> : une pierre seule, ou un groupe de pierres de même couleur reliées orthogonalement.</li>
+ <li><b>Coup</b> : une pierre seule va sur un point vide voisin. Une pierre d'un groupe va sur un point vide voisin du groupe, et le groupe doit rester d'un seul tenant.</li>
+ <li><b>Distance</b> : le coup doit rapprocher l'unité déplacée de l'unité amie la plus proche (en nombre de points vides à traverser). Joindre une autre unité est toujours permis.</li>
+ <li><b>Victoire</b> : le joueur qui n'a plus de coup à son tour gagne, en général parce que toutes ses pierres forment un seul groupe. Une position répétée avec le même joueur au trait : partie nulle.</li>
+ <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, Blanc peut changer de camp ; le premier joueur, devenu Blanc, joue.</li>
+ <li><b>Cartes joueurs</b> : la couleur de chacun et son nombre d'unités.</li>
+ <li><b>Jouer</b> : cliquez une de vos pierres ; les points où elle peut aller sont marqués d'un point. Cliquez l'un d'eux (au survol, la pierre s'y affiche en transparence). Cliquer de nouveau la pierre la désélectionne. Avec « Confirmer chaque coup », le coup attend Confirmer. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
+ <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Règles : <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
+},en:{
+ lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
+ title:"Ayu",lede:"Stones scattered everywhere: gather yours.",by:"A game by Luis Bolaños Mures.",
+ sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
+ firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
+ cB:"black",cW:"white",units:"{n} units",unit1:"1 unit",unitsT:"Units: lone stones or groups. A single unit usually means no more moves: a win.",
+ swap:"Swap",swapT:"Swap: you take the black side and the move played; your opponent plays White.",
+ st_play:"Your move ({c}): choose a stone to move.",st_playN:"{name} ({c}): choose a stone to move.",st_swapQ:" Or swap.",
+ st_sel:"Choose where it goes (marked points).",st_selNone:"This stone cannot move: choose another one.",
+ st_turnC:"{name} to move ({c}).",
+ pend:"{f} → {t}.",confirm1:"Confirm",
+ d_move:"{f} → {t}",d_swap:"swap",l_swap:"swap",
+ w_stuck:"no move left",w_rep:"repeated position",
+ ai_swapped:"Computer: swaps.",
+ boardLbl:"Ayu board",
+ rules:`<summary>Rules in brief</summary><ul>
+ <li><b>Material</b>: a board of 11 × 11 points (9 × 9 or 13 × 13 as you choose). At the start, black and white stones alternate in a staggered pattern: 30 of each colour on 11 × 11. Black moves first.</li>
+ <li><b>Units</b>: a lone stone, or a group of stones of one colour joined orthogonally.</li>
+ <li><b>Move</b>: a lone stone goes to an empty neighbouring point. A stone of a group goes to an empty point next to the group, and the group must stay in one piece.</li>
+ <li><b>Distance</b>: the move must bring the unit moved closer to the nearest friendly unit (in empty points to cross). Joining another unit is always allowed.</li>
+ <li><b>Winning</b>: the player with no move on their turn wins, usually because all their stones form a single group. A position repeated with the same player to move: a draw.</li>
+ <li><b>Swap</b> (option, off by default): after Black's first move, White may change sides; the first player, now White, moves.</li>
+ <li><b>Player cards</b>: each player's colour and number of units.</li>
+ <li><b>Playing</b>: click one of your stones; the points it can go to are marked with a dot. Click one of them (hovering shows the stone there in transparency). Clicking the stone again deselects it. With “Confirm each move”, the move waits for Confirm. The commands are in the bar under the board: Swap, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
+ <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Rules: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
+},es:{
+ lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
+ title:"Ayu",lede:"Piedras dispersas por todas partes: reúne las tuyas.",by:"Un juego de Luis Bolaños Mures.",
+ sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
+ firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
+ cB:"negras",cW:"blancas",units:"{n} unidades",unit1:"1 unidad",unitsT:"Unidades: piedras sueltas o grupos. Una sola unidad, casi siempre: no hay más jugadas, has ganado.",
+ swap:"Intercambiar",swapT:"Intercambiar: tomas el bando negro y la jugada hecha; tu adversario juega con Blancas.",
+ st_play:"Te toca ({c}): elige una piedra para mover.",st_playN:"{name} ({c}): elige una piedra para mover.",st_swapQ:" O intercambia.",
+ st_sel:"Elige adónde va (puntos marcados).",st_selNone:"Esta piedra no puede moverse: elige otra.",
+ st_turnC:"Turno de {name} ({c}).",
+ pend:"{f} → {t}.",confirm1:"Confirmar",
+ d_move:"{f} → {t}",d_swap:"intercambio",l_swap:"intercambio",
+ w_stuck:"no queda ninguna jugada",w_rep:"posición repetida",
+ ai_swapped:"Ordenador: intercambia.",
+ boardLbl:"Tablero de Ayu",
+ rules:`<summary>Reglas en breve</summary><ul>
+ <li><b>Material</b>: un tablero de 11 × 11 intersecciones (9 × 9 o 13 × 13 a elegir). Al principio, las piedras negras y blancas se alternan al tresbolillo: 30 de cada color en 11 × 11. Empiezan las Negras.</li>
+ <li><b>Unidades</b>: una piedra suelta, o un grupo de piedras del mismo color unidas ortogonalmente.</li>
+ <li><b>Jugada</b>: una piedra suelta va a un punto vacío vecino. Una piedra de un grupo va a un punto vacío vecino del grupo, y el grupo debe seguir siendo de una sola pieza.</li>
+ <li><b>Distancia</b>: la jugada debe acercar la unidad movida a la unidad amiga más cercana (en número de puntos vacíos que cruzar). Unirse a otra unidad siempre está permitido.</li>
+ <li><b>Victoria</b>: el jugador que no tiene jugada en su turno gana, por lo general porque todas sus piedras forman un solo grupo. Una posición repetida con el mismo jugador al turno: tablas.</li>
+ <li><b>Intercambio</b> (opción, desactivada por defecto): tras la primera jugada de las Negras, las Blancas pueden cambiar de bando; el primer jugador, ahora con Blancas, juega.</li>
+ <li><b>Tarjetas de jugador</b>: el color de cada uno y su número de unidades.</li>
+ <li><b>Jugar</b>: haz clic en una de tus piedras; los puntos adonde puede ir se marcan con un punto. Haz clic en uno de ellos (al pasar el ratón, la piedra se muestra allí en transparencia). Volver a hacer clic en la piedra la deselecciona. Con «Confirmar cada jugada», la jugada espera a Confirmar. Los controles están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
+ <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
+ <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Reglas: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
+}};
+const CN=c=>t(c===AY.BLACK?'cB':'cW'),CK=c=>c===AY.BLACK?'b':'w';
+const nm=(st,i)=>AY.name(st.size,i);
+function describe(mv,st){const c=String(mv);if(c==='swap')return t('d_swap');const [f,tt]=c.split('-');return t('d_move',{f,t:tt});}
+function logNode(e){const s=document.createElement('span');s.className='aym';const n=view?AY.rules(view).size:11,N=i=>AY.name(n,i);
+  s.innerHTML=`<span class="mini ${CK(e.c)}"></span>`+(e.kind==='swap'?`<span class="tag">${t('l_swap')}</span>`:N(e.f)+'→'+N(e.t));return s;}
+function logText(e){if(e.kind==='swap')return t('l_swap');const n=view?AY.rules(view).size:11;return AY.name(n,e.f)+'-'+AY.name(n,e.t);}
+// units of colour c on b
+function unitCount(n,b,c){const seen=new Uint8Array(n*n);let k=0;for(let i=0;i<n*n;i++)if(b[i]===c&&!seen[i]){k++;for(const j of AY.unitOf(n,b,i))seen[j]=1;}return k;}
+
+// ---------- the move being prepared ----------
+// ui.f: the stone selected, ui.t: its destination (provisional), ui.pending: the move awaiting confirmation
+const newUi=()=>({f:-1,t:-1,pending:null,hover:-1});
+const prepared=()=>ui.f>=0||!!ui.pending;
+function clearPrep(){ui.f=ui.t=-1;ui.pending=null;}
+function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
+const confirmOn=()=>$('needConfirm').checked;
+let shown=null,tgCache={key:'',list:[]};
+// the legal destinations of the stone f in st (cached for the position and the stone)
+function targets(st,f){const k=st.b.join('')+'|'+f;if(tgCache.key!==k){const out=[];if(f>=0&&st.b[f]===AY.toMove(st)){const n=st.size,N=AY.nbs(n),cand=new Set();
+    for(const i of AY.unitOf(n,st.b,f))for(const j of N[i])if(st.b[j]===-1)cand.add(j);for(const tt of cand)if(AY.after(st,f,tt))out.push(tt);}
+  tgCache={key:k,list:out};}return tgCache.list;}
+function ayBoard({r,d,mine,ms}){const live=navAt===null;if(mine&&live&&ui.f>=0&&ms.b[ui.f]!==AY.toMove(ms))clearPrep();
+  shown={d,ms,mine:mine&&live};drawBoard();return {};}
+function ayTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=AY.toMove(st),me=seatName(st.turn);
+  if(ui.f>=0){status(targets(st,ui.f).length?t('st_sel'):t('st_selNone'),'turn',[RST]);return;}
+  const sw=st.swap&&st.ply===1;
+  status((S?t('st_playN',{name:me,c:CN(c)}):t('st_play',{c:CN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
+  if(sw&&$('bSwap'))$('bSwap').title=t('swapT');}
+function ayWaitStatus({r}){status(t('st_turnC',{name:seatName(r.st.turn),c:CN(AY.toMove(r.st))}));return true;}
+function pendText(mv,st){const [f,tt]=String(mv).split('-');return [t('pend',{f,t:tt}),t('confirm1')];}
+function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
+  if(dot){dot.className='dot sst '+CK(col);dot.title=CN(col);}
+  const k=unitCount(st.size,st.b,col),x=document.createElement('div');x.className='units';x.title=t('unitsT');x.textContent=k===1?t('unit1'):t('units',{n:k});el.appendChild(x);}
+function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
+
+// ---------- input ----------
+// A click on one of my stones selects it (again: deselects it); on one of its destinations, plays there (waits for Confirm
+// with « Confirm each move », or on a touch screen); a second click on the provisional stone plays it (charte B10, C14).
+function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
+  const st=meSt(r),c=AY.toMove(st);
+  if(i===ui.t){if(ui.pending&&GAME.again(ui.pending)){pendAgain();return;}ui.t=-1;ui.pending=null;renderGame();return;}   // the provisional stone clicked again: played (C14)
+  if(i===ui.f){clearPrep();renderGame();return;}
+  if(st.b[i]===c){clearPrep();ui.f=i;tone(880,.05,.03);renderGame();return;}
+  if(ui.f>=0&&targets(st,ui.f).includes(i)){const code=nm(st,ui.f)+'-'+nm(st,i);
+    if(!confirmOn()&&!touch){clearPrep();send(code);return;}ui.t=i;ui.pending=code;renderGame();return;}}
+$('needConfirm').checked=LS.get('ayu-confirm',true)!==false;
+$('needConfirm').onchange=e=>{LS.set('ayu-confirm',e.target.checked);if(!e.target.checked&&ui.pending&&view&&isMyTurn(replay(view,view.moves,view.result))){const mv=ui.pending;clearPrep();send(mv);}};
+let lastPT='mouse';
+$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
+$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
+function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
+if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
+  $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
+function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;const n=shown.d.st.size;
+  for(const c of anaAlts()){const m=/-([a-z]\d+)$/.exec(c);if(m){const i=AY.parse(n,m[1]);if(i>=0)out.set(i,c);}}return out;}
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg',CELL=40,SR=CELL*.47;let SW=1;
+function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+let G={n:11,pad:CELL};
+const PX=i=>G.pad+(i%G.n)*CELL,PY=i=>G.pad+(G.n-1-Math.floor(i/G.n))*CELL;
+function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===0?'var(--sb)':'var(--sw)',stroke:c===0?'var(--sbe)':'var(--swe)','stroke-width':SW},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
+const MKW=2.2,ring=(g,i,dot)=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.7,fill:'none',stroke:'var(--mk)','stroke-width':MKW,...(dot?{'stroke-dasharray':'4 3'}:{})},g);
+function moveMark(g,f,t,dot){const x0=PX(f),y0=PY(f),x1=PX(t),y1=PY(t),L=Math.hypot(x1-x0,y1-y0)||1,k=SR*.7/L;
+  el('circle',{cx:x0,cy:y0,r:CELL*.1,fill:'var(--mk)'},g);
+  el('line',{x1:x0,y1:y0,x2:x1-(x1-x0)*k,y2:y1-(y1-y0)*k,stroke:'var(--mk)','stroke-width':MKW,'stroke-linecap':'round'},g);
+  ring(g,t,dot);}
+function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
+  const sh=shown,st=sh&&view?sh.d.st:AY.init(AY.rules(view||{size:homeSize()})),n=st.size;
+  G={n,pad:coordsOn?CELL*1.05:CELL*.7};const W=2*G.pad+(n-1)*CELL;
+  svg.setAttribute('viewBox',`0 0 ${W} ${W}`);SW=W*.002;document.documentElement.style.setProperty('--board-ar','1/1');
+  el('rect',{x:0,y:0,width:W,height:W,fill:'var(--sboard)'},svg);
+  const a=G.pad,b=G.pad+(n-1)*CELL;let d='';for(let k=0;k<n;k++){const v=G.pad+k*CELL;d+=`M${a} ${v}H${b}M${v} ${a}V${b}`;}
+  el('path',{d,stroke:'var(--sgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
+  {const e=n>11?3:2,h=[e,(n-1)/2,n-1-e];for(const x of h)for(const y of h)if(x===y||x+y===n-1)el('circle',{cx:G.pad+x*CELL,cy:G.pad+y*CELL,r:CELL*.11,fill:'var(--sstar)'},svg);}
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':CELL*.3,fill:'var(--slab)'},svg);e.textContent=s;};
+    for(let k=0;k<n;k++){lab(G.pad+k*CELL,W-CELL*.3,String.fromCharCode(97+k));lab(CELL*.3,G.pad+(n-1-k)*CELL,String(k+1));}}
+  const g=el('g',{'pointer-events':'none'},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?AY.toMove(ms):-1;
+  let F=-1,T=-1;if(mine&&hintOn()){const m=/^([a-z]\d+)-([a-z]\d+)$/.exec(String(hintMv));if(m){F=AY.parse(n,m[1]);T=AY.parse(n,m[2]);}}else if(mine){F=ui.f;T=ui.t;}
+  const b2=st.b.slice();if(F>=0&&T>=0){b2[F]=-1;b2[T]=c;}
+  for(let i=0;i<n*n;i++)if(b2[i]>=0)stone(g,i,b2[i]);
+  // markers, one colour (--mk): the stone chosen, a dotted ring; moved, a dot where it was and a solid line to its ring,
+  // the ring dotted until the move is played, then solid (the last move)
+  if(F>=0&&T>=0)moveMark(g,F,T,true);
+  else if(F>=0){ring(g,F,true);for(const tt of targets(ms,F))el('circle',{cx:PX(tt),cy:PY(tt),r:CELL*.1,fill:'var(--mk)',opacity:.75},g);}
+  const last=sh?sh.d.last:null;
+  if(view&&last&&last.kind==='move'&&F<0)moveMark(g,last.f,last.t,false);
+  for(const [i] of (sh?altCells():new Map()))el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.4},g);
+  el('g',{id:'hov','pointer-events':'none'},svg);
+  const hit=el('g',{fill:'transparent'},svg),tg=mine&&ui.f>=0?targets(ms,ui.f):[];
+  for(let i=0;i<n*n;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&(ms.b[i]===c||tg.includes(i)))e.setAttribute('class','pt');}
+  drawHover();}
+function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
+  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||ui.f<0||ui.t>=0)return;if(targets(sh.ms,ui.f).includes(i))stone(g,i,AY.toMove(sh.ms),.5);}
+const homeSize=()=>AY.rules({size:LS.get('ayu-size',11)}).size;
+
+// ---------- computer opponent ----------
+// Evaluation: what each side still needs to gather its stones, the sum over its units of the distance to the nearest
+// friendly unit, plus a point per unit; the opponent's need minus mine.
+/*AI*/
+function AyuAI(AY){
+'use strict';
+function need(n,b,c){const seen=new Uint8Array(n*n);let s=0,k=0;
+  for(let i=0;i<n*n;i++)if(b[i]===c&&!seen[i]){const u=AY.unitOf(n,b,i);for(const j of u)seen[j]=1;k++;const d=AY.dist(n,b,u,c);s+=d===Infinity?0:d;}
+  return s+k;}
+const shim=S=>({size:S.n,b:S.b,col:[S.c,1-S.c],turn:0});
+const evalS=(S,p)=>need(S.n,S.b,1-p)-need(S.n,S.b,p);
+function gen(S){const st=shim(S),out=[];for(const [f,t] of AY.legalMoves(st)){const b=AY.after(st,f,t),T={n:S.n,b,c:1-S.c};out.push({m:[f,t],s:need(S.n,b,1-S.c)-need(S.n,b,S.c),T});}
+  out.sort((a,b)=>b.s-a.s);return out;}
+// no legal move for the side to move: it wins
+const done=S=>{if(S.over===undefined)S.over=!AY.legalMoves(shim(S)).length;return S.over;};
+const result=(S,p)=>S.c===p?1000:-1000;
+function play(S,m){return {n:S.n,b:AY.after(shim(S),m[0],m[1]),c:1-S.c};}
+const KS=AISearch({moves:gen,play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
+function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]};KS.start(opt.time);
+  if(P.swap&&P.ply===1){const v=evalS(S,1-S.c);if(v>0)return {move:'swap',score:v,depth:0,kind:'swap'};}
+  const C=gen(S);if(!C.length)return null;
+  const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);
+  return {move:AY.name(n,r.m[0])+'-'+AY.name(n,r.m[1]),score:r.s,depth:r.depth,forced:C.length===1};}
+return {search,need,gen};
+}
+/*AIEND*/
+/*NN*/
+// GENERATED by ~/Jeux/ia/games/ayu/site/build.js from games/ayu/fast.js, games/ayu/encode.js and lib/mcts.js — do not edit here.
+// The neural network computer (AlphaZero-style PUCT): AyuNN(AyuEngine(), page URL).search(pos, opt) is async; pos: the
+// aiPos() form; opt: {algo:'nn', sims (1: the network's intuition, no search), temp (choice temperature), time (ms, a cap),
+// net (weights URL, relative to the page), cpuct, fpu; from the page (GAME.aiOpt): codes, the game's moves, for the
+// repetition rule}. onnxruntime-web (onnxruntime-web@1.20.1, WASM, one thread) and the weights are loaded on the first search.
+function AyuNN(AY, base) {
+const M = {}, req = p => M[p.split('/').pop().replace(/\.js$/, '')];
+(function (module, require) {
+// Règles rapides d'Ayu, pour la recherche : mêmes coups et mêmes positions que AyuEngine de la page (tests/xcheck.js),
+// sans allocation dans la génération des coups. Le moteur de la page met 1 à 2 ms par position en 11 × 11 (il
+// recalcule l'unité et la distance de zéro pour chaque coup candidat) : trop lent pour quelques milliers de feuilles
+// par seconde.
+//
+// Position S : {n, b, c, sw, x, h1, h2}
+//   n   taille (9, 11, 13) ; point i = x + n·y, comme la page
+//   b   Int8Array(n·n) : -1 vide, 0 noir, 1 blanc
+//   c   la couleur au trait
+//   sw  0 pas d'échange ; 1 règle d'échange, premier coup pas encore joué ; 2 l'échange est jouable maintenant
+//   x   1 si l'échange a été joué (les sièges ont changé de couleur : la clé de répétition de la page en dépend)
+//   h1, h2  empreinte de Zobrist de (b, c, x) : la clé de répétition de la page (siège au trait, sa couleur, plateau)
+// Coup : un entier, f·n² + t (de f vers t), ou SWAP (-1).
+// Fin de partie : le camp au trait n'a aucun coup (hors échange) et gagne ; position répétée (même clé) : nulle.
+const SWAP = -1, MAXN = 13, MAXNN = MAXN * MAXN;
+const GEO = {};
+// tirages fixes pour les empreintes (xorshift32, graine constante : les clés sont les mêmes d'un processus à l'autre)
+let zs = 0x9e3779b9;
+const zr = () => { zs ^= zs << 13; zs >>>= 0; zs ^= zs >>> 17; zs ^= zs << 5; zs >>>= 0; return zs; };
+function geo(n) {
+  if (GEO[n]) return GEO[n];
+  const NN = n * n, NB = new Int16Array(NN * 4).fill(-1);
+  // ordre des voisins de la page (ORTH) : x+1, x-1, y+1, y-1
+  for (let i = 0; i < NN; i++) { const x = i % n, y = (i - x) / n;
+    if (x + 1 < n) NB[i * 4] = i + 1; if (x > 0) NB[i * 4 + 1] = i - 1; if (y + 1 < n) NB[i * 4 + 2] = i + n; if (y > 0) NB[i * 4 + 3] = i - n; }
+  const Z1 = new Uint32Array(NN * 2), Z2 = new Uint32Array(NN * 2);
+  zs = 0x9e3779b9 ^ n; for (let k = 0; k < NN * 2; k++) { Z1[k] = zr(); Z2[k] = zr(); }
+  return GEO[n] = {n, NN, NB, Z1, Z2, ZC: [zr(), zr()], ZX: [zr(), zr()]};
+}
+
+function hashOf(n, b, c, x) {
+  const g = geo(n); let h1 = 0, h2 = 0;
+  for (let i = 0; i < g.NN; i++) if (b[i] >= 0) { h1 ^= g.Z1[i * 2 + b[i]]; h2 ^= g.Z2[i * 2 + b[i]]; }
+  if (c) { h1 ^= g.ZC[0]; h2 ^= g.ZC[1]; }
+  if (x) { h1 ^= g.ZX[0]; h2 ^= g.ZX[1]; }
+  return [h1 >>> 0, h2 >>> 0];
+}
+// la clé de répétition, un nombre exact (53 bits)
+const key = S => S.h1 * 2097152 + (S.h2 >>> 11);
+
+// position de départ : noir sur (x impair, y pair), blanc sur (x pair, y impair), comme la page
+function init(n, swap) {
+  const b = new Int8Array(n * n).fill(-1);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { if (x % 2 === 1 && y % 2 === 0) b[x + n * y] = 0; else if (x % 2 === 0 && y % 2 === 1) b[x + n * y] = 1; }
+  const [h1, h2] = hashOf(n, b, 0, 0);
+  return {n, b, c: 0, sw: swap ? 1 : 0, x: 0, h1, h2};
+}
+function play(S, m) {
+  const g = geo(S.n), b = S.b.slice();
+  if (m === SWAP) return {n: S.n, b, c: S.c, sw: 0, x: 1, h1: (S.h1 ^ g.ZX[0]) >>> 0, h2: (S.h2 ^ g.ZX[1]) >>> 0};
+  const f = (m / g.NN) | 0, t = m - f * g.NN, c = S.c;
+  b[f] = -1; b[t] = c;
+  const h1 = S.h1 ^ g.Z1[f * 2 + c] ^ g.Z1[t * 2 + c] ^ g.ZC[0], h2 = S.h2 ^ g.Z2[f * 2 + c] ^ g.Z2[t * 2 + c] ^ g.ZC[1];
+  return {n: S.n, b, c: 1 - c, sw: S.sw === 1 ? 2 : 0, x: S.x, h1: h1 >>> 0, h2: h2 >>> 0};
+}
+
+// ----- unités et distances (tableaux de travail partagés : un seul fil par processus) -----
+const LAB = new Int16Array(MAXNN), Q = new Int16Array(MAXNN), D = new Int16Array(MAXNN), CMP = new Int8Array(MAXNN);
+const VM = new Int32Array(MAXNN), UM = new Int32Array(MAXNN), TM = new Int32Array(MAXNN);
+let vm = 0, um = 0, tm = 0;
+const CELLS = new Int16Array(MAXNN), TS = new Int16Array(MAXNN), U2 = new Int16Array(MAXNN);
+// les unités de la couleur c : LAB[i] = numéro d'unité (-1 ailleurs) ; US[k] début dans UC, UL[k] taille
+const UC = new Int16Array(MAXNN), US = new Int16Array(MAXNN), UL = new Int16Array(MAXNN);
+function label(g, b, c) {
+  const NN = g.NN, NB = g.NB; LAB.fill(-1, 0, NN); let k = 0, p = 0;
+  for (let i = 0; i < NN; i++) {
+    if (b[i] !== c || LAB[i] >= 0) continue;
+    US[k] = p; LAB[i] = k; UC[p++] = i;
+    for (let q = US[k]; q < p; q++) { const x = UC[q];
+      for (let d = 0; d < 4; d++) { const j = NB[x * 4 + d]; if (j >= 0 && b[j] === c && LAB[j] < 0) { LAB[j] = k; UC[p++] = j; } } }
+    UL[k] = p - US[k]; k++;
+  }
+  return k;
+}
+// distance de l'unité (cellules cells[0..nc), marquées UM[] === um) à l'unité amie la plus proche : nombre de points
+// vides du plus court chemin, comme dist de la page ; Infinity s'il n'y en a pas. Arrêt dès limit atteint (rend limit).
+function dist(g, b, c, cells, nc, limit) {
+  const NB = g.NB; vm++; let qh = 0, qt = 0;
+  for (let k = 0; k < nc; k++) { const i = cells[k];
+    for (let d = 0; d < 4; d++) { const j = NB[i * 4 + d]; if (j >= 0 && b[j] === -1 && VM[j] !== vm) { VM[j] = vm; D[j] = 1; Q[qt++] = j; } } }
+  while (qh < qt) {
+    const i = Q[qh++], di = D[i]; if (di >= limit) return limit;
+    for (let d = 0; d < 4; d++) { const j = NB[i * 4 + d]; if (j < 0) continue; const v = b[j];
+      if (v === c) { if (UM[j] !== um) return di; }
+      else if (v === -1 && VM[j] !== vm) { VM[j] = vm; D[j] = di + 1; Q[qt++] = j; } }
+  }
+  return Infinity;
+}
+
+// ----- les coups -----
+// out : tableau (vidé ici) ; rend le nombre de coups ordinaires (0 : le camp au trait a gagné). L'échange, s'il est
+// jouable, est ajouté à la fin (il ne compte pas dans le nombre rendu).
+function gen(S, out) {
+  out = out || []; out.length = 0;
+  const g = geo(S.n), NN = g.NN, NB = g.NB, b = S.b, c = S.c;
+  const nu = label(g, b, c);
+  for (let u = 0; u < nu; u++) {
+    const s0 = US[u], L = UL[u];
+    um++; for (let k = 0; k < L; k++) UM[UC[s0 + k]] = um;
+    const d0 = dist(g, b, c, UC.subarray(s0, s0 + L), L, Infinity);
+    if (L === 1) {
+      const f = UC[s0];
+      for (let d = 0; d < 4; d++) { const t = NB[f * 4 + d]; if (t < 0 || b[t] !== -1) continue;
+        b[f] = -1; b[t] = c; let ok = false;
+        for (let e = 0; e < 4; e++) { const j = NB[t * 4 + e]; if (j >= 0 && b[j] === c) { ok = true; break; } }   // rejoint une autre unité
+        if (!ok) { um++; UM[t] = um; CELLS[0] = t; ok = dist(g, b, c, CELLS, 1, d0) < d0; }
+        b[t] = -1; b[f] = c;
+        if (ok) out.push(f * NN + t);
+      }
+      continue;
+    }
+    // un groupe : les points vides voisins
+    tm++; let nt = 0;
+    for (let k = 0; k < L; k++) { const i = UC[s0 + k];
+      for (let d = 0; d < 4; d++) { const j = NB[i * 4 + d]; if (j >= 0 && b[j] === -1 && TM[j] !== tm) { TM[j] = tm; TS[nt++] = j; } } }
+    for (let k = 0; k < L; k++) {
+      const f = UC[s0 + k];
+      // composantes du reste du groupe sans f (au plus 4 : chacune touche f)
+      for (let q = 0; q < L; q++) CMP[UC[s0 + q]] = -1;
+      let ncmp = 0;
+      for (let q = 0; q < L; q++) { const r = UC[s0 + q]; if (r === f || CMP[r] >= 0) continue;
+        let qh = 0, qt = 0; Q[qt++] = r; CMP[r] = ncmp;
+        while (qh < qt) { const x = Q[qh++];
+          for (let d = 0; d < 4; d++) { const j = NB[x * 4 + d]; if (j >= 0 && j !== f && LAB[j] === u && CMP[j] < 0) { CMP[j] = ncmp; Q[qt++] = j; } } }
+        ncmp++; }
+      const need = (1 << ncmp) - 1;
+      for (let a = 0; a < nt; a++) {
+        const t = TS[a]; let seen = 0, other = false;
+        for (let d = 0; d < 4; d++) { const j = NB[t * 4 + d]; if (j < 0 || j === f || b[j] !== c) continue;
+          if (LAB[j] === u) seen |= 1 << CMP[j]; else other = true; }
+        if (seen !== need) continue;              // le groupe ne resterait pas d'un seul tenant (ou t ne le touche pas)
+        if (other) { out.push(f * NN + t); continue; }   // rejoint une autre unité
+        b[f] = -1; b[t] = c; um++; let m = 0;
+        for (let q = 0; q < L; q++) { const r = UC[s0 + q]; if (r !== f) { UM[r] = um; U2[m++] = r; } }
+        UM[t] = um; U2[m++] = t;
+        const ok = dist(g, b, c, U2, m, d0) < d0;
+        b[t] = -1; b[f] = c;
+        if (ok) out.push(f * NN + t);
+      }
+    }
+  }
+  const n = out.length;
+  if (n && S.sw === 2) out.push(SWAP);
+  return n;
+}
+
+// les unités de la couleur c, pour l'encodage : {nu, lab (Int16Array, copie), size[], dist[]} (dist : Infinity si seule)
+function units(S, c) {
+  const g = geo(S.n), nu = label(g, S.b, c), size = new Int16Array(nu), dd = new Float32Array(nu);
+  for (let u = 0; u < nu; u++) { const s0 = US[u], L = UL[u]; size[u] = L;
+    um++; for (let k = 0; k < L; k++) UM[UC[s0 + k]] = um;
+    dd[u] = dist(g, S.b, c, UC.subarray(s0, s0 + L), L, Infinity); }
+  return {nu, lab: LAB.slice(0, g.NN), size, dist: dd};
+}
+
+module.exports = {SWAP, geo, init, play, gen, units, key, hashOf};
+
+})(M._f = {exports: {}}, req); M.fast = M._f.exports;
+(function (module, require) {
+// Encodage d'une position d'Ayu pour le réseau, coups ↔ sorties du réseau, symétries, enregistrement d'entraînement.
+// Sans dépendance à Node (hors writeRecord et geometry) : le même fichier ira dans la page du site.
+//
+// Grille : 13 × 13 pour toutes les tailles, le plateau n × n centré (décalage (13 − n)/2), case (y+o)·13 + (x+o) ; les
+// cases hors plateau sont masquées (plan 0 à zéro). Un seul réseau pour 9 × 9, 11 × 11 et 13 × 13. Centrer le plateau
+// fait que les 8 symétries de la grille envoient chaque plateau sur lui-même.
+// Tout est vu du camp au trait (« moi ») : les règles ne dépendent pas de la couleur, seul compte qui est au trait.
+// Plans (C = 16), valeurs dans [0, 1] :
+//   0 sur le plateau           1 mes pierres                 2 pierres adverses
+//   3 mes pierres : distance de leur unité à l'unité amie la plus proche, /10 plafonné (0 : unité seule)   4 adverses
+//   5 mes pierres : taille de leur unité, /12 plafonné     6 adverses
+//   7 mes pierres qui peuvent bouger     8 points vides où je peux aller
+//   9, 10 la même chose pour l'adversaire (s'il était au trait)
+//   11 point vide qui touche deux de mes unités ou plus (un point de jonction)    12 la même chose pour l'adversaire
+//   13 l'échange est jouable (constant)   14 mon nombre d'unités /30 (constant)   15 celui de l'adversaire
+// Politique : un coup f → t a le score  from[f] + to[t] + Σk ef[k][f]·et[k][t]  (K = 8) : le réseau sort, pour chaque
+// case, un logit de départ, un logit d'arrivée et deux vecteurs de K nombres (sortie « pol », 2 + 2K plans), plus un
+// logit pour l'échange. La distribution est le softmax de ces scores sur les coups légaux : exacte, sans la moyenne
+// sur les cases d'arrivée de Volo. La cible d'entraînement est la liste des coups légaux et leurs parts de visites.
+const F = require('./fast.js');
+const G = 13, HW = G * G, C = 16, K = 8, PC = 2 + 2 * K, MAXM = 256, SIZES = [9, 11, 13];
+const PLANES = ['plateau', 'mes pierres', 'pierres adverses', 'ma distance', 'distance adverse', 'mes tailles', 'tailles adverses',
+  'mes départs', 'mes arrivées', 'départs adverses', 'arrivées adverses', 'mes jonctions', 'jonctions adverses',
+  'échange jouable', 'mes unités', 'unités adverses'];
+// point du plateau n × n → case de la grille, et retour
+const CELL = {}, PT = {};
+for (const n of SIZES) { const o = (G - n) / 2, c = new Int16Array(n * n), p = new Int16Array(HW).fill(-1);
+  for (let i = 0; i < n * n; i++) { c[i] = (Math.floor(i / n) + o) * G + (i % n) + o; p[c[i]] = i; } CELL[n] = c; PT[n] = p; }
+
+// ----- position → plans -----
+const LM = [], LO = [];
+// S : position rapide. out : Float32Array(C*HW), remis à zéro ici. moves : les coups de S s'ils sont déjà connus.
+function encode(S, out, moves) {
+  out = out || new Float32Array(C * HW); out.fill(0);
+  const n = S.n, NN = n * n, cell = CELL[n], b = S.b, me = S.c, op = 1 - me, g = F.geo(n);
+  const put = (pl, i, v) => { out[pl * HW + cell[i]] = v; };
+  for (let i = 0; i < NN; i++) { put(0, i, 1); if (S.sw === 2) put(13, i, 1); if (b[i] === me) put(1, i, 1); else if (b[i] === op) put(2, i, 1); }
+  for (const [p, k] of [[me, 0], [op, 1]]) {
+    const U = F.units(S, p);
+    for (let i = 0; i < NN; i++) { const u = U.lab[i];
+      if (u >= 0) { const d = U.dist[u]; if (d !== Infinity) put(3 + k, i, Math.min(1, d / 10)); put(5 + k, i, Math.min(1, U.size[u] / 12)); }
+      else if (b[i] === -1) { let a = -1, two = false;   // point de jonction : deux unités différentes de p autour
+        for (let d = 0; d < 4; d++) { const j = g.NB[i * 4 + d]; if (j < 0) continue; const v = U.lab[j]; if (v < 0) continue; if (a < 0) a = v; else if (v !== a) { two = true; break; } }
+        if (two) put(11 + k, i, 1); } }
+    for (let i = 0; i < NN; i++) put(14 + k, i, Math.min(1, U.nu / 30));
+    let L;
+    if (k === 0 && moves) L = moves; else { L = k ? LO : LM; F.gen(k ? {n, b, c: op, sw: 0} : S, L); }
+    for (const m of L) { if (m === F.SWAP) continue; const f = (m / NN) | 0; put(7 + 2 * k, f, 1); put(8 + 2 * k, m - f * NN, 1); }
+  }
+  return out;
+}
+
+// ----- coups ↔ sorties du réseau -----
+// un coup → (case de départ, case d'arrivée) de la grille ; l'échange : -1
+const mvCells = (n, m) => { if (m === F.SWAP) return [-1, -1]; const NN = n * n, f = (m / NN) | 0; return [CELL[n][f], CELL[n][m - f * NN]]; };
+// probabilités des coups depuis la sortie du réseau d'une position : pol (Float32Array PC*HW), swap (logit)
+function movePriors(n, moves, pol, swap, out) {
+  out = out || new Float32Array(moves.length); let mx = -Infinity;
+  for (let j = 0; j < moves.length; j++) {
+    const m = moves[j]; let s;
+    if (m === F.SWAP) s = swap;
+    else { const [f, t] = mvCells(n, m); s = pol[f] + pol[HW + t]; for (let k = 0; k < K; k++) s += pol[(2 + k) * HW + f] * pol[(2 + K + k) * HW + t]; }
+    out[j] = s; if (s > mx) mx = s;
+  }
+  let t = 0; for (let j = 0; j < moves.length; j++) { out[j] = Math.exp(out[j] - mx); t += out[j]; }
+  for (let j = 0; j < moves.length; j++) out[j] /= t;
+  return out;
+}
+// code d'un coup dans un enregistrement : départ·169 + arrivée (cases de la grille), 65535 l'échange
+const recCode = (n, m) => { if (m === F.SWAP) return 65535; const [f, t] = mvCells(n, m); return f * HW + t; };
+
+// ----- symétries : les 8 du carré, autour du centre de la grille -----
+const SYM = [];   // {grid: case → case image, rot, refl}
+for (let f = 0; f < 2; f++) for (let r = 0; r < 4; r++) {
+  const grid = new Int16Array(HW);
+  for (let c = 0; c < HW; c++) { let x = c % G - 6, y = Math.floor(c / G) - 6; if (f) x = -x; for (let k = 0; k < r; k++) [x, y] = [-y, x]; grid[c] = (y + 6) * G + x + 6; }
+  SYM.push({rot: r, refl: f, grid});
+}
+// image d'un point du plateau n × n
+const symPt = (n, i, s) => PT[n][SYM[s].grid[CELL[n][i]]];
+function symPos(S, s) { const b = new Int8Array(S.b.length); for (let i = 0; i < b.length; i++) b[symPt(S.n, i, s)] = S.b[i];
+  const [h1, h2] = F.hashOf(S.n, b, S.c, S.x); return {...S, b, h1, h2}; }
+const symMove = (n, m, s) => { if (m === F.SWAP) return m; const NN = n * n, f = (m / NN) | 0; return symPt(n, f, s) * NN + symPt(n, m - f * NN, s); };
+
+// ----- enregistrement d'une position pour l'entraînement (binaire, petit-boutiste, taille fixe) -----
+// planes uint8 [C·HW] (×255) · nm uint16 (coups légaux enregistrés) · n uint8 · pad · z float32 (résultat pour le camp
+// au trait : 1, 0, −1) · q float32 (valeur de la recherche à la racine) · ply uint16 · left uint16 (coups restants
+// jusqu'à la fin, 65535 inconnu : plafond) · own int8 [HW] (fin de partie : 1 ma pierre, −1 adverse, 0 vide ou hors
+// plateau) · mv uint16 [MAXM] (recCode, 65535 l'échange) · pi uint16 [MAXM] (part des visites × 65535)
+const REC = (() => { let o = 0; const r = {}; const f = (k, sz) => { r[k] = [o, sz]; o += sz; };
+  f('planes', C * HW); f('nm', 2); f('n', 1); f('pad', 1); f('z', 4); f('q', 4); f('ply', 2); f('left', 2); f('own', HW);
+  if (o % 2) o++; f('mv', 2 * MAXM); f('pi', 2 * MAXM); r.bytes = Math.ceil(o / 4) * 4; return r; })();
+// la cible de politique : les coups légaux (au plus MAXM : les visités d'abord) et leurs parts de visites
+function policyTarget(n, moves, visits) {
+  let t = 0; const idx = moves.map((m, j) => j); for (const v of visits) t += v;
+  if (idx.length > MAXM) idx.sort((a, b) => visits[b] - visits[a]).length = MAXM;
+  return {mv: idx.map(j => recCode(n, moves[j])), pi: idx.map(j => t ? visits[j] / t : 0)};
+}
+// r : {planes, n, z, q, ply, left, own (Int8Array HW), mv, pi}
+function writeRecord(buf, off, r) {
+  for (let k = 0; k < C * HW; k++) buf[off + k] = Math.round(r.planes[k] * 255);
+  buf.writeUInt16LE(r.mv.length, off + REC.nm[0]); buf.writeUInt8(r.n, off + REC.n[0]);
+  buf.writeFloatLE(r.z, off + REC.z[0]); buf.writeFloatLE(r.q, off + REC.q[0]);
+  buf.writeUInt16LE(Math.min(65535, r.ply), off + REC.ply[0]); buf.writeUInt16LE(r.left == null ? 65535 : Math.min(65534, r.left), off + REC.left[0]);
+  for (let k = 0; k < HW; k++) buf.writeInt8(r.own[k], off + REC.own[0] + k);
+  for (let j = 0; j < r.mv.length; j++) { buf.writeUInt16LE(r.mv[j], off + REC.mv[0] + 2 * j); buf.writeUInt16LE(Math.round(r.pi[j] * 65535), off + REC.pi[0] + 2 * j); }
+}
+// géométrie partagée avec Python (train/) : écrite par « node engine/encode.js » dans engine/geometry.json
+function geometry() {
+  return {G, HW, C, K, PC, MAXM, SIZES, planes: PLANES, sameSideConst: [13, 14, 15],
+    sym: SYM.map(s => ({rot: s.rot, refl: s.refl, grid: Array.from(s.grid)})), record: REC};
+}
+module.exports = {G, HW, C, K, PC, MAXM, SIZES, PLANES, CELL, PT, encode, mvCells, movePriors, recCode, SYM, symPt, symPos, symMove,
+  REC, policyTarget, writeRecord, geometry};
+if (typeof require !== 'undefined' && require.main === module) {
+  const fs = require('fs'), path = require('path');
+  fs.writeFileSync(path.join(__dirname, 'geometry.json'), JSON.stringify(geometry()));
+  console.log('écrit engine/geometry.json : C', C, ', enregistrement', REC.bytes, 'octets, symétries', SYM.length);
+}
+
+})(M._e = {exports: {}}, req); M.encode = M._e.exports;
+(function (module, require) {
+// PUCT (AlphaZero) sur les règles rapides du jeu (game.node, game.play), avec un réseau évalué par lots : step() descend
+// jusqu'à une feuille et la rend (à évaluer) ou la règle seule (fin de partie, cache) ; deliver() développe la feuille avec
+// la sortie du réseau et remonte la valeur. Le trait change à chaque coup : la valeur change de signe à chaque niveau.
+// Valeurs du point de vue du camp au trait du nœud, dans [-1, 1].
+//
+// Venue d'ayu-ia (09.11.2026), elle remplace celle de volo-ia (le même PUCT, sans ce qui suit) :
+//   - réutilisation de l'arbre d'un coup à l'autre (advance) : le sous-arbre du coup joué devient la racine ; le pilote
+//     ne la fait que si la config le demande (reuse_tree ; Volo : non, Ayu : oui, voir game.defaults) ;
+//   - playouts forcés et élagage de la cible de politique (KataGo) dans les recherches complètes (o.forced > 0) : chaque
+//     coup de la racine reçoit au moins √(k·P·N) visites, retirées ensuite de la cible si elles n'étaient dues qu'au forçage ;
+//   - répétition : une position déjà vue dans la partie ou sur le chemin depuis la racine est une nulle, si le jeu a une
+//     clé de répétition (game.key) ;
+//   - cache des évaluations (priors et valeur, par clé de la position) partagé par les recherches d'un processus.
+// Ajout du 12.11.2026 (Slither, un tour en deux demi-coups) : si le jeu a game.side(S) (le siège au trait), la valeur
+// ne change de signe qu'entre deux nœuds de sièges différents ; sans game.side (Volo, Ayu), à chaque niveau comme avant.
+// Sans dépendance à Node : le même fichier peut aller dans la page du site (games/volo/site/build.js).
+
+class Node {
+  // term : null, ou la valeur finale pour le camp au trait (1 il gagne, 0 nulle, −1 il perd)
+  constructor(game, S, rep) {
+    this.S = S; this.k = game.key ? game.key(S) : undefined; this.sd = game.side ? game.side(S) : 0;
+    const {moves, term} = game.node(S, rep); this.moves = moves; this.term = term;
+    this.P = null; this.N = null; this.W = null; this.ch = null; this.n = 0; this.v = 0;
+  }
+}
+
+// Γ(a) par Marsaglia-Tsang (a < 1 : Γ(a+1)·U^(1/a))
+function gamma(a) {
+  if (a < 1) return gamma(a + 1) * Math.pow(Math.random(), 1 / a);
+  const d = a - 1 / 3, c = 1 / Math.sqrt(9 * d);
+  for (;;) { let x, v; do { const u1 = Math.random(), u2 = Math.random(); x = Math.sqrt(-2 * Math.log(u1 || 1e-12)) * Math.cos(2 * Math.PI * u2); v = 1 + c * x; } while (v <= 0);
+    v = v * v * v; const u = Math.random(); if (u < 1 - .0331 * x ** 4 || Math.log(u) < .5 * x * x + d * (1 - v + Math.log(v))) return d * v; }
+}
+
+// cache des évaluations : clé → {P, v} (seulement pour les jeux à clé, et les positions que le jeu dit cacheable)
+class Cache {
+  constructor(game, size) { this.game = game; this.size = game.key ? size : 0; this.m = new Map(); this.hits = 0; this.miss = 0; }
+  ok(node) { return this.size && node.k !== undefined && (!this.game.cacheable || this.game.cacheable(node.S)); }
+  get(node) { if (!this.ok(node)) return null; const e = this.m.get(node.k); if (e && e.P.length === node.moves.length) { this.hits++; return e; } this.miss++; return null; }
+  put(node) { if (!this.ok(node)) return; if (this.m.size >= this.size) this.m.delete(this.m.keys().next().value); this.m.set(node.k, {P: node.P, v: node.v}); }
+}
+
+class Search {
+  // game : l'adaptateur (lib/game.js) ; S : la position ; hist : Set des clés des positions de la partie (S compris ;
+  // vide pour un jeu sans répétition) ; cache : Cache ou null
+  constructor(game, S, hist, cache) { this.game = game; this.root = new Node(game, S, false); this.hist = hist || new Set(); this.cache = cache || null; this.o = null; this.pending = null; this.sims = 0; }
+  // une recherche : o {sims (visites de la racine visées, réutilisées comprises), cpuct, fpu, noise {total, eps} | null,
+  // forced (k des playouts forcés, 0 : aucun)}
+  begin(o) { this.o = o; this.sims = 0; const r = this.root;
+    if (r.P) { if (r.P0) { r.P = r.P0; r.P0 = null; } if (o.noise) this.noise(r); } }
+  done() { return this.root.P !== null && this.sims > 0 && this.root.n >= this.o.sims; }
+  // la feuille à évaluer (son nœud : {S, moves}), ou null si la simulation s'est finie seule (fin de partie, cache)
+  step() {
+    const root = this.root;
+    if (!root.P) { this.pending = {node: root, path: []}; return this.lookup() ? null : root; }
+    let node = root; const path = [];
+    for (;;) {
+      if (node.term !== null) { this.backup(path, node.term, node); this.sims++; return null; }
+      if (!node.P) { this.pending = {node, path}; return this.lookup() ? null : node; }
+      const a = this.select(node); path.push([node, a]);
+      if (!node.ch[a]) { const S = this.game.play(node.S, node.moves[a]), k = this.game.key ? this.game.key(S) : undefined;
+        node.ch[a] = new Node(this.game, S, k !== undefined && (this.hist.has(k) || path.some(([p]) => p.k === k))); }
+      node = node.ch[a];
+    }
+  }
+  lookup() { const e = this.cache && this.cache.get(this.pending.node); if (!e) return false; this.expand(e.P, e.v, false); return true; }
+  select(node) {
+    const {cpuct, fpu} = this.o, sq = Math.sqrt(Math.max(1, node.n)), q0 = node.v - fpu, L = node.moves.length;
+    if (node === this.root && this.o.forced && this.o.noise) {   // playouts forcés
+      for (let a = 0; a < L; a++) if (node.N[a] < Math.sqrt(this.o.forced * node.P[a] * node.n)) return a;
+    }
+    let best = 0, bv = -Infinity;
+    for (let a = 0; a < L; a++) { const n = node.N[a], q = n ? node.W[a] / n : q0, u = q + cpuct * node.P[a] * sq / (1 + n);
+      if (u > bv) { bv = u; best = a; } }
+    return best;
+  }
+  // out : la sortie du réseau pour la feuille en attente (lib/net.js, game.unpack)
+  deliver(out) { const node = this.pending.node; this.expand(this.game.priors(node.S, node.moves, out), out.value, true); }
+  expand(P, v, fresh) {
+    const {node, path} = this.pending; this.pending = null; const L = node.moves.length;
+    node.P = P; node.N = new Int32Array(L); node.W = new Float32Array(L); node.ch = new Array(L).fill(null); node.v = v;
+    if (fresh && this.cache) this.cache.put(node);
+    if (node === this.root && this.o.noise) this.noise(node);
+    this.backup(path, v, node); this.sims++;
+  }
+  // bruit de Dirichlet à la racine, sur une copie des priors (P0 garde l'original, pour le coup suivant)
+  noise(node) { const L = node.moves.length; if (L < 2) return;
+    const al = Math.min(1, this.o.noise.total / L), g = []; let t = 0; node.P0 = node.P; node.P = new Float32Array(L);
+    for (let a = 0; a < L; a++) { g.push(gamma(al)); t += g[a]; }
+    for (let a = 0; a < L; a++) node.P[a] = (1 - this.o.noise.eps) * node.P0[a] + this.o.noise.eps * g[a] / t; }
+  // v : la valeur de la feuille leaf pour son camp au trait
+  backup(path, v, leaf) { const sided = !!this.game.side; let sd = leaf.sd;
+    for (let i = path.length - 1; i >= 0; i--) { const [p, a] = path[i];
+      if (!sided || p.sd !== sd) v = -v; sd = p.sd; p.N[a]++; p.W[a] += v; p.n++; }
+    if (!path.length) this.root.n++; }
+  // le coup (indice dans root.moves) : tiré selon les visites (temp > 0) ou le plus visité ; sans visite (une seule
+  // simulation : le réseau à l'intuition), selon la politique
+  pick(temp) {
+    const r = this.root; let N = r.N, a = 0;
+    if (!N.some(n => n > 0)) N = r.P;
+    if (temp > 0) { let t = 0; const w = Array.from(N, n => Math.pow(n, 1 / temp)); for (const x of w) t += x;
+      let u = Math.random() * t; for (a = 0; a < w.length - 1; a++) { u -= w[a]; if (u <= 0) break; } }
+    else for (let k = 1; k < N.length; k++) if (N[k] > N[a]) a = k;
+    return a;
+  }
+  // les visites pour la cible de politique : sans les playouts forcés superflus (élagage de KataGo) ; sans forçage, les
+  // visites telles quelles
+  targetVisits() {
+    const r = this.root, N = Array.from(r.N), k = this.o.forced;
+    if (!k || !this.o.noise) return N;
+    const {cpuct} = this.o, sq = Math.sqrt(Math.max(1, r.n)); let b = 0;
+    for (let a = 1; a < N.length; a++) if (N[a] > N[b]) b = a;
+    const ub = r.W[b] / Math.max(1, N[b]) + cpuct * r.P[b] * sq / (1 + N[b]);
+    for (let a = 0; a < N.length; a++) { if (a === b || !N[a]) continue;
+      const nf = Math.sqrt(k * r.P[a] * r.n), q = r.W[a] / N[a]; let n = N[a];
+      while (n > 0 && N[a] - n < nf && q + cpuct * r.P[a] * sq / n < ub) n--;
+      N[a] = n <= 1 ? 0 : n; }
+    return N;
+  }
+  // valeur de la racine après la recherche (camp au trait)
+  value() { const r = this.root; let n = 0, w = 0; for (let a = 0; a < r.moves.length; a++) { n += r.N[a]; w += r.W[a]; } return n ? w / n : r.v; }
+  // le coup m est joué : son sous-arbre devient la racine (s'il a été développé), sinon une racine neuve
+  advance(m) { const r = this.root, a = r.ch ? r.moves.indexOf(m) : -1, c = a >= 0 ? r.ch[a] : null;
+    this.pending = null;
+    if (c && c.P && c.term === null) { this.root = c; if (c.P0) { c.P = c.P0; c.P0 = null; } return true; }
+    this.root = new Node(this.game, this.game.play(r.S, m), false); return false; }
+}
+if (typeof module !== 'undefined') module.exports = {Search, Cache, Node};
+
+})(M._m = {exports: {}}, req);
+const F = M.fast, X = M.encode, {Search, Cache} = M._m.exports;
+// the game for lib/mcts.js, as games/ayu/game.js (without the page's own computer)
+const game = {
+  node: (S, rep) => { const moves = [], nm = F.gen(S, moves); return {moves, term: nm === 0 ? 1 : rep ? 0 : null}; },
+  play: F.play, key: F.key, cacheable: S => !S.sw,
+  priors: (S, moves, out) => X.movePriors(S.n, moves, out.pol, out.swap)};
+const code = (n, m) => m === F.SWAP ? 'swap' : AY.name(n, (m / (n * n)) | 0) + '-' + AY.name(n, m % (n * n));
+function parse(n, s) { if (s === 'swap') return F.SWAP; const p = /^([a-z]\d+)-([a-z]\d+)$/.exec(String(s)); if (!p) return null;
+  const f = AY.parse(n, p[1]), t = AY.parse(n, p[2]); return f < 0 || t < 0 ? null : f * n * n + t; }
+// the page's position → the fast one, with the keys of the game's positions (repetitions): replayed from the moves
+// when they lead to this position, else rebuilt from the board alone (no history)
+function state(P, codes) {
+  const n = P.size, c = P.col[P.turn], L = [];
+  if (codes) { let S = F.init(n, !!P.swap); const hist = new Set([F.key(S)]); let ok = true;
+    for (const cd of codes) { const m = parse(n, cd); F.gen(S, L); if (m === null || !L.includes(m)) { ok = false; break; } S = F.play(S, m); hist.add(F.key(S)); }
+    if (ok && S.c === c && S.b.every((v, i) => v === P.b[i])) return {S, hist}; }
+  const b = Int8Array.from(P.b), x = P.col[0] === 0 ? 0 : 1, sw = P.swap ? (P.ply === 0 ? 1 : P.ply === 1 ? 2 : 0) : 0, [h1, h2] = F.hashOf(n, b, c, x);
+  const S = {n, b, c, sw, x, h1, h2}; return {S, hist: new Set([F.key(S)])};
+}
+const CDN = ['https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/', 'https://unpkg.com/onnxruntime-web@1.20.1/dist/'];
+let sess = null, loading = null, ortLib = null;
+function load(opt) {
+  if (!loading) loading = (async () => {
+    let dir = null;
+    for (const d of CDN) { try { importScripts(d + 'ort.wasm.min.js'); dir = d; break; } catch (e) {} }
+    if (!dir) throw new Error('onnxruntime-web unavailable');
+    ortLib = self.ort; ortLib.env.wasm.numThreads = 1; ortLib.env.wasm.wasmPaths = self.NN_WASM || dir;   // NN_WASM : tests (Node)
+    const r = await fetch(new URL(opt.net, base)); if (!r.ok) throw new Error('weights: HTTP ' + r.status);
+    sess = await ortLib.InferenceSession.create(new Uint8Array(await r.arrayBuffer()), {executionProviders: ['wasm'], graphOptimizationLevel: 'all'});
+  })().catch(e => { loading = null; throw e; });
+  return loading;
+}
+const xbuf = new Float32Array(X.C * X.HW), cache = new Cache(game, 20000);
+async function evalNet(leaf) {
+  X.encode(leaf.S, xbuf, leaf.moves);
+  const o = await sess.run({x: new ortLib.Tensor('float32', xbuf, [1, X.C, X.G, X.G])}), V = o.wdl.data;
+  return {pol: o.pol.data, swap: o.swap.data[0], value: V[0] - V[2]};
+}
+const logit = v => { v = Math.max(-.999, Math.min(.999, v)); return Math.log((1 + v) / (1 - v)); };
+// the search on a fast position S (hist: the keys of the game's positions, S included); the move as a fast move
+async function searchS(S, hist, opt) {
+  const s = new Search(game, S, hist, cache); s.begin({sims: opt.sims, cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null, forced: 0});
+  const t0 = Date.now();   // opt.time (ms): a cap for slow machines, the search stops there even short of its sims
+  while (!s.done() && !(opt.time && s.root.P && Date.now() - t0 > opt.time)) { const leaf = s.step(); if (leaf) s.deliver(await evalNet(leaf)); }
+  const a = s.pick(opt.temp || 0); let d = 0, n = s.root;
+  while (n && n.N) { let b = 0; for (let k = 1; k < n.N.length; k++) if (n.N[k] > n.N[b]) b = k; if (!n.N[b]) break; d++; n = n.ch[b]; }
+  return {m: s.root.moves[a], value: s.value(), depth: d, nodes: s.sims};
+}
+// the answer in the page's form (as AyuAI.search): the score a logit of the winning chances, nn: true (evalInfo)
+async function search(P, opt) {
+  const {S, hist} = state(P, opt.codes), L = []; F.gen(S, L); if (!L.length) return null;
+  if (L.length === 1) return {move: code(S.n, L[0]), score: 0, depth: 0, forced: true, nn: true};
+  await load(opt);
+  const r = await searchS(S, hist, opt);
+  return {move: code(S.n, r.m), score: logit(r.value), depth: r.depth, forced: false, nn: true, nodes: r.nodes};
+}
+return {search, searchS, state, load, code, X, F, Search};
+}
+/*NNEND*/
+// The neural network levels (2 to 10, algo 'nn', AyuNN, the NN block above): the network of ~/Jeux/ia (n° 112, 14.11.2026) with a PUCT
+// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · time, a cap in ms for slower devices,
+// which stop short of `sims` · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
+// BEAM, the former Fort level (two plies): what answers when the network cannot load.
+const NN_NET='ayu-net.onnx?v=112';
+const BEAM={algo:'beam',depth:2,widths:[10,8],time:5000};
+const LEVELS={
+  l0:{algo:'greedy',pick:5,temp:1},
+  l1:{algo:'greedy',pick:1},
+  l2:{algo:'nn',sims:1,time:10000,net:NN_NET},
+  l3:{algo:'nn',sims:6,time:10000,net:NN_NET},
+  l4:{algo:'nn',sims:10,time:10000,net:NN_NET},
+  l5:{algo:'nn',sims:22,time:10000,net:NN_NET},
+  l6:{algo:'nn',sims:50,time:10000,net:NN_NET},
+  l7:{algo:'nn',sims:130,time:10000,net:NN_NET},
+  l8:{algo:'nn',sims:300,time:10000,net:NN_NET},
+  l9:{algo:'nn',sims:700,time:10000,net:NN_NET},
+  l10:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
+const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
+const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
+let pageAI=null;
+const aiSrc=()=>AISearch.toString()+'\n'+AyuEngine.toString()+'\n'+AyuAI.toString()+'\n'+AyuNN.toString()+'\nconst AA=AyuAI(AyuEngine());function aiSearch(pos,opt){return AA.search(pos,opt);}'+
+  // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
+  // if the network cannot load (offline, old browser), the BEAM level answers instead
+  '\nconst NV=AyuNN(AyuEngine(),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(BEAM)+';'+
+  '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
+  'NV.search(m.st,m.opt).catch(()=>AA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
+// the network levels (r.nn): a logit of the winning chances, as Volo
+function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;if(r.forced)return {k:'ai_forced'};
+  if(r.nn){if(s>4)return {k:'ai_win'};if(s<-4)return {k:'ai_lost'};return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
+  if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
+  return {k:Math.abs(s)<2?'ai_eq':s>0?(s>8?'ai_much':'ai_better'):(s<-8?'ai_muchWorse':'ai_worse'),d:r.depth};}
+
+// ---------- the interface with common/core.js ----------
+// the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
+const ayKey=st=>st.turn+':'+st.col[st.turn]+':'+st.b.join('');   // the engine's key of a position (repetitions)
+const GAME={id:'ayu',size:'square',codeTag:'AYU1',i18n:AY_I18N,
+  again:mv=>/^[a-z]\d+-[a-z]\d+$/.test(String(mv)),
+  rules:g=>AY.rules(g),
+  form:p=>{const r=AY.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('ayu-size',r.size);LS.set('ayu-swap',r.swap);return r;},
+  replay:(r,m)=>!m.length?AY.replay(r,m):replayKept(r,m,{init:g=>{const st=AY.init(AY.rules(g));st.seen[ayKey(st)]=1;return st;},
+    play(prev,mv){const st=deepCopy(prev),code=AY.legal(st,mv);if(code===null)return null;   // as AY.replay, move by move
+      const s=st.turn,c=AY.toMove(st);let res;
+      if(code==='swap'){st.col=[st.col[1],st.col[0]];st.turn=0;res={kind:'swap',c};}
+      else{const [f,t]=code.split('-').map(x=>AY.parse(st.size,x));st.b=AY.after(st,f,t);st.turn=1-st.turn;res={kind:'move',c,f,t};}
+      st.ply++;const k=ayKey(st);let over=null;if(!AY.legalMoves(st).length)over={w:st.turn,why:'w_stuck'};else if(st.seen[k])over={w:-1,why:'w_rep'};else st.seen[k]=1;
+      return {st,e:{p:s,s,code,...res},last:{code,...res},over};}}),
+  legal:(st,code)=>AY.legal(st,code),
+  enc:mv=>String(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
+  board:ayBoard,turnStatus:ayTurnStatus,waitStatus:ayWaitStatus,pendText,
+  playerCard,logNode,logText,
+  applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Size');if(!s)continue;const v=s.value||homeSize();s.innerHTML=AY.SIZES.map(n=>`<option value="${n}">${t('size_fmt',{n})}</option>`).join('');s.value=v;}},
+  home:()=>{shown=null;drawBoard();},
+  levels:LEVELS,levelDefault:'l2',hintLevel:HINT,
+  aiSrc,aiPos,aiOpt:v=>({codes:v.moves}),   // the game's moves: the network reads the repetitions in them
+  aiSearch:(st,opt)=>(pageAI=pageAI||AyuAI(AY)).search(aiPos(st),opt.algo==='nn'?BEAM:opt),   // no worker: no network either
+  evalInfo};
+for(const p of ['c','a','f','t']){if($(p+'Swap'))$(p+'Swap').checked=LS.get('ayu-swap',false)===true;if($(p+'Size'))$(p+'Size').addEventListener('change',e=>{LS.set('ayu-size',+e.target.value);if(!view)GAME.home();});}
+coreStart();
+</script>
+<script src="common/accueil.js?v=1"></script>
+</body></html>
