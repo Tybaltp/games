@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=47">
+<link rel="stylesheet" href="common/games.css?v=48">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -63,7 +63,7 @@ h1{font-weight:400;letter-spacing:0}
 /* l'image zoome et glisse (--peX, --peY, --peW, --peH, posés par le script) ; le fondu garde le cadre du modèle commun */
 html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop));background-size:var(--peW,var(--accW)) var(--peH,var(--accH))}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=1">
+<link rel="stylesheet" href="common/accueil.css?v=2">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pente.html"><b id="ttl" style="font-weight:inherit">Pente</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -80,17 +80,12 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
         <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
-            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="pe-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
             <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
             <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+            <p class="hint err" id="joinErr"></p>
           </form>
           <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-        </details>
-        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
-          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PENTE1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
-            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
-            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
-    
         </details>
       </div>
       <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
@@ -126,7 +121,6 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
         <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
       </form>
     </div>
-    <p class="hint err" id="joinErr"></p>
     
     
     
@@ -157,7 +151,6 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -394,8 +387,8 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=75"></script>
-<script src="common/codes.js?v=4"></script>
+<script src="common/core.js?v=76"></script>
+<script src="common/codes.js?v=5"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
 // Seats: 0 = the first player, who places the Swap2 opening; 1 = the second player. Colours are chosen during the opening
@@ -747,12 +740,6 @@ function fromOld(S){try{const f=S.first,o=f==='H'?'G':'H',L=S.log||[],op=L.filte
   const rs=S.result&&(S.result.code==='resign'||S.result.code==='time')?{winner:S.result.winner===f?0:1,reason:S.result.code}:null;
   if(peReplay({},mv).over&&peReplay({},mv).over.why==='w_bad')return null;
   return {moves:mv,result:rs,first:f,names:S.names?[S.names[f]||'',S.names[o]||'']:['',''],clock:S.clocks?[S.clocks[f]||0,S.clocks[o]||0]:[0,0],tc:S.tc||null,started:S.phase!=='wait'};}catch(e){return null;}}
-// A resume code of the former page (PENTE1. + the old state): rewritten in the shared format before the shared code reads it
-function oldCode(v){v=String(v||'').replace(/\s+/g,'');if(v.indexOf('PENTE1.')!==0)return null;let p;try{p=JSON.parse(decodeURIComponent(escape(atob(v.slice(7)))));}catch(e){return null;}
-  if(!p||!Array.isArray(p.B)||Array.isArray(p.moves))return null;const g=fromOld(p);if(!g)return null;
-  const q={size:N,tc:g.tc,first:g.first==='H'?'host':'guest',names:g.names,moves:g.moves,clock:g.clock,result:g.result,started:g.started};
-  return 'PENTE1.'+btoa(unescape(encodeURIComponent(JSON.stringify(q))));}
-$('rForm').addEventListener('submit',()=>{const c=oldCode($('rIn').value);if(c)$('rIn').value=c;});   // before core's own handler
 
 // ---------- the interface with common/core.js ----------
 const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,

@@ -143,7 +143,7 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
 .pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
 .joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
-.home .err:empty{display:none}
+.home .err{color:var(--danger)}.home .err:empty{display:none}
 /* home: Play, Analyse, the game to resume, the codes, in one card */
 .homeMain{display:flex;flex-direction:column;gap:10px}
 .homeMain[hidden]{display:none}
@@ -282,9 +282,8 @@ details .chatlist li{margin:0}
 #voiceHang{flex:none}
 .player .vmic{margin-left:.35em;font-size:.85em}
 
-/* spectators present: one line at the top of the chat frame; resume code under the invitation, in the same frame */
+/* spectators present: one line at the top of the chat frame */
 .wline{margin:6px 0 0;font-size:.85rem;color:var(--muted)}
-#invPart:not([hidden])+.rcpart{margin-top:4px}
 .voicein{padding-top:8px;border-top:1px solid var(--line)}
 
 /* Band layout (<html data-band>): on wide screens the players' cards form a band above the board. Each
@@ -315,17 +314,17 @@ html.ingame.wide .side > #chatBox[open] > .chatgrip{display:block;position:absol
 html.ingame.wide .side > #chatBox[open] > .chatgrip::after{content:"";position:absolute;left:50%;top:4px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}
 html.ingame.wide .side > #chatBox[open] > .chatgrip:hover::after{background:var(--muted)}
 html.ingame.band #playersTop > .player .tally{min-width:150px}
-/* Codes frame: one compact row per code: label, the code in clear, two small buttons (code, link; « copy … » on hover) */
+/* Codes frame: one compact row per code: label, the code in clear (wide enough for a whole code: pe-k7m2qab), two small
+   buttons (code, link; « copy … » on hover) */
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.coderow{display:grid;grid-template-columns:6.2em minmax(0,1fr) auto;align-items:center;column-gap:8px}
+.coderow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;column-gap:6px}
 .side details .coderow{margin-top:4px}
 .side details #invPart > .coderow:first-of-type{margin-top:8px}
 .coderow > .hint{margin:0!important;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.coderow .codetxt{min-width:0;width:100%;border:none;background:none;padding:0;font-family:var(--f-mono);font-size:.9rem;color:var(--ink);text-overflow:ellipsis}
+.coderow .codetxt{min-width:0;width:10.2ch;border:none;background:none;padding:0;font-family:var(--f-mono);font-size:.9rem;color:var(--ink);text-overflow:ellipsis}
 .coderow .cbtns{display:flex;gap:4px}
-.coderow .cbtns button{padding:2px 8px;font-size:.78rem;line-height:1.4;min-width:3.6em}
+.coderow .cbtns button{padding:2px 7px;font-size:.78rem;line-height:1.4;min-width:3.6em}
 #invPart:has(#linksBox[hidden]) .lnk,#invPart:has(#oppLink[hidden]) #codePBox .lnk,#invPart:has(#watchLinkBox[hidden]) #codeWBox .lnk{visibility:hidden}
-#rcCard #rcBox{grid-column:1 / -1;margin-top:4px}
 /* a match: links only, no code */
 .coderow.linkonly .codetxt,.coderow.linkonly .cbtns button:not(.lnk){display:none}.coderow.linkonly .cbtns{grid-column:3}
 /* the host's note only while waiting for the opponent */

@@ -9,9 +9,9 @@
 <link rel="stylesheet" href="common/cards.css?v=7">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
 <style>
-:root{--bg:#e2edf4;--ink:#14222e;--muted:#55687a;--line:#c9dbe7;--panel:#f2f8fb;--accent:#1d6fa8;--warn:#fff4e5;--warn-line:#e8c48a}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a24;--ink:#e4eef5;--muted:#93a8b9;--line:#24384a;--panel:#15232f;--accent:#5cb6e6;--warn:#2a2116;--warn-line:#6b5530}}
-:root[data-theme="dark"]{--bg:#0e1a24;--ink:#e4eef5;--muted:#93a8b9;--line:#24384a;--panel:#15232f;--accent:#5cb6e6;--warn:#2a2116;--warn-line:#6b5530}
+:root{--bg:#e2edf4;--ink:#14222e;--muted:#55687a;--line:#c9dbe7;--panel:#f2f8fb;--accent:#1d6fa8;--warn:#fff4e5;--warn-line:#e8c48a;--err:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a24;--ink:#e4eef5;--muted:#93a8b9;--line:#24384a;--panel:#15232f;--accent:#5cb6e6;--warn:#2a2116;--warn-line:#6b5530;--err:#f08a80}}
+:root[data-theme="dark"]{--bg:#0e1a24;--ink:#e4eef5;--muted:#93a8b9;--line:#24384a;--panel:#15232f;--accent:#5cb6e6;--warn:#2a2116;--warn-line:#6b5530;--err:#f08a80}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
 main{max-width:64rem;margin:0 auto;padding:8vh 16px 48px}
@@ -38,12 +38,12 @@ details.how{margin:0 0 24px;border:1px solid var(--line);border-radius:12px;back
 details.how summary{cursor:pointer;font-weight:600}
 details.how ul{margin:.6em 0 .2em;padding-left:1.2em}
 details.how li{margin:.35em 0}
-/* a code received: straight to its game, as a player (6 characters) or a spectator (8) */
+/* a code received (or a whole link): straight to its game, as a player or a spectator (common/codes.js); a Mochalunt link to mochalunt.html */
 .code{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;max-width:42rem}
 .code label{font-weight:600;font-size:.95rem}
 .code input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:9.5em;min-width:0;letter-spacing:.04em}
 .code button{font:inherit;font-size:.9rem;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer}
-.code .err{flex-basis:100%;margin:0;font-size:.88rem;color:var(--accent)}
+.code .err{flex-basis:100%;margin:0;font-size:.88rem;color:var(--err)}
 details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
 </style>
 </head>
@@ -51,14 +51,13 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <main>
 <header><div><h1 data-i18n="title">Jeux</h1><p class="lede" data-i18n="lede"></p></div>
 <div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div></header>
-<form class="code" id="codeForm"><label for="codeIn" data-i18n="codeL"></label><input id="codeIn" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="k7m2qp"><button type="submit" data-i18n="codeGo"></button><p class="err" id="codeErr" hidden></p></form>
+<form class="code" id="codeForm"><label for="codeIn" data-i18n="codeL"></label><input id="codeIn" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="pe-k7m2q"><button type="submit" data-i18n="codeGo"></button><p class="err" id="codeErr" hidden></p></form>
 <details class="how"><summary data-i18n="howT"></summary>
   <ul>
     <li data-i18n-html="how0"></li>
     <li data-i18n-html="how1"></li>
     <li data-i18n-html="how2"></li>
     <li data-i18n-html="how3"></li>
-    <li data-i18n-html="how4"></li>
   </ul>
   <p class="warn" data-i18n-html="warn"></p>
 </details>
@@ -75,35 +74,32 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
 <li><a class="gc c-pylos" href="pylos.html"><span class="ct">Pylos</span><span class="bar"></span><span class="art"></span></a></li>
 </ul>
 </main>
-<script src="common/codes.js?v=4"></script>
+<script src="common/codes.js?v=5"></script>
 <script>
 const I18N={
  fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
-     codeL:"Vous avez reçu un code ?",codeGo:"Rejoindre",codeBad:"Ce code ne correspond à aucune partie.",
+     codeL:"Vous avez reçu un code ?",codeGo:"Rejoindre",codeEmpty:"Tapez ou collez d'abord le code reçu.",codeShort:"Ce code est trop court : vérifiez qu'il est complet.",codeLong:"Ce code est trop long : vérifiez-le.",codeBad:"Ce code ne correspond à aucun jeu du site.",
      howT:"Comment ça marche ?",
-     how0:"<b>Quatre façons de jouer.</b> Inviter quelqu'un par un lien, affronter l'ordinateur (Diagonal Blocks, Gygès, Pente, Ponte del Diavolo, Pylos, Quarto, Tintas, Volo, Zèrtz), jouer face à face sur le même appareil, ou en mode libre pour essayer et analyser, avec annulation et suggestions.",
+     how0:"<b>Quatre façons de jouer.</b> Inviter quelqu'un par un lien, affronter l'ordinateur, jouer face à face sur le même appareil, ou analyser : revenir en arrière, essayer des variantes, demander des suggestions.",
      how1:"<b>Pas d'hébergement.</b> Il n'y a pas de serveur de jeu : la partie tourne dans le navigateur de celui qui la crée. Un service public (PeerJS) sert seulement à mettre les deux navigateurs en relation grâce au code.",
      how2:"<b>De navigateur à navigateur.</b> Les coups passent d'un joueur à l'autre directement, ou par un relais quand le réseau l'impose. Rien n'est enregistré ailleurs que dans vos deux navigateurs. Les observateurs se connectent de la même façon.",
      how3:"<b>Robuste aux déconnexions.</b> Chaque joueur garde la position. Si l'hôte disparaît, l'invité reprend l'hébergement sous le même code après une dizaine de secondes. Les pendules s'arrêtent quand c'est au tour du joueur absent, et reprennent à son retour.",
-     how4:"<b>En dernier recours</b>, un code de reprise, copié pendant la partie, permet de la relancer depuis la page d'accueil du jeu.",
      warn:"<b>Important :</b> ne fermez pas l'onglet et ne quittez pas le navigateur pendant une partie. C'est votre navigateur qui la fait vivre. Sur téléphone, évitez de rester longtemps dans une autre application."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
-     codeL:"Received a code?",codeGo:"Join",codeBad:"This code matches no game.",
+     codeL:"Received a code?",codeGo:"Join",codeEmpty:"Type or paste the code you received first.",codeShort:"This code is too short: check that it is complete.",codeLong:"This code is too long: check it.",codeBad:"This code matches none of the site's games.",
      howT:"How does it work?",
-     how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer (Diagonal Blocks, Gygès, Pente, Ponte del Diavolo, Pylos, Quarto, Tintas, Volo, Zèrtz), play face to face on the same device, or in free mode to try things and analyse, with undo and hints.",
+     how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer, play face to face on the same device, or analyse: go back, try variations, ask for hints.",
      how1:"<b>No hosting.</b> There is no game server: the game runs in the browser of whoever creates it. A public service (PeerJS) is only used to put the two browsers in touch through the code.",
      how2:"<b>Browser to browser.</b> Moves go from one player to the other directly, or through a relay when the network requires it. Nothing is stored anywhere but in your two browsers. Spectators connect the same way.",
      how3:"<b>Robust to disconnections.</b> Each player keeps the position. If the host drops out, the guest takes over hosting under the same code after about ten seconds. The clocks stop when it is the absent player's turn, and resume when they are back.",
-     how4:"<b>As a last resort</b>, a resume code, copied during the game, lets you restart it from the game's home page.",
      warn:"<b>Important:</b> do not close the tab or quit the browser during a game. Your browser is what keeps it alive. On a phone, avoid staying in another app for long."},
  es:{title:"Juegos",lede:"Juegos de tablero para dos, de navegador a navegador. Crea una partida, envía el código, juega.",
-     codeL:"¿Has recibido un código?",codeGo:"Unirse",codeBad:"Este código no corresponde a ninguna partida.",
+     codeL:"¿Has recibido un código?",codeGo:"Unirse",codeEmpty:"Escribe o pega primero el código recibido.",codeShort:"Este código es demasiado corto: comprueba que esté completo.",codeLong:"Este código es demasiado largo: compruébalo.",codeBad:"Este código no corresponde a ningún juego del sitio.",
      howT:"¿Cómo funciona?",
-     how0:"<b>Cuatro maneras de jugar.</b> Invitar a alguien con un enlace, enfrentarse al ordenador (Diagonal Blocks, Gygès, Pente, Ponte del Diavolo, Pylos, Quarto, Tintas, Volo, Zèrtz), jugar cara a cara en el mismo dispositivo, o en modo libre para probar y analizar, con deshacer y sugerencias.",
+     how0:"<b>Cuatro maneras de jugar.</b> Invitar a alguien con un enlace, enfrentarte al ordenador, jugar cara a cara en el mismo dispositivo, o analizar: volver atrás, probar variantes, pedir sugerencias.",
      how1:"<b>Sin alojamiento.</b> No hay servidor de juego: la partida corre en el navegador de quien la crea. Un servicio público (PeerJS) sirve solo para poner en contacto los dos navegadores gracias al código.",
      how2:"<b>De navegador a navegador.</b> Las jugadas pasan de un jugador al otro directamente, o por un relé cuando la red lo exige. Nada se guarda fuera de vuestros dos navegadores. Los espectadores se conectan de la misma manera.",
      how3:"<b>Resistente a las desconexiones.</b> Cada jugador conserva la posición. Si el anfitrión desaparece, el invitado retoma el alojamiento con el mismo código al cabo de unos diez segundos. Los relojes se paran cuando le toca al jugador ausente, y reanudan a su vuelta.",
-     how4:"<b>Como último recurso</b>, un código de reanudación, copiado durante la partida, permite relanzarla desde la página de inicio del juego.",
      warn:"<b>Importante:</b> no cierres la pestaña ni salgas del navegador durante una partida. Es tu navegador el que la mantiene viva. En el móvil, evita quedarte mucho tiempo en otra aplicación."}};
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||(l=>l.startsWith('fr')?'fr':l.startsWith('es')?'es':'en')((navigator.language||'fr').toLowerCase());
 function apply(){document.documentElement.lang=lang;document.title=I18N[lang].title;
@@ -112,9 +108,12 @@ function apply(){document.documentElement.lang=lang;document.title=I18N[lang].ti
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));}
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));localStorage.setItem('pente-lang',lang);}catch(e){}apply();});
 apply();
-// a code (or a whole invitation link): to its game's page, which connects at once (common/codes.js)
-document.getElementById('codeForm').onsubmit=e=>{e.preventDefault();const v=document.getElementById('codeIn').value,to=codeTarget(v),er=document.getElementById('codeErr');
-  er.hidden=!!to||!v.trim();er.textContent=I18N[lang].codeBad;if(to)location.href=to;};
+// a code (or a whole invitation link): to its game's page, which connects at once, or to Mochalunt (common/codes.js);
+// a wrong one is said under the field (in the language chosen, see apply), and cleared as soon as the field changes
+{const ci=document.getElementById('codeIn'),er=document.getElementById('codeErr');
+  document.getElementById('codeForm').onsubmit=e=>{e.preventDefault();const r=codeRead(ci.value);
+    if(r.e){er.dataset.i18n=r.e;er.textContent=I18N[lang][r.e];er.hidden=false;return;}location.href=codeHref(r);};
+  ci.oninput=()=>{er.hidden=true;};}
 </script>
 </body>
 </html>

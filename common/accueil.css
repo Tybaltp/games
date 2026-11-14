@@ -34,7 +34,7 @@ html.ingame .accBg,body:has(#setup[hidden]) .accBg{display:none}
 /* le titre (games / nom du jeu) au survol : la couleur du jeu, pas l'accent de la page */
 h1 a.crumb:hover,h1 a.gname:hover{color:var(--accTint)}
 #setup .lede{color:var(--ink);font-weight:500;text-shadow:0 0 3px var(--bg),0 0 10px var(--bg),0 0 18px var(--bg)}
-#playBtn,#anaBtn,#modeWrap,#resumeD{display:none!important}
+#playBtn,#anaBtn,#modeWrap{display:none!important}
 .accTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .accTile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:clamp(12px,3.4vw,14px);min-height:clamp(112px,29vw,122px);border-radius:12px;
   border:1px solid color-mix(in srgb,var(--accTint) 30%,var(--line));background:color-mix(in srgb,var(--accTint) 9%,var(--panel));transition:background .15s,border-color .15s,transform .15s}
