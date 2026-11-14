@@ -495,8 +495,9 @@ function clickRing(i){if(!view||navAt!==null)return;const r=replay(view,view.mov
   if(ui.at!==null){const mv=legal.find(m=>m.c===c&&m.at===ui.at&&m.rm===i);if(mv){choose(mv);return;}if(i===ui.at){ui.at=null;ui.hover=-1;renderGame();return;}}
   const opts=legal.filter(m=>m.c===c&&m.at===i);if(!opts.length){renderGame();return;}
   if(opts.length===1&&opts[0].rm<0){choose(opts[0]);return;}ui.at=i;ui.hover=-1;renderGame();}
-// A complete move waits for Confirm (unless « Confirm each move » is off)
-function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;ui.tap=-1;if($('needConfirm').checked){ui.pending=mv;renderGame();}else send(mv);}
+// A complete move waits for Confirm (unless « Confirm each move » is off, or the move wins at once: C14)
+function choose(mv){ui.at=null;ui.path=null;ui.hover=-1;ui.tap=-1;if($('needConfirm').checked&&!winsNow(mv)){ui.pending=mv;renderGame();}else send(mv);}
+function winsNow(mv){const b=replay(view,view.moves,view.result).st,p=b[TURN],st=E.apply(b,mv);return E.won(st,p)||!E.gen(st).length;}
 $('needConfirm').checked=LS.get('zertz-confirm',true);
 $('needConfirm').onchange=e=>LS.set('zertz-confirm',e.target.checked);
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickRing(+g.dataset.i);});
