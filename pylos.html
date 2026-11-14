@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=47">
+<link rel="stylesheet" href="common/games.css?v=50">
 <style>
 /* Pylos palette « terre cuite et poirier » (light, dark; decision of 13.11.2026: clay page, pear-wood board without grain
    but with its frame, teal accent and move marks), the board and the balls; the shared layout is in common/games.css.
@@ -54,7 +54,7 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
    achevée, sur le fond de la page (recette : maquettes/pylos-images.py) ; cadres de mode au bleu canard de la page. */
 :root{--accImgL:url(../img/accueil/pylos.svg);--accImgD:url(../img/accueil/pylos-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#0c7f7a;--accTintD:#3f9f97}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=1">
+<link rel="stylesheet" href="common/accueil.css?v=3">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pylos.html"><b id="ttl" style="font-weight:inherit">Pylos</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -66,28 +66,24 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
         <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
-        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
-            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="l7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="py-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
             <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
             <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+            <p class="hint err" id="joinErr"></p>
           </form>
           <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-        </details>
-        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
-          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="PYLOS1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
-            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
-            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
         </details>
       </div>
       <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
       <p class="hint" id="modeTxt" hidden></p>
       <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
       <div class="picks" id="anaPick" hidden>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">New analysis</b><span data-i18n="a_freeTxt">Both sides on this screen: stepping back, variations, hints.</span></button>
         <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
       </div>
       <form class="form" id="createForm" hidden>
@@ -117,7 +113,6 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
         <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
       </form>
     </div>
-    <p class="hint err" id="joinErr"></p>
     <details id="rulesHome" class="noinv"></details>
   </div>
 </section>
@@ -143,7 +138,6 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -396,8 +390,8 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=75"></script>
-<script src="common/codes.js?v=4"></script>
+<script src="common/core.js?v=82"></script>
+<script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
 // ===== Pylos (David G. Royffe, 1993): the page around the engine =====
@@ -419,7 +413,7 @@ const PY_I18N={fr:{
  st_bonusL:"Carré ou alignement à votre couleur : reprenez une ou deux de vos billes libres, en les cliquant.",
  pend_more:"Coup : {m}. Une seconde reprise est possible : cliquez une autre bille libre, ou confirmez.",
  d_place:"poser en {a}",d_lift:"monter {a} en {b}",d_rem:", reprendre {r}",d_and:" et ",
- l_lift:"monte",l_rem:"reprend {r}",
+ l_rem:"reprend {r}",
  res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
  rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_no:"Continuer",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
@@ -435,9 +429,9 @@ const PY_I18N={fr:{
  <li><b>Alignement</b> : par défaut, la reprise vaut aussi pour un alignement complet à sa couleur, en ligne ou en colonne (quatre billes au socle, trois au deuxième étage), jamais en diagonale. En option, le carré seul.</li>
  <li><b>Répétition</b> : quand la même position revient pour la troisième fois, la page propose au joueur de proposer la nulle ; si l'adversaire accepte, la partie s'arrête sur une nulle, sinon elle continue.</li>
  <li><b>Cartes joueurs</b> : les billes qu'il reste à chacun, aussi dessinées de part et d'autre du plateau. <b>Bille cachée</b> : une bille du troisième étage cache entièrement celle du socle qui est dessous ; au survol de la souris, ou en la touchant sur téléphone, elle devient transparente ; la toucher à nouveau, ou toucher ailleurs, la rend opaque.</li>
- <li><b>Jouer</b> : cliquez un emplacement pour y poser une bille ; cliquez une de vos billes libres puis un emplacement plus haut pour la monter. Au survol, la bille à poser s'affiche en transparence ; la bille provisoire est cerclée de pointillés. Quand un carré est achevé, cliquez la ou les billes à reprendre (en fantôme), puis Confirmer. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Jouer</b> : cliquez un emplacement pour y poser une bille ; cliquez une de vos billes libres puis un emplacement plus haut pour la monter. Au survol, la bille à poser s'affiche en transparence ; la bille provisoire est cerclée de pointillés. Quand un carré est achevé, cliquez la ou les billes à reprendre (en fantôme), puis Confirmer. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
  <li><b>Dernier coup</b> : halo plein à l'arrivée ; pour une montée, le départ en pointillés et une trace ; une bille reprise reste un instant en fantôme.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li></ul>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 },en:{
  title:"Pylos",lede:"Build the pyramid: whoever reaches the top wins.",by:"A game by David G. Royffe.",
@@ -450,7 +444,7 @@ const PY_I18N={fr:{
  st_bonusL:"A square or a line of your colour: take back one or two of your free balls by clicking them.",
  pend_more:"Move: {m}. A second take-back is possible: click another free ball, or confirm.",
  d_place:"place on {a}",d_lift:"move {a} up to {b}",d_rem:", take back {r}",d_and:" and ",
- l_lift:"moves up",l_rem:"takes back {r}",
+ l_rem:"takes back {r}",
  res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
  rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_no:"Keep playing",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
@@ -466,9 +460,9 @@ const PY_I18N={fr:{
  <li><b>Line</b>: by default, the take-back also applies to a complete line of your colour, row or column (four balls on the base, three on the second level), never a diagonal. As an option, the square only.</li>
  <li><b>Repetition</b>: when the same position comes back for the third time, the page offers the player to propose a draw; if the opponent accepts, the game ends in a draw, otherwise it goes on.</li>
  <li><b>Player cards</b>: the balls each player has left, also drawn on either side of the board. <b>Hidden ball</b>: a ball of the third level fully hides the base ball under it; hovering it with the mouse, or tapping it on a phone, makes it transparent; tapping it again, or anywhere else, makes it opaque again.</li>
- <li><b>Playing</b>: click a spot to place a ball there; click one of your free balls then a higher spot to move it up. Hovering shows the ball to place in transparency; the provisional ball has a dashed ring. When a square is completed, click the ball or balls to take back (shown as ghosts), then Confirm. The move commands are in the bar under the board: Reset, Confirm; depending on the game, Undo last move and Hint.</li>
+ <li><b>Playing</b>: click a spot to place a ball there; click one of your free balls then a higher spot to move it up. Hovering shows the ball to place in transparency; the provisional ball has a dashed ring. When a square is completed, click the ball or balls to take back (shown as ghosts), then Confirm. The move commands are in the bar under the board: Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
  <li><b>Last move</b>: a solid halo on arrival; for a move up, the start in dashes and a trace; a ball taken back stays a moment as a ghost.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li></ul>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 },es:{
  title:"Pylos",lede:"Construye la pirámide: quien llega a la cima gana.",by:"Un juego de David G. Royffe.",
@@ -481,7 +475,7 @@ const PY_I18N={fr:{
  st_bonusL:"Cuadrado o línea de tu color: recupera una o dos de tus bolas libres, pulsándolas.",
  pend_more:"Jugada: {m}. Puedes recuperar una segunda bola: pulsa otra bola libre, o confirma.",
  d_place:"colocar en {a}",d_lift:"subir {a} a {b}",d_rem:", recuperar {r}",d_and:" y ",
- l_lift:"sube",l_rem:"recupera {r}",
+ l_rem:"recupera {r}",
  res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
  rep_ask:"Has repetido la misma posición tres veces. ¿Quieres proponer tablas?",rep_no:"Continuar",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
@@ -497,9 +491,9 @@ const PY_I18N={fr:{
  <li><b>Línea</b>: por defecto, la recuperación vale también por una línea completa de tu color, fila o columna (cuatro bolas en la base, tres en el segundo nivel), nunca en diagonal. Como opción, solo el cuadrado.</li>
  <li><b>Repetición</b>: cuando la misma posición vuelve por tercera vez, la página propone al jugador ofrecer tablas; si el adversario acepta, la partida termina en tablas, si no continúa.</li>
  <li><b>Tarjetas de los jugadores</b>: las bolas que le quedan a cada uno, dibujadas también a ambos lados del tablero. <b>Bola oculta</b>: una bola del tercer nivel oculta por completo la bola de la base que tiene debajo; al pasar el ratón por encima, o al tocarla en el móvil, se vuelve transparente; tocarla de nuevo, o tocar en otro sitio, la vuelve opaca.</li>
- <li><b>Jugar</b>: pulsa un hueco para colocar una bola; pulsa una de tus bolas libres y luego un hueco más alto para subirla. Al pasar el ratón, la bola que se colocaría se muestra en transparencia; la bola provisional lleva un anillo discontinuo. Cuando se completa un cuadrado, pulsa la bola o las bolas que recuperas (en fantasma) y luego Confirmar. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Jugar</b>: pulsa un hueco para colocar una bola; pulsa una de tus bolas libres y luego un hueco más alto para subirla. Al pasar el ratón, la bola que se colocaría se muestra en transparencia; la bola provisional lleva un anillo discontinuo. Cuando se completa un cuadrado, pulsa la bola o las bolas que recuperas (en fantasma) y luego Confirmar. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
  <li><b>Última jugada</b>: halo lleno en la llegada; en una subida, la salida en discontinuo y una traza; una bola recuperada queda un instante en fantasma.</li>
- <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li></ul>
+ <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 }};
 const CN=p=>t(p?'cDark':'cLight'),CNL=p=>t(p?'cDarkL':'cLightL');
@@ -569,15 +563,17 @@ function playerCard(el,p,d){const n=d.st.res[p]-fillUsed(d,p),x=document.createE
 // ---------- input ----------
 function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;
   for(const c of anaAlts()){const m=parseCode(c);if(m.to!==undefined)out.set(m.to,c);}return out;}
-// the action {from,to} is made: a square completed waits for the removals; otherwise the move is complete
-function setMain(st,from,to,touch){const L=legalsOf(st),bonus=L.some(m=>m.from===from&&m.to===to&&m.rem.length);
+// the action {from,to} is made: a square completed waits for the removals; otherwise the move is complete: it waits for
+// Confirm with « Confirm each move » (mouse and touch alike), unless it wins at once (C14)
+function setMain(st,from,to){const L=legalsOf(st),bonus=L.some(m=>m.from===from&&m.to===to&&m.rem.length);
   ui.sel=-1;ui.main={from,to};ui.bonus=bonus;ui.rem=[];ui.pending=null;
-  if(!bonus){const code=baseCode(ui.main);if(!confirmOn()&&!touch){clearPrep();send(code);return;}ui.pending=code;}
+  if(!bonus){const code=baseCode(ui.main);if(!confirmOn()||winsNow(st,code)){clearPrep();send(code);return;}ui.pending=code;}
   tone(880,.05,.03);renderGame();}
+function winsNow(st,code){const w=deepCopy(st),c=PY.legal(w,code);if(c===null)return false;PY.apply(w,c);const f=PY.finished(w);return !!f&&f.w===st.turn;}
 function setRem(st){ui.pending=ui.rem.length?PY.legal(st,fullCode(ui.main,ui.rem)):null;tone(880,.05,.03);renderGame();}
 // A click on a spot i. A free ball of mine: chosen to move up (again: released). An available spot: the ball placed there,
 // or the chosen ball moved up. After an action completing a square: a free ball of mine is taken back (again: kept).
-function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
   const st=meSt(r),p=st.turn,L=legalsOf(st);
   if(ui.main){
@@ -589,25 +585,23 @@ function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i
     clearPrep();}
   if(ui.sel>=0){
     if(i===ui.sel){ui.sel=-1;renderGame();return;}
-    if(L.some(m=>m.from===ui.sel&&m.to===i)){setMain(st,ui.sel,i,touch);return;}}
+    if(L.some(m=>m.from===ui.sel&&m.to===i)){setMain(st,ui.sel,i);return;}}
   if(st.b[i]===p&&L.some(m=>m.from===i)){ui.sel=i;tone(880,.05,.03);renderGame();return;}
-  if(st.b[i]===-1&&L.some(m=>m.from===-1&&m.to===i)){setMain(st,-1,i,touch);return;}
+  if(st.b[i]===-1&&L.some(m=>m.from===-1&&m.to===i)){setMain(st,-1,i);return;}
   renderGame();}
 $('needConfirm').checked=LS.get('pylos-confirm',true)!==false;
 $('needConfirm').onchange=e=>{LS.set('pylos-confirm',e.target.checked);
   // switched off with a simple move waiting: it is played (a move with removals still waits)
   if(!e.target.checked&&ui.pending&&ui.main&&!ui.bonus&&view){const st=myState();if(st){const mv=ui.pending;clearPrep();send(mv);}}};
-let lastPT='mouse';
 // The hidden ball (decision of 10.11.2026): a ball of the third level hides the base ball under it, the top ball hides the
 // centre ball of the second level. Hovering such a ball with the mouse makes it transparent (xrayH); a click or a tap on it
 // makes it transparent until a second click on it or a click anywhere else (xray). When the click also plays (a ball of
 // the third level taken back on a square), it plays: the transparency is only for balls the click does nothing with.
 let xray=-1,xrayH=-1,lastAct=new Set();
-$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
-$('svg').addEventListener('click',e=>{e.pyBoard=true;const g=e.target.closest&&e.target.closest('[data-i]'),i=g?+g.dataset.i:-1,touch=lastPT==='touch';lastPT='mouse';
+$('svg').addEventListener('click',e=>{e.pyBoard=true;const g=e.target.closest&&e.target.closest('[data-i]'),i=g?+g.dataset.i:-1;
   if(g&&g.hasAttribute('data-b')&&CELLS[i].l>=2&&!lastAct.has(i)){xray=xray===i?-1:i;drawBoard();return;}
   if(xray>=0){xray=-1;if(!g)drawBoard();}
-  if(g)onCell(i,touch);});
+  if(g)onCell(i);});
 // (a click on the board is marked: the board is redrawn by then, so its target is no longer in the page)
 document.addEventListener('click',e=>{if(xray<0||e.pyBoard)return;xray=-1;drawBoard();});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}

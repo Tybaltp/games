@@ -143,7 +143,7 @@ html.ingame:not(.wide) .boardwrap > .notice{height:auto;min-height:var(--barH)}
 .pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}
 .pick b{font-size:.98rem;color:var(--ink)}.pick span{font-size:.8rem;color:var(--muted);font-weight:400}
 .joinLine{margin:0;text-align:center;font-size:.88rem;color:var(--muted)}
-.home .err:empty{display:none}
+.home .err{color:var(--danger)}.home .err:empty{display:none}
 /* home: Play, Analyse, the game to resume, the codes, in one card */
 .homeMain{display:flex;flex-direction:column;gap:10px}
 .homeMain[hidden]{display:none}
@@ -178,8 +178,9 @@ ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 .navmid{display:flex;flex-direction:column;align-items:center;gap:2px}
 .navbar .navalt{min-width:0;padding:0 18px;font-size:.62rem;line-height:1.5}
 .navbar button:disabled{opacity:.35;cursor:default}
+@media (max-width:400px){.navbar{gap:2px}.navbar button:not(.navalt){min-width:34px;padding:6px 4px}}   /* a phone, in analysis: seven buttons and « Jugada 44 / 44 » on one line */
 ol.log .alt{color:var(--accent);margin-left:2px}
-.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted)}
+.navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted);white-space:nowrap}
 details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 details summary{cursor:pointer;font-weight:600}
 details ul{margin:.6em 0 0;padding-left:1.2em;max-width:70ch}
@@ -222,7 +223,7 @@ header.hnosub h1>span[data-i18n="sub"]{display:none}
 header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'‹';font-size:1.3rem;margin-right:.25em}header.hshort h1 .sep{display:none}
 
 /* action bar: a button's short label shows only when the full labels don't fit (core.js fitBtns) */
-.notice .btns.measure>button{flex-shrink:0;max-width:none}
+.notice .btns.measure{flex-wrap:nowrap!important}.notice .btns.measure>button{flex:none!important;max-width:none!important}   /* !important: a page's own rule on the buttons must not upset the measure */
 /* buttons that overflow even with their short labels: two rows, the bar grows (fitBtns) */
 .notice.rows2{height:auto;min-height:var(--barH);align-items:stretch}.notice.rows2 .btns{flex-wrap:wrap;justify-content:center}.notice.rows2 .btns button{flex:1 1 auto}.notice .bs{display:none}.notice.short .bl{display:none}.notice.short .bs{display:inline}
 /* Mochalunt: the match card in the side panel (table, score, seat choice, the tables) */
@@ -249,6 +250,13 @@ header.hshort h1 a.crumb{font-size:0}header.hshort h1 a.crumb::before{content:'�
 @keyframes sfpop{from{transform:scale(1.5);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.startov .sfbig.pop{animation:none}}
 #mAsk:not([hidden]){display:flex;flex-direction:column;gap:8px}
+/* a rematch offered to me (core.js, renderGame): a frame over the board, as the start frame, with a cross to close it */
+.rmov{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:12px;border-radius:inherit;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.rmov[hidden]{display:none}
+.rmov .card{position:relative;width:min(20rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22);text-align:center}
+.rmov .sfmsg{margin:4px 22px 0;font-weight:700;color:var(--ink)}
+.rmov .rmx{position:absolute;top:4px;right:4px;width:30px;height:30px;padding:0;border:0;background:none;font-size:1.25rem;line-height:1;color:var(--muted);cursor:pointer}
+.rmov .rmx:hover{color:var(--ink)}
 .mqopt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.mqopt button{flex:none}.mqopt small{font-size:.72rem;line-height:1.3;color:var(--muted)}
 .nameov .card{width:min(22rem,100%);box-shadow:0 10px 32px rgba(0,0,0,.22)}
 .nameov h2{margin:0;font-size:1.05rem}.nameov .hint{margin:0}
@@ -282,9 +290,8 @@ details .chatlist li{margin:0}
 #voiceHang{flex:none}
 .player .vmic{margin-left:.35em;font-size:.85em}
 
-/* spectators present: one line at the top of the chat frame; resume code under the invitation, in the same frame */
+/* spectators present: one line at the top of the chat frame */
 .wline{margin:6px 0 0;font-size:.85rem;color:var(--muted)}
-#invPart:not([hidden])+.rcpart{margin-top:4px}
 .voicein{padding-top:8px;border-top:1px solid var(--line)}
 
 /* Band layout (<html data-band>): on wide screens the players' cards form a band above the board. Each
@@ -315,17 +322,17 @@ html.ingame.wide .side > #chatBox[open] > .chatgrip{display:block;position:absol
 html.ingame.wide .side > #chatBox[open] > .chatgrip::after{content:"";position:absolute;left:50%;top:4px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}
 html.ingame.wide .side > #chatBox[open] > .chatgrip:hover::after{background:var(--muted)}
 html.ingame.band #playersTop > .player .tally{min-width:150px}
-/* Codes frame: one compact row per code: label, the code in clear, two small buttons (code, link; « copy … » on hover) */
+/* Codes frame: one compact row per code: label, the code in clear (wide enough for a whole code: pe-k7m2qab), two small
+   buttons (code, link; « copy … » on hover) */
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.coderow{display:grid;grid-template-columns:6.2em minmax(0,1fr) auto;align-items:center;column-gap:8px}
+.coderow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;column-gap:6px}
 .side details .coderow{margin-top:4px}
 .side details #invPart > .coderow:first-of-type{margin-top:8px}
 .coderow > .hint{margin:0!important;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.coderow .codetxt{min-width:0;width:100%;border:none;background:none;padding:0;font-family:var(--f-mono);font-size:.9rem;color:var(--ink);text-overflow:ellipsis}
+.coderow .codetxt{min-width:0;width:10.2ch;border:none;background:none;padding:0;font-family:var(--f-mono);font-size:.9rem;color:var(--ink);text-overflow:ellipsis}
 .coderow .cbtns{display:flex;gap:4px}
-.coderow .cbtns button{padding:2px 8px;font-size:.78rem;line-height:1.4;min-width:3.6em}
+.coderow .cbtns button{padding:2px 7px;font-size:.78rem;line-height:1.4;min-width:3.6em}
 #invPart:has(#linksBox[hidden]) .lnk,#invPart:has(#oppLink[hidden]) #codePBox .lnk,#invPart:has(#watchLinkBox[hidden]) #codeWBox .lnk{visibility:hidden}
-#rcCard #rcBox{grid-column:1 / -1;margin-top:4px}
 /* a match: links only, no code */
 .coderow.linkonly .codetxt,.coderow.linkonly .cbtns button:not(.lnk){display:none}.coderow.linkonly .cbtns{grid-column:3}
 /* the host's note only while waiting for the opponent */
