@@ -8,7 +8,7 @@
 const CODE_GAMES={pe:{id:'pente',n:'Pente',page:'pente',old:'p'},pd:{id:'pdd',n:'Ponte del Diavolo',page:'pontedeldiavolo',old:'d'},ze:{id:'zertz',n:'Zèrtz',page:'zertz',old:'z'},gy:{id:'gyges',n:'Gygès',page:'gyges',old:'g'},
   ar:{id:'arimaa',n:'Arimaa',page:'arimaa',old:'a'},vo:{id:'volo',n:'Volo',page:'volo',old:'v'},ti:{id:'tintas',n:'Tintas',page:'tintas',old:'t'},db:{id:'dblk',n:'Diagonal Blocks',page:'diagonalblocks',old:'b'},qu:{id:'quarto',n:'Quarto',page:'quarto',old:'q'},py:{id:'pylos',n:'Pylos',page:'pylos',old:'l'},
   ay:{id:'ayu',n:'Ayu',page:'ayu',old:'y'}};
-// games still on their branch (letters kept for them): tw Tumbleweed (old w), sl Slither (s), ay Ayu (y), si Siam (m)
+// games still on their branch (letters kept for them): tw Tumbleweed (old w), sl Slither (s), si Siam (m)
 // the game of a code without its dash (new: 7 or 9 characters, former: 6 or 8), null if none; a spectators' code
 const codeGame=c=>{c=String(c||'');if(c.length===7||c.length===9)return CODE_GAMES[c.slice(0,2)]||null;
   if(c.length===6||c.length===8)for(const k in CODE_GAMES)if(CODE_GAMES[k].old===c[0])return CODE_GAMES[k];return null;};
