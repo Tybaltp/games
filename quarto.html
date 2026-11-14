@@ -49,7 +49,7 @@
 :root{--accImgL:url(../img/accueil/quarto.svg);--accImgD:url(../img/accueil/quarto-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:0.87054;--accTintL:#6f8f66;--accTintD:#9cb894}
 html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=2">
+<link rel="stylesheet" href="common/accueil.css?v=3">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="quarto.html"><b id="ttl" style="font-weight:inherit">Quarto</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -61,9 +61,9 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
         <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
-        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
             <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="qu-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
@@ -170,7 +170,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=78"></script>
+<script src="common/core.js?v=79"></script>
 <script src="common/codes.js?v=5"></script>
 <script>
 // ===== Quarto: rules =====

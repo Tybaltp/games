@@ -99,7 +99,7 @@ html.ingame.band #playersTop > .player.fit1 .tally,html.ingame.band #playersTop 
    L'image est un coin du plateau : son bord droit et son bas tombent au bord de l'écran (html:root : plus fort que common/accueil.css, chargé après). */
 html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil/dblocks-dark.svg);--accWoodL:#f0e1e5;--accWoodD:#1a1315;--accR:1.03024;--accRight:0px;--accBot:0px;--accTintL:#9c2457;--accTintD:#d4588a}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=2">
+<link rel="stylesheet" href="common/accueil.css?v=3">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="diagonalblocks.html"><b id="ttl" style="font-weight:inherit">Diagonal Blocks</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -111,9 +111,9 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
         <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
-        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
             <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="db-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
@@ -220,7 +220,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=78"></script>
+<script src="common/core.js?v=79"></script>
 <script src="common/codes.js?v=5"></script>
 <script src="common/ai.js?v=2"></script>
 <script>

@@ -42,3 +42,19 @@ h1 a.crumb:hover,h1 a.gname:hover{color:var(--accTint)}
 .accTile b{font-family:var(--f-display);font-weight:800;font-size:clamp(1.02rem,.82rem + 1.1vw,1.12rem);letter-spacing:-.01em;color:var(--ink);margin-top:10px}
 .accTile span{font-size:.8rem;color:var(--muted);line-height:1.3}
 .accTile:hover:not(:disabled){border-color:var(--accTint);background:color-mix(in srgb,var(--accTint) 17%,var(--panel))}
+/* « Parties en cours » (core.js, saveRender), au-dessus des cartes : une ligne par partie (qui, quand, où on en est), Reprendre et
+   Supprimer (un second clic confirme) ; trois lignes, les autres sur demande. */
+#resumeCard{gap:4px;padding:0 0 4px}
+.rsHead{margin:0}
+.rsList{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.rsList li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;padding:7px 0;border-top:1px solid var(--line)}
+.rsList li:first-child{border-top:0}
+.rsList li[hidden]{display:none}
+.rsInfo{display:flex;flex-direction:column;min-width:0;flex:1 1 12rem;line-height:1.3}
+.rsInfo b{font-weight:650;overflow-wrap:anywhere}
+.rsInfo span{color:var(--muted);font-size:.8rem}
+.rsActs{display:flex;gap:6px;flex:none}
+.rsActs button{padding:5px 10px;font-size:.85rem}
+.rsActs button.rsSure{color:var(--danger);border-color:var(--danger)}
+.rsMore{align-self:flex-start;border:0;background:none;padding:2px 0;font-size:.82rem;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.rsMore:hover{color:var(--ink)}
