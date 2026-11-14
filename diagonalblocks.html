@@ -582,9 +582,9 @@ const MOUSE=!!(window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:
 const confirmOn=()=>!MOUSE||$('needConfirm').checked;
 function choose(mv){ui.hover=-1;if(!confirmOn()){ui.pending=null;send(mv);return;}ui.pending=mv;renderGame();}
 if(MOUSE){$('confirmOpt').hidden=false;$('needConfirm').checked=LS.get('dblk-confirm',true)!==false;
-  $('needConfirm').onchange=e=>{LS.set('dblk-confirm',e.target.checked);if(!e.target.checked&&ui.pending&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;ui.pending=null;send(mv);}}};}
-// Swap: the answer to the swap question; it then waits for Confirm like any move
-function doSwap(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!E.canSwap(r.st.es))return;selectPiece(-1,true);choose({t:'s'});}
+  $('needConfirm').onchange=e=>{LS.set('dblk-confirm',e.target.checked);if(!e.target.checked&&ui.pending&&ui.pending.t==='p'&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;ui.pending=null;send(mv);}}};}
+// Swap: the answer to the swap question (an opening choice); it always waits for Confirm, whatever the option (C14)
+function doSwap(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||!E.canSwap(r.st.es))return;selectPiece(-1,true);ui.hover=-1;ui.pending={t:'s'};renderGame();}
 document.addEventListener('keydown',e=>{if(!view||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')||e.ctrlKey||e.metaKey||e.altKey)return;
   if(mySeat>=0&&ui.piece>=0&&(e.key==='r'||e.key==='R')){e.preventDefault();turnPiece('r');return;}
   if(mySeat>=0&&ui.piece>=0&&(e.key==='f'||e.key==='F')){e.preventDefault();turnPiece('f');return;}});
