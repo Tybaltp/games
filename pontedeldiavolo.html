@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=50">
+<link rel="stylesheet" href="common/games.css?v=51">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
@@ -75,7 +75,7 @@ html:root{--accTop:calc(72px + 6.3vh);--accBot:calc(24px + 6.3vh);--accX:max(var
 html #setup .accTile{background:color-mix(in srgb,var(--accTint) 4%,var(--panel));border-color:color-mix(in srgb,var(--accTint) 18%,var(--line))}
 html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--accTint) 9%,var(--panel));border-color:var(--accTint)}
 </style>
-<link rel="stylesheet" href="common/accueil.css?v=3">
+<link rel="stylesheet" href="common/accueil.css?v=4">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="pontedeldiavolo.html"><b id="ttl" style="font-weight:inherit">Ponte <em>del</em> Diavolo</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -192,7 +192,7 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=82"></script>
+<script src="common/core.js?v=83"></script>
 <script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>

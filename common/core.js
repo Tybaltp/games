@@ -63,11 +63,11 @@ const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{
 const I18C={fr:{
  ht_title:"Comment jouer",ht_skip:"Passer",ht_done:"C'est parti",ht_never:"Ne plus montrer",ht_prev:"Précédent",ht_next:"Suivant",
  fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de la table…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_wait:"En attente de la réponse de {n}.",close:"Fermer",rm_no:"{n} a refusé.",rm_away:"{n} n'est plus connecté.",
- sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",createBtn:"Créer la partie",
+ sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",tc_inc:"+{s} s/coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
  pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",localBtn:"Commencer la partie",
  invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",watchT:"Vous êtes invité à observer une partie",watchTxt:"Choisissez le nom que verront les joueurs, puis cliquez Observer, ou restez anonyme.",anon:"Anonyme",watchersT:"Observateurs ({n})",chat:"Discussion",chatN:"Discussion ({n})",chatPh:"Votre message",chatSend:"Envoyer",chatName:"Choisir un nom pour écrire",chatEmpty:"Aucun message.",chatW:"obs.",chatHintP:"Les messages des observateurs s'affichent à la fin de la partie.",chatHintW:"Les joueurs ne verront vos messages qu'à la fin de la partie.",voice:"Vocal",lg_join:"{n} a rejoint la partie.",lg_watch:"{n} a rejoint la partie en observateur.",lg_left:"{n} s'est déconnecté.",lg_back:"{n} est revenu.",lg_start:"La partie commence.",lg_rematch:"Revanche : la partie recommence, camps échangés.",lg_table:"Table {k} : {g}.",vAsk:"🎙 Proposer le vocal",vOut:"Vocal proposé à {n}…",vInvite:"{n} propose de parler à voix haute.",vConn:"Connexion du vocal…",vOn:"Vocal avec {n}",vMute:"Couper le micro",vUnmute:"Rétablir le micro",vVol:"Volume de la voix",vHang:"Raccrocher",vNo:"{n} a refusé le vocal.",vEnd:"Vocal terminé.",vMic:"Micro inaccessible : le vocal n'a pas démarré.",vFail:"Le vocal n'a pas pu se connecter (réseau).",
- resumeBtn:"Reprendre",rs_title:"Parties en cours",rs_link:"Par lien",rs_wait:"en attente d'un adversaire",rs_move:"coup {n}",rs_new:"pas commencée",rs_del:"Supprimer",rs_delOk:"Confirmer",rs_all:"Tout afficher ({n})",rs_less:"Afficher moins",
+ resumeBtn:"Reprendre",rs_title:"Parties en cours",rs_link:"Par lien",rs_move:"coup {n}",rs_del:"Supprimer",rs_delOk:"Confirmer",
  cancel:"Annuler",confirmMv:"Confirmer",
  start:"Départ",startBtn:"Démarrer la partie",pass:"Passer",resign:"Abandonner",resignNo:"Continuer",resignYes:"Confirmer l'abandon",
  invite:"Inviter",codes:"Codes d’invitation",copy:"Copier",copied:"Copié",
@@ -90,11 +90,11 @@ const I18C={fr:{
 },en:{
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
  fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_wait:"Waiting for {n}'s answer.",close:"Close",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
- sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",createBtn:"Create game",
+ sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",tc_inc:"+{s} s/move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
  pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",localBtn:"Start the game",
  invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",watchT:"You are invited to watch a game",watchTxt:"Choose the name the players will see, then click Watch, or stay anonymous.",anon:"Anonymous",watchersT:"Spectators ({n})",chat:"Chat",chatN:"Chat ({n})",chatPh:"Your message",chatSend:"Send",chatName:"Choose a name to write",chatEmpty:"No messages yet.",chatW:"spect.",chatHintP:"Spectators' messages are shown once the game is over.",chatHintW:"The players will only see your messages once the game is over.",voice:"Voice",lg_join:"{n} joined the game.",lg_watch:"{n} joined as a spectator.",lg_left:"{n} disconnected.",lg_back:"{n} is back.",lg_start:"The game begins.",lg_rematch:"Rematch: a new game begins, sides swapped.",lg_table:"Table {k}: {g}.",vAsk:"🎙 Offer voice chat",vOut:"Voice chat offered to {n}…",vInvite:"{n} offers to talk out loud.",vConn:"Connecting voice…",vOn:"Voice with {n}",vMute:"Mute the mic",vUnmute:"Unmute the mic",vVol:"Voice volume",vHang:"Hang up",vNo:"{n} declined voice chat.",vEnd:"Voice chat ended.",vMic:"Microphone unavailable: voice chat did not start.",vFail:"Voice chat could not connect (network).",
- resumeBtn:"Resume",rs_title:"Games in progress",rs_link:"By link",rs_wait:"waiting for an opponent",rs_move:"move {n}",rs_new:"not started",rs_del:"Delete",rs_delOk:"Confirm",rs_all:"Show all ({n})",rs_less:"Show fewer",
+ resumeBtn:"Resume",rs_title:"Games in progress",rs_link:"By link",rs_move:"move {n}",rs_del:"Delete",rs_delOk:"Confirm",
  cancel:"Cancel",confirmMv:"Confirm",
  start:"Start",startBtn:"Start the game",pass:"Pass",resign:"Resign",resignNo:"Keep playing",resignYes:"Confirm resignation",
  invite:"Invite",codes:"Invitation codes",copy:"Copy",copied:"Copied",
@@ -117,11 +117,11 @@ const I18C={fr:{
 },es:{
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
  fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_debutant:"Principiante",lv_moyen:"Medio",lv_fort:"Fuerte",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_wait:"Esperando la respuesta de {n}.",close:"Cerrar",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
- sub:"entre navegadores",create:"Crear una partida",nick:"Tu nombre",firstIs:"Quién empieza",rnd:"Al azar",me:"Yo",opp:"Mi adversario",tc:"Reloj",tc_none:"Sin reloj",tc_fmt:"{m} min + {s} s por jugada",createBtn:"Crear la partida",
+ sub:"entre navegadores",create:"Crear una partida",nick:"Tu nombre",firstIs:"Quién empieza",rnd:"Al azar",me:"Yo",opp:"Mi adversario",tc:"Reloj",tc_none:"Sin reloj",tc_fmt:"{m} min + {s} s por jugada",tc_inc:"+{s} s/jugada",createBtn:"Crear la partida",
  join:"Unirse a una partida con un código",code:"Código de la partida",play:"Jugar",watch:"Observar",linkHint:"Con un enlace de invitación, la página se conecta sola.",
  pickOpp:"¿Contra quién?",back:"Volver",m_link:"Invitar con un enlace",m_linkTxt:"Un adversario en otro dispositivo, con un enlace o un código.",m_ai:"Ordenador",m_aiTxt:"Tres niveles, para entrenarse.",m_face:"Cara a cara",m_faceTxt:"Dos jugadores en la misma pantalla, con reloj si quieres.",localBtn:"Empezar la partida",
  invitedT:"Te han invitado a una partida",invitedTxt:"Elige el nombre que verá tu adversario y pulsa Jugar.",watchT:"Te han invitado a observar una partida",watchTxt:"Elige el nombre que verán los jugadores y pulsa Observar, o quédate anónimo.",anon:"Anónimo",watchersT:"Espectadores ({n})",chat:"Chat",chatN:"Chat ({n})",chatPh:"Tu mensaje",chatSend:"Enviar",chatName:"Elige un nombre para escribir",chatEmpty:"Ningún mensaje.",chatW:"esp.",chatHintP:"Los mensajes de los espectadores se muestran al final de la partida.",chatHintW:"Los jugadores solo verán tus mensajes al final de la partida.",voice:"Voz",lg_join:"{n} se ha unido a la partida.",lg_watch:"{n} se ha unido como espectador.",lg_left:"{n} se ha desconectado.",lg_back:"{n} ha vuelto.",lg_start:"Empieza la partida.",lg_rematch:"Revancha: la partida vuelve a empezar, con los bandos cambiados.",lg_table:"Mesa {k}: {g}.",vAsk:"🎙 Proponer hablar por voz",vOut:"Voz propuesta a {n}…",vInvite:"{n} propone hablar por voz.",vConn:"Conectando la voz…",vOn:"Voz con {n}",vMute:"Silenciar el micro",vUnmute:"Activar el micro",vVol:"Volumen de la voz",vHang:"Colgar",vNo:"{n} ha rechazado la voz.",vEnd:"Voz terminada.",vMic:"Micrófono inaccesible: la voz no ha arrancado.",vFail:"La voz no ha podido conectarse (red).",
- resumeBtn:"Reanudar",rs_title:"Partidas en curso",rs_link:"Por enlace",rs_wait:"esperando a un adversario",rs_move:"jugada {n}",rs_new:"sin empezar",rs_del:"Borrar",rs_delOk:"Confirmar",rs_all:"Mostrar todas ({n})",rs_less:"Mostrar menos",
+ resumeBtn:"Reanudar",rs_title:"Partidas en curso",rs_link:"Por enlace",rs_move:"jugada {n}",rs_del:"Borrar",rs_delOk:"Confirmar",
  cancel:"Cancelar",confirmMv:"Confirmar",
  start:"Salida",startBtn:"Empezar la partida",pass:"Pasar",resign:"Abandonar",resignNo:"Continuar",resignYes:"Confirmar el abandono",
  invite:"Invitar",codes:"Códigos de invitación",copy:"Copiar",copied:"Copiado",
@@ -285,8 +285,10 @@ function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.resu
     mySeat=1-mySeat;if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
   else return;
   hostBroadcast();}
-// Draw offer (games with GAME.drawOffer): g.draw = {from (seat), st:'ask'|'no'}; the offer lapses with the next move, a
-// refusal stays shown until then (no new offer meanwhile); acceptance ends the game, drawn by agreement
+// Draw offer (games with GAME.drawOffer): g.draw = {from (seat), st:'ask'|'no'}; as at chess: offered at any time, no clock stops,
+// the offer outlives its author's own move and the opponent's next move declines it; a refusal stays shown until the next move
+// (no new offer meanwhile); acceptance ends the game, drawn by agreement
+const drawAfter=(dr,s)=>!dr||dr.st!=='ask'?null:dr.from===s?dr:{from:dr.from,st:'no'};   // the offer once seat s has moved
 function drawOp(g,s,op){const dr=g.draw,r=replay(g,g.moves,g.result);if(r.over||!g.started)return false;
   if(op==='ask'&&!dr)g.draw={from:s,st:'ask'};
   else if(op==='cancel'&&dr&&dr.from===s&&dr.st==='ask')g.draw=null;
@@ -446,7 +448,7 @@ function hostMove(s,n,code,conn){const g=H.game,pubFor=()=>({...hostPublic(),myH
   const cc=GAME.legal(r.st,code,g);if(!cc){conn&&conn.send({t:'nack'});return false;}
   const now=Date.now();
   if(g.running&&g.tc){g.clock[s]-=now-H.turnStart;if(g.clock[s]<=0){g.clock[s]=0;g.result={winner:1-s,reason:'time'};hostBroadcast();return false;}g.clock[s]+=g.tc.inc;}
-  g.moves.push(cc);g.draw=null;g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
+  g.moves.push(cc);g.draw=drawAfter(g.draw,s);g.running=true;H.turnStart=now;hostBroadcast(true);return true;}
 let saveTick=0;
 // Chat: the host keeps every message in H.game.chat ({n: author, w: from a spectator, m: text, v: shown to the players}).
 // Players' messages go to everyone at once; a spectator's reaches the players only once the game is over (chatReveal,
@@ -722,7 +724,7 @@ function renderGame(){if(!view)return;if(role==='ai')LS.set(AK(),{view,mySeat,le
   if(!editing)for(const p of [0,1]){const el=document.createElement('div');el.className='player c'+p+(!r.over&&!d.over&&(ns&&navAt===null?!(view.held&&view.held[p]):turn===p)?' active':'');el.id='pl'+p;
     const h=document.createElement('div');h.className='who';h.innerHTML=`<span class="dot c${p}"></span>`;const nmx=document.createElement('span');nmx.textContent=nm(p);h.appendChild(nmx);if(V.st==='on'&&p!==mySeat){const vi=document.createElement('span');vi.className='vmic';vi.textContent='🎙';vi.title=t('vOn',{n:nm(p)});h.appendChild(vi);}
     if(role==='test'||role==='file')nameEdit(nmx,p);
-    const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;
+    const ck=document.createElement('div');ck.className='clock';ck.id='clock'+p;if(!view.tc)ck.hidden=true;else if(view.tc.inc)ck.dataset.inc=t('tc_inc',{s:view.tc.inc/1e3});
     el.append(h,ck);if(GAME.playerCard)GAME.playerCard(el,p,d);host.appendChild(el);}
   if(BAND)requestAnimationFrame(fitCards);
   if(BAND==='haut'){if(bandOn()){if(bandMsg.parentNode!==host||bandMsg.nextElementSibling)host.appendChild(bandMsg);}else bandMsg.remove();bandSync();}
@@ -998,7 +1000,7 @@ function localSave(){if(role!=='local'||!view)return;LS.set(LK(),{view:{...view,
 function localFreeze(){if(!view.tc)return;view.clock=remaining();view.running=false;view.elapsed=0;view.recvAt=Date.now();}
 function localPlay(code){if(view.result)return;const r=replay(view,view.moves,view.result);if(r.over)return;const s=r.st.turn;
   if(view.tc){const rem=remaining();if(view.running){if(rem[s]<=0){localFlag();return;}rem[s]+=view.tc.inc;}view.clock=rem;}
-  view.draw=null;view.moves=view.moves.concat([code]);const r2=replay(view,view.moves,null);
+  view.draw=drawAfter(view.draw,s);view.moves=view.moves.concat([code]);const r2=replay(view,view.moves,null);
   view.running=!r2.over&&localRuns(r2.st);view.elapsed=0;view.recvAt=Date.now();testTurn();}
 function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)return;const tt=r.st.turn;localFreeze();view.clock[tt]=0;
   view.result={winner:1-tt,reason:'time'};resetUi();renderGame();}
@@ -1171,17 +1173,19 @@ function saveMigrate(){const now=Date.now();
   for(const s of ['host','guest']){const o=LS.get(K('p2p-'+s),null),v=o&&(s==='host'?o.game:o.view);if(!o||!o.code||!v||v.match||!Array.isArray(v.moves))continue;
     LS.set(K('p2p-'+s+'-'+o.code),{...o,at:o.savedAt||now,an:v.moves.length});LS.del(K('p2p-'+s));
     const pd=LS.get(K('p2p-pending'),null);if(pd&&pd.code===o.code){LS.set(K('p2p-pending-'+o.code),pd);LS.del(K('p2p-pending'));}}}
-// the saved games, the latest first: {mode ('ai'|'local'|'link'), id (a link game: its code), v (the game), seat, level, at, done, keys}
+// the saved games, the latest first: {mode ('ai'|'local'|'link'), id (a link game: its code), v (the game), seat, level, at, done, begun, keys}
+// begun: each side has played at least once; a game not begun is kept (its tab, its link) but not listed, a week at most
+function saveBegun(v){const n=v.moves.length;let seen=0;try{for(let k=0;k<n&&seen!==3;k++)seen|=1<<replay(v,v.moves.slice(0,k),null).st.turn;}catch(e){return n>1;}return seen===3;}
 function saveList(){const L=[],by={},pre=GAME.id+'-',ks=[];try{for(let i=0;i<localStorage.length;i++)ks.push(localStorage.key(i));}catch(e){}
   for(const k of ks){if(!k||!k.startsWith(pre))continue;const m=/^(ai|local)-([a-z0-9]{6,12})$|^p2p-(host|guest)-([a-z0-9]+)$/.exec(k.slice(pre.length)),o=m&&LS.get(k,null);if(!o)continue;
     if(m[1]){if(o.view&&Array.isArray(o.view.moves))L.push({mode:m[1],id:m[2],v:o.view,seat:o.mySeat,level:o.level,at:o.at||0,keys:[k]});continue;}
     const host=m[3]==='host',v=host?o.game:o.view;if(!v||v.match||!Array.isArray(v.moves))continue;
     const e={mode:'link',id:m[4],v,s:o,host,seat:host?(i=>i>=0?i:v.first==='host'?0:1)((v.th||[]).indexOf(hh(o.cid))):o.seat,at:o.at||o.savedAt||0,keys:[k]},p=by[m[4]];
     if(!p){by[m[4]]=e;L.push(e);}else{p.keys.push(k);if(e.at>p.at)Object.assign(p,e,{keys:p.keys});}}   // host and guest saves of one game: the latest
-  for(const e of L)e.done=!unfinished(e.v);
+  for(const e of L){e.done=!unfinished(e.v);e.begun=saveBegun(e.v);}
   return L.sort((a,b)=>b.at-a.at);}
 function saveDel(e){for(const k of e.keys)LS.del(k);if(e.mode==='link')LS.del(K('p2p-pending-'+e.id));}
-function saveCap(){const L=saveList();L.filter(e=>!e.done).slice(SAVEMAX).forEach(saveDel);for(const e of L)if(e.done&&Date.now()-e.at>36e5)saveDel(e);}
+function saveCap(){const L=saveList();L.filter(e=>!e.done&&e.begun).slice(SAVEMAX).forEach(saveDel);for(const e of L)if(e.done&&Date.now()-e.at>36e5||!e.done&&!e.begun&&Date.now()-e.at>6048e5)saveDel(e);}
 function aiResume(id){const sv=LS.get(K('ai-'+id),null);if(!sv||!sv.view)return false;stopAI();navAt=null;role='ai';SGID=id;mySeat=sv.mySeat;C.stop=true;setHash('ai-'+id);
   if(sv.level&&GAME.levels&&GAME.levels[sv.level]){level=sv.level;for(const x of ['aLevel','gLevel'])if($(x))$(x).value=level;}   // the game's own level
   view={...sv.view,recvAt:Date.now()};resetUi();aiInfo=null;hintMv=null;showGame();renderGame();aiStep();return true;}
@@ -1189,20 +1193,20 @@ function localResume(id){const sv=LS.get(K('local-'+id),null);if(!sv||!sv.view||
   view={...sv.view,elapsed:0,recvAt:Date.now()};const r=replay(view,view.moves,view.result);mySeat=r.st.turn;view.running=!r.over&&localRuns(r.st);resetUi();hintMv=null;showGame();renderGame();return true;}
 // a link game: as its host (the table again, or the guest of whoever holds it now) or as its guest, the latest save
 function saveResume(e){if(e.mode==='ai')aiResume(e.id);else if(e.mode==='local')localResume(e.id);else if(e.host)hostStart(e.s);else clientStart(e.id,e.s.name||nickGet()||t('p2'),false);}
-// the list (#resumeCard): one line per game, who and when, the rules, the move; three shown, the others on demand
-function saveRender(){const box=$('resumeCard');if(!box)return;SV.on=true;saveCap();const L=saveList().filter(e=>!e.done);box.textContent='';box.hidden=!L.length;if(!L.length)return;
+// the list (#resumeCard): folded at first, its heading tells how many games; one line per game, who and when, the rules, the move
+function saveRender(){const box=$('resumeCard');if(!box)return;SV.on=true;saveCap();const L=saveList().filter(e=>!e.done&&e.begun);box.textContent='';box.hidden=!L.length;if(!L.length)return;
   const mk=(tg,cls,txt,par)=>{const x=document.createElement(tg);if(cls)x.className=cls;if(txt)x.textContent=txt;if(par)par.appendChild(x);return x;};
-  mk('h2','rsHead',t('rs_title'),box);const ul=mk('ul','rsList','',box),now=new Date(),loc=lang==='fr'?'fr-FR':lang==='es'?'es-ES':'en-GB';
-  L.forEach((e,i)=>{const v=e.v,li=mk('li','','',ul),mi=mk('span','rsInfo','',li),ax=mk('span','rsActs','',li);li.hidden=i>=3&&!SV.all;
-    mk('b','',e.mode==='ai'?t('m_ai')+(GAME.levels&&GAME.levels[e.level]?' · '+t('lv_'+e.level):''):e.mode==='local'?t('m_face'):t('rs_link')+' · '+(v.names&&v.names[1-e.seat]||t('rs_wait')),mi);
+  const hb=mk('button','rsTog','',mk('h2','rsHead','',box));hb.type='button';hb.setAttribute('aria-expanded',SV.all?'true':'false');mk('span','',t('rs_title'),hb);mk('span','rsN',String(L.length),hb);hb.onclick=()=>{SV.all=!SV.all;saveRender();};
+  const ul=mk('ul','rsList','',box);ul.hidden=!SV.all;const now=new Date(),loc=lang==='fr'?'fr-FR':lang==='es'?'es-ES':'en-GB';
+  L.forEach((e,i)=>{const v=e.v,li=mk('li','','',ul),mi=mk('span','rsInfo','',li),ax=mk('span','rsActs','',li);
+    mk('b','',e.mode==='ai'?t('m_ai')+(GAME.levels&&GAME.levels[e.level]?' · '+t('lv_'+e.level):''):e.mode==='local'?t('m_face'):[t('rs_link'),v.names&&v.names[1-e.seat]].filter(Boolean).join(' · '),mi);
     const d=new Date(e.at),o={day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'};if(d.getFullYear()!==now.getFullYear())o.year='numeric';
-    mk('span','',[new Intl.DateTimeFormat(loc,o).format(d),GAME.rulesTxt?GAME.rulesTxt(GAME.rules(v)):'',v.tc?tcLabel({id:'',base:v.tc.base,inc:v.tc.inc}):'',v.moves.length?t('rs_move',{n:v.moves.length}):t('rs_new')].filter(Boolean).join(' · '),mi);
+    mk('span','',[new Intl.DateTimeFormat(loc,o).format(d),GAME.rulesTxt?GAME.rulesTxt(GAME.rules(v)):'',v.tc?tcLabel({id:'',base:v.tc.base,inc:v.tc.inc}):'',t('rs_move',{n:v.moves.length})].filter(Boolean).join(' · '),mi);
     mk('button','primary',t('resumeBtn'),ax).onclick=()=>saveResume(e);
     // Delete: a second click confirms it (the button says so for a few seconds)
     const del=mk('button','',t('rs_del'),ax);del.onclick=()=>{if(del.classList.contains('rsSure')){saveDel(e);saveRender();return;}
       del.classList.add('rsSure');del.textContent=t('rs_delOk');setTimeout(()=>{del.classList.remove('rsSure');del.textContent=t('rs_del');},4000);};
-    for(const b of ax.children)b.type='button';});
-  if(L.length>3){const b=mk('button','rsMore',SV.all?t('rs_less'):t('rs_all',{n:L.length}),box);b.type='button';b.onclick=()=>{SV.all=!SV.all;saveRender();};}}
+    for(const b of ax.children)b.type='button';});}
 function init(){GAME.home();saveMigrate();saveRender();
   status('');
   // #ai-<id>, #local-<id>: that game; #ai, #local (older addresses): the latest of that mode
