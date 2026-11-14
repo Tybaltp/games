@@ -399,10 +399,12 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
 function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
   if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
 // A move waits for the final confirmation (in the action bar) before it is sent, unless « Confirm each move » is off
-// (on a touch screen too, since 09.11.2026: the option used to be ignored there; never after a region choice)
+// (on a touch screen too, since 09.11.2026: the option used to be ignored there; never after a region choice); a move
+// that wins at once is sent without confirmation (C14)
 function choose(mv,viaRegion){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;
-  if(!$('needConfirm').checked&&!viaRegion){ui.pending=null;send(mv);return;}
+  if(!$('needConfirm').checked&&!viaRegion||winsNow(mv)){ui.pending=null;send(mv);return;}
   ui.pending=mv;renderGame();}
+function winsNow(mv){if(!view)return false;const st=replay(view,view.moves,view.result).st,p=st[TURN],o=E.outcome(E.apply(st,mv).st,p,mv);return !!o&&o.w===p;}
 $('needConfirm').checked=LS.get('volo-confirm',true)!==false;
 $('needConfirm').onchange=e=>{LS.set('volo-confirm',e.target.checked);
   // switched off with a simple move waiting: it is played
