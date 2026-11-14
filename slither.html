@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Slither</title>
-<script src="common/theme.js?v=4"></script>
+<script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=39">
+<link rel="stylesheet" href="common/games.css?v=51">
 <style>
 /* Slither palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
@@ -39,6 +39,12 @@ ol.log li{align-items:center}
 ol.log .slm{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
 ol.log .slm .tag{color:var(--muted);font-size:.72rem}
 </style>
+<style>
+/* accueil : ce qui est propre à Slither ; le reste dans common/accueil.css. Le fond : le plateau entier en cours de partie,
+   sur le fond de la page (première version rapide, à revoir) ; cadres de mode à la couleur de l'étiquette du jeu (common/cards.css). */
+:root{--accImgL:url(../img/accueil/slither.svg);--accImgD:url(../img/accueil/slither-dark.svg);--accWoodL:transparent;--accWoodD:transparent;--accR:1;--accTintL:#3f7a52;--accTintD:#6fb788}
+</style>
+<link rel="stylesheet" href="common/accueil.css?v=4">
 </head><body>
 <div class="wrap">
 <header><h1><a class="crumb" id="crumbHome" href="index.html">games</a><span class="sep">/</span><a class="gname" id="crumbGame" href="slither.html"><b id="ttl" style="font-weight:inherit">Slither</b></a><span data-i18n="sub">peer to peer</span></h1><div class="seg" role="group" aria-label="Langue / Language"><div class="langdd"><button type="button" class="langBtn" aria-haspopup="menu" aria-expanded="false">FR</button><div class="menu" role="menu" hidden><button type="button" role="menuitem" data-lang="fr">Français</button><button type="button" role="menuitem" data-lang="en">English</button><button type="button" role="menuitem" data-lang="es">Español</button></div></div></div><button type="button" class="optbtn" id="optBtn" data-i18n-t="opts" aria-controls="side" aria-expanded="false">⋯</button></header>
@@ -50,29 +56,24 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
     <div class="card primary-card" id="newCard">
       <div class="newHead" id="newHead" hidden><h2 id="newTitle" data-i18n="pickOpp">Against whom?</h2><button type="button" class="back" id="newBack" data-i18n="back">Back</button></div>
       <div class="homeMain" id="homeMain">
+        <div class="resumeIn" id="resumeCard" hidden></div>
         <button class="primary big" type="button" id="playBtn" data-i18n="playGo">Play</button>
         <button class="big" type="button" id="anaBtn" data-i18n="analyse">Analyse</button>
-        <div class="resumeIn" id="resumeCard" hidden><p class="hint" id="resumeTxt" data-i18n="inProgressTxt">You were hosting an unfinished game.</p><button type="button" class="primary" id="resumeBtn" data-i18n="resumeBtn">Resume game</button></div>
         <details class="sub" id="joinD"><summary class="noinv" data-i18n="haveInvite">I have an invitation code</summary>
           <form class="form" id="joinForm">
-            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" maxlength="12" placeholder="k7m2qp" autocomplete="off" spellcheck="false"></label>
+            <label for="jCode" class="noinv"><span data-i18n="code">Game code</span><input id="jCode" class="txt" placeholder="sl-k7m2q" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
             <label for="jName"><span data-i18n="nick">Your nickname</span><input id="jName" maxlength="24" autocomplete="nickname" class="txt"></label>
             <div class="confirm"><button class="primary" type="submit" id="jPlay" data-i18n="play">Play</button><button type="button" id="jWatch" data-i18n="watch">Watch</button></div>
+            <p class="hint err" id="joinErr"></p>
           </form>
           <p class="hint noinv" data-i18n="linkHint">With an invitation link, the page connects on its own.</p>
-        </details>
-        <details class="sub" id="resumeD"><summary data-i18n="haveResume">I have a resume code</summary>
-          <div><form class="form" id="rForm"><label for="rIn"><span data-i18n="resumeCode">Resume code</span><textarea id="rIn" class="txt" rows="3" spellcheck="false" autocomplete="off" placeholder="SLITHER1.…" style="resize:vertical;font-size:.78rem"></textarea></label>
-            <div class="confirm" id="rSeats"></div><button type="submit" id="rGo" data-i18n="load">Load</button></form>
-            <p class="hint" data-i18n="resumeHint">If a game could not be restored, paste the resume code copied during the game. You host it again and send the new code to your opponent.</p></div>
-    
         </details>
       </div>
       <label class="lvl" for="modeSel" id="modeWrap" hidden><span data-i18n="modeOpt">Game mode</span><select id="modeSel"><option value="link" data-i18n="m_link">Invite with a link</option><option value="ai" data-i18n="m_ai">Computer</option><option value="face" data-i18n="m_face">Face to face</option></select></label>
       <p class="hint" id="modeTxt" hidden></p>
       <div class="form" id="nameWrap" hidden><label for="hName"><span data-i18n="nick">Your nickname</span><input id="hName" maxlength="24" autocomplete="nickname" class="txt"></label></div>
       <div class="picks" id="anaPick" hidden>
-        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">Create a game</b><span data-i18n="a_freeTxt">Both sides on this screen, with undo and hints: to try things and analyse.</span></button>
+        <button type="button" class="pick" data-pick="free"><b data-i18n="a_free">New analysis</b><span data-i18n="a_freeTxt">Both sides on this screen: stepping back, variations, hints.</span></button>
         <button type="button" class="pick" data-pick="load"><b data-i18n="a_load">Load a game</b><span data-i18n="a_loadTxt">An SGF file: a finished game to replay, or an unfinished one to go on with.</span></button>
       </div>
       
@@ -109,7 +110,6 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
         <button class="primary" type="submit" data-i18n="sgfLoadBtn">Load the game</button>
       </form>
     </div>
-    <p class="hint err" id="joinErr"></p>
     
     
     
@@ -140,7 +140,6 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
       <p class="hint" id="fileNote" hidden data-i18n="fileNote">This file is open from your disk, so links will not work for anyone else. Send them this HTML file and the code: they open it, enter the code and choose Play or Watch.</p>
       <p class="hint" id="hostNote" data-i18n="hostNote">The game runs in your browser; if you drop out, your opponent takes over.</p>
       </div>
-      <div id="rcCard" class="rcpart coderow" hidden><span class="hint" data-i18n="cResume">Resume</span><span class="codetxt"></span><span class="cbtns"><button type="button" id="rcCopy" data-i18n="cCode" data-i18n-t="rcTxt">Code</button></span><div class="link" id="rcBox" hidden><input id="rcTxt" readonly aria-label="Resume code"></div></div>
     </details>
     <div class="card" id="startCard" hidden><h2 data-i18n="start">Start</h2><p class="hint" id="startTxt"></p><div class="confirm"><button type="button" class="primary" id="startBtn" data-i18n="startBtn">Start the game</button></div></div>
     <div class="card" id="endCard" hidden>
@@ -169,9 +168,9 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=62"></script>
-<script src="common/codes.js?v=4"></script>
-<script src="common/ai.js?v=1"></script>
+<script src="common/core.js?v=83"></script>
+<script src="common/codes.js?v=6"></script>
+<script src="common/ai.js?v=2"></script>
 <script>
 // ===== Slither (Corey Clark, 2010), base rules =====
 // Rules kept: a square board of n × n points (9 by default; 9, 11 or 13), empty at the start. Black moves first and joins
@@ -285,7 +284,7 @@ const SL_I18N={fr:{
  <li><b>Victoire</b> : vos deux bords reliés à la fin de votre tour. Sans coup possible, on passe ; passer est interdit sinon. Pas de nulle.</li>
  <li><b>Échange</b> (option, activée par défaut) : au premier tour du second joueur, il peut prendre la pierre posée à son compte : les couleurs s'échangent et le premier joueur, devenu Blanc, joue.</li>
  <li><b>Jouer</b> : cliquez une intersection libre pour y poser la pierre (au survol, elle s'affiche en transparence ; posée, elle a un cadre en pointillés). Pour déplacer une pierre, cliquez-la, puis cliquez sa destination. Cliquer de nouveau une pierre provisoire ou sélectionnée revient en arrière. Le tour attend toujours Confirmer, puisqu'on peut encore déplacer une pierre. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer le tour ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>libre</i>, les deux camps sur cet écran, sans pendule, avec annulation et suggestions.</li>
+ <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Règles : <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },en:{
@@ -316,7 +315,7 @@ const SL_I18N={fr:{
  <li><b>Winning</b>: your two edges joined at the end of your turn. Without a possible move, you pass; passing is not allowed otherwise. No draws.</li>
  <li><b>Swap</b> (option, on by default): on the second player's first turn, they may take the stone placed as theirs: the colours are exchanged and the first player, now White, moves.</li>
  <li><b>Playing</b>: click a free point to place the stone there (hovering shows it in transparency; once placed, it has a dashed frame). To move a stone, click it, then click where it goes. Clicking a provisional or selected stone again takes it back. The turn always waits for Confirm, since you may still move a stone. The commands are in the bar under the board: Swap, Reset, Confirm turn; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>free play</i>, both sides on this screen, no clock, with undo and hints.</li>
+ <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Rules: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },es:{
@@ -347,7 +346,7 @@ const SL_I18N={fr:{
  <li><b>Victoria</b>: tus dos bordes unidos al final de tu turno. Sin jugada posible, se pasa; si no, pasar está prohibido. No hay tablas.</li>
  <li><b>Intercambio</b> (opción, activada por defecto): en el primer turno del segundo jugador, este puede quedarse con la piedra colocada: los colores se intercambian y el primer jugador, ahora Blancas, juega.</li>
  <li><b>Jugar</b>: haz clic en una intersección libre para colocar allí la piedra (al pasar el ratón, se muestra en transparencia; colocada, lleva un marco punteado). Para mover una piedra, haz clic en ella y luego en su destino. Volver a hacer clic en una piedra provisional o seleccionada da marcha atrás. El turno siempre espera a Confirmar, ya que aún se puede mover una piedra. Los mandos están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar el turno; según la partida, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>libre</i>, los dos bandos en esta pantalla, sin reloj, con deshacer y sugerencias.</li>
+ <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
  <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Reglas: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 }};
@@ -1095,4 +1094,5 @@ const GAME={id:'slither',size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
 for(const p of ['c','a','f','t']){if($(p+'Swap'))$(p+'Swap').checked=LS.get('slither-swap',true)!==false;if($(p+'Size'))$(p+'Size').addEventListener('change',e=>{LS.set('slither-size',+e.target.value);if(!view)GAME.home();});}
 coreStart();
 </script>
+<script src="common/accueil.js?v=1"></script>
 </body></html>
