@@ -679,7 +679,7 @@ function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.s
 function stone(g,i,c,op){const e=el('circle',{cx:PX(i),cy:PY(i),r:SR,fill:c===1?'var(--pb)':'var(--pw)',stroke:c===1?'var(--pbe)':'var(--pwe)','stroke-width':Math.max(1,SR*.07)},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
 // Markers, as in the other games (charte A2, A3): a ring inside the stone, dashed on a provisional stone (clicked, not
 // played yet) or a suggested one, solid on the last stone played
-function ring(g,i,dashed){el('circle',{cx:PX(i),cy:PY(i),r:SR*.74,fill:'none',stroke:MK,'stroke-width':2,...(dashed?{'stroke-dasharray':'4 3'}:{})},g);}
+function ring(g,i,dashed){el('circle',{cx:PX(i),cy:PY(i),r:SR*.66,fill:'none',stroke:MK,'stroke-width':2.8,...(dashed?{'stroke-dasharray':'4 3'}:{})},g);}
 function ghost(g,i,c){stone(g,i,c);ring(g,i,true);}
 // The stones a provisional or suggested stone at i would capture (they are drawn in transparency)
 function capPrev(ms,i,c){if(i<0||!ms||ms.B[i])return new Set();return new Set(capture(ms.B.slice(),i,c));}
@@ -692,7 +692,6 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('path',{d,stroke:'var(--pgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
   el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'var(--pgrid)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
   for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'var(--pstar)'},svg);
-  el('circle',{cx:P(7),cy:P(7),r:CELL*.28,fill:'none',stroke:'var(--pgrid)','stroke-width':1.2,'vector-effect':'non-scaling-stroke'},svg);
   // coordinates (core: coordsOn): letters under the board, numbers on its left
   if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Figtree, system-ui, sans-serif','font-weight':600,'font-size':CELL*.36,fill:'rgba(58,40,20,.7)'},svg);e.textContent=s;};
     for(let k=0;k<N;k++){lab(P(k),SZ-PAD*.45,LET[k]);lab(PAD*.45,P(k),String(N-k));}}
