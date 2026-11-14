@@ -169,7 +169,7 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=84"></script>
+<script src="common/core.js?v=85"></script>
 <script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -371,11 +371,11 @@ function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
 
 // ---------- input ----------
 // A click on one of my stones selects it (again: deselects it); on one of its destinations, plays there (waits for Confirm
-// with « Confirm each move », or on a touch screen); on the provisional stone with confirmation off, plays it.
+// with « Confirm each move », or on a touch screen); a second click on the provisional stone plays it (charte B10, C14).
 function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
   const st=meSt(r),c=AY.toMove(st);
-  if(i===ui.t){if(!confirmOn()){const mv=ui.pending;clearPrep();send(mv);return;}ui.t=-1;ui.pending=null;renderGame();return;}
+  if(i===ui.t){if(ui.pending&&GAME.again(ui.pending)){pendAgain();return;}ui.t=-1;ui.pending=null;renderGame();return;}   // the provisional stone clicked again: played (C14)
   if(i===ui.f){clearPrep();renderGame();return;}
   if(st.b[i]===c){clearPrep();ui.f=i;tone(880,.05,.03);renderGame();return;}
   if(ui.f>=0&&targets(st,ui.f).includes(i)){const code=nm(st,ui.f)+'-'+nm(st,i);
@@ -974,6 +974,7 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
 const ayKey=st=>st.turn+':'+st.col[st.turn]+':'+st.b.join('');   // the engine's key of a position (repetitions)
 const GAME={id:'ayu',size:'square',codeTag:'AYU1',i18n:AY_I18N,
+  again:mv=>/^[a-z]\d+-[a-z]\d+$/.test(String(mv)),
   rules:g=>AY.rules(g),
   form:p=>{const r=AY.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('ayu-size',r.size);LS.set('ayu-swap',r.swap);return r;},
   replay:(r,m)=>!m.length?AY.replay(r,m):replayKept(r,m,{init:g=>{const st=AY.init(AY.rules(g));st.seen[ayKey(st)]=1;return st;},
