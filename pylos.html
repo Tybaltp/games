@@ -390,7 +390,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=84"></script>
+<script src="common/core.js?v=85"></script>
 <script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -581,7 +581,7 @@ function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(a
       if(k>=0){ui.rem.splice(k,1);setRem(st);return;}
       if(ui.rem.length<2&&PY.legal(st,fullCode(ui.main,ui.rem.concat(i)))!==null){ui.rem.push(i);setRem(st);return;}
       renderGame();return;}
-    if(i===ui.main.to){clearPrep();renderGame();return;}   // the provisional ball clicked: taken back
+    if(i===ui.main.to){if(ui.pending&&GAME.again(ui.pending)){pendAgain();return;}clearPrep();renderGame();return;}   // the provisional ball clicked again: played (C14)
     clearPrep();}
   if(ui.sel>=0){
     if(i===ui.sel){ui.sel=-1;renderGame();return;}
@@ -814,7 +814,7 @@ const GAME={id:'pylos',size:4,codeTag:'PYLOS1',i18n:PY_I18N,
       const p=st.turn,res=PY.apply(st,code);return {st,e:{p,txt:res.txt,code},last:{code,cells:res.cells},over:PY.finished(st)};}}),
   legal:(st,code)=>PY.legal(st,code),
   enc:mv=>PY.enc(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
-  board:pyBoard,turnStatus:pyTurnStatus,waitStatus:pyWaitStatus,pendText,
+  board:pyBoard,turnStatus:pyTurnStatus,waitStatus:pyWaitStatus,pendText,again:()=>!!(ui.main&&!ui.bonus),
   playerCard,logNode,logText,drawOffer:true,
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Variant');if(s&&!s.value)s.value=homeVariant();}},
   home:()=>{shown=null;drawBoard();},

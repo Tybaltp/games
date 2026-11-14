@@ -11,10 +11,10 @@ Règles générales ; chaque jeu les applique selon son contexte.
 
 ## B. Préparation d'un coup
 6. Mise en évidence minimale mais efficace, selon le contexte.
-7. Un clic sur l'élément mis en évidence revient d'une étape ; un clic sur la dernière sélection la désélectionne.
+7. Un clic sur l'élément mis en évidence revient d'une étape ; un clic sur la dernière sélection la désélectionne. Exception, le **second clic** (règle du 14.11.2026) : un coup en une étape qui attend sa confirmation (pose simple de Pente, oiseau ajouté de Volo, pièce posée de DBD, pose simple et montée de Pylos, sans retrait) se joue en cliquant une seconde fois dessus ; un clic sur un autre coup légal le remplace ; un clic sur un point non valide ou hors du plateau l'annule (les commandes, la discussion, les menus le gardent) ; un second clic moins d'un tiers de seconde après le premier est ignoré (double clic involontaire). La barre d'actions dit « Cliquez à nouveau pour jouer ce coup. » (« Touchez… » au toucher) ; le bouton Confirmer reste.
 8. Pas d'ordre artificiel.
 9. Pas d'indicateur superflu ; un clignotement discret reste permis quand il aide vraiment (ex. dépôt de la pièce remplacée à Gygès, en pulsation lente ; points d'atterrissage de Volo). Zèrtz : repères fixes.
-10. Téléphone : un simple toucher joue l'étape ; toucher l'élément mis en évidence revient en arrière (Pente : toucher la pierre provisoire la retire). La confirmation suit C14, comme à la souris.
+10. Téléphone : un simple toucher joue l'étape ; toucher l'élément mis en évidence revient en arrière, sauf le second toucher d'un coup en une étape, qui le joue (B7). La confirmation suit C14, comme à la souris.
 
 ## C. Commandes
 11. Une seule barre d'actions (rien d'engagé / action engagée / coup complet / suggestion).

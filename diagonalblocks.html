@@ -223,7 +223,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=84"></script>
+<script src="common/core.js?v=85"></script>
 <script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -565,7 +565,7 @@ function boardTap(i){if(!view||i<0)return;
   if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;renderGame();}
   // clicking the placed (unconfirmed) piece takes it back: the piece stays picked, same orientation
   // the first piece, framed while the swap awaits Confirm: clicking it drops the swap, as Reset does
-  if(ui.pending){if(ui.pending.t!=='p'){const l=replay(view,view.moves,view.result).last;if(l&&l.mv.t==='p'&&l.mv.cells.includes(i))cancelPrep();return;}if(ui.pending.cells.includes(i)){ui.pending=null;ui.hover=-1;renderGame();return;}}
+  if(ui.pending){if(ui.pending.t!=='p'){const l=replay(view,view.moves,view.result).last;if(l&&l.mv.t==='p'&&l.mv.cells.includes(i))cancelPrep();return;}if(ui.pending.cells.includes(i)){pendAgain();return;}}   // the placed piece clicked again: played (C14)
   // elsewhere: the piece goes there (placed, or moved if it was already placed), when it fits
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||ui.piece<0)return;
   const pv=previewAt(r.st,E.colorOf(r.st,mySeat),i);if(pv&&pv.ok)choose({t:'p',k:ui.piece,cells:pv.cells.slice().sort((a,b)=>a-b)});}
@@ -932,6 +932,7 @@ const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
   legal:(st,code)=>{const mv=dec(code);return mv&&E.validate(st.es,mv)?enc(mv):null;},
   enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
   board:dbBoard,turnStatus:dbTurnStatus,waitStatus:dbWaitStatus,ownLayout:true,
+  again:mv=>mv.t==='p',
   pendText:mv=>[mv.t==='s'?t('swapMv'):t('pend_mv',{m:txtOf(mv)}),t('confirmMv')],
   noReset:mv=>mv.t==='p',   // a placement is dropped from the reserve (the picked piece again, or another piece)
   pendBtns:mv=>mv.t==='p'&&ui.piece>=0?[{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]:[],

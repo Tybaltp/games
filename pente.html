@@ -387,7 +387,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=84"></script>
+<script src="common/core.js?v=85"></script>
 <script src="common/codes.js?v=6"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -638,6 +638,7 @@ function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(a
   if(busy==='hint')stopAI();if(hintMv)hintMv=null;
   const st=meSt(r),cols=placing(st);if(!cols){renderGame();return;}
   const k=ui.tent.indexOf(i);
+  if(k>=0&&ui.pending&&GAME.again(ui.pending)){pendAgain();return;}   // the stone awaiting confirmation, clicked again: played (C14)
   if(k>=0){ui.tent.splice(k,1);ui.tc.splice(k,1);ui.pending=null;renderGame();return;}
   if(st.B[i]){renderGame();return;}
   if(ui.tent.length<cols.length){ui.tc.push(nextCol(cols));ui.tent.push(i);}else if(cols.length===1){ui.tent=[i];ui.tc=[cols[0]];}else{renderGame();return;}
@@ -747,6 +748,7 @@ const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   enc,describe:mv=>describe(mv),newUi,preparing:prepared,cancel:cancelPrep,
   sgf:peSgf,
   board:peBoard,turnStatus:peTurnStatus,waitStatus:peWaitStatus,
+  again:mv=>mv.t==='m',
   pendText:mv=>mv.t==='m'?[t('st_tentative',{c:coord(mv.i)}),t('confirm1')]:[t('pend_stones',{m:stonesTxt(mv.s,mv.t==='o'?[1,2,1]:[1,2])}),t('confirmN')],
   playerCard,
   logText:e=>logTxt(e),
