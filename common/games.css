@@ -198,6 +198,7 @@ a{color:inherit}
 .clock.run{color:var(--ink)}
 .clock.idle{color:var(--muted)}
 .clock.low{color:var(--danger)}
+.clock[data-inc]::after{content:attr(data-inc);margin-left:.6em;font-family:var(--f-body);font-size:.62em;font-weight:500;letter-spacing:0;color:var(--muted);white-space:nowrap}
 .link{display:flex;gap:6px}
 .link input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.78rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
 .confirm{display:flex;gap:8px}
