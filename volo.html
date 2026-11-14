@@ -503,7 +503,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
     if(c){const fade=rg&&kk>=0&&c===3-me&&rg.lab[i]!==kk;bird(g,x,y,c-1,fade?.3:0);
       if(i===opt.hb)el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
       if(ui.sel.length===1&&ui.sel[0]===i)el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
-      if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
+      if(marked.has(i))el('circle',{cx:x,cy:y,r:FR,fill:'none',stroke:'var(--accent)','stroke-width':2.4,'stroke-dasharray':'5 4','pointer-events':'none'},g);   // the size of the mark once played (newMark), dashed
       if(lm&&lm.t==='p'&&lm.at===i)newMark(g,x,y);
       if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
         const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
