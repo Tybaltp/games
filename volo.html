@@ -166,7 +166,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=84"></script>
+<script src="common/core.js?v=85"></script>
 <script src="common/codes.js?v=6"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -362,7 +362,7 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
       const mv=E.expand(st,kmv).find(m=>rg.lab[m.keep]===rg.lab[i]);if(mv){ui.basemv=null;choose(mv,true);}return;}}
   if(prep){
     // a provisional bird: the added bird drops the move, a flown bird goes back to the selected line
-    if(provCells(prep).includes(i)){if(prep.t==='p'){cancelPrep();return;}
+    if(provCells(prep).includes(i)){if(prep.t==='p'){if(ui.pending&&GAME.again(ui.pending))pendAgain();else cancelPrep();return;}   // the added bird clicked again: played (C14)
       ui.sel=prep.cells.slice();if(!ui.hist.length)ui.hist=[ui.sel.slice()];ui.pending=null;ui.basemv=null;renderGame();return;}
     // otherwise only a click that starts another step replaces the prepared move: another landing point of the same
     // line, another addition, one of my birds (the points the flying birds left are ignored)
@@ -503,7 +503,7 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
     if(c){const fade=rg&&kk>=0&&c===3-me&&rg.lab[i]!==kk;bird(g,x,y,c-1,fade?.3:0);
       if(i===opt.hb)el('circle',{cx:x,cy:y,r:20,fill:'none',stroke:'var(--accent)','stroke-width':1.8,opacity:.9},g);
       if(ui.sel.length===1&&ui.sel[0]===i)el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':4},g);
-      if(marked.has(i))el('circle',{cx:x,cy:y,r:21,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-dasharray':'4 4'},g);
+      if(marked.has(i))el('circle',{cx:x,cy:y,r:FR,fill:'none',stroke:'var(--accent)','stroke-width':2.4,'stroke-dasharray':'5 4','pointer-events':'none'},g);   // the size of the mark once played (newMark), dashed
       if(lm&&lm.t==='p'&&lm.at===i)newMark(g,x,y);
       if(rg&&pv.region&&c===3-me){const k=rg.list.indexOf(rg.lab[i]);el('circle',{cx:x,cy:y,r:22,fill:'none',stroke:'var(--danger)','stroke-width':3,class:'pulse',opacity:kk>=0&&rg.lab[i]!==kk?.3:1},g);
         const t=el('text',{x:x,y:y+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':14,'font-weight':'700',fill:'#fff','pointer-events':'none'},g);t.textContent='ABCDEFGH'[k]||'?';}}}
@@ -1110,7 +1110,7 @@ function voHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
       await fly([A1,A2,O],[P(2,1),P(3,1),P(4,1)],[P(1,3),P(2,3),P(3,3)],0);await wait(1900);}];
   return S[k]();}
 // ---------- the interface with common/core.js ----------
-const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
+const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',again:mv=>mv.t==='p'&&!(mv.keep>=0),size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   rules:()=>({}),form:()=>({}),
   // against the computer, its level and the options it plays with (the network's version among them), in the SGF only
   sgfHead:()=>{const o=role==='ai'&&LEVELS[level];return o?{XA:JSON.stringify({level,...o})}:{};},
