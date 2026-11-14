@@ -14,13 +14,13 @@ Règles générales ; chaque jeu les applique selon son contexte.
 7. Un clic sur l'élément mis en évidence revient d'une étape ; un clic sur la dernière sélection la désélectionne.
 8. Pas d'ordre artificiel.
 9. Pas d'indicateur superflu ; un clignotement discret reste permis quand il aide vraiment (ex. dépôt de la pièce remplacée à Gygès, en pulsation lente ; points d'atterrissage de Volo). Zèrtz : repères fixes.
-10. Téléphone : un simple toucher joue l'étape ; toucher l'élément mis en évidence revient en arrière.
+10. Téléphone : un simple toucher joue l'étape ; toucher l'élément mis en évidence revient en arrière (Pente : toucher la pierre provisoire la retire). La confirmation suit C14, comme à la souris.
 
 ## C. Commandes
 11. Une seule barre d'actions (rien d'engagé / action engagée / coup complet / suggestion).
 12. Boutons : l'ergonomie la meilleure possible (masquer ou griser selon le cas).
 13. Libellés complets si la place le permet, abrégés sinon.
-14. Confirmation optionnelle pour les coups courts, obligatoire pour les longues séquences et les coups spéciaux (ouverture et +2 de Pente, setup en bloc de Gygès et d'Arimaa), jamais pour une victoire immédiate. DBD : option seulement à la souris.
+14. **Confirmer chaque coup** (règle du 14.11.2026) : une option dans Options de chaque jeu, cochée par défaut, la même à la souris et au toucher. Elle ne vaut que pour les coups courts. Toujours confirmés, quelle que soit l'option : les longues séquences et les mises en place (ouverture et +2 de Pente, setup en bloc de Gygès et d'Arimaa ; Gygès : tout coup avec rebond ou remplacement), et les choix d'ouverture (échange de Tintas et de DBD, choix de couleur de Pente et de Ponte). Jamais confirmés : une victoire immédiate ; « Terminer le tour » (Arimaa, Ponte, Tintas), qui vaut confirmation ; une passe forcée, qui se joue seule avec un message (Volo, Gygès : « Aucun coup possible : vous passez. » une seconde, puis la passe, une seule fois par position et seulement pour le joueur qui a la main ; Ponte, DBD : passée par la règle, dite dans la barre). Exceptions : Arimaa n'a pas l'option (« Terminer le tour » en tient lieu) ; DBD : option seulement à la souris, toujours confirmé au toucher ; Gygès : la pose pièce par pièce se joue au clic.
 
 ## D. Disposition
 15. Écran fixe sans défilement (disposition commune, tiroir « ⋯ » sur téléphone). La barre d'actions prend la hauteur dont elle a besoin : sur grand écran, ce qui la suit descend ; en vertical, le plateau ne change jamais de taille, sa place est calculée pour laisser sous lui la plus grande barre possible (sauf DBD, disposition propre).
