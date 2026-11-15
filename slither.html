@@ -13,18 +13,18 @@
 :root{
   --bg:#e4e1ea;--panel:#f1eff5;--ink:#211c2a;--muted:#635c70;--line:#cdc6d8;
   --accent:#7a32c8;--accent-ink:#ffffff;--danger:#b3261e;
-  --sboard:#d9b77a;--sgrid:rgba(60,42,18,.7);--sstar:rgba(60,42,18,.85);--slab:rgba(60,42,18,.75);
+  --sboard:#d9b77a;--sgrid:rgba(60,42,18,.7);--sstar:rgba(60,42,18,.85);--lab:rgba(60,42,18,.75);
   --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.75);--mk:#8a3fd8;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#17151c;--panel:#211d28;--ink:#e8e4ef;--muted:#a199ae;--line:#342d3e;
   --accent:#a57de6;--accent-ink:#1b0f30;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}}
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--lab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#17151c;--panel:#211d28;--ink:#e8e4ef;--muted:#a199ae;--line:#342d3e;
   --accent:#a57de6;--accent-ink:#1b0f30;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--lab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
 /* players' cards: the seat's colour (it changes with the swap) */
@@ -447,7 +447,7 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('path',{d,stroke:'var(--sgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
   // the star points, as on a go board
   {const e=n>11?3:2,h=[e,(n-1)/2,n-1-e];for(const x of h)for(const y of h)if(x===y||x+y===n-1)el('circle',{cx:G.pad+x*CELL,cy:G.pad+y*CELL,r:CELL*.11,fill:'var(--sstar)'},svg);}
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':CELL*.32,fill:'var(--slab)'},svg);e.textContent=s;};
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':CELL*.3},svg);e.textContent=s;};
     for(let k=0;k<n;k++){lab(G.pad+k*CELL,W-CELL*.32,String.fromCharCode(97+k));lab(CELL*.32,G.pad+(n-1-k)*CELL,String(k+1));}}
   const g=el('g',{'pointer-events':'none'},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?SL.toMove(ms):-1;
   // the stones shown: the position, with the turn being prepared on it (or the suggestion)
@@ -1090,6 +1090,19 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 const GAME={id:'slither',seatCol:s=>(s===0)!==(!!view&&view.moves[1]==='swap')?'sB':'sW',   // seat 0 Black, White once the swap is taken
   size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
   rules:g=>SL.rules(g),
+  // SGF: Little Golem's format (the one archive of Slither games): a point in two letters as at go (column, then row from
+  // the top), a turn « from, to, placed » in six letters (« malbhh ») or the point placed (« hh »), swap, pass; B and W the
+  // stones' colours. Read: the values in their order, whatever B or W (Little Golem's files start with W); FF[Slither]
+  // marks Little Golem's own files
+  sgf:{sz:v=>SL.rules(v).size,black:st=>st.col.indexOf(SL.BLACK),
+    accept:root=>/^slither$/i.test((root.FF||[])[0]||''),
+    rulesOf:(root,r)=>({...r,size:+((root.SZ||[])[0])||r.size}),
+    nodes:(r,v)=>{const n=SL.rules(v).size,P=i=>String.fromCharCode(97+i%n)+String.fromCharCode(97+n-1-Math.floor(i/n));
+      return r.log.map(e=>({[e.c===SL.BLACK?'B':'W']:e.kind==='swap'?'swap':e.kind==='pass'?'pass':(e.f>=0?P(e.f)+P(e.t):'')+P(e.pl)}));},
+    code:(x,st)=>{x=String(x).trim().toLowerCase();if(x==='swap'||x==='pass')return x;const n=st.size;
+      if(!/^([a-z]{2}){1,3}$/.test(x)||x.length===4)return null;
+      const N=k=>{const c=x.charCodeAt(k)-97,r=n-1-(x.charCodeAt(k+1)-97);return c>=0&&c<n&&r>=0&&r<n?SL.name(n,c+n*r):null;},pts=[];for(let k=0;k<x.length;k+=2){const q=N(k);if(!q)return null;pts.push(q);}
+      return SL.legal(st,pts.length===3?pts[2]+','+pts[0]+'-'+pts[1]:pts[0]);}},
   form:p=>{const r=SL.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('slither-size',r.size);LS.set('slither-swap',r.swap);return r;},
   replay:(r,m)=>replayKept(r,m,{init:g=>SL.init(SL.rules(g)),
     play(prev,mv){const st=deepCopy(prev),code=SL.legal(st,mv);if(code===null)return null;   // as SL.replay, move by move
