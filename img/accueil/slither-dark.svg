@@ -5,6 +5,11 @@
 <rect x="7.6" y="38" width="6.4" height="480" rx="3.2" fill="#f3f1ea" stroke="rgba(0,0,0,.8)" stroke-width="0.6"/>
 <rect x="542" y="38" width="6.4" height="480" rx="3.2" fill="#f3f1ea" stroke="rgba(0,0,0,.8)" stroke-width="0.6"/>
 <path d="M38 38H518M38 38V518M38 78H518M78 38V518M38 118H518M118 38V518M38 158H518M158 38V518M38 198H518M198 38V518M38 238H518M238 38V518M38 278H518M278 38V518M38 318H518M318 38V518M38 358H518M358 38V518M38 398H518M398 38V518M38 438H518M438 38V518M38 478H518M478 38V518M38 518H518M518 38V518" stroke="rgba(40,26,10,.8)" stroke-width="1" fill="none"/>
+<circle cx="158" cy="158" r="4.4" fill="rgba(40,26,10,.9)"/>
+<circle cx="158" cy="398" r="4.4" fill="rgba(40,26,10,.9)"/>
+<circle cx="278" cy="278" r="4.4" fill="rgba(40,26,10,.9)"/>
+<circle cx="398" cy="158" r="4.4" fill="rgba(40,26,10,.9)"/>
+<circle cx="398" cy="398" r="4.4" fill="rgba(40,26,10,.9)"/>
 <circle cx="358" cy="38" r="18" fill="#f3f1ea" stroke="rgba(0,0,0,.8)" stroke-width="1.6"/>
 <circle cx="398" cy="38" r="18" fill="#f3f1ea" stroke="rgba(0,0,0,.8)" stroke-width="1.6"/>
 <circle cx="438" cy="38" r="18" fill="#f3f1ea" stroke="rgba(0,0,0,.8)" stroke-width="1.6"/>
