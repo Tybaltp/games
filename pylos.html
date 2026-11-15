@@ -401,6 +401,10 @@ const MOTEUR=(()=>{
 const PY_SRC=document.getElementById('pylosEngine').textContent;
 const PY=new Function(PY_SRC+'\nreturn MOTEUR;')();
 const PG=PY.geo(),CELLS=PG.cells,NAME=i=>CELLS[i].name,IDX=n=>PG.byName[n];
+// What the player reads: the rows numbered from the bottom (a1 bottom left, as in the other games), on every level, while
+// the codes keep the engine's names (row 1 at the top): a level of s rows shows row r as s + 1 − r. The same turn both
+// ways: SHOWC(code) is the code as read, and the code of what is read
+const SHOWC=c=>String(c).replace(/([234]?)([a-d])([1-4])/g,(m,l,x,r)=>l+x+((l?6-l:5)-r)),SHOW=i=>SHOWC(NAME(i));
 
 const PY_I18N={fr:{
  title:"Pylos",lede:"Bâtissez la pyramide : qui atteint le sommet gagne.",by:"Un jeu de David G. Royffe.",
@@ -497,15 +501,15 @@ const CN=p=>t(p?'cDark':'cLight'),CNL=p=>t(p?'cDarkL':'cLightL');
 // a code taken apart: {from (-1 for a placement), to, rem:[…]}
 function parseCode(code){const parts=String(code).split('/'),mv=parts[0].split('>');
   return {from:mv.length>1?IDX(mv[0]):-1,to:IDX(mv[mv.length-1]),rem:parts.slice(1).map(IDX)};}
-const remTxt=rem=>rem.map(NAME).join(t('d_and'));
+const remTxt=rem=>rem.map(SHOW).join(t('d_and'));
 // a move (code) said in words (hints, the move awaiting confirmation)
-function describe(mv){const m=parseCode(mv);let s=m.from>=0?t('d_lift',{a:NAME(m.from),b:NAME(m.to)}):t('d_place',{a:NAME(m.to)});
+function describe(mv){const m=parseCode(mv);let s=m.from>=0?t('d_lift',{a:SHOW(m.from),b:SHOW(m.to)}):t('d_place',{a:SHOW(m.to)});
   if(m.rem.length)s+=t('d_rem',{r:remTxt(m.rem)});return s;}
 // the move list: a small ball, the code, the removals
 function logNode(e){const s=document.createElement('span');s.className='pym';const m=parseCode(e.code);
-  s.innerHTML=`<span class="mini c${e.p}"></span>`+(m.from>=0?NAME(m.from)+' › '+NAME(m.to):NAME(m.to))+(m.rem.length?' <span class="tag">'+t('l_rem',{r:m.rem.map(NAME).join(', ')})+'</span>':'');
+  s.innerHTML=`<span class="mini c${e.p}"></span>`+(m.from>=0?SHOW(m.from)+' › '+SHOW(m.to):SHOW(m.to))+(m.rem.length?' <span class="tag">'+t('l_rem',{r:m.rem.map(SHOW).join(', ')})+'</span>':'');
   return s;}
-const logText=e=>e.code;
+const logText=e=>SHOWC(e.code);
 // the legal moves of a position, memoised on the position
 let lmKey=null,lmVal=null;
 function legalsOf(st){const k=st.variant+'|'+st.turn+'|'+Array.from(st.b).join('');if(k!==lmKey){lmKey=k;lmVal=PY.legalMoves(st);}return lmVal;}
@@ -531,7 +535,7 @@ function pyBoard({r,d,mine,ms}){const live=navAt===null;
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function pyTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.turn),c=CNL(st.turn);
   if(ui.main&&ui.bonus&&!ui.rem.length){status(soloWho(st.turn,t(st.variant==='lines'?'st_bonusL':'st_bonus')),'turn',[RST]);return;}
-  if(ui.sel>=0){status(soloWho(st.turn,t('st_sel',{a:NAME(ui.sel)})),'turn',[RST]);return;}
+  if(ui.sel>=0){status(soloWho(st.turn,t('st_sel',{a:SHOW(ui.sel)})),'turn',[RST]);return;}
   status(S?tN('st_turnC',{name:me,c}):t('st_play',{c}),'turn',prep?[RST]:idle);}
 function pyWaitStatus({r}){const st=r.st;status(tN('st_turnC',{name:seatName(st.turn),c:CNL(st.turn)}));return true;}
 function pendText(mv,st){const m=parseCode(mv);
@@ -682,8 +686,9 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
   for(let i=0;i<16;i++){const [x,y]=XY(i),g=el('g',{'data-i':i,class:act.has(i)?'pt':''},hol);
     el('circle',{cx:f1(x),cy:f1(y),r:f1(.4*U),fill:'var(--dimple)',opacity:.35},g);el('circle',{cx:f1(x),cy:f1(y),r:f1(.4*U),fill:'none',stroke:'var(--wood-edge)','stroke-width':1,opacity:.5},g);}
   // coordinates (core: coordsOn): the column letters under the base, the row numbers on its left
-  if(coordsOn){for(let x=0;x<4;x++){const e=el('text',{x:f1((x+.5)*U),y:f1(4.5*U+14),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String.fromCharCode(97+x);}
-    for(let y=0;y<4;y++){const e=el('text',{x:f1(-.5*U-10),y:f1((y+.5)*U+4),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String(y+1);}}
+  // (1 at the bottom, as the move list reads: SHOW)
+  if(coordsOn){for(let x=0;x<4;x++){const e=el('text',{class:'coord',x:f1((x+.5)*U),y:f1(4.5*U+14),'text-anchor':'middle','font-size':13},svg);e.textContent=String.fromCharCode(97+x);}
+    for(let y=0;y<4;y++){const e=el('text',{class:'coord',x:f1(-.5*U-10),y:f1((y+.5)*U+4),'text-anchor':'middle','font-size':13},svg);e.textContent=String(4-y);}}
   // the balls, level by level; the empty spots that can be clicked get a target; the transparent ball (hidden ball) has
   // no outline (decision of 13.11.2026)
   const layers=[0,1,2,3].map(()=>el('g',{},svg));
@@ -817,6 +822,8 @@ const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Fonc
   enc:mv=>PY.enc(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:pyBoard,turnStatus:pyTurnStatus,waitStatus:pyWaitStatus,pendText,again:()=>!!(ui.main&&!ui.bonus),
   playerCard,logNode,logText,drawOffer:true,
+  // SGF: the move as read (rows from the bottom, « a4>2b3/c3 »); a file of the site written before XV holds the codes (core)
+  sgf:{val:c=>SHOWC(c),code:v=>SHOWC(String(v).trim().toLowerCase())},
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Variant');if(s&&!s.value)s.value=homeVariant();}},
   home:()=>{shown=null;drawBoard();},
   levels:LEVELS,levelDefault:'n2',hintLevel:HINT,
