@@ -1,0 +1,16 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4358 4358" width="1024" height="1024">
+<rect width="4358" height="4358" fill="#fff"/>
+<circle cx="2179" cy="2179" r="1650" fill="#000"/>
+<circle cx="2179" cy="2179" r="1550" fill="#fff"/>
+<clipPath id="disque"><circle cx="2179" cy="2179" r="1560"/></clipPath>
+<g clip-path="url(#disque)">
+<polygon points="600,2850 850,2400 1150,2250 1350,1650 1800,1000 2200,1250 2450,1150 2900,1500 3100,1950 3400,2200 3750,2850 3750,3900 600,3900" fill="#000" stroke="#000" stroke-width="90" stroke-linejoin="round"/>
+<g fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+<polyline points="1800,1000 1950,1700 1700,2300 1900,3000"/>
+<polyline points="2450,1150 2550,1850 2900,2400 2750,3100"/>
+<polyline points="2550,1850 2900,1500"/>
+<polyline points="1150,2250 1450,2700 1300,3200"/>
+<polyline points="3100,1950 3050,2600"/>
+</g>
+</g>
+</svg>
