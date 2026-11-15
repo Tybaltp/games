@@ -390,7 +390,7 @@ const adj=(n,a,b)=>{const ax=a%n,ay=(a-ax)/n,bx=b%n,by=(b-bx)/n;return Math.max(
 // A click: on the provisional stone, the destination or the selected stone, one step back; on one of my stones, selects it
 // to move; with a stone selected, a free neighbouring point is its destination; otherwise a free point takes the placement
 // (or moves it). The turn complete and legal waits for Confirm.
-function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+function onCell(i){if(!view||navAt!==null)return;
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
   const st=meSt(r),n=st.size,c=SL.toMove(st);if(!SL.anyMove(st))return;
   const s=stepTo(st,i);if(!s||!(s.back||reach(st,s.p,s.f,s.t)))return;   // only an action that can still end in a legal turn
@@ -401,8 +401,6 @@ function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
   $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
-function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;const n=shown.d.st.size;
-  for(const c of anaAlts()){const m=SL.split(n,c);if(m&&m.p>=0)out.set(m.p,c);}return out;}
 
 // ---------- drawing ----------
 // 40 units per point; a margin with the players' edges (Black above and below, White left and right) and the coordinates
@@ -467,11 +465,9 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   if(view&&last&&last.kind==='move'&&P<0&&F<0&&T<0){if(last.f>=0)moveMark(g,last.f,last.t,false);if(last.p>=0)ring(g,last.p,false);}
   // the winning chain
   if(sh&&sh.d.over&&sh.d.over.chain){const ch=sh.d.over.chain;el('polyline',{points:ch.map(i=>PX(i)+','+PY(i)).join(' '),fill:'none',stroke:'var(--mk)','stroke-width':CELL*.12,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.85},g);}
-  const alts=sh&&!prepared()?altCells():new Map();   // the other variations of this move, only while no turn is being prepared
-  for(const [i] of alts)if(!b2[i]||b2[i]<0)el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.4},g);
   el('g',{id:'hov','pointer-events':'none'},svg);
   const hit=el('g',{fill:'transparent'},svg);
-  for(let i=0;i<n*n;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(alts.has(i)||mine&&playable(ms,i))e.setAttribute('class','pt');}
+  for(let i=0;i<n*n;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&playable(ms,i))e.setAttribute('class','pt');}
   drawHover();}
 // under the mouse: the stone a click would place (or the stone moving there), in transparency, only where it can go
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
