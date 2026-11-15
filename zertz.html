@@ -11,20 +11,20 @@
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
   --bg:#c5dce2;--panel:#e2eef1;--ink:#1c282d;--muted:#5d6d74;--line:#aec2c7;
-  --plate:#2a4852;--plate-edge:#1f3840;--ring:#e5edee;--ring-hole:#2a4852;--ghost:#6d8a93;
+  --plate:#2a4852;--plate-edge:#1f3840;--ring:#e5edee;--ring-hole:#2a4852;--ghost:#6d8a93;--lab:#a3bcc3;
   --m0:#f7f9fa;--m0e:#5f6b70;--m1:#6f7a7f;--m1e:#3c4549;--m2:#22272a;--m2e:#000000;
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  /* the board is square: its viewBox is widened left and right to its height (48 rings 595×595, 565 without the
-     coordinates; 37 rings 526, 496) */
+  /* the board is square: its viewBox is widened left and right to its height (48 rings 615×615, 565 without the
+     coordinates; 37 rings 546, 496) */
   --board-ar:1/1;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f1618;--panel:#152023;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;--lab:#8fadb6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f1618;--panel:#152023;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;--lab:#8fadb6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
 /* the plate under the rings, on every screen (the light rings need it) */
 .board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 40%,var(--plate),var(--plate-edge));border-color:var(--plate-edge)}
@@ -371,7 +371,15 @@ function setBoard(sz){if(sz===SIZE)return;SIZE=sz;E=ENG[sz];({N,M,CAP,POOL,TURN}
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
   VB=[x0-40,y0-40,x1-x0+80,y1-y0+80];BOTTOM=y1+52;document.documentElement.classList.toggle('b37',sz===37);}
 const enc=m=>m.t===1?'x'+m.path.join('.'):'p'+[m.c,m.at,m.rm].join('.');
-const txtOf=m=>m.t===1?m.path.map(name).join('×'):t('L'+m.c)+' '+name(m.at)+(m.rm>=0?' −'+name(m.rm):'');
+// The notation of the publisher (gipf.com), the same in every language: the marbles W (white), G (grey), B (black); a
+// placement « Wd4,d1 » (the marble and its ring, then the ring removed), a capture « x d1Gd3Wd5 » (the start, then for
+// each jump the marble jumped and the landing ring), marbles won by isolating rings added « Bd7,b2 x Wa1Wa2 ». b: the
+// position the move is played from (the jumped marbles), iso: the marbles isolated [ring, colour + 1]
+const CL='WGB';
+const txtOf=(m,b,iso)=>m.t===1?'x '+name(m.path[0])+m.path.slice(1).map((x,k)=>(b?CL[b[M+E.MID[m.path[k]*N+x]]-1]||'':'')+name(x)).join(''):
+  CL[m.c]+name(m.at)+(m.rm>=0?','+name(m.rm):'')+(iso&&iso.length?' x '+iso.map(([i,c])=>CL[c-1]+name(i)).join(''):'');
+// the marbles a placement isolates (b before it, a after it)
+const isoOf=(m,b,a)=>{if(m.t===1)return [];const o=[];for(let i=0;i<N;i++)if(b[i]&&!a[i]&&i!==m.rm){const c=i===m.at?m.c+1:b[M+i];if(c)o.push([i,c]);}return o;};
 function reasonWin(st,p){const c=CAP+p*3;for(let k=0;k<3;k++)if(st[c+k]>=GOAL[k])return 'w_g'+k;return 'w_each';}
 // rules: the game or view object (its size); replay() in core memoises and adds the result, replayKept keeps the
 // positions already replayed (the board of that size is set at each call, as the drawing reads it). st is the engine's array,
@@ -382,8 +390,8 @@ function zzReplay(rules,moves){setBoard(ringsOf(rules));
       const st=E.apply(before,mv);st.turn=st[TURN];let g=0;
       if(mv.t===0){for(let k=0;k<6;k++)g+=st[CAP+k]-before[CAP+k];if(before[POOL+mv.c]===0)g++;}
       const removed=[];for(let i=0;i<N;i++)if(before[i]&&!st[i])removed.push(i);
-      return {st,e:{p,mv,g},last:{mv,removed},over:E.won(st,p)?{w:p,why:reasonWin(st,p)}:!E.gen(st).length?{w:p,why:'w_nomove'}:null};}});}
-const logTxt=e=>txtOf(e.mv)+(e.g>0?' ⊕'+e.g:'');
+      return {st,e:{p,mv,g,txt:txtOf(mv,before,isoOf(mv,before,st))},last:{mv,removed},over:E.won(st,p)?{w:p,why:reasonWin(st,p)}:!E.gen(st).length?{w:p,why:'w_nomove'}:null};}});}
+const logTxt=e=>e.txt;
 
 // ---------- game view ----------
 // ui: color (of the marble to place), at (marble placed, waiting for its ring removal), path (capture being played),
@@ -511,10 +519,13 @@ const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function marble(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:22,fill:`var(--m${c})`,stroke:`var(--m${c}e)`,'stroke-width':2},g);if(op)e.setAttribute('opacity',op);}
 function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv&&(pv.prov||pv.atProv))last=null;   // a mere hover keeps the last move's marks
-  // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox
-  const vh=VB[3]+(coordsOn?30:0),vw=Math.max(VB[2],vh);   // square: as wide as high, the rings centred
-  svg.setAttribute('viewBox',`${VB[0]-(vw-VB[2])/2} ${VB[1]} ${vw} ${vh}`);
-  if(coordsOn)for(const q of COLQ){const t=el('text',{x:60*q-CX,y:BOTTOM,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--ghost)'},svg);t.textContent='abcdefgh'[COLQ.indexOf(q)];}
+  // coordinates (core: coordsOn): the names at both ends of each column; without them, a tighter viewBox
+  const vh=VB[3]+(coordsOn?50:0),vw=Math.max(VB[2],vh);   // square: as wide as high, the rings centred
+  svg.setAttribute('viewBox',`${VB[0]-(vw-VB[2])/2} ${VB[1]-(coordsOn?16:0)} ${vw} ${vh}`);
+  // (the publisher's diagram: each column's first and last name, under and over it)
+  if(coordsOn)for(const q of COLQ){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.Q[i]===q){if(lo<0||E.R[i]>E.R[lo])lo=i;if(hi<0||E.R[i]<E.R[hi])hi=i;}
+    el('text',{class:'coord',x:X(lo),y:Y(lo)+46,'text-anchor':'middle','font-size':14},svg).textContent=name(lo);
+    el('text',{class:'coord',x:X(hi),y:Y(hi)-36,'text-anchor':'middle','font-size':14},svg).textContent=name(hi);}
   const caps=legal.length&&legal[0].t===1,lm=last&&last.mv;
   const starters=new Set(),targets=new Set(),removable=new Set();
   if(interactive&&caps){if(!ui.path)legal.forEach(m=>starters.add(m.path[0]));else{const P=ui.path;legal.filter(m=>P.every((x,k)=>m.path[k]===x)).forEach(m=>{if(m.path[P.length]!==undefined)targets.add(m.path[P.length]);});}}
@@ -605,12 +616,15 @@ function zzHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
   return S[k]();}
 // ---------- the interface with common/core.js ----------
 const GAME={howto:{off:true,titled:true,n:2,scene:zzHowto,vars:()=>({where:t(zBandOn()?'ht_wL':'ht_wU')})},id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
-  sgf:{gm:22},   // Zèrtz has an SGF number but no notation defined: the moves are the page's codes
+  // SGF: Zèrtz's number, the moves in the publisher's notation (txtOf); read back by its first part (the isolated marbles
+  // follow from the move)
+  sgf:{gm:22,val:(code,st)=>{const m=E.gen(st).find(x=>enc(x)===code);return m?txtOf(m,st,isoOf(m,st,E.apply(st,m))):code;},
+    code:(v,st)=>{v=String(v).trim().replace(/\s+/g,' ');if(/^[WGB]/i.test(v))v=v.split(' x ')[0];const m=E.gen(st).find(x=>txtOf(x,st)===v);return m?enc(m):null;}},
   rules:g=>{const n=ringsOf(g);return {size:n,rings:n};},
   form:p=>{const n=+$(p+'Size').value;return {size:ENG[n]?n:48,rings:ENG[n]?n:48};},
   replay:zzReplay,
   legal:(st,code,g)=>ENG[ringsOf(g)].gen(st).some(m=>enc(m)===code)?code:null,
-  enc,describe:mv=>txtOf(mv),newUi,preparing:prepared,cancel:cancelPrep,
+  enc,describe:(mv,st)=>txtOf(mv,st),newUi,preparing:prepared,cancel:cancelPrep,
   board:zzBoard,turnStatus:zzTurnStatus,
   logText:e=>logTxt(e),
   home:()=>{setBoard(48);drawBoard(ENG[48].init(),[],false,null);},
