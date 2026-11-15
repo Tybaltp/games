@@ -267,16 +267,12 @@ const AY_I18N={fr:{
  ai_swapped:"Ordinateur : échange.",
  boardLbl:"Plateau d'Ayu",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 11 × 11 intersections (9 × 9 ou 13 × 13 au choix). Au départ, les pierres noires et blanches alternent en quinconce : 30 de chaque couleur en 11 × 11. Noir commence.</li>
- <li><b>Unités</b> : une pierre seule, ou un groupe de pierres de même couleur reliées orthogonalement.</li>
- <li><b>Coup</b> : une pierre seule va sur un point vide voisin. Une pierre d'un groupe va sur un point vide voisin du groupe, et le groupe doit rester d'un seul tenant.</li>
- <li><b>Distance</b> : le coup doit rapprocher l'unité déplacée de l'unité amie la plus proche (en nombre de points vides à traverser). Joindre une autre unité est toujours permis.</li>
- <li><b>Victoire</b> : le joueur qui n'a plus de coup à son tour gagne, en général parce que toutes ses pierres forment un seul groupe. Une position répétée avec le même joueur au trait : partie nulle.</li>
- <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, Blanc peut changer de camp ; le premier joueur, devenu Blanc, joue.</li>
- <li><b>Cartes joueurs</b> : la couleur de chacun et son nombre d'unités.</li>
- <li><b>Jouer</b> : cliquez une de vos pierres ; les points où elle peut aller sont marqués d'un point. Cliquez l'un d'eux (au survol, la pierre s'y affiche en transparence). Cliquer de nouveau la pierre la désélectionne. Avec « Confirmer chaque coup », le coup attend Confirmer. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <li><b>Matériel</b> : un plateau de 11 × 11 points (9 × 9 ou 13 × 13 au choix), des pierres noires et blanches. Au départ, le plateau en est couvert en quinconce, toutes isolées. Noir commence.</li>
+ <li><b>Unités</b> : une pierre seule est une unité, un groupe de pierres de même couleur reliées orthogonalement est une unité.</li>
+ <li><b>Coup</b> : une pierre seule se déplace sur un point vide voisin orthogonalement. Une pierre d'un groupe peut se déplacer sur un point vide voisin du groupe si le groupe reste connecté.</li>
+ <li><b>Distance</b> : un coup est valide s'il diminue strictement la distance de l'unité déplacée à l'unité amie - ou l'une des unités amies - la plus proche. La distance se compte en points vides sur le plus court chemin orthogonal.</li>
+ <li><b>Fin</b> : le joueur qui n'a plus de coup à son tour gagne, en général parce que toutes ses pierres forment un seul groupe. Si une position revient avec le même joueur au trait, la partie est nulle.</li>
+ <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, le second joueur peut prendre les noires ; le premier joueur, devenu Blanc, joue alors.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Règles : <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 },en:{
  lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
@@ -294,16 +290,12 @@ const AY_I18N={fr:{
  ai_swapped:"Computer: swaps.",
  boardLbl:"Ayu board",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: a board of 11 × 11 points (9 × 9 or 13 × 13 as you choose). At the start, black and white stones alternate in a staggered pattern: 30 of each colour on 11 × 11. Black moves first.</li>
- <li><b>Units</b>: a lone stone, or a group of stones of one colour joined orthogonally.</li>
- <li><b>Move</b>: a lone stone goes to an empty neighbouring point. A stone of a group goes to an empty point next to the group, and the group must stay in one piece.</li>
- <li><b>Distance</b>: the move must bring the unit moved closer to the nearest friendly unit (in empty points to cross). Joining another unit is always allowed.</li>
- <li><b>Winning</b>: the player with no move on their turn wins, usually because all their stones form a single group. A position repeated with the same player to move: a draw.</li>
- <li><b>Swap</b> (option, off by default): after Black's first move, White may change sides; the first player, now White, moves.</li>
- <li><b>Player cards</b>: each player's colour and number of units.</li>
- <li><b>Playing</b>: click one of your stones; the points it can go to are marked with a dot. Click one of them (hovering shows the stone there in transparency). Clicking the stone again deselects it. With “Confirm each move”, the move waits for Confirm. The commands are in the bar under the board: Swap, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <li><b>Material</b>: a board of 11 × 11 points (9 × 9 or 13 × 13 as you choose), black and white stones. At the start, they cover the board in a staggered pattern, all isolated. Black moves first.</li>
+ <li><b>Units</b>: a lone stone is a unit; a group of stones of one colour joined orthogonally is a unit.</li>
+ <li><b>Move</b>: a lone stone moves to an orthogonally neighbouring empty point. A stone of a group may move to an empty point next to the group if the group stays connected.</li>
+ <li><b>Distance</b>: a move is legal if it strictly reduces the distance from the unit moved to the nearest friendly unit (or to one of the nearest). The distance is counted in empty points along the shortest orthogonal path.</li>
+ <li><b>End</b>: the player with no move on their turn wins, usually because all their stones form a single group. If a position comes back with the same player to move, the game is a draw.</li>
+ <li><b>Swap</b> (option, off by default): after Black's first move, the second player may take Black; the first player, now White, then moves.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Rules: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 },es:{
  lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
@@ -321,16 +313,12 @@ const AY_I18N={fr:{
  ai_swapped:"Ordenador: intercambia.",
  boardLbl:"Tablero de Ayu",
  rules:`<summary>Reglas en breve</summary><ul>
- <li><b>Material</b>: un tablero de 11 × 11 intersecciones (9 × 9 o 13 × 13 a elegir). Al principio, las piedras negras y blancas se alternan al tresbolillo: 30 de cada color en 11 × 11. Empiezan las Negras.</li>
- <li><b>Unidades</b>: una piedra suelta, o un grupo de piedras del mismo color unidas ortogonalmente.</li>
- <li><b>Jugada</b>: una piedra suelta va a un punto vacío vecino. Una piedra de un grupo va a un punto vacío vecino del grupo, y el grupo debe seguir siendo de una sola pieza.</li>
- <li><b>Distancia</b>: la jugada debe acercar la unidad movida a la unidad amiga más cercana (en número de puntos vacíos que cruzar). Unirse a otra unidad siempre está permitido.</li>
- <li><b>Victoria</b>: el jugador que no tiene jugada en su turno gana, por lo general porque todas sus piedras forman un solo grupo. Una posición repetida con el mismo jugador al turno: tablas.</li>
- <li><b>Intercambio</b> (opción, desactivada por defecto): tras la primera jugada de las Negras, las Blancas pueden cambiar de bando; el primer jugador, ahora con Blancas, juega.</li>
- <li><b>Tarjetas de jugador</b>: el color de cada uno y su número de unidades.</li>
- <li><b>Jugar</b>: haz clic en una de tus piedras; los puntos adonde puede ir se marcan con un punto. Haz clic en uno de ellos (al pasar el ratón, la piedra se muestra allí en transparencia). Volver a hacer clic en la piedra la deselecciona. Con «Confirmar cada jugada», la jugada espera a Confirmar. Los controles están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
+ <li><b>Material</b>: un tablero de 11 × 11 puntos (9 × 9 o 13 × 13 a elegir), piedras negras y blancas. Al principio, cubren el tablero al tresbolillo, todas aisladas. Empiezan las Negras.</li>
+ <li><b>Unidades</b>: una piedra suelta es una unidad; un grupo de piedras del mismo color unidas ortogonalmente es una unidad.</li>
+ <li><b>Jugada</b>: una piedra suelta se desplaza a un punto vacío vecino ortogonalmente. Una piedra de un grupo puede desplazarse a un punto vacío vecino del grupo si el grupo sigue unido.</li>
+ <li><b>Distancia</b>: una jugada es válida si disminuye estrictamente la distancia de la unidad movida a la unidad amiga más cercana (o a una de las más cercanas). La distancia se cuenta en puntos vacíos por el camino ortogonal más corto.</li>
+ <li><b>Final</b>: el jugador que no tiene jugada en su turno gana, por lo general porque todas sus piedras forman un solo grupo. Si una posición vuelve con el mismo jugador al turno, la partida termina en tablas.</li>
+ <li><b>Intercambio</b> (opción, desactivada por defecto): tras la primera jugada de las Negras, el segundo jugador puede quedarse con las negras; el primer jugador, ahora con Blancas, juega entonces.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Reglas: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 }};
 const CN=c=>t(c===AY.BLACK?'cB':'cW'),CK=c=>c===AY.BLACK?'b':'w';

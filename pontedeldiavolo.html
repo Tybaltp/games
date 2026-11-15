@@ -361,19 +361,16 @@ const PD_I18N={fr:{
  pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",pend_pie:"{c} : confirmez votre choix.",
  w_score:"{w} à {l}{tb}",w_tie:"égalité parfaite, {w} à {l}{tb}",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
  ht_1:"<b>Poser</b> Cliquer sur deux cases d'eau. Cliquer sur une tuile posée ce tour la retire.",ht_2:"<b>Où poser</b> Au survol, la tuile n'apparaît que là où elle peut aller.",ht_3:"<b>Pont</b> Sélectionner une de vos tuiles, puis cliquer sur l'autre extrémité.",rules:`<summary>Règles en bref</summary><ul>
- <li>À votre tour, posez <b>deux tuiles</b> de votre couleur, ou <b>un pont</b>.</li>
- <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
- <li>Une île ne peut toucher aucune autre tuile de sa couleur, même en diagonale. Les couleurs différentes ne se gênent jamais.</li>
- <li>Pont : entre deux de vos tuiles, à deux cases d'écart (en ligne droite ou en diagonale) ou à un saut de cavalier. Les cases qu'il enjambe doivent être de l'eau.</li>
- <li>Une tuile porte au plus un pont. Les ponts ne se croisent jamais. Rien ne se pose sous un pont.</li>
- <li>Ouverture : le premier joueur pose deux tuiles claires ; le second choisit sa couleur. Les foncés jouent ensuite.</li>
- <li>Fin : si les foncés passent, la partie s'arrête aussitôt. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. On ne peut passer que si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément. La partie s'arrête aussi d'elle-même dès que plus aucun coup, de l'un ou de l'autre, ne peut changer le score.</li>
- <li>Chaque groupe d'îles reliées par des ponts (les bancs de sable servent de relais) rapporte :
- <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Départage : le plus d'îles, puis le plus de ponts.</li>
- <li><b>Jouer</b> : cliquez deux cases d'eau pour y poser vos deux tuiles (une seule s'il ne reste pas de place pour la seconde : Terminer le tour) ; pour un pont, cliquez une de vos tuiles, puis l'autre extrémité parmi celles proposées. Au survol, la tuile ou le pont s'affiche en transparence ; cliquer une tuile posée ce tour la retire. Au choix de couleur, Prendre les clairs ou Jouer les foncés, puis Confirmer. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Passer, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 10 × 10 cases d'eau, vide au départ ; des tuiles claires et foncées à volonté, et des ponts.</li>
+ <li><b>Ouverture</b> : le premier joueur pose deux tuiles claires. Le second choisit sa couleur : prendre les clairs (et ces deux tuiles), ou jouer les foncés. Les foncés jouent ensuite ; on alterne.</li>
+ <li><b>Tour</b> : on pose <b>deux tuiles</b> de sa couleur, où l'on veut, ou <b>un pont</b>. Une seule tuile est permise s'il ne reste plus de place pour la seconde.</li>
+ <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
+ <li><b>Contact</b> : une île ne touche aucune autre tuile de sa couleur, même par un coin. Entre couleurs différentes, tout contact est permis.</li>
+ <li><b>Pont</b> : entre deux de ses tuiles (île ou banc de sable) séparées par une case, en ligne droite ou en diagonale, ou à un saut de cavalier. Les cases enjambées doivent être de l'eau libre, sans tuile ni pont. Une tuile porte au plus un pont ; les ponts ne se croisent jamais, quelle que soit leur couleur ; rien ne se pose sous un pont.</li>
+ <li><b>Passe</b> : seulement si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément. Si les foncés passent, la partie s'arrête. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. Elle s'arrête aussi d'elle-même dès que plus aucun coup, de l'un ou de l'autre, ne peut changer le résultat.</li>
+ <li><b>Score</b> : chaque groupe d'îles reliées par ses ponts (les bancs de sable servent de relais, mais ne rapportent rien) rapporte :
+ <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
+ <li><b>Départage</b> : le plus d'îles, puis le plus de ponts. Égalité parfaite : partie nulle.</li></ul>`
 },en:{
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: up to 8, each one beats the one below about three games in four; level 9 thinks 10 s per move.",
  title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",rm_ask:"{n} offers a new game, colours swapped.",
@@ -384,19 +381,16 @@ const PD_I18N={fr:{
  pend_pass:"Pass: Dark will play one last turn.",pend_passEnd:"Pass and end the game.",pend_pie:"{c}: confirm your choice.",
  w_score:"{w} to {l}{tb}",w_tie:"a perfect tie, {w} to {l}{tb}",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
  ht_1:"<b>Place</b> Click two water squares. Clicking a tile placed this turn takes it back.",ht_2:"<b>Where to place</b> On hover, the tile only shows where it may go.",ht_3:"<b>Bridge</b> Select one of your tiles, then click the other end.",rules:`<summary>Rules in brief</summary><ul>
- <li>On your turn, place <b>two tiles</b> of your colour, or <b>one bridge</b>.</li>
+ <li><b>Material</b>: a board of 10 × 10 water squares, empty at the start; light and dark tiles without limit, and bridges.</li>
+ <li><b>Opening</b>: the first player places two light tiles. The second player chooses a colour: take Light (and these two tiles), or play Dark. Dark then moves; play alternates.</li>
+ <li><b>Turn</b>: place <b>two tiles</b> of your colour, anywhere, or <b>one bridge</b>. A single tile is allowed if there is no room left for the second.</li>
  <li><b>Island</b>: exactly 4 orthogonally connected tiles. Fewer than 4: a <b>sandbank</b>. Never more than 4.</li>
- <li>An island may not touch any other tile of its colour, not even diagonally. Different colours never block each other.</li>
- <li>Bridge: between two of your tiles, two squares apart (straight or diagonal) or a knight's move apart. The squares it spans must be water.</li>
- <li>A tile carries at most one bridge. Bridges never cross. Nothing may be placed under a bridge.</li>
- <li>Opening: the first player places two light tiles; the second player chooses a colour. Dark then moves.</li>
- <li>End: if Dark passes, the game ends at once. If Light passes, Dark plays one last turn, then the game ends. You may only pass when no tile can be placed; a player with no move at all must pass. The game also ends by itself as soon as no move, by either side, can change the score any more.</li>
- <li>Each group of islands linked by bridges (sandbanks included as links) scores:
+ <li><b>Contact</b>: an island touches no other tile of its colour, not even at a corner. Between different colours, any contact is allowed.</li>
+ <li><b>Bridge</b>: between two of your tiles (island or sandbank) with one square between them, in a straight line or diagonally, or a knight's move apart. The squares spanned must be open water, with no tile and no bridge. A tile carries at most one bridge; bridges never cross, whatever their colour; nothing may be placed under a bridge.</li>
+ <li><b>Pass</b>: only if no tile can be placed; a player with no move at all must pass. If Dark passes, the game ends. If Light passes, Dark plays one last turn, then the game ends. It also ends by itself as soon as no move, by either side, can change the result any more.</li>
+ <li><b>Score</b>: each group of islands linked by its bridges (sandbanks serve as links, but score nothing) scores:
  <div class="scale"><span>1 island: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Tie-break: most islands, then most bridges.</li>
- <li><b>Playing</b>: click two water squares to place your two tiles (a single one when no square is left for the second: End turn); for a bridge, click one of your tiles, then the other end among those offered. Hovering shows the tile or the bridge in transparency; clicking a tile placed this turn takes it back. At the colour choice, Take Light or Play Dark, then Confirm. The move commands are in the bar under the board: Reset, End turn, Pass, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+ <li><b>Tie-break</b>: most islands, then most bridges. A perfect tie: a draw.</li></ul>`
 },es:{
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: hasta el 8, cada uno gana al anterior unas tres partidas de cada cuatro; el 9 piensa 10 s por jugada.",
  title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
@@ -407,19 +401,16 @@ const PD_I18N={fr:{
  pend_pass:"Pasar: las oscuras jugarán un último turno.",pend_passEnd:"Pasar y terminar la partida.",pend_pie:"{c}: confirma tu elección.",
  w_score:"{w} a {l}{tb}",w_tie:"empate perfecto, {w} a {l}{tb}",tb_isl:" (decidido por las islas)",tb_brg:" (decidido por los puentes)",
  ht_1:"<b>Colocar</b> Haz clic en dos casillas de agua. Un clic en una loseta puesta este turno la retira.",ht_2:"<b>Dónde colocar</b> Al pasar el ratón, la loseta solo aparece donde puede ir.",ht_3:"<b>Puente</b> Selecciona una de tus losetas y luego haz clic en el otro extremo.",rules:`<summary>Reglas en breve</summary><ul>
- <li>En tu turno, coloca <b>dos losetas</b> de tu color, o <b>un puente</b>.</li>
+ <li><b>Material</b>: un tablero de 10 × 10 casillas de agua, vacío al principio; losetas claras y oscuras sin límite, y puentes.</li>
+ <li><b>Apertura</b>: el primer jugador coloca dos losetas claras. El segundo elige su color: tomar las claras (y esas dos losetas), o jugar con las oscuras. Después juegan las oscuras; se alterna.</li>
+ <li><b>Turno</b>: se colocan <b>dos losetas</b> de su color, donde se quiera, o <b>un puente</b>. Se permite una sola loseta si ya no queda sitio para la segunda.</li>
  <li><b>Isla</b>: exactamente 4 losetas unidas ortogonalmente. Menos de 4: un <b>banco de arena</b>. Nunca más de 4.</li>
- <li>Una isla no puede tocar ninguna otra loseta de su color, ni siquiera en diagonal. Los colores distintos nunca se estorban.</li>
- <li>Puente: entre dos de tus losetas, a dos casillas de distancia (en línea recta o en diagonal) o a un salto de caballo. Las casillas que salva deben ser agua.</li>
- <li>Una loseta lleva como máximo un puente. Los puentes nunca se cruzan. Nada se coloca bajo un puente.</li>
- <li>Apertura: el primer jugador coloca dos losetas claras; el segundo elige su color. Luego juegan las oscuras.</li>
- <li>Final: si las oscuras pasan, la partida se detiene de inmediato. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. Solo se puede pasar si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente. La partida también se detiene por sí sola en cuanto ninguna jugada, de uno u otro, puede ya cambiar el marcador.</li>
- <li>Cada grupo de islas unidas por puentes (los bancos de arena sirven de enlace) vale:
+ <li><b>Contacto</b>: una isla no toca ninguna otra loseta de su color, ni siquiera por una esquina. Entre colores distintos se permite cualquier contacto.</li>
+ <li><b>Puente</b>: entre dos losetas propias (isla o banco de arena) separadas por una casilla, en línea recta o en diagonal, o a un salto de caballo. Las casillas que salva deben ser agua libre, sin loseta ni puente. Una loseta lleva como máximo un puente; los puentes nunca se cruzan, sea cual sea su color; nada se coloca bajo un puente.</li>
+ <li><b>Pasar</b>: solo si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente. Si las oscuras pasan, la partida se detiene. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. También se detiene por sí sola en cuanto ninguna jugada, de uno u otro, puede ya cambiar el resultado.</li>
+ <li><b>Puntuación</b>: cada grupo de islas unidas por sus puentes (los bancos de arena sirven de enlace, pero no valen nada) vale:
  <div class="scale"><span>1 isla: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Desempate: más islas, luego más puentes.</li>
- <li><b>Jugar</b>: haz clic en dos casillas de agua para colocar tus dos losetas (una sola si no queda sitio para la segunda: Terminar el turno); para un puente, haz clic en una de tus losetas y luego en el otro extremo, entre los propuestos. Al pasar el ratón, la loseta o el puente se muestran en transparencia; hacer clic en una loseta colocada este turno la retira. Al elegir color, Tomar las claras o Jugar las oscuras, y luego Confirmar. Los controles de la jugada están en la barra bajo el tablero: Reiniciar, Terminar el turno, Pasar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>`
+ <li><b>Desempate</b>: más islas, luego más puentes. Empate perfecto: tablas.</li></ul>`
 }};
 
 // ---------- game state and moves ----------
