@@ -166,9 +166,9 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Slither (Corey Clark, 2010), base rules =====
 // Rules kept: a square board of n × n points (9 by default; 9, 11 or 13), empty at the start. Black moves first and joins
@@ -255,7 +255,7 @@ const SL=SlitherEngine();
 
 // ===== Slither: the page's side of common/core.js =====
 const SL_I18N={fr:{
- lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
+ lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 2600 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
  title:"Slither",lede:"Serpentez jusqu'à relier vos bords.",by:"Un jeu de Corey Clark.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
  needConfirm:"Confirmer chaque coup",
@@ -283,7 +283,7 @@ const SL_I18N={fr:{
  <li><b>Échange</b> (option, activée par défaut) : au premier tour du second joueur, il peut prendre à son compte la pierre posée : les couleurs s'échangent et le premier joueur, devenu Blanc, joue.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Règles : <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },en:{
- lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
+ lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 2600 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
  title:"Slither",lede:"Slither your way to connection.",by:"A game by Corey Clark.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
  needConfirm:"Confirm each move",
@@ -311,7 +311,7 @@ const SL_I18N={fr:{
  <li><b>Swap</b> (option, on by default): on the second player's first turn, they may take the stone placed as theirs: the colours are exchanged and the first player, now White, moves.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Rules: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },es:{
- lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
+ lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 2600 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
  title:"Slither",lede:"Serpentea hasta unir tus bordes.",by:"Un juego de Corey Clark.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
  needConfirm:"Confirmar cada jugada",
@@ -520,8 +520,12 @@ function gen(S,w){const n=S.n,N=n*n,c=S.c,st=stShim(S),out=[];
     out.sort((a,b)=>b.s-a.s);}
   return out;}
 function play(S,m){if(!m)return {n:S.n,b:S.b,c:1-S.c,win:-1};const st=stShim(S);return mk(S,SL.after(st,m[0],m[1],m[2]));}
-const KS=AISearch({moves:(S,w)=>gen(S,w||1),play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
-function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn],win:-1};KS.start(opt.time);
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=0;   // the board's size while it is on
+const KS=AISearch({moves:(S,w)=>gen(S,w||1),play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
+  best:r=>{if(TELL)aiBest({move:code(TELL,r.m),score:r.s,depth:r.depth});}});
+function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn],win:-1};KS.start(opt.nodes);
   // the swap: taken when the first stone is near the centre
   if(P.swap&&P.ply===1){let p=-1;for(let i=0;i<n*n;i++)if(S.b[i]>=0)p=i;const x=p%n,y=(p-x)/n,m=(n-1)/2;
     if(p>=0&&Math.max(Math.abs(x-m),Math.abs(y-m))<=Math.floor(n/4))return {move:'swap',score:0,depth:0,kind:'swap'};}
@@ -530,7 +534,7 @@ function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]
     return {move:SL.name(n,pts[(Math.random()*pts.length)|0]),score:0,depth:0};}
   const C=gen(S,0);if(!C.length)return {move:'pass',score:0,depth:0,forced:true};
   for(const x of C)if(x.s>=2000)return {move:code(n,x.m),score:1000,depth:1};
-  const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);
+  TELL=typeof aiBest==='function'?n:0;const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=0;
   return {move:code(n,r.m),score:r.s,depth:r.depth,forced:C.length===1};}
 const code=(n,m)=>SL.name(n,m[0])+(m[1]>=0?','+SL.name(n,m[1])+'-'+SL.name(n,m[2]):'');
 return {search,dist,gen};
@@ -540,7 +544,7 @@ return {search,dist,gen};
 // GENERATED by ~/Jeux/ia/games/slither/site/build.js from games/slither/fast.js, games/slither/encode.js and lib/mcts.js — do not edit here.
 // The neural network computer (AlphaZero-style PUCT): SlitherNN(SlitherEngine(), page URL).search(pos, opt) is async;
 // pos: the aiPos() form; opt: {algo:'nn', sims (1: the network's intuition, no search; per half-move: the placement, then
-// the step), temp (choice temperature), time (ms, a cap for the whole turn), net (weights URL, relative to the page),
+// the step), temp (choice temperature), net (weights URL, relative to the page),
 // cpuct, fpu}. onnxruntime-web (onnxruntime-web@1.20.1, WASM, one thread) and the weights are loaded on the first search.
 function SlitherNN(SL, base) {
 const M = {}, req = p => M[p.split('/').pop().replace(/\.js$/, '')];
@@ -1014,28 +1018,35 @@ async function evalNet(leaf) {
   return {pol: o.pol.data, sc: o.sc.data, value: V[0] - V[2]};
 }
 const logit = v => { v = Math.max(-.999, Math.min(.999, v)); return Math.log((1 + v) / (1 - v)); };
-// one half-move from the search s's root, until its sims or the cap (t0 + opt.time)
-async function run(s, opt, t0) {
+// the most visited root move so far (index), for « Play now »
+const topOf = r => { let b = 0; for (let k = 1; k < r.N.length; k++) if (r.N[k] > r.N[b]) b = k; return b; };
+// one half-move from the search s's root, until its sims: no clock stops it (16.11.2026). tell (optional): given the most
+// visited move so far, every 16 evaluations.
+async function run(s, opt, tell) {
   s.begin({sims: opt.sims, cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null, forced: 0});
-  while (!s.done() && !(opt.time && s.root.P && Date.now() - t0 > opt.time)) { const leaf = s.step(); if (leaf) s.deliver(await evalNet(leaf)); }
+  let k = 0;
+  while (!s.done()) { const leaf = s.step(); if (leaf) { s.deliver(await evalNet(leaf)); if (tell && (++k & 15) === 0 && s.root.N) tell(s.root.moves[topOf(s.root)]); } }
   return s.root.moves[s.pick(opt.temp || 0)];
 }
 // the search on a fast position S (temps 1): {m1 (placement, swap or pass), m2 (step, or undefined), value, depth (half-moves)}
-async function searchS(S, opt) {
-  const t0 = Date.now(), s = new Search(game, S, new Set([F.key(S)]), cache);
-  const m1 = await run(s, opt, t0), value = s.value(); let d = 0, n = s.root;
+// tell (optional): the turn so far, once its placement is chosen (the step still being searched). opt.step: the
+// simulations of the step's search when they differ from sims (the tree of the placement is kept: its visits count, so
+// step 1 plays the step the placement's search liked best, after one more simulation)
+async function searchS(S, opt, tell) {
+  const s = new Search(game, S, new Set([F.key(S)]), cache);
+  const m1 = await run(s, opt, null), value = s.value(); let d = 0, n = s.root;
   while (n && n.N) { let b = 0; for (let k = 1; k < n.N.length; k++) if (n.N[k] > n.N[b]) b = k; if (!n.N[b]) break; d++; n = n.ch[b]; }
   if (m1 === F.SWAP || m1 === F.PASS) return {m1, value, depth: d, nodes: s.sims};
   s.advance(m1); const L = s.root.moves; let m2;
-  if (s.root.term !== null || L.length <= 1) m2 = L.length ? L[0] : F.NOSTEP; else m2 = await run(s, opt, t0);
+  if (s.root.term !== null || L.length <= 1) m2 = L.length ? L[0] : F.NOSTEP; else m2 = await run(s, opt.step ? {...opt, sims: opt.step} : opt, tell && (m => tell(m1, m)));
   return {m1, m2, value, depth: d, nodes: s.sims};
 }
 // the answer in the page's form (as SlitherAI.search): the score a logit of the winning chances, nn: true (evalInfo)
-async function search(P, opt) {
+async function search(P, opt, tell) {
   const S = state(P), L = []; F.gen(S, L); if (!L.length) return null;
   if (L.length === 1 && L[0] === F.PASS) return {move: 'pass', score: 0, depth: 0, forced: true, nn: true};
   await load(opt);
-  const r = await searchS(S, opt);
+  const r = await searchS(S, opt, tell && ((m1, m2) => tell({move: turnCode(S.n, m1, m2), score: 0, depth: 0})));
   return {move: turnCode(S.n, r.m1, r.m2), score: logit(r.value), depth: Math.ceil(r.depth / 2), forced: false, nn: true, nodes: r.nodes};
 }
 return {search, searchS, state, turnCode, load, X, F, Search};
@@ -1044,24 +1055,24 @@ return {search, searchS, state, turnCode, load, X, F, Search};
 // Former levels: Débutant (now 0), the best moves with some randomness; Moyen (now 1), the best move one turn ahead; Fort (now BEAM), two plies. Deeper
 // searches did not play better with this evaluation (depth 3 and 4 against 2: 8 and 4 wins out of 16).
 // The neural network levels (2 to 10, algo 'nn', SlitherNN, the NN block above): the network of ~/Jeux/ia (n° 112, 14.11.2026) with a PUCT
-// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · time, a cap in ms for slower devices,
-// which stop short of `sims` · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
+// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · no time cap (16.11.2026): a slower
+// device takes longer and plays the same · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
 // BEAM, the former Fort level (two plies): what answers when the network cannot load.
 const NN_NET='slither-net.onnx?v=112';
-const BEAM={algo:'beam',depth:2,widths:[12,10],time:5000};
+const BEAM={algo:'beam',depth:2,widths:[12,10]};
 const LEVELS={
   l0:{algo:'greedy',pick:5,temp:.8},
   l1:{algo:'greedy',pick:1},
-  l2:{algo:'nn',sims:1,time:10000,net:NN_NET},
-  l3:{algo:'nn',sims:6,time:10000,net:NN_NET},
-  l4:{algo:'nn',sims:10,time:10000,net:NN_NET},
-  l5:{algo:'nn',sims:22,time:10000,net:NN_NET},
-  l6:{algo:'nn',sims:50,time:10000,net:NN_NET},
-  l7:{algo:'nn',sims:130,time:10000,net:NN_NET},
-  l8:{algo:'nn',sims:300,time:10000,net:NN_NET},
-  l9:{algo:'nn',sims:700,time:10000,net:NN_NET},
-  l10:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
-const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
+  l2:{algo:'nn',sims:1,net:NN_NET},
+  l3:{algo:'nn',sims:6,net:NN_NET},
+  l4:{algo:'nn',sims:10,net:NN_NET},
+  l5:{algo:'nn',sims:22,net:NN_NET},
+  l6:{algo:'nn',sims:50,net:NN_NET},
+  l7:{algo:'nn',sims:130,net:NN_NET},
+  l8:{algo:'nn',sims:300,net:NN_NET},
+  l9:{algo:'nn',sims:700,net:NN_NET},
+  l10:{algo:'nn',sims:2600,step:1,net:NN_NET}};   // what the reference Mac did in the former 10 s of a turn: the placement alone searched (16.11.2026)
+const HINT={algo:'nn',sims:700,net:NN_NET};   // level 9, the highest that answers within 5 s on the reference Mac
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+SlitherEngine.toString()+'\n'+SlitherAI.toString()+'\n'+SlitherNN.toString()+'\nconst SA=SlitherAI(SlitherEngine());function aiSearch(pos,opt){return SA.search(pos,opt);}'+
@@ -1069,7 +1080,7 @@ const aiSrc=()=>AISearch.toString()+'\n'+SlitherEngine.toString()+'\n'+SlitherAI
   // if the network cannot load (offline, old browser), the BEAM level answers instead
   '\nconst NV=SlitherNN(SlitherEngine(),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(BEAM)+';'+
   '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
-  'NV.search(m.st,m.opt).catch(()=>SA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
+  'NV.search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>SA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
 // the network levels (r.nn): a logit of the winning chances, as Volo
 function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;if(r.forced)return {k:'ai_forced'};
   if(r.nn){if(s>4)return {k:'ai_win'};if(s<-4)return {k:'ai_lost'};return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}

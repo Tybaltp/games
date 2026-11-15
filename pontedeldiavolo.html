@@ -191,9 +191,9 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
 /*ENGINE*/
@@ -352,7 +352,7 @@ function scoreFixed(st){
 /*END*/
 // Ponte strings, merged over the shared ones (core.js)
 const PD_I18N={fr:{
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9, le plus fort",m_aiTxt:"Dix niveaux, de 0 à 9 : jusqu'au 8, chacun bat le précédent environ trois parties sur quatre ; le 9 réfléchit 10 s par coup.",
+ lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9, le plus fort",m_aiTxt:"Dix niveaux, de 0 à 9 : jusqu'au 8, chacun bat le précédent environ trois parties sur quatre ; le 9 calcule huit fois plus que le 8.",
  title:"Ponte del Diavolo",lede:"Bâtissez des îles et reliez-les par des ponts.",by:"Un jeu de Martin Ebel.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  needConfirm:"Confirmer chaque coup",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Terminer le tour",passEnd:"Passer et terminer",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Terminer",passEndS:"Passer",
  pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
@@ -372,7 +372,7 @@ const PD_I18N={fr:{
  <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
  <li><b>Départage</b> : le plus d'îles, puis le plus de ponts. Égalité parfaite : partie nulle.</li></ul>`
 },en:{
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: up to 8, each one beats the one below about three games in four; level 9 thinks 10 s per move.",
+ lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: up to 8, each one beats the one below about three games in four; level 9 searches eight times as much as level 8.",
  title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",rm_ask:"{n} offers a new game, colours swapped.",
  needConfirm:"Confirm each move",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",
  pts:"pts",isl:"isl.",brg:"br.",ptsL:"points",islL:"islands",brgL:"bridges",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
@@ -392,7 +392,7 @@ const PD_I18N={fr:{
  <div class="scale"><span>1 island: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
  <li><b>Tie-break</b>: most islands, then most bridges. A perfect tie: a draw.</li></ul>`
 },es:{
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: hasta el 8, cada uno gana al anterior unas tres partidas de cada cuatro; el 9 piensa 10 s por jugada.",
+ lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: hasta el 8, cada uno gana al anterior unas tres partidas de cada cuatro; el 9 calcula ocho veces más que el 8.",
  title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
  needConfirm:"Confirmar cada jugada",takeLight:"Tomar las claras",playDark:"Jugar las oscuras",endTurn:"Terminar el turno",passEnd:"Pasar y terminar",takeLightS:"Claras",playDarkS:"Oscuras",endTurnS:"Terminar",passEndS:"Pasar",
  pts:"pts",isl:"isl.",brg:"pte.",ptsL:"puntos",islL:"islas",brgL:"puentes",light:"Claras",dark:"Oscuras",mv_bridge:"puente",lg_pass:"pasa",lg_takeL:"toma las claras",lg_dark:"juega las oscuras",
@@ -792,14 +792,17 @@ function fromPos(P){const S=blank();for(let i=0;i<NN;i++)S.c[i]=P.cells[i];for(c
 function toMove(m){return m.k===0?{t:'t',cells:m.b>=0?[m.a,m.b]:[m.a]}:m.k===1?{t:'b',a:EA[m.e],b:EB[m.e]}:m.k===2?{t:'x'}:{t:m.L?'L':'D'};}
 // the searches, on Ponte's interface
 const PS=blank();
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
 const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>S.tm,done:S=>S.ph===3,result:final,eval:evalS,
-  playout:(S,o)=>playout(S,o,o.cut||0),scratch:S=>copyInto(PS,S)});
+  playout:(S,o)=>playout(S,o,o.cut||0),scratch:S=>copyInto(PS,S),best:r=>{if(TELL)aiBest({move:toMove(r.m),score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);let r;
   if(S.ph===3)return null;
   if(S.ph===0)r=opening(S,opt);else if(S.ph===1)r=pie(S,opt);
-  else{K.start(opt.time);const C=gen(S,opt.cells||20);if(!C.length)return {move:{t:'x'},score:0,depth:0,forced:true};
+  else{K.start(opt.nodes);const C=gen(S,opt.cells||20);if(!C.length)return {move:{t:'x'},score:0,depth:0,forced:true};
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
-    else r=K[opt.algo](S,C,opt);}
+    else{TELL=typeof aiBest==='function';r=K[opt.algo](S,C,opt);TELL=false;}}
   return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:K.nodes()};}
 // ----- MCTS: UCT over the candidate moves (progressive widening in their order), fast guided playouts -----
 // A playout turn: a bridge between two different groups when one touches an island (share opt.brP of the turns that have
@@ -830,15 +833,17 @@ return {search,fromPos,gen,play,copy,evalS,final,score,canP,canB,cellsOf,bridges
 /*AIEND*/
 // Levels: plain parameters for PonteAI().search (tune or add levels here). algo: 'greedy' one ply, a softmax over the best
 // moves · 'beam' iterative-deepening alpha-beta on the best candidates · 'mcts' (see common/ai.js). Common: cells, the single
-// squares paired into two-tile candidates; time, the budget (ms). greedy: pick, moves drawn from · temp, softmax
+// squares paired into two-tile candidates. greedy: pick, moves drawn from · temp, softmax
 // temperature (points of evaluation). beam: depth, plies read at most · widths, candidates kept at each ply ·
 // cellsIn, squares paired below the root (mcts too) · noise, a move within this many points of the best, at random. mcts: sims,
-// playouts (time is only a cap) · rand, share of random tiles in playouts (others: the best of a few) · brP, share of
+// playouts: the only thing that stops it · rand, share of random tiles in playouts (others: the best of a few) · brP, share of
 // playout turns that build a bridge when one is useful · temp, final choice by visits^(1/temp) (0: most visited) ·
 // pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · c, UCT exploration · cut, playout turns before
 // evaluating (0: to the end) · scale, evaluation points per logit.
 // The ladder (10.11.2026, outils/aitools/res/pontedeldiavolo/niveaux.md, 300 games a pair): each level beats the one
-// below by 74-78 % (draws count half). mcts levels stop on sims (time is a cap).
+// below by 74-78 % (draws count half). A level is an amount of work, never a time (16.11.2026): the former caps (1 to 8 s)
+// were never reached on the reference Mac (M3 Pro) below level 9, whose simulations are what that Mac did in its former
+// 10 s (outils/aitools/res/budgets-2026-11-16.md).
 const MC={algo:'mcts',cells:20,cellsIn:10,pwC:2,pwA:.45,cut:4,rand:.3,brP:.5,scale:2,temp:0};
 const LEVELS={
   l0:{algo:'greedy',cells:20,temp:1000},
@@ -846,12 +851,12 @@ const LEVELS={
   l2:{algo:'greedy',cells:20,temp:.8},
   l3:{algo:'greedy',cells:20,temp:.45},
   l4:{algo:'greedy',cells:20,temp:.21},
-  l5:{algo:'beam',depth:2,cells:16,widths:[10,10],noise:.5,time:1000},
-  l6:{algo:'beam',depth:3,cells:16,widths:[8,6,6],time:3000},
-  l7:{...MC,sims:2000,c:.35,time:5000},
-  l8:{...MC,sims:5000,c:.2,time:8000},
-  l9:{...MC,sims:1e9,c:.2,time:10000}};   // l8 on its full 10 s (12.11.2026, Thibault; not measured against l8)
-const HINT=LEVELS.l8;
+  l5:{algo:'beam',depth:2,cells:16,widths:[10,10],noise:.5},
+  l6:{algo:'beam',depth:3,cells:16,widths:[8,6,6]},
+  l7:{...MC,sims:2000,c:.35},
+  l8:{...MC,sims:5000,c:.2},
+  l9:{...MC,sims:42000,c:.2}};   // l8 with the simulations of the former 10 s (12.11.2026, Thibault; not measured against l8)
+const HINT={...LEVELS.l8,sims:9500};   // level 8's search with the simulations of 5 s at most on the reference Mac
 const aiPos=st=>({cells:Array.from(st.cells),bridges:st.bridges.map(B=>[Math.min(B.a,B.b),Math.max(B.a,B.b),B.o]),phase:st.phase,toMove:st.toMove,finalTurn:st.finalTurn,colorA:st.colorA});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: none for the opening and the colour choice; the score is in points of evaluation

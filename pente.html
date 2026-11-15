@@ -286,11 +286,11 @@ function evaluate(c){const o=3-c;
  e+=thr[o]*capGainE(caps[c])*0.55-thr[c]*capGainE(caps[o])*0.3;
  return e;}
 
-let tt=new Map(),nodes=0,deadline=0,EXT=true,KCAP=99,MAXD=30,NOISE=0;const ABORT={abort:1};
+let tt=new Map(),nodes=0,maxN=Infinity,EXT=true,KCAP=99,MAXD=30,NOISE=0,TELL=null;const ABORT={abort:1};
 function uniqPush(arr,src){for(const j of src)if(arr.indexOf(j)<0)arr.push(j);}
 
 function search(c,depth,alpha,beta,ply){
- if(((++nodes)&511)===0&&performance.now()>deadline)throw ABORT;
+ if(((++nodes)&511)===0&&nodes>maxN)throw ABORT;
  const o=3-c;
  if(hasFour(c))return WIN-ply;
  if(caps[c]>=4&&thr[o]>0)return WIN-ply;
@@ -316,8 +316,10 @@ function search(c,depth,alpha,beta,ply){
  tt.set(key,{d:depth,v:best,f:best<=a0?2:best>=beta?1:0,m:bm});
  return best;}
 
-function think(c,ms,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||30;NOISE=P.noise||0;
- const t0=performance.now();deadline=t0+ms;nodes=0;tt=new Map();
+// budget: the positions searched at most (none: the depth is completed); no clock is read (16.11.2026), so a level
+// plays the same on every device. TELL (the main search only): the best move so far, for core's « Play now ».
+function think(c,budget,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||30;NOISE=P.noise||0;
+ maxN=budget||Infinity;nodes=0;tt=new Map();
  const o=3-c;
  const myF=foursOf(c);if(myF.length)return {move:myF[0],score:WIN,depth:1};
  if(caps[c]>=4){const cp=capPts(c);if(cp.length)return {move:cp[0],score:WIN,depth:1};}
@@ -328,7 +330,7 @@ function think(c,ms,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||3
  if(!rootMoves.length){if(!board[112])return {move:112,score:0,depth:0};for(let i=0;i<NN;i++)if(!board[i])return {move:i,score:0,depth:0};return {move:-1,score:0,depth:0};}
  if(rootMoves.length===1)return {move:rootMoves[0],score:0,depth:0};
  let best=rootMoves[0],bestScore=0,depthDone=0;
- const scores=new Map();
+ const scores=new Map();if(TELL)TELL(best,0,0);
  const base=mst.length;
  for(let d=1;d<=MAXD;d++){
   let alpha=-INF,curBest=-1,curScore=-INF;
@@ -340,10 +342,10 @@ function think(c,ms,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||3
   }catch(e){if(e!==ABORT)throw e;while(mst.length>base)undoMove();
    if(curBest>=0&&curBest!==best&&curScore>bestScore+50&&d>1){best=curBest;bestScore=curScore;}
    break;}
-  best=curBest;bestScore=curScore;depthDone=d;
+  best=curBest;bestScore=curScore;depthDone=d;if(TELL)TELL(best,bestScore,d);
   rootMoves.sort((p,q)=>(scores.get(q)??-INF)-(scores.get(p)??-INF));
   if(Math.abs(curScore)>WIN-1000)break;
-  if(performance.now()-t0>ms*0.45)break;
+  if(nodes>maxN*0.45)break;
  }
  if(NOISE&&depthDone>0){let bv=-INF;for(const m of rootMoves){const v=scores.get(m);if(v===undefined)continue;const nv=Math.abs(v)>WIN-1000?v:v+Math.random()*NOISE;if(nv>bv){bv=nv;best=m;bestScore=v;}}}
  return {move:best,score:Math.round(bestScore),depth:depthDone,nodes};}
@@ -358,35 +360,39 @@ function randomOpening(){const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
  do{const dx=ri(-2,2),dy=ri(-2,2);w=(by+dy)*N+bx+dx;}while(w===b1);
  do{const dx=ri(-3,3),dy=ri(-3,3);b2=(by+dy)*N+bx+dx;}while(b2===b1||b2===w);
  return [{i:b1,c:1},{i:w,c:2},{i:b2,c:1}];}
-function propose(ms){const tries=16,per=Math.max(40,(ms/tries)|0);let best=null,bs=INF;
+function propose(n){const tries=16,per=Math.max(OPEN_MIN,(n/tries)|0);let best=null,bs=INF;
  for(let t=0;t<tries;t++){const s=randomOpening();const arr=new Int8Array(NN);for(const p of s)arr[p.i]=p.c;
   loadBoard(arr,[0,0,0]);const r=think(2,per);const v=Math.abs(r.score)+Math.random()*60;
   if(v<bs){bs=v;best={stones:s,score:r.score};}}
  return best;}
 
-function suggestPlace(arr,c,ms){loadBoard(arr,[0,0,0]);let any=false;for(let i=0;i<NN;i++)if(board[i]){any=true;break;}
+function suggestPlace(arr,c,n){loadBoard(arr,[0,0,0]);let any=false;for(let i=0;i<NN;i++)if(board[i]){any=true;break;}
  const ctr=(N>>1)*N+(N>>1);if(!any)return {move:ctr,score:0};
  const cx=N>>1;let cand=gen(c,30).filter(j=>Math.abs(j%N-cx)<=4&&Math.abs(((j/N)|0)-cx)<=4).slice(0,12);
  if(!cand.length)cand=gen(c,12);
- const per=Math.max(60,(ms/cand.length)|0);let best=cand[0],bs=INF,bsc=0;
+ const per=Math.max(PLACE_MIN,(n/cand.length)|0);let best=cand[0],bs=INF,bsc=0;
  for(const j of cand){setCell(j,c);const r=think(2,per);setCell(j,0);const v=Math.abs(r.score);if(v<bs){bs=v;best=j;bsc=r.score;}}
  return {move:best,score:bsc};}
 // ===== the interface with common/core.js: one answer per phase =====
-// pos = {phase, B (225 cells: 0 empty, 1 black, 2 white), caps [0,black pairs,white pairs], toMove}; opt = a level (ms, maxDepth,
-// noise, ext, k), plus hint:true for a suggestion. The move is in the page's move form (see the page's enc()).
-function aiSearch(p,o){o=o||{};const ms=o.ms||700;
+// pos = {phase, B (225 cells: 0 empty, 1 black, 2 white), caps [0,black pairs,white pairs], toMove}; opt = a level (nodes,
+// maxDepth, noise, ext, k), plus hint:true for a suggestion. The move is in the page's move form (see the page's enc()).
+// Budgets in positions searched (what the reference Mac did in the former times, 16.11.2026): OPEN, the opening (1.5 s);
+// OPEN_MIN, PLACE_MIN: the least for one opening tried, one stone tried (40 and 60 ms).
+const OPEN=315000,OPEN_MIN=8500,PLACE_MIN=12500;
+function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  // the Swap2 opening: the most balanced of a few random openings
- if(p.phase==='open'){const r=propose(o.hint?Math.max(1500,ms):1500);return {move:{t:'o',s:r.stones.map(x=>x.i)},score:r.score,depth:1};}
+ if(p.phase==='open'){const r=propose(o.hint?Math.max(OPEN,n||0):OPEN);return {move:{t:'o',s:r.stones.map(x=>x.i)},score:r.score,depth:1};}
  loadBoard(p.B,p.caps);
  // the colour choice, judged with White to move: White if White is not worse, Black otherwise; a suggestion close to
  // the balance adds 2 stones (each placed to keep the balance) and leaves the hard choice to the opponent
- if(p.phase==='choose'||p.phase==='choose1'){const r=think(2,ms,Object.assign({},o,{noise:0})),s=r.score;
-  if(o.hint&&p.phase==='choose'&&Math.abs(s)<=250){const b=suggestPlace(p.B,1,ms/2).move,B2=Array.from(p.B);B2[b]=1;const w=suggestPlace(B2,2,ms/2).move;
+ if(p.phase==='choose'||p.phase==='choose1'){const r=think(2,n,Object.assign({},o,{noise:0})),s=r.score;
+  if(o.hint&&p.phase==='choose'&&Math.abs(s)<=250){const b=suggestPlace(p.B,1,(n||OPEN)/2).move,B2=Array.from(p.B);B2[b]=1;const w=suggestPlace(B2,2,(n||OPEN)/2).move;
    return {move:{t:'a',s:[b,w]},score:s,depth:r.depth};}
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
- const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
+ if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
+ const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -401,19 +407,21 @@ const N=15,NN=N*N,LET="ABCDEFGHJKLMNOP",DIRS=[[1,0],[0,1],[1,1],[1,-1]],PWIN=100
 const coord=i=>LET[i%N]+(N-((i/N)|0));
 // The ladder (10.11.2026, outils/aitools/res/pente/niveaux.md, 300 games a pair): each level beats the one below by
 // 74-76 % (level 10, the strongest, beats 9 by 62 %). maxDepth = depth, noise = randomness added to the move scores,
-// ext:false = no forced-line extension, k = moves read per node, ms = time (levels 0 to 8 stop on depth, ms is a guard).
+// ext:false = no forced-line extension, k = moves read per node, nodes = positions searched at most. A level is an amount
+// of work, never a time (16.11.2026): levels 0 to 8 stop on their depth, 9 and 10 on their nodes, what the reference Mac
+// (M3 Pro) searched in their former 0.7 and 2.5 s (outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={
- l0:{maxDepth:1,noise:2500,ext:false,k:6,ms:3000},
- l1:{maxDepth:1,noise:750,ext:false,k:6,ms:3000},
- l2:{maxDepth:2,noise:1500,ext:false,k:6,ms:3000},
- l3:{maxDepth:2,noise:500,ext:false,k:8,ms:3000},
- l4:{maxDepth:3,noise:700,ext:false,k:9,ms:3000},
- l5:{maxDepth:4,noise:700,ext:false,k:10,ms:3000},
- l6:{maxDepth:4,noise:500,k:10,ms:3000},
- l7:{maxDepth:5,k:10,ms:3000},
- l8:{maxDepth:7,k:10,ms:6000},
- l9:{ms:700},
- l10:{ms:2500}};
+ l0:{maxDepth:1,noise:2500,ext:false,k:6},
+ l1:{maxDepth:1,noise:750,ext:false,k:6},
+ l2:{maxDepth:2,noise:1500,ext:false,k:6},
+ l3:{maxDepth:2,noise:500,ext:false,k:8},
+ l4:{maxDepth:3,noise:700,ext:false,k:9},
+ l5:{maxDepth:4,noise:700,ext:false,k:10},
+ l6:{maxDepth:4,noise:500,k:10},
+ l7:{maxDepth:5,k:10},
+ l8:{maxDepth:7,k:10},
+ l9:{nodes:150000},
+ l10:{nodes:520000}};
 const HINT={...LEVELS.l10,hint:true};
 
 

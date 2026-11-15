@@ -168,7 +168,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -604,10 +604,14 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
 // compiled to WebAssembly without threads (build: ~/Jeux/outils/sharp_wasm). It runs in the worker of common/core.js:
 // the worker source loads sharp/sharp.wasm synchronously, writes the game so far in Sharp's move-list notation
 // (« 1g Ra1 … », one line per turn, the last line only the turn to play) to Sharp's virtual file system, runs Sharp
-// for a set time, and turns the steps Sharp prints back into this page's codes (setup S…, actions m/P/L).
-// Levels: thinking time in seconds; the first level also caps the search at 4 steps (one turn, no look-ahead).
-const SHARP_V=1;
-const LEVELS={debutant:{t:1,d:4},moyen:{t:3},fort:{t:10}};
+// to a set depth, and turns the steps Sharp prints back into this page's codes (setup S…, actions m/P/L).
+// Levels: d, the depth of Sharp's search in steps (4 = one turn, no look-ahead); never a time (16.11.2026): Sharp's
+// own clock (-t) is set out of reach, so a level plays the same on every device. One more step of depth takes about
+// 3.5 times longer, so the former 3 and 10 s cannot be matched closely: 10 and 11 steps are what Sharp completed in
+// those times on the reference Mac (M3 Pro; medians 2 and 7 s a move, up to 4 and 20 s;
+// outils/aitools/res/budgets-2026-11-16.md).
+const SHARP_V=1,SHARP_T=86400;
+const LEVELS={debutant:{d:4},moyen:{d:10},fort:{d:11}};
 // Sharp's setup tokens (« Ra1 … ») -> 'S' + the 16 letters in E.SETUP_SQ order
 function sharpSetup(E,toks,s){const at={};for(const t of toks){const m=/^([RCDHME])([a-h][1-8])$/i.exec(t);if(m)at[m[2]]=m[1].toUpperCase();}
   const L=E.SETUP_SQ[s].map(i=>at[E.sq(i)]);return L.every(Boolean)?'S'+L.join(''):null;}
@@ -620,7 +624,7 @@ function sharpTurn(E,b,s,steps){const out=[];
     return false;};
   return rec(b,0,4)?out.join(','):null;}
 function sharpSearch(pos,opt){OUT=[];Module.FS.writeFile('/g.txt',opt.hist+'\n');
-  const a=['-movefile','/g.txt','-t',String(opt.t),'-hashmem','64MB','-no-output-files'];if(opt.d)a.push('-d',String(opt.d));
+  const a=['-movefile','/g.txt','-t',String(SHARP_T),'-d',String(opt.d||4),'-hashmem','64MB','-no-output-files'];if(opt.seed)a.push('-seed',String(opt.seed));
   try{Module.callMain(a);}catch(e){}
   const line=OUT.filter(l=>l&&/^[RCDHMErcdhme][a-h][1-8]/.test(l.trim())).pop()||'',toks=line.trim().split(/\s+/),b=Int8Array.from(pos.b);
   const move=pos.n<2?sharpSetup(E,toks,pos.turn):sharpTurn(E,b,pos.turn,toks.filter(x=>!/x$/.test(x)));
@@ -629,7 +633,7 @@ function aiSrc(){const u=f=>JSON.stringify(new URL('sharp/'+f+'?v='+SHARP_V,loca
   return `const E=(${ArimaaEngine})();
 ${sharpSetup}
 ${sharpTurn}
-let OUT=[];
+let OUT=[];const SHARP_T=${SHARP_T};
 var Module={print:s=>OUT.push(s),printErr:()=>{},noInitialRun:true};
 {const x=new XMLHttpRequest();x.open('GET',${u('sharp.wasm')},false);x.responseType='arraybuffer';x.send();Module.wasmBinary=x.response;}
 importScripts(${u('sharp.js')});

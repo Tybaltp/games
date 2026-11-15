@@ -183,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 function ZertzEngine(size){
@@ -243,8 +243,10 @@ function ZertzEngine(size){
       for(const c of cols)for(const f of rms)out.push({t:0,c,at:x,rm:f});}
     return out;}
   const key=m=>m.c*10000+m.at*100+m.rm+1;
-  let deadline=0,stop=false,nodes=0,BEAM=10,FB=3,QK=12,QM=450;
-  function tick(){if((++nodes&1023)===0&&Date.now()>deadline)stop=true;}
+  // maxN: positions searched at most (o.nodes; none: the depth is completed). No clock is read (16.11.2026): a level plays
+  // the same on every device. MORE: what is granted at least after the first look at every move (the former 200 ms).
+  let maxN=Infinity,stop=false,nodes=0,BEAM=10,FB=3,QK=12,QM=450;const MORE=340000;
+  function tick(){if((++nodes&1023)===0&&nodes>maxN)stop=true;}
   // Quiescence search: captures are played out to the end; without a capture, the side to move may stop
   // or try a forcing move (budget fb per line).
   function qs(s,alpha,beta,ply,fb){const sp=evalS(s);if(fb<=0||ply>60)return sp;if(sp>=beta)return sp;if(sp>alpha)alpha=sp;
@@ -270,12 +272,12 @@ function ZertzEngine(size){
     let best=-INF;
     for(const x of cand){const v=-neg(x[1],depth-1,-beta,-alpha,ply+1,fb);if(stop)return best>-INF?best:0;if(v>best)best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
   // Iterative deepening on two axes: depth of quiet moves and number of forcing moves read beyond it.
-  function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,time=o.time||3000,K0=o.rootBeam||30;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
-    deadline=Date.now()+time;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
+  function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,K0=o.rootBeam||30,tell=typeof aiBest==='function'?aiBest:null;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
+    maxN=o.nodes||Infinity;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
     const fk=new Set(moves[0].t===0?forcing(s).map(key):[]);
     let list=[];for(const mv of moves){const c=apply(s,mv);const sc=won(c,p)?WIN:-neg(c,0,-INF,INF,1,0);list.push({mv,c,sc,f:mv.t===0&&fk.has(key(mv))});}
-    deadline=Math.max(deadline,Date.now()+200);stop=false;
-    list.sort((a,b)=>b.sc-a.sc);let reached=[0,0];
+    maxN=Math.max(maxN,nodes+MORE);stop=false;
+    list.sort((a,b)=>b.sc-a.sc);let reached=[0,0];if(tell)tell({move:list[0].mv,score:list[0].sc,depth:0});
     // forced lines first, then depth of quiet moves
     const plan=[];for(let f=1;f<=maxF;f++)plan.push([1,f]);for(let d=2;d<=maxD;d++)for(let f=Math.max(1,maxF-1);f<=maxF;f++)plan.push([d,f]);
     if(list[0].sc<WIN/2)for(const [d,f] of plan){let alpha=-INF;const res=[],rest=[];
@@ -284,7 +286,7 @@ function ZertzEngine(size){
       for(const x of res){const v=-neg(x.c,d-1,-INF,-alpha,1,f);if(stop)break;done.push({...x,sc:v});if(v>alpha)alpha=v;if(alpha>WIN/2)break;}
       if(stop){if(done.length&&done.some(x=>x.sc>WIN/2)){done.sort((a,b)=>b.sc-a.sc);list=done.concat(list);}break;}
       const seen=new Set(done.map(x=>x.mv));
-      done.sort((a,b)=>b.sc-a.sc);list=done.concat(list.filter(x=>!seen.has(x.mv)).map(x=>({...x,sc:-INF})));reached=[d,f];
+      done.sort((a,b)=>b.sc-a.sc);list=done.concat(list.filter(x=>!seen.has(x.mv)).map(x=>({...x,sc:-INF})));reached=[d,f];if(tell)tell({move:list[0].mv,score:list[0].sc,depth:d});
       if(list[0].sc>WIN/2)break;}
     // avoid a move that loses by force if another one does not
     let pick=list[0];
@@ -295,8 +297,11 @@ function ZertzEngine(size){
 // ===== Zèrtz on the shared code (common/core.js) =====
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
 const GOAL=[4,5,6];
-// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, time, random choice among near-best moves)
-const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,time:1500,noise:150},fort:{depth:3,fb:3,time:3000}};
+// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, nodes:
+// positions searched at most, random choice among near-best moves). A level is an amount of work, never a time
+// (16.11.2026): Débutant stops on its depth, Moyen and Fort on their depth or their nodes, what the reference Mac (M3 Pro)
+// searched in their former 1.5 and 3 s (outils/aitools/res/budgets-2026-11-16.md).
+const LEVELS={debutant:{depth:1,fb:1,noise:600},moyen:{depth:2,fb:2,nodes:2600000,noise:150},fort:{depth:3,fb:3,nodes:5300000}};
 const HINT=LEVELS.fort;
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{

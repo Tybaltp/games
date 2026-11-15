@@ -390,9 +390,9 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Pylos (David G. Royffe, 1993): the page around the engine =====
 // The engine (MOTEUR: rules, geo, init, legalMoves, legal, apply, finished, replay, enc, describe) is the text block
@@ -764,21 +764,27 @@ function evalS(S,p){const b=S.b,q=1-p;let v=10*(S.res[p]-S.res[q]),fp=0,fq=0;
 function gen(S){const me=S.turn,out=[];
   for(const m of M.legalMoves(S)){const T=play(S,m);out.push({m,s:M.finished(T)?result(T,me):T.rp?0:evalS(T,me)});}
   out.sort((a,b)=>b.s-a.s);return out;}
-const KS=AISearch({moves:gen,play,turn:S=>S.turn,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
+const KS=AISearch({moves:gen,play,turn:S=>S.turn,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
+  best:r=>{if(TELL)aiBest({move:r.m.code,score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);REP=null;
   if(opt.hist){REP=new Map();for(const k in opt.hist){const i=k.lastIndexOf('|');REP.set(String.fromCharCode(...k.slice(0,i).split(',').map(Number))+k.slice(i),opt.hist[k]);}S.k=repKey(S);}
-  KS.start(opt.time);const C=gen(S);
+  KS.start(opt.nodes);const C=gen(S);
   if(!C.length)return {move:null};
   if(C.length===1)return {move:C[0].m.code,score:C[0].s,depth:0,forced:true};
-  const r=KS[opt.algo](S,C,opt);return {move:r.m.code,score:r.s,depth:r.depth,nodes:KS.nodes()};}
+  TELL=typeof aiBest==='function';const r=KS[opt.algo](S,C,opt);TELL=false;return {move:r.m.code,score:r.s,depth:r.depth,nodes:KS.nodes()};}
 return {search,fromPos,gen,play,evalS};
 }
 /*AIEND*/
 // Levels 0 to 5: 0 and 1 read one move ahead (0 draws at random among the best, within 4 points); 2 to 5 read two, three,
-// four and six moves ahead on the best candidates (beam, common/ai.js), within 1.5, 3, 5 and 9 seconds. Hints use level 4.
-const LEVELS={n0:{algo:'greedy',pick:8,temp:4},n1:{algo:'greedy'},n2:{algo:'beam',depth:2,widths:[20,12],time:1500},
-  n3:{algo:'beam',depth:3,widths:[24,14,8],time:3000},n4:{algo:'beam',depth:4,widths:[28,16,10,6],time:5000},n5:{algo:'beam',depth:6,widths:[32,18,12,8,6,6],time:9000}};
-const HINT={...LEVELS.n4};
+// four and six moves ahead on the best candidates (beam, common/ai.js). A level is its depth, never a time (16.11.2026;
+// the former caps of 1.5 to 9 s were never reached on the reference Mac: at most 0.35 s a move at level 5,
+// outils/aitools/res/budgets-2026-11-16.md). Hints use level 5, the highest (well under 5 s).
+const LEVELS={n0:{algo:'greedy',pick:8,temp:4},n1:{algo:'greedy'},n2:{algo:'beam',depth:2,widths:[20,12]},
+  n3:{algo:'beam',depth:3,widths:[24,14,8]},n4:{algo:'beam',depth:4,widths:[28,16,10,6]},n5:{algo:'beam',depth:6,widths:[32,18,12,8,6,6]}};
+const HINT={...LEVELS.n5};
 const aiPos=st=>({variant:st.variant,b:Array.from(st.b),res:st.res.slice(),turn:st.turn});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 const aiSrc=()=>AISearch.toString()+'\n'+PY_SRC+'\n'+PylosAI.toString()+'\nconst PA=PylosAI(MOTEUR);function aiSearch(pos,opt){return PA.search(pos,opt);}';

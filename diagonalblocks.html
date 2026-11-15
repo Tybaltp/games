@@ -222,9 +222,9 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 function DBEngine(){
   // 14×14 board; each corner loses the corner cell and its two neighbours on the edge: 184 playable cells.
@@ -788,9 +788,8 @@ function swapTab(S,opt){const T=opt.firstTab||FIRST;let k=-1;for(let j=0;j<NK;j+
 // (solo: the most cells it can still add, exact). Otherwise negamax over every legal placement, cut by bounds
 // (covered + min(cells left in the pieces, |R|)) and a transposition table kept between moves (the board alone fixes
 // the pieces used, so a key is board + colour to move; searches go to the end, so entries never age). A node budget
-// (solveNodes) and a time cap (solveMs) stop it; search() then falls back on the level's normal search.
+// (solveNodes) stops it, never a clock (16.11.2026); search() then falls back on the level's normal search.
 class SolveStop{}
-const now=()=>typeof performance!=='undefined'&&performance.now?performance.now():Date.now();
 const ZA=new Int32Array(2*N),ZC=new Int32Array(2*N);
 {let z=0x2545f491;const rnd=()=>{z^=z<<13;z^=z>>>17;z^=z<<5;return z;};for(let i=0;i<2*N;i++){ZA[i]=rnd();ZC[i]=rnd();}}
 let h1=0,h2=0;
@@ -808,8 +807,8 @@ function region(S,c){const M=RM[c],t=RS[c]=++rmsN,b=S.b,me=c+1,n=anchors(S,c,RA)
       for(let dc=-1;dc<=1;dc++){const c2=cc+dc;if(c2<0||c2>=W||(!dr&&!dc))continue;const y=rr*W+c2;
         if(M[y]===t||!allowed(b,y,me))continue;M[y]=t;RQ[q++]=y;}}}
   return q;}
-let sNodes=0,sMax=0,sDead=Infinity;
-const tick=()=>{if(++sNodes>sMax||((sNodes&1023)===0&&now()>sDead))throw new SolveStop();};
+let sNodes=0,sMax=0;
+const tick=()=>{if(++sNodes>sMax)throw new SolveStop();};
 const MB=[],SB=[];const buf=p=>{while(MB.length<=p){MB.push(new Int32Array(NP));SB.push(new Float64Array(NP));}};
 // order L[0..n) by score SB (descending), in place (insertion sort: n is small here)
 function order(L,V,n){for(let i=1;i<n;i++){const m=L[i],v=V[i];let j=i-1;while(j>=0&&V[j]<v){L[j+1]=L[j];V[j+1]=V[j];j--;}L[j+1]=m;V[j+1]=v;}}
@@ -846,7 +845,7 @@ function nega2(S,al,be,ply){const c=S.tm,o=1-c;if(S.ov)return S.cnt[c]-S.cnt[o];
 // position is too big (endgame: the most cells both sides could still add) or when the budget runs out
 function solveRoot(S,opt){const c=S.tm,o=1-c;
   const ub=Math.min(rem(S.u[c]),region(S,c))+(S.st[o]?0:Math.min(rem(S.u[o]),region(S,o)));if(ub>opt.endgame)return null;
-  sNodes=0;sMax=opt.solveNodes||200000;sDead=now()+(opt.solveMs||2000);
+  sNodes=0;sMax=opt.solveNodes||200000;
   try{buf(0);const L0=MB[0],V0=SB[0],n=legal(S,c,L0);markOpp(S,o);for(let i=0;i<n;i++)V0[i]=cheap(S,c,L0[i],S.n<12);order(L0,V0,n);
     const L=Array.from(L0.subarray(0,n));
     const val=(m,al,be)=>{const T=play(copy(S),m);return T.ov?T.cnt[c]-T.cnt[o]:T.tm===c?nega2(T,al,be,1):-nega2(T,-be,-al,1);};
@@ -864,15 +863,18 @@ function fromPos(P){const S=blank();for(let i=0;i<N;i++)S.b[i]=P.b[i];S.u=[P.use
 const toMove=m=>m<0?{t:'s'}:{t:'p',k:PKA[m],cells:PCl[m].slice()};
 const idOf=mv=>mv.t==='s'?-1:IDX.get(mv.k+':'+mv.cells.slice().sort((a,b)=>a-b).join('.'));
 const PS=blank();
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
 const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>seatOf(S,S.tm),done:S=>!!S.ov,result,eval:evalS,
-  playout,scratch:S=>copyInto(PS,S)});
+  playout,scratch:S=>copyInto(PS,S),best:r=>{if(TELL)aiBest({move:toMove(r.m),score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;
   if(S.n===0)r=opt.openTab?openTab(S,opt):opening(S,opt);
   else if(canSwap(S)&&!opt.noSwap)r=swapChoice(S,opt);
-  if(!r){K.start(opt.time);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
+  if(!r){K.start(opt.nodes);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
     if(!C.length)return null;
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
-    else{if(opt.endgame)r=solveRoot(S,opt);if(!r)r=K[opt.algo](S,C,opt);}}
+    else{if(opt.endgame)r=solveRoot(S,opt);if(!r){TELL=typeof aiBest==='function';r=K[opt.algo](S,C,opt);TELL=false;}}}
   return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.solved||K.nodes(),solved:!!r.solved};}
 return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fits,toMove,idOf,firstValue,NP,PK:PKA,PCl,
   setEV:o=>{EV={...EV,...o};},setSwap:v=>{SWAP=v;},EV:()=>EV,K};
@@ -881,19 +883,21 @@ return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fi
 // Levels: plain parameters for DiagAI().search (tune or add levels here). See common/ai.js for the searches.
 // algo: 'greedy' one ply, a softmax over the best moves · 'beam' iterative-deepening alpha-beta on the best candidates ·
 // 'mcts' UCT with short guided playouts. Evaluation in cells (covered cells + open corners + reachable area, see DiagAI).
-// Common: cells, placements evaluated at the root (the others are ranked by a cheap score only); time, the budget (ms);
+// Common: cells, placements evaluated at the root (the others are ranked by a cheap score only);
 // openPick, the first piece drawn among the openPick closest to the swap threshold.
 // greedy: pick, moves drawn from · temp, softmax temperature (cells). beam: depth, plies read at most · widths,
 // candidates kept at each ply · cellsIn, placements evaluated below the root (mcts too) · noise, a move within this many
-// cells of the best, at random. mcts: sims, playouts (time is only a cap) · cut, playout plies before evaluating ·
+// cells of the best, at random. mcts: sims, playouts: the only thing that stops it · cut, playout plies before evaluating ·
 // tries, placements sampled per playout ply (the best by the cheap score + rand noise is played) · rand, that noise ·
 // c, UCT exploration · pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · scale, cells per logit · temp,
 // final choice by visits^(1/temp) (0: most visited).
 // Any algo: endgame, the exact endgame solver once both sides together can add at most endgame cells (it plays a proved win,
-// else a proved draw, else hands over) · solveNodes, solveMs, its budget · endLoss: when every move loses, the one that loses
+// else a proved draw, else hands over) · solveNodes, its budget · endLoss: when every move loses, the one that loses
 // by the fewest cells instead of handing over.
 // The ladder (10.11.2026, outils/aitools/res/diagonalblocks/niveaux.md, 300 games a pair): each level beats the one
-// below by 74-78 % (draws count half; level 8 beats 7 by 61 %; level 9 and 10, the strongest, see below). mcts levels stop on sims (time is a cap).
+// below by 74-78 % (draws count half; level 8 beats 7 by 61 %; level 9 and 10, the strongest, see below). A level is an amount of work,
+// never a time (16.11.2026): the former caps (3 and 5 s; 1 s for the solver) were never reached on the reference Mac (M3 Pro)
+// below level 10, whose simulations are what that Mac did in its former 5 s (outils/aitools/res/budgets-2026-11-16.md).
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
 const LEVELS={
   l0:{algo:'greedy',cells:40,temp:1000,openPick:6},
@@ -901,13 +905,13 @@ const LEVELS={
   l2:{algo:'greedy',cells:40,temp:1.5,openPick:6},
   l3:{algo:'greedy',cells:40,temp:.7,openPick:6},
   l4:{algo:'greedy',cells:40,temp:.2,openPick:6},
-  l5:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,time:3000,openPick:6},
-  l6:{...MC,sims:1800,c:.4,cellsIn:10,time:3000},
-  l7:{...MC,sims:5000,c:.2,cellsIn:20,time:5000},
-  l8:{...MC,sims:15000,c:.2,cellsIn:20,time:5000},
-  l9:{...MC,sims:15000,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000,puct:1,endLoss:1},   // l8 + the exact endgame solver and PUCT (12.11.2026, 300 games: 69.8 % against l8, 62.3 % against l8 with the solver alone)
-  l10:{...MC,sims:1e9,c:.2,cellsIn:20,time:5000,endgame:80,solveNodes:100000,solveMs:1000,puct:1,endLoss:1}};   // l9 searching its whole 5 s
-const HINT=LEVELS.l9;   // not l10: a hint should not take 5 s
+  l5:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,openPick:6},
+  l6:{...MC,sims:1800,c:.4,cellsIn:10},
+  l7:{...MC,sims:5000,c:.2,cellsIn:20},
+  l8:{...MC,sims:15000,c:.2,cellsIn:20},
+  l9:{...MC,sims:15000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1},   // l8 + the exact endgame solver and PUCT (12.11.2026, 300 games: 69.8 % against l8, 62.3 % against l8 with the solver alone)
+  l10:{...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1}};   // l9 with the simulations of the former 5 s
+const HINT={...LEVELS.l10,sims:33000};   // level 10's search with the simulations of 5 s at most on the reference Mac
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice()};};
 let pageAI=null;   // the search on the page itself, when no worker can be made

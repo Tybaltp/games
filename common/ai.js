@@ -2,7 +2,8 @@
 // A plain script (no modules): it defines one global, AISearch(G). It knows nothing of any game: the game hands it an
 // interface object G and gets back the searches. The computer runs in core's worker, which cannot load files, so a page
 // builds its worker source as AISearch.toString() + its own code (GAME.aiSrc); AISearch must therefore stay one
-// self-contained function that uses no other global (performance.now, or Date.now, only).
+// self-contained function that uses no other global. It never reads a clock (16.11.2026): a search stops on its work
+// (depth, simulations, positions searched), so the same level plays the same move on any machine, however loaded.
 // Load it after common/core.js and before the page's script: <script src="common/ai.js?v=N"></script> (bump N in the
 // pages that load it after a change).
 //
@@ -19,8 +20,11 @@
 //  eval(S,p)       the heuristic value of S for p (positive = good for p), in points; mcts squashes it by opt.scale
 //  playout(S,opt)  plays S forward IN PLACE (to the end, or what the game reads from opt, e.g. opt.cut turns)
 //  scratch(S)      a copy of S that playout may destroy (it can be one reused buffer: it is used before the next call)
+//  best(r)         optional: told the best move so far, {m, s, depth}, as the search goes on (beam: at each depth
+//                  completed; mcts: every 256 simulations), for core's « Play now »; it changes nothing in the search
 //
-// What AISearch(G) returns: {start(ms), greedy, beam, mcts, nodes()}. Call start(opt.time) first (it sets the deadline),
+// What AISearch(G) returns: {start(n), greedy, beam, mcts, nodes()}. Call start(opt.nodes) first (it sets beam's budget of
+// positions and the counter; nothing = no budget),
 // then K[opt.algo](S, C, opt) with C = G.moves(S, …) at the root (not empty; the game handles 0 or 1 move itself).
 // Each search returns {m, s, depth}: the move, its value for the side to move (points; for mcts a logit times scale),
 // the depth reached (beam: plies completed; mcts: longest line in the tree). nodes(): positions searched / simulations.
@@ -30,18 +34,17 @@
 //  greedy  one ply: a softmax over the best root candidates
 //    pick     moves drawn from: the first pick candidates (default all)
 //    temp     softmax temperature, in points of evaluation (default ~0: always the best)
-//  beam    iterative-deepening alpha-beta on the best candidates of each ply, stopped by the deadline (keeps the last
-//          completed depth)
+//  beam    iterative-deepening alpha-beta on the best candidates of each ply, stopped by the budget of positions if the
+//          level has one (it keeps the last completed depth)
 //    depth    plies read at most (required)
 //    widths   candidates kept at each ply, [root, ply 1, …]; the last value repeats deeper (required)
 //    cellsIn  the w passed to moves below the root (default cells)
 //    cells    the w for the root, used by the game, and below the root when cellsIn is absent
 //    noise    plays one of the moves within noise points of the best, at random (default 0)
-//    time     the deadline (ms) given to start (default: none)
+//    nodes    the budget given to start: positions searched at most (default: none, the depth is always completed)
 //  mcts    UCT with progressive widening over the candidate order; each simulation plays out a short guided game (the
 //          game's playout) then scores it: a finished game 0.9-1 / 0.5 / 0-0.1 by margin, else sigmoid(eval/scale)
-//    sims     simulations (default 2000); time is only a cap, so the strength does not depend on the machine
-//    time     the cap (ms) given to start, checked every 16 simulations
+//    sims     simulations (default 2000): the only thing that stops it
 //    c        UCT exploration constant (default 0.7)
 //    pwC, pwA progressive widening: a node opens at most pwC*(visits+1)^pwA children (default 2, 0.5)
 //    cellsIn  the w passed to moves inside the tree (default 8)
@@ -50,12 +53,12 @@
 //    (cut, rand, brP, … are the game's playout parameters: AISearch passes opt to playout untouched)
 function AISearch(G){
 'use strict';
-const now=()=>typeof performance!=='undefined'&&performance.now?performance.now():Date.now();
-let deadline=Infinity,nodes=0;class Stop{}
-const start=ms=>{deadline=now()+(ms||1e9);nodes=0;};
+let budget=Infinity,nodes=0;class Stop{}
+const start=n=>{budget=n>0?n:Infinity;nodes=0;};
+const tell=G.best?(m,s,depth)=>G.best({m,s,depth}):null;
 // the value of S for the side to move, reading d more plies; widths[ply] moves kept at each ply
 function nega(S,d,al,be,o,ply){const me=G.turn(S);if(G.done(S))return G.result(S,me);
-  if(now()>deadline)throw new Stop();nodes++;
+  if(nodes>=budget)throw new Stop();nodes++;
   const C=G.moves(S,o.cellsIn||o.cells);if(!C.length)return G.eval(S,me);
   if(d<=1)return C[0].s;
   const w=o.widths[Math.min(ply,o.widths.length-1)];let best=-1e9;
@@ -65,7 +68,7 @@ function nega(S,d,al,be,o,ply){const me=G.turn(S);if(G.done(S))return G.result(S
 // a child's value for `me` (the same side may move twice in a row)
 function child(T,me,d,al,be,o,ply){return G.done(T)?G.result(T,me):G.turn(T)===me?nega(T,d,al,be,o,ply):-nega(T,d,-be,-al,o,ply);}
 function beam(S,C,o){const me=G.turn(S),res={m:C[0].m,s:C[0].s,depth:1};let R=C.slice(0,o.widths[0]).map(x=>({m:x.m,s:x.s}));
-  for(let d=2;d<=o.depth;d++){const vals=[];let al=-1e9;
+  for(let d=2;d<=o.depth;d++){const vals=[];let al=-1e9;if(tell)tell(res.m,res.s,res.depth);
     try{for(const x of R){const v=child(G.play(S,x.m),me,d-1,al,1e9,o,1);vals.push({m:x.m,s:v});if(v>al)al=v;}}
     catch(e){if(e instanceof Stop)break;throw e;}
     vals.sort((a,b)=>b.s-a.s);R=vals;res.m=R[0].m;res.s=R[0].s;res.depth=d;}
@@ -74,10 +77,13 @@ function beam(S,C,o){const me=G.turn(S),res={m:C[0].m,s:C[0].s,depth:1};let R=C.
   return res;}
 function greedy(S,C,o){const top=C.slice(0,o.pick||C.length),b=top[0].s,T=o.temp||1e-9;let tot=0;const w=top.map(x=>{const v=Math.exp((x.s-b)/T);tot+=v;return v;});
   let r=Math.random()*tot;for(let i=0;i<top.length;i++){r-=w[i];if(r<=0)return {m:top[i].m,s:top[i].s,depth:1};}return {m:top[0].m,s:top[0].s,depth:1};}
-function mcts(S,C0,o){const me=G.turn(S),root={S,C:C0,ch:[],n:0,w:0},cap=deadline;
+// the most visited child so far, told to the game (G.best)
+function told(root,C0,scale,maxD){let b=null;for(const c of root.ch){if(c.pv===1){b=c;break;}if(c.pv!==-1&&(!b||c.n>b.n))b=c;}
+  if(!b){tell(C0[0].m,C0[0].s,0);return;}const q=b.n?b.w/b.n:.5;tell(b.m,Math.log(Math.max(1e-3,q)/Math.max(1e-3,1-q))*scale,maxD);}
+function mcts(S,C0,o){const me=G.turn(S),root={S,C:C0,ch:[],n:0,w:0};
   const pw=k=>Math.max(1,Math.ceil((o.pwC||2)*Math.pow(k+1,o.pwA||.5)));
   const cx=o.c===undefined?.7:o.c,scale=o.scale||3;let sims=0,maxD=1;
-  for(;sims<(o.sims||2000);sims++){if((sims&15)===0&&now()>cap)break;
+  for(;sims<(o.sims||2000);sims++){if(tell&&(sims&255)===0)told(root,C0,scale,maxD);
     let node=root;const path=[root];
     while(!G.done(node.S)){
       if(!node.C)node.C=G.moves(node.S,o.cellsIn||8);
@@ -139,12 +145,12 @@ function findNode(R,S,d){const h=G.hash?G.hash(S):null;let F=[R];
   return null;}
 function mctsX(S,C0,o,sub){
   if(o.rootPick!=null){const x=C0.find(x=>keyOf(x.m)===o.rootPick)||C0[0];return {m:x.m,s:x.s,depth:0};}
-  if(o.roots>1&&!sub){const M=new Map(),k=o.roots,o1={...o,rootOut:false,keep:false,temp:0},D=deadline;let sims=0,depth=0;
-    for(let r=0;r<k;r++){const t=now();deadline=D===Infinity?D:t+Math.max(0,D-t)/(k-r);   // each tree its share of the time left
+  if(o.roots>1&&!sub){const M=new Map(),k=o.roots,o1={...o,rootOut:false,keep:false,temp:0};let sims=0,depth=0;
+    for(let r=0;r<k;r++){
       const x=mctsX(S,C0,o1,true);sims+=nodes;if(x.depth>depth)depth=x.depth;
       for(const c of x.R){const e=M.get(c.k);if(e){e.n+=c.n;e.w+=c.w;if(c.pv)e.pv=c.pv;}else M.set(c.k,{k:c.k,m:c.m,n:c.n,w:c.w,pv:c.pv});}}
-    deadline=D;nodes=sims;return pickRoot([...M.values()],o,depth,C0);}
-  const me=G.turn(S),cap=deadline,scale=o.scale||3,cx=o.c===undefined?.7:o.c;
+    nodes=sims;return pickRoot([...M.values()],o,depth,C0);}
+  const me=G.turn(S),scale=o.scale||3,cx=o.c===undefined?.7:o.c;
   const pw=k=>Math.max(1,Math.ceil((o.pwC||2)*Math.pow(k+1,o.pwA||.5)));
   const pb=o.pb||0,vi=o.vInit||0,puct=o.puct||0,pT=o.pT||scale,rave=o.rave||0,solve=!!o.solve;
   const mk=(T,x,P,i)=>{const c={S:T,C:null,ch:[],n:0,w:0,m:x.m,pv:0};if(pb||vi)c.h=sig(x.s,scale);if(puct)c.p=P[i];
@@ -157,7 +163,7 @@ function mctsX(S,C0,o,sub){
     root.n=0;root.w=0;for(const c of root.ch){root.n+=c.n;root.w+=c.w;}root.pv=0;root.P=P;if(solve)prove(root,me);}
   else root={S,C:C0,ch:[],n:0,w:0,pv:0,P:puct?soft(C0,pT):null};
   let sims=0,maxD=1;const seq=rave?[]:null,rec=rave?(m,p)=>{seq.push(keyOf(m),p);}:undefined;
-  for(;sims<(o.sims||2000);sims++){if((sims&15)===0&&now()>cap)break;if(solve&&root.pv)break;
+  for(;sims<(o.sims||2000);sims++){if(solve&&root.pv)break;if(tell&&!sub&&(sims&255)===0)told(root,C0,scale,maxD);
     let node=root,v=-1;const path=[root];if(rave)seq.length=0;
     while(!G.done(node.S)){
       if(solve&&node.pv){v=node.pv>0?1:0;break;}
@@ -208,7 +214,7 @@ function pickRoot(R,o,depth,C0){let ch=R.slice();
 // ----- beam with order / pvs / tt -----
 const EPS=1e-7;
 function negaX(S,d,al,be,o,ply,X){const me=G.turn(S);if(G.done(S))return G.result(S,me);
-  if(now()>deadline)throw new Stop();nodes++;
+  if(nodes>=budget)throw new Stop();nodes++;
   const C=G.moves(S,o.cellsIn||o.cells);if(!C.length)return G.eval(S,me);
   if(d<=1)return C[0].s;
   const w=o.widths[Math.min(ply,o.widths.length-1)];let L=C.slice(0,Math.min(w,C.length)),hk,e,tb;
@@ -227,7 +233,7 @@ function negaX(S,d,al,be,o,ply,X){const me=G.turn(S);if(G.done(S))return G.resul
 function childX(T,me,d,al,be,o,ply,X){return G.done(T)?G.result(T,me):G.turn(T)===me?negaX(T,d,al,be,o,ply,X):-negaX(T,d,-be,-al,o,ply,X);}
 function beamX(S,C,o){const me=G.turn(S),res={m:C[0].m,s:C[0].s,depth:1};let R=C.slice(0,o.widths[0]).map(x=>({m:x.m,s:x.s}));
   const X={order:!!o.order,pvs:!!o.pvs,tt:o.tt&&G.hash?new Map():null,k1:[],k2:[],hi:new Map()};
-  for(let d=2;d<=o.depth;d++){const vals=[];let al=-1e9;
+  for(let d=2;d<=o.depth;d++){const vals=[];let al=-1e9;if(tell)tell(res.m,res.s,res.depth);
     try{for(let i=0;i<R.length;i++){const x=R[i],T=G.play(S,x.m);let v;
         if(X.pvs&&i>0){v=childX(T,me,d-1,al,al+EPS,o,1,X);if(v>al)v=childX(T,me,d-1,al,1e9,o,1,X);}
         else v=childX(T,me,d-1,al,1e9,o,1,X);

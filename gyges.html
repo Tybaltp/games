@@ -161,7 +161,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 function GygesEngine(){
@@ -320,9 +320,12 @@ function GygesAI(E){
   function repNeg(R,f){if(!R)return f;
     return (s,depth,alpha,beta,ply)=>{if(!ply)return f(s,depth,alpha,beta,ply);const k=String.fromCharCode(...s.b)+'|'+s.turn;if(R.has(k))return 0;
       R.set(k,1);try{return f(s,depth,alpha,beta,ply);}finally{R.delete(k);}};}
-  function search(s0,opt){opt={adv:false,depth:3,time:2000,noise:0,maxSeg:99,cap:60000,...opt};
+  // opt.nodes: positions searched at most (none: the depth is completed). No clock is read (16.11.2026): a level plays the
+  // same on every device. The best move so far goes to aiBest (core's worker, « Play now »).
+  const tellOf=()=>typeof aiBest==='function'?(m,v,d)=>aiBest({move:clean(m),score:v,depth:d}):null;
+  function search(s0,opt){opt={adv:false,depth:3,nodes:Infinity,noise:0,maxSeg:99,cap:60000,...opt};
     if(opt.ts&&!E.setup(s0))return search2(s0,opt);
-    const t0=Date.now(),TT=new Map();let nodes=0,stop=false;
+    const TT=new Map(),tell=tellOf();let nodes=0,stop=false;
     if(E.setup(s0))return E.blockMode(s0)?block(s0,opt):place(s0,opt);
     const rootMoves=gen(s0,opt.adv,opt.maxSeg,opt.cap);
     // shuffle: moves of equal value in a random order, so a position does not always get the same move (free: the root
@@ -331,7 +334,7 @@ function GygesAI(E){
     if(!rootMoves.length)return {move:{t:'x'},score:0,depth:0};
     if(rootMoves.length===1)return {move:clean(rootMoves[0]),score:rootMoves[0].goal?WIN:0,depth:0,forced:!rootMoves[0].goal};
     const R=repOf(opt),neg=repNeg(R,neg1);
-    function neg1(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
+    function neg1(s,depth,alpha,beta,ply){if((++nodes&255)===0&&nodes>opt.nodes)stop=true;if(stop)return 0;
       const moves=gen(s,opt.adv,opt.maxSeg,opt.cap);
       if(moves.length===1&&moves[0].goal)return WIN-ply;
       if(!moves.length){if(s.passes>=1)return 0;return -neg({b:s.b,turn:1-s.turn,n:s.n,passes:s.passes+1},depth-1,-beta,-alpha,ply+1);}
@@ -350,7 +353,7 @@ function GygesAI(E){
         scored.push({m,v});if(v>alpha)alpha=v;}
       if(stop&&result)break;
       let pick=null,pv=-Infinity;for(const x of scored){const v=x.v+(opt.noise?(Math.random()*2-1)*opt.noise:0);if(v>pv){pv=v;pick=x;}}
-      if(pick)result={m:pick.m,v:pick.v,d};
+      if(pick){result={m:pick.m,v:pick.v,d};if(tell)tell(pick.m,pick.v,d);}
       if(stop||Math.abs(alpha)>WIN/2)break;}
     return {move:clean(result.m),score:result.v,depth:result.d,nodes};}
   // Threat-aware search (opt.ts, the strong levels; outils/aitools/res/gyges/niveaux.md). A threat: the player not to
@@ -369,13 +372,13 @@ function GygesAI(E){
     return out;}
   function stat(s,mine,theirs){const o=1-s.turn,farCells=(list,p)=>{const f=far(p),set=new Set();for(const m of list){const e=m.path[m.path.length-1];if(e!==G&&rowOf(e)===f)set.add(e);}return set.size;};
     return 3*(mine.length-theirs.length)+60*(farCells(mine,s.turn)-farCells(theirs,o));}
-  function search2(s0,opt){const t0=Date.now(),TT=new Map(),HI=new Int32Array(36*37*37),ext=opt.ext==null?3:opt.ext;
+  function search2(s0,opt){const tell=tellOf(),TT=new Map(),HI=new Int32Array(36*37*37),ext=opt.ext==null?3:opt.ext;
     let nodes=0,stop=false,maxPly=0;const A=opt.adv,MS=opt.maxSeg,CAP=opt.cap,LMR=opt.lmr||0,CM=opt.ev===1?3:2;
     const view=(s)=>({b:s.b,turn:1-s.turn,n:s.n,passes:0});
     function order(moves,first){for(const m of moves)m.h=HI[m.id];moves.sort((x,y)=>y.h-x.h);
       if(first!=null){const i=moves.findIndex(m=>m.id===first);if(i>0){const [m]=moves.splice(i,1);moves.unshift(m);}}}
     const R=repOf(opt),neg=repNeg(R,neg1);
-    function neg1(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
+    function neg1(s,depth,alpha,beta,ply){if((++nodes&255)===0&&nodes>opt.nodes)stop=true;if(stop)return 0;
       let th=null,moves;
       if(depth<=0){const mc=gen(s,A,MS,CAP,CM);if(mc.length)return WIN-ply;   // a leaf: counts only, unless threatened
         if(mc.n){const tc=gen(view(s),A,MS,CAP,CM);if(!tc.length)return 3*(mc.n-tc.n)+60*(mc.f-tc.f);
@@ -408,6 +411,7 @@ function GygesAI(E){
         if(v>alpha){alpha=v;bm=m;}}
       if(stop&&result){if(bm)result={m:bm,v:alpha,d:d-1+.5};break;}   // the previous best was searched first: bm is at least as good
       if(bm)result={m:bm,v:alpha,d};else if(!result)result={m:rootMoves[0],v:alpha,d};
+      if(tell)tell(result.m,result.v,d);
       if(stop||Math.abs(alpha)>WIN/2)break;}
     return {move:clean(result.m),score:result.v,depth:result.d,nodes};}
   const mk=m=>m.s+'.'+m.path[m.path.length-1]+'.'+m.rep;
@@ -490,10 +494,13 @@ const GY_I18N={fr:{
 }};
 // ===== Gyges: the page's side of common/core.js =====
 const E=GygesEngine(),G=E.G;
-// Computer levels: depth of reading (half-moves), bounces seen per move, random noise on the choice, time budget (ms);
-// shuffle + placeTol:0 = random among equal moves and equal setups (no cost; outils/aitools/res/gyges/niveaux.md)
-const LEVELS={debutant:{depth:1,maxSeg:3,noise:300},moyen:{depth:2,maxSeg:3,noise:100,time:1500,placeTries:4},
-  fort:{depth:12,time:3000,placeTries:6,shuffle:true,placeTol:0,ts:true},tresfort:{depth:12,time:8000,placeTries:6,shuffle:true,placeTol:0,ts:true}};
+// Computer levels: depth of reading (half-moves), bounces seen per move, random noise on the choice, nodes (positions
+// searched at most); shuffle + placeTol:0 = random among equal moves and equal setups (no cost;
+// outils/aitools/res/gyges/niveaux.md). A level is an amount of work, never a time (16.11.2026): the first two stop on
+// their depth, Fort and Très fort on their nodes, what the reference Mac (M3 Pro) searched in their former 3 and 8 s
+// (outils/aitools/res/budgets-2026-11-16.md). Hints use Fort, the highest level that answers within 5 s on that Mac.
+const LEVELS={debutant:{depth:1,maxSeg:3,noise:300},moyen:{depth:2,maxSeg:3,noise:100,placeTries:4},
+  fort:{depth:12,nodes:225000,placeTries:6,shuffle:true,placeTol:0,ts:true},tresfort:{depth:12,nodes:620000,placeTries:6,shuffle:true,placeTol:0,ts:true}};
 const HINT=LEVELS.fort;
 // Setup modes: 'piece' one piece at a time in turn (default) · 'simul' both rows chosen at the same time, hidden until both
 // are validated · 'seq' J1's whole row, then J2's. Missing (old saves, resume codes) = 'piece'.

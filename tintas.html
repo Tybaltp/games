@@ -178,9 +178,9 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=87"></script>
+<script src="common/core.js?v=90"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 function TintasEngine(){
   // 49 flat-top hexagons in 9 columns, doubled coordinates (col, r): vertical neighbour at r±2, diagonals at (col±1, r±1).
@@ -576,18 +576,22 @@ function even(P){const p=P[TM];let best=-1e9;
 function firstMove(S,C,opt){const R=C.map(x=>({m:x.m,e:Math.abs(even(play(S,x.m)))})).sort((a,b)=>a.e-b.e);
   if(opt.algo!=='mcts'){const x=R[(Math.random()*Math.min(3,R.length))|0];return {m:x.m,s:0,depth:2,nodes:R.length};}
   const k=Math.min(6,R.length),o={...opt,sims:Math.max(50,Math.round((opt.sims||1000)/k))};let best=null,nodes=0;
-  for(let i=0;i<k;i++){const P=play(S,R[i].m);KS.start((opt.time||1000)/k);const D=gen(P).filter(y=>y.m>=0);if(!D.length)continue;
+  for(let i=0;i<k;i++){const P=play(S,R[i].m);KS.start();const D=gen(P).filter(y=>y.m>=0);if(!D.length)continue;
     const v=D.length===1?D[0].s:KS.mcts(P,D,o).s;nodes+=KS.nodes();if(!best||Math.abs(v)<best.e)best={m:R[i].m,e:Math.abs(v)};}
   return {m:best?best.m:R[0].m,s:0,depth:2,nodes};}
 // ----- the searches, on Tintas' interface -----
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
 const PS=new Int8Array(LEN);
 const KS=AISearch({moves:gen,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,
-  playout,scratch:S=>{PS.set(S);return PS;}});
+  playout,scratch:S=>{PS.set(S);return PS;},best:r=>{if(TELL)aiBest({move:dec(r.m),score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
-  KS.start(opt.time);const C=gen(S);if(!C.length)return null;let r;
+  KS.start(opt.nodes);const C=gen(S);if(!C.length)return null;let r;
   if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
   else if(S[PW]<0&&left(S)===N&&opt.algo!=='random')r=firstMove(S,C,opt);
-  else r=opt.algo==='ab'?ab(S,C,opt):opt.algo==='random'?rnd(S,C):KS[opt.algo](S,C,opt);
+  else if(opt.algo==='ab')r=ab(S,C,opt);else if(opt.algo==='random')r=rnd(S,C);
+  else{TELL=typeof aiBest==='function';r=KS[opt.algo](S,C,opt);TELL=false;}
   return {move:dec(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.nodes!==undefined?r.nodes:KS.nodes()};}
 return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dist,K:KS,LEN,
   setEV:o=>{EV={...EV,...o};mkV();},EV:()=>EV};
@@ -596,11 +600,12 @@ return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dis
 // The ladder (10.11.2026, outils/aitools/res/tintas/niveaux.md, 300 games a pair): each level beats the one below by
 // 74-78 % (no draws in Tintas; level 11, the strongest, beats 10 by 78 %). algo: 'random' · 'ab' alpha-beta on the
 // distance to a win (depth in turns; temp, a softmax over the root turns, fills the gaps between depths) · 'mcts' UCT
-// with short playouts (see common/ai.js): sims (time is only a cap, so the strength does not depend on the machine) ·
-// time, the cap (ms) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration ·
+// with short playouts (see common/ai.js): sims, the only thing that stops it, never a time (16.11.2026; level 11 took its
+// 300000 simulations or 5 s, whichever came first: on the reference Mac, the simulations more often than not,
+// outils/aitools/res/budgets-2026-11-16.md) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration ·
 // scale, evaluation points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout
 // turns whose colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening.
-const MC={algo:'mcts',time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
+const MC={algo:'mcts',cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
 const LEVELS={
   l0:{algo:'random'},
   l1:{algo:'ab',depth:1,temp:2},
@@ -613,8 +618,8 @@ const LEVELS={
   l8:{...MC,sims:1800},
   l9:{...MC,sims:6000},
   l10:{...MC,sims:30000},
-  l11:{...MC,sims:300000,time:5000}};
-const HINT=LEVELS.l11;
+  l11:{...MC,sims:300000}};
+const HINT={...MC,sims:240000};   // level 11's search with the simulations of 5 s at most on the reference Mac
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: its score is a logit (×scale) of its winning chances, or a sure result
