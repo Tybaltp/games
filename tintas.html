@@ -20,7 +20,8 @@
   --k5:#2f58b8;--k5s:#172c66;--k5i:#ffffff;
   --k6:#9b5bb8;--k6s:#4e2563;--k6i:#ffffff;
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  --board-ar:432/435.73;         /* viewBox of the board (no coordinates in Tintas, so no html.nocoords variant) */
+  --lab:var(--muted);
+  --board-ar:432/467.73;         /* viewBox of the board (432 × 467.73; 432 × 435.73 without the coordinates) */
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#161419;--panel:#201c24;--ink:#e2e9eb;--muted:#8d9fa5;--line:#2a383d;
@@ -32,6 +33,7 @@
   --board:#393440;--board-edge:#2f2a36;--hex:#1f1d23;--hex-edge:#3d4c53;--hl:#f4f7f8;--pawn:#f2f5f6;--pawn-ink:#0b1012;
   --k0s:#f08a90;--k1s:#f7c08a;--k2s:#fbe89a;--k3s:#8fd6a6;--k4s:#b4e2f6;--k5s:#a6bdf0;--k6s:#d9b6ea;--k5:#4a78e0;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k1:#f08a24;--k2:#f4d03f;--k3:#2f9e55;--k4:#5bbbe8;}
+html.nocoords{--board-ar:432/435.73}
 /* the board: a soft gradient behind the hexagons, on every layout */
 .board{background:radial-gradient(120% 90% at 50% 30%,var(--board),var(--board-edge));border-color:transparent}
 html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 30%,var(--board),var(--board-edge));border-radius:14px}
@@ -50,7 +52,8 @@ html.band #playersTop > .player.fit1 .tk,html.band #playersTop > .player.fit2 .t
 .tk.full{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 ol.log svg{width:15px;height:15px;display:block;flex:none}
 ol.log li{align-items:center}
-ol.log .cap{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-width:0}
+ol.log .cap{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:center;min-width:0}
+ol.log .cap .tk1{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
 ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 </style>
 <style>
@@ -169,6 +172,7 @@ html:root{--accRight:0px}
       <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="cbOn"><input type="checkbox" id="cbOn"> <span data-i18n="cb">Colorblind</span></label>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
     <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
@@ -321,9 +325,16 @@ const TI_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Reglas originales: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licencia Creative Commons BY-NC 4.0.</p>`
 }};
 // ---------- board geometry ----------
-const HR=30,X=i=>E.C[i]*HR*1.5,Y=i=>E.R[i]*HR*0.8660254;
+let VBT=null;const HR=30,X=i=>E.C[i]*HR*1.5,Y=i=>E.R[i]*HR*0.8660254;
 (()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
-  const m=HR+6;$('svg').setAttribute('viewBox',`${x0-m} ${y0-m} ${x1-x0+2*m} ${y1-y0+2*m}`);})();   // 432 × 435.73: --board-ar
+  const m=HR+6;VBT=[x0-m,y0-m,x1-x0+2*m,y1-y0+2*m];$('svg').setAttribute('viewBox',VBT.join(' '));})();   // 432 × 435.73: --board-ar
+// Coordinates, the author's (spielstein.com, where the board is turned a quarter turn): a letter per column, a to i from the
+// left, and a number in the column, 1 at its bottom (a1 a2, b1–b5, c1–c7 … i1 i2); the board shows the first and last name
+// of each column at its two ends. The way the quarter turn goes is this site's choice (not checked against spielstein).
+const TN=[],TI={};
+E.C.forEach((c,i)=>{const rows=COLS_OF(c),k=rows.length-rows.indexOf(E.R[i]);TN[i]='abcdefghi'[c]+k;TI[TN[i]]=i;});
+function COLS_OF(c){const out=[];for(let i=0;i<N;i++)if(E.C[i]===c)out.push(E.R[i]);return out.sort((a,b)=>a-b);}
+const seqTxt=seq=>seq.map(i=>TN[i]).join('-');
 // Colour glyphs: a symbol per colour, so that colours can be told apart without relying on hue
 const PLUS='M-1.5-4.8h3v3.3h3.3v3h-3.3v3.3h-3v-3.3h-3.3v-3h3.3z';
 const SYM=['<path d="M0-4.9L4.4 3H-4.4Z"/>','<rect x="-3.5" y="-3.5" width="7" height="7"/>','<circle r="3.7"/>',`<path d="${PLUS}"/>`,
@@ -339,13 +350,13 @@ const decT=code=>code==='s'?'s':/^\d{1,2}(\.\d{1,2}){0,48}$/.test(String(code))?
 let fbSetup=null;
 const setupOf=g=>g&&E.validSetup(g.setup)?g.setup:(fbSetup=fbSetup||E.genSetup());
 const colsTxt=cols=>cols.map(c=>t('cols')[c]).join(', ');
-const txtOf=(seq,st)=>seq==='s'?t('swapLog'):colsTxt(seq.map(i=>st.b[i]));
+const txtOf=(seq,st)=>seq==='s'?t('swapLog'):seqTxt(seq)+' ('+colsTxt(seq.map(i=>st.b[i]))+')';
 // replay() in core memoises and adds the result, replayKept keeps the positions replayed
 function tiReplay(rules,moves){const setup=setupOf(rules);
   return replayKept(rules,moves,{init:()=>E.init(setup),
     play(st,code){const p=st.turn,seq=decT(code),r=seq&&E.play(st,seq);if(!r)return null;
       if(seq==='s')return {st:r.st,e:{p,cols:[],kind:'swap',txt:t('swapLog')},last:undefined,over:null};   // the swap: last stays the first move
-      const cols=seq.map(i=>st.b[i]);return {st:r.st,e:{p,cols,kind:r.ctx.kind,txt:colsTxt(cols)},last:{seq,from:st.pawn},over:E.outcome(r.st)||null};}});}
+      const cols=seq.map(i=>st.b[i]);return {st:r.st,e:{p,cols,seq,kind:r.ctx.kind,txt:seqTxt(seq)+' ('+colsTxt(cols)+')'},last:{seq,from:st.pawn},over:E.outcome(r.st)||null};}});}
 
 // ---------- the turn being prepared ----------
 // ui.seq: the pieces taken so far this turn; ui.pending: the whole turn awaiting confirmation; ui.hover: the piece previewed
@@ -428,7 +439,7 @@ function tiExtras(){const r=replay(view,view.moves,view.result),d=navAt===null?r
     el.appendChild(ty);}
   const lis=$('log').children;r.log.forEach((e,j)=>{const li=lis[j],c=li&&li.children[li.children.length-1];if(!c)return;c.className='cap';
     if(e.kind==='swap'){c.textContent=t('swapLog');c.title=t('swapTip');return;}
-    c.innerHTML=(e.kind==='jump'?`<span class="tag">${t('tag_jump')}</span>`:'')+e.cols.map(glyph).join('');c.title=colsTxt(e.cols);});
+    c.innerHTML=(e.kind==='jump'?`<span class="tag">${t('tag_jump')}</span>`:'')+e.cols.map((x,k)=>`<span class="tk1">${glyph(x)}${TN[e.seq[k]]}</span>`).join('');c.title=colsTxt(e.cols);});
   $('needConfirmWrap').hidden=!(mySeat>=0&&!r.over);}
 // Rematch over the network: a new random board (core keeps the rules of the finished game)
 const coreRematch=rematchOp;
@@ -455,7 +466,12 @@ function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
   const pend=o.pend||[],targets=new Set(o.many?[]:o.targets||[]),last=pend.length?null:o.last,hv=o.hover>=0?o.hover:-1;
   const hexes=el('g',{},svg);
   for(let i=0;i<N;i++){const g=el('g',{class:'cell','data-i':i,transform:`translate(${X(i)} ${Y(i)})`},hexes);
-    el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.4},g);}
+    el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.4},g);el('title',{},g).textContent=TN[i];}
+  // coordinates (core: coordsOn): each column's first and last name under and over it; the viewBox grows by 16 above and below
+  svg.setAttribute('viewBox',coordsOn?[VBT[0],VBT[1]-16,VBT[2],VBT[3]+32].join(' '):VBT.join(' '));
+  if(coordsOn)for(let c=0;c<9;c++){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.C[i]===c){if(lo<0||E.R[i]>E.R[lo])lo=i;if(hi<0||E.R[i]<E.R[hi])hi=i;}
+    el('text',{class:'coord',x:X(lo),y:Y(lo)+HR+13,'text-anchor':'middle','font-size':12},svg).textContent=TN[lo];
+    el('text',{class:'coord',x:X(hi),y:Y(hi)-HR-5,'text-anchor':'middle','font-size':12},svg).textContent=TN[hi];}
   const pcs=el('g',{'pointer-events':'none'},svg);
   // path of the pawn: last turn (accent) or the turn being prepared (dashed)
   const path=(from,seq,col,a)=>{const pts=(from>=0?[from]:[]).concat(seq);if(pts.length<2)return;
@@ -646,7 +662,10 @@ const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   aiSrc:()=>AISearch.toString()+'\n'+TintasEngine.toString()+'\n'+TintasAI.toString()+'\nconst TA=TintasAI(TintasEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TintasAI(E)).search(aiPos(st),opt),
   evalInfo:tiEvalInfo,
-  logText:e=>e.kind==='swap'?t('swapLog'):(e.kind==='jump'?t('tag_jump')+' ':'')+colsTxt(e.cols),
+  logText:e=>e.kind==='swap'?t('swapLog'):(e.kind==='jump'?t('tag_jump')+' ':'')+e.txt,
+  // SGF: the cells taken, in order, by their names (« c3-c4-c5 »), the swap « swap »; the board drawn is in XR
+  sgf:{val:code=>{const q=decT(code);return q==='s'?'swap':q?seqTxt(q):code;},
+    code:v=>{v=String(v).trim().toLowerCase();if(v==='swap')return 's';const q=v.split(/\s*-\s*/).map(x=>TI[x]);return q.length&&q.every(i=>i>=0)?encT(q):null;}},
   home:()=>drawBoard(E.init(setupOf(null)),{})};
 coreStart();
 // New game on this device or against the computer: a new random board (core would keep the finished game's)
