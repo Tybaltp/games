@@ -39,6 +39,7 @@
 //  playerCard?(el,p,d)          Add game content to seat p's card (d: the position shown)
 //  logDesc?(e)                   Extra description line under a move-list entry
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
+//  logNum?(j,e)                  the number shown before move j (from 0) in the move list (default « j+1. »)
 //  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
 //  drawOffer?                    true: the players may offer a draw (accepted: drawn by agreement)
 //                                Repetition (Gygès, Pylos): the game's replayKept gets sig(st), the key of a position (pieces and
@@ -51,9 +52,13 @@
 //  simMode?(g), simHold?(g,r), holdLegal?(r,s,code,g)  simultaneous hidden first moves over the network: the rules use it ·
 //                                it is that phase now · seat s's held code is legal
 //  clockOff?(v,st)               no clock runs in st (face to face)
-//  sgf?                          {gm, sz: the game's SGF number and size · nodes?(r,view) → [{B|W|other prop: value}],
-//                                codes?(nodes) → move codes: a notation of its own · black?(st) → the seat of B};
-//                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value
+//  sgf?                          {gm, sz: the game's SGF number and size (sz: or a function of the view) · nodes?(r,view) → [{B|W|other prop: value}],
+//                                codes?(nodes,{old,root,rules}) → move codes: a notation of its own · black?(st) → the seat of B ·
+//                                val?(code,st,e,view) → the move's value in the file, its notation (st: the position it is played
+//                                from, e: its log entry) · code?(val,st,rules) → the move code of a value, or null ·
+//                                accept?(root) → true: a file from elsewhere, without XG, in the game's format ·
+//                                rulesOf?(root,rules) → the rules of such a file};
+//                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value (val: its notation)
 //  howto?                       {n, scene(k,A), key?}: the « Comment jouer » card (n pages, texts ht_1…ht_n in i18n;
 //                                scene(k,A) plays page k's animation once, async, replayed while the page is shown;
 //                                A: htKit below); key: the localStorage key of « Ne plus montrer » (default id-howto-off)
@@ -800,7 +805,7 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
   // analysis: the whole line (the path, then the first child at each branching); a move with variations: ◆ and their number
   const AL=A?anaLine():null,rl=A&&AL.length>view.moves.length?GAME.replay(view,AL):r;
   const nv=A||canNav(r),cur=A?view.moves.length:navAt===null?r.log.length:navAt,go=A?anaGo:navGo;
-  rl.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>go(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+  rl.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>go(j+1);}const a=document.createElement('span');a.className='n';a.textContent=GAME.logNum?GAME.logNum(j,e):(j+1)+'.';
     if(A){const par=anaNode(AL.slice(0,j));if(par&&par.c.length>1){const x=document.createElement('span');x.className='alt';x.textContent='◆'+par.c.length;x.title=t('altN',{n:par.c.length});a.appendChild(x);}}
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
     const c=document.createElement('span'),cn=GAME.logNode&&GAME.logNode(e,rl);if(cn)c.append(cn);else c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
@@ -1115,9 +1120,10 @@ function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));re
   const r=codeRead($('jCode').value);if(r.e){$('joinErr').textContent=t(r.e);return;}const w=asWatch||!!r.w;
   const nm=nmClean($('jName').value);if(nm)nickSet(nm);if(r.m||r.g.id!==GAME.id){location.href=codeHref(r.m?r:{...r,w});return;}clientStart(r.c,w?nm:nm||t('p2'),w);if(w&&C.code)LS.set(K('p2p-watch'),{code:C.code,name:nm});}
 // ---------- SGF: export of the game shown, reading of a file (read only) ----------
-// The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XR[rules, JSON] ;B[…];W[…]…). B and W are
-// seat 0 and seat 1 (Pente: the stone colours), their values the page's move codes unless the game has a notation of
-// its own (GAME.sgf). XG and XR are private properties (the SGF lets readers skip them), and so are the page's own (GAME.sgfHead).
+// The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XV[2]XR[rules, JSON] ;B[…];W[…]…). B and W are
+// seat 0 and seat 1 (Pente: the stone colours), their values the game's notation (GAME.sgf). XG, XV and XR are private
+// properties (the SGF lets readers skip them), and so are the page's own (GAME.sgfHead). XV[2]: the values are the
+// notation; a file of the site without XV (written before 16.11.2026) holds the page's move codes, and is still read.
 const AP='tybaltp.github.io/games';
 const sgfEsc=v=>String(v).replace(/\\/g,'\\\\').replace(/\]/g,'\\]');
 function sgfName(s){if(role==='ai')return s===meS()?nickGet()||t('you'):t('computer')+' ('+t('lv_'+level)+')';return solo()||role==='file'?seatName(s):view.names[s]||t(s===0?'p1':'p2');}
@@ -1128,9 +1134,9 @@ function sgfText(){const A=ana(),main=A?anaMainLine():view.moves,r=replay(view,m
   const pad=n=>String(n).padStart(2,'0'),d=new Date(),dt=view.sgfDT||d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const col=s=>s===bs?'B':'W',o=r.over;
   const re=!o?'':o.w<0?'0':col(o.w)+'+'+(o.why==='w_resign'?'R':o.why==='w_time'?'T':'');
-  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&G.sz,GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XR:JSON.stringify(GAME.rules(view)),...(GAME.sgfHead?GAME.sgfHead(view):{})};
+  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&(typeof G.sz==='function'?G.sz(view):G.sz),GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XV:'2',XR:JSON.stringify(GAME.rules(view)),...(GAME.sgfHead?GAME.sgfHead(view):{})};
   const node=o=>';'+Object.keys(o).filter(k=>o[k]!==undefined&&o[k]!=='').map(k=>k+'['+sgfEsc(o[k])+']').join('');
-  const nodesOf=p=>{const rr=GAME.replay(view,p);return G&&G.nodes?G.nodes(rr,{...view,moves:p}):rr.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:p[j]}));};
+  const nodesOf=p=>{const rr=GAME.replay(view,p);return G&&G.nodes?G.nodes(rr,{...view,moves:p}):rr.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:G&&G.val?G.val(p[j],GAME.replay(view,p.slice(0,j)).st,e,view):p[j]}));};
   const cnt=new Map(),count=p=>{const k=p.join(',');if(!cnt.has(k))cnt.set(k,nodesOf(p).length);return cnt.get(k);};
   const mv=(p,m)=>{const q=p.concat(m),all=nodesOf(q);cnt.set(q.join(','),all.length);return '\n'+all.slice(count(p)).map(node).join('\n');};
   const tree=A?view.tree:(()=>{const root={c:[]};let n=root;for(const m of view.moves){const x={m,c:[]};n.c.push(x);n=x;}return root;})();
@@ -1164,10 +1170,14 @@ function sgfLoad(txt){let T;try{T=sgfParse(String(txt).replace(/^\uFEFF/,''));}c
   const lines=[],walk=(x,pre)=>{const q=pre.concat(x.nodes);if(!x.vars.length){lines.push(q);return;}for(const y of x.vars)walk(y,q);};walk(T,[]);
   if(lines.length>5000)return t('sgfBad');
   const root=lines[0][0]||{},v=k=>root[k]&&root[k][0],G=GAME.sgf;
-  if(v('XG')?v('XG')!==GAME.id:!(G&&G.gm&&+v('GM')===G.gm))return v('XG')?t('sgfOther',{g:(Object.values(CODE_GAMES).find(x=>x.id===v('XG'))||{n:v('XG')}).n}):t('sgfBad');
+  if(v('XG')?v('XG')!==GAME.id:!(G&&(G.gm&&+v('GM')===G.gm||G.accept&&G.accept(root))))return v('XG')?t('sgfOther',{g:(Object.values(CODE_GAMES).find(x=>x.id===v('XG'))||{n:v('XG')}).n}):t('sgfBad');
   let rules={};try{rules=JSON.parse(v('XR')||'{}');}catch(e){}rules=GAME.rules(rules);
+  if(!v('XG')&&G&&G.rulesOf)try{rules=GAME.rules(G.rulesOf(root,rules));}catch(e){return t('sgfBad');}
+  // old: a file of the site written before the notation (XG, no XV): its values are the page's move codes
+  const old=!!v('XG')&&!v('XV'),raw=body=>body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);
+  const conv=body=>{const cs=[];for(const nd of body){const x=(nd.B||nd.W||[])[0];if(x===undefined)continue;const c=G.code(x,GAME.replay(rules,cs).st,rules);if(c==null)throw {n:cs.length+1};cs.push(c);}return cs;};
   const tree={c:[]};let codes=null;
-  for(const ln of lines){const body=ln.slice(1);let cs;try{cs=G&&G.codes?G.codes(body):body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);}catch(e){return t('sgfBad');}
+  for(const ln of lines){const body=ln.slice(1);let cs;try{cs=G&&G.codes?G.codes(body,{old,root,rules}):G&&G.code&&!old?conv(body):raw(body);}catch(e){return e&&e.n?t('sgfMove',{n:e.n}):t('sgfBad');}
     const rr=GAME.replay(rules,cs);if(rr.over&&rr.over.why==='w_bad')return t('sgfMove',{n:rr.log.length+1});
     let n=tree;for(const m of cs){let x=n.c.find(y=>y.m===m);if(!x){x={m,c:[]};n.c.push(x);}n=x;}if(!codes)codes=cs;}
   const r=GAME.replay(rules,codes);

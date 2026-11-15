@@ -413,3 +413,5 @@ html.htshown header .seg{position:relative;z-index:61}
     padding:max(16px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(16px,var(--sab)) max(24px,env(safe-area-inset-left,0px));text-align:center}
   html.ingame .rotatemsg p{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.3rem;max-width:22em}
   html.ingame .rotatemsg p::before{content:"⟳";display:block;font-size:2.4rem;margin-bottom:8px;color:var(--accent)}}
+/* board coordinates, the same drawing in every game: monospace, semi-bold, the page's --lab colour (set for both themes) */
+svg .coord{font-family:var(--f-mono);font-weight:600;fill:var(--lab);pointer-events:none;-webkit-user-select:none;user-select:none}
