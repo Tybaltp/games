@@ -34,3 +34,6 @@ a.gc:focus-visible{outline:2px solid var(--gacc);outline-offset:3px}
 .c-ayu{--gbg:#e9e3e5;--gink:#2a1d23;--gacc:#b8195c;--img:url(../img/cartes/ayu.svg)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-ayu{--gbg:#251d21;--gink:#ede4e8;--gacc:#e0558e;--img:url(../img/cartes/ayu-dark.svg)}}
 :root[data-theme="dark"] .c-ayu{--gbg:#251d21;--gink:#ede4e8;--gacc:#e0558e;--img:url(../img/cartes/ayu-dark.svg)}
+.c-slither{--gbg:#e4e1ea;--gink:#211c2a;--gacc:#7a32c8;--img:url(../img/cartes/slither.svg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-slither{--gbg:#211d28;--gink:#e8e4ef;--gacc:#a57de6;--img:url(../img/cartes/slither-dark.svg)}}
+:root[data-theme="dark"] .c-slither{--gbg:#211d28;--gink:#e8e4ef;--gacc:#a57de6;--img:url(../img/cartes/slither-dark.svg)}
