@@ -308,6 +308,16 @@ function GygesAI(E){
     if(theirs.length===1&&theirs[0].goal)return -3000;
     const farCells=(list,p)=>{const f=far(p),set=new Set();for(const m of list){const e=m.path[m.path.length-1];if(e!==G&&rowOf(e)===f)set.add(e);}return set.size;};
     return 3*(mine.length-theirs.length)+60*(farCells(mine,s.turn)-farCells(theirs,o));}
+  // Repetition (decision of Thibault, 15.11.2026): opt.hist = {sig: occurrences} of the positions of the game so far, the
+  // one to move from included (sig: the page's, pieces and side to move; the fourth occurrence is a draw). In the tree, a
+  // position already seen, in the game or higher on the line searched, is worth a draw (0): a side that judges itself
+  // ahead turns away from it, a side behind looks for it. Without opt.hist the search is unchanged.
+  function repOf(opt){const h=opt.hist;if(!h)return null;const R=new Map();
+    for(const k in h){const i=k.lastIndexOf('|');R.set(String.fromCharCode(...k.slice(0,i).split(',').map(Number))+k.slice(i),h[k]);}return R.size?R:null;}
+  // the node function with the repetition test before it (the root, ply 0, is not tested)
+  function repNeg(R,f){if(!R)return f;
+    return (s,depth,alpha,beta,ply)=>{if(!ply)return f(s,depth,alpha,beta,ply);const k=String.fromCharCode(...s.b)+'|'+s.turn;if(R.has(k))return 0;
+      R.set(k,1);try{return f(s,depth,alpha,beta,ply);}finally{R.delete(k);}};}
   function search(s0,opt){opt={adv:false,depth:3,time:2000,noise:0,maxSeg:99,cap:60000,...opt};
     if(opt.ts&&!E.setup(s0))return search2(s0,opt);
     const t0=Date.now(),TT=new Map();let nodes=0,stop=false;
@@ -318,7 +328,8 @@ function GygesAI(E){
     if(opt.shuffle)for(let i=rootMoves.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;const x=rootMoves[i];rootMoves[i]=rootMoves[j];rootMoves[j]=x;}
     if(!rootMoves.length)return {move:{t:'x'},score:0,depth:0};
     if(rootMoves.length===1)return {move:clean(rootMoves[0]),score:rootMoves[0].goal?WIN:0,depth:0,forced:!rootMoves[0].goal};
-    function neg(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
+    const R=repOf(opt),neg=repNeg(R,neg1);
+    function neg1(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
       const moves=gen(s,opt.adv,opt.maxSeg,opt.cap);
       if(moves.length===1&&moves[0].goal)return WIN-ply;
       if(!moves.length){if(s.passes>=1)return 0;return -neg({b:s.b,turn:1-s.turn,n:s.n,passes:s.passes+1},depth-1,-beta,-alpha,ply+1);}
@@ -361,7 +372,8 @@ function GygesAI(E){
     const view=(s)=>({b:s.b,turn:1-s.turn,n:s.n,passes:0});
     function order(moves,first){for(const m of moves)m.h=HI[m.id];moves.sort((x,y)=>y.h-x.h);
       if(first!=null){const i=moves.findIndex(m=>m.id===first);if(i>0){const [m]=moves.splice(i,1);moves.unshift(m);}}}
-    function neg(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
+    const R=repOf(opt),neg=repNeg(R,neg1);
+    function neg1(s,depth,alpha,beta,ply){if((++nodes&255)===0&&Date.now()-t0>opt.time)stop=true;if(stop)return 0;
       let th=null,moves;
       if(depth<=0){const mc=gen(s,A,MS,CAP,CM);if(mc.length)return WIN-ply;   // a leaf: counts only, unless threatened
         if(mc.n){const tc=gen(view(s),A,MS,CAP,CM);if(!tc.length)return 3*(mc.n-tc.n)+60*(mc.f-tc.f);
@@ -902,6 +914,9 @@ function gyHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
       Pm.g.remove();B.g.setAttribute('opacity',1);B.set(b.x,b.y);await tween(B,to.x,to.y,420);
       played([a,b],PR+3,[sd]);ring(top,b.x,b.y,PR+3,{'stroke-width':1.9});selR(to);await wait(1800);}];
   return S[k]();}
+// the positions of the game so far with their occurrences (core's replayKept keeps their sig): the computer and the hints
+// know the repetition (decision of Thibault, 15.11.2026)
+function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 // ---------- the interface with common/core.js ----------
 const GAME={howto:{titled:true,n:3,scene:gyHowto},id:'gyges',size:36,chatBoard:.8,   // phones in portrait, network game: the board gives 20 % of its height to the chat
   codeTag:'GYGES1',i18n:GY_I18N,
@@ -926,7 +941,7 @@ const E=GygesEngine(),A=GygesAI(E);
 function aiSearch(m,opt){return A.search({...m,b:Int8Array.from(m.b)},opt);}`,
   aiPos:st=>({...st,b:Array.from(st.b)}),
   aiSearch:(st,opt)=>AI.search(st,opt),
-  aiOpt:v=>({adv:!!v.adv}),aiView:aiSafe,
+  aiOpt:v=>({adv:!!v.adv,hist:histOf(v)}),aiView:aiSafe,
   evalInfo:(res,st)=>E.setup(st)?null:evalInfo(res)};
 formKeep('Adv','adv',true);   // the advanced rule: on by default (decision of 15.11.2026), then as last chosen
 coreStart();

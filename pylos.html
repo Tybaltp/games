@@ -747,8 +747,16 @@ function PylosAI(M){
 const g=M.geo(),N=g.N;
 const fromPos=P=>({variant:P.variant,b:Int8Array.from(P.b),res:P.res.slice(),turn:P.turn});
 const clone=S=>({variant:S.variant,b:S.b.slice(),res:S.res.slice(),turn:S.turn});
-function play(S,m){const T=clone(S);M.apply(T,m.code);return T;}
-const done=S=>!!M.finished(S);
+// Repetition (decision of Thibault, 15.11.2026): opt.hist = {sig: occurrences} of the positions of the game so far, the one
+// to move from included (sig: the page's, balls and side to move; the fourth occurrence is a draw). In the tree, a position
+// already seen, in the game or higher on the line searched, is a finished game worth a draw (0): a side that judges itself
+// ahead turns away from it, a side behind looks for it. Without opt.hist (REP null) the search is unchanged.
+let REP=null;
+const repKey=S=>String.fromCharCode(...S.b)+'|'+S.turn;
+function play(S,m){const T=clone(S);M.apply(T,m.code);
+  if(REP){const k=repKey(T);T.k=k;T.up=S;let r=REP.has(k);for(let A=S;!r&&A;A=A.up)r=A.k===k;T.rp=r;}
+  return T;}
+const done=S=>!!S.rp||!!M.finished(S);
 function result(S,p){const f=M.finished(S);if(!f)return 0;const q=1-p;return f.w===p?1000+S.res[p]-S.res[q]:-(1000+S.res[q]-S.res[p]);}
 const supported=(b,i)=>g.below[i].every(k=>b[k]!==-1);
 const LINES=[...new Set(g.lines.flat())];   // each row and column once (the variant 'lines')
@@ -766,10 +774,12 @@ function evalS(S,p){const b=S.b,q=1-p;let v=10*(S.res[p]-S.res[q]),fp=0,fq=0;
   return v;}
 // every legal move, best first by the evaluation after it
 function gen(S){const me=S.turn,out=[];
-  for(const m of M.legalMoves(S)){const T=play(S,m);out.push({m,s:M.finished(T)?result(T,me):evalS(T,me)});}
+  for(const m of M.legalMoves(S)){const T=play(S,m);out.push({m,s:M.finished(T)?result(T,me):T.rp?0:evalS(T,me)});}
   out.sort((a,b)=>b.s-a.s);return out;}
 const KS=AISearch({moves:gen,play,turn:S=>S.turn,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
-function search(P,opt){const S=fromPos(P);KS.start(opt.time);const C=gen(S);
+function search(P,opt){const S=fromPos(P);REP=null;
+  if(opt.hist){REP=new Map();for(const k in opt.hist){const i=k.lastIndexOf('|');REP.set(String.fromCharCode(...k.slice(0,i).split(',').map(Number))+k.slice(i),opt.hist[k]);}S.k=repKey(S);}
+  KS.start(opt.time);const C=gen(S);
   if(!C.length)return {move:null};
   if(C.length===1)return {move:C[0].m.code,score:C[0].s,depth:0,forced:true};
   const r=KS[opt.algo](S,C,opt);return {move:r.m.code,score:r.s,depth:r.depth,nodes:KS.nodes()};}
@@ -789,6 +799,9 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
   return {k:Math.abs(s)<=5?'ai_eq':s>0?(s>20?'ai_much':'ai_better'):(s<-20?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
+// the positions of the game so far with their occurrences (core's replayKept keeps their sig): the computer and the hints
+// know the repetition (decision of Thibault, 15.11.2026)
+function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 const homeVariant=()=>PY.rules({variant:LS.get('pylos-variant','lines')}).variant;
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy;
 // sig: the position for the repetition, balls and side to move (core: a frame the third time, a draw the fourth, 15.11.2026)
@@ -807,7 +820,7 @@ const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Fonc
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Variant');if(s&&!s.value)s.value=homeVariant();}},
   home:()=>{shown=null;drawBoard();},
   levels:LEVELS,levelDefault:'n2',hintLevel:HINT,
-  aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PylosAI(PY)).search(aiPos(st),opt),
+  aiOpt:v=>({hist:histOf(v)}),aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PylosAI(PY)).search(aiPos(st),opt),
   evalInfo};
 for(const p of ['c','a','f','t'])if($(p+'Variant')){$(p+'Variant').value=homeVariant();$(p+'Variant').addEventListener('change',e=>LS.set('pylos-variant',e.target.value));}
 coreStart();
