@@ -11,20 +11,20 @@
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
   --bg:#f0e1e5;--panel:#fbf2f4;--ink:#22231f;--muted:#64655e;--line:#d9d7cf;
-  --boardbg:transparent;--cell:#d3cdc1;--gridl:#bcb5a6;--start:#a3967f;--coord:#8a877d;
+  --boardbg:transparent;--cell:#d3cdc1;--gridl:#bcb5a6;--start:#a3967f;--lab:#8a877d;
   --k0:#12806f;--k0e:#07463d;--k1:#b73a67;--k1e:#641334;
   --s0:var(--k0);--s0e:var(--k0e);--s1:var(--k1);--s1e:var(--k1e);   /* players' swatches: by colour (dbDecorate) */
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  --board-ar:1/1;                /* viewBox of the board (604×604; 566×566 without the coordinates) */
+  --board-ar:1/1;                /* viewBox of the board (585×585; 566×566 without the coordinates) */
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1a1315;--panel:#251b1e;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
-  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
+  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--lab:#7d857f;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}}
 :root[data-theme="dark"]{
   --bg:#1a1315;--panel:#251b1e;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
-  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--coord:#7d857f;
+  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--lab:#7d857f;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}
 h1 span{white-space:nowrap}
 .board{background:var(--boardbg);border:0;border-radius:14px}
@@ -37,6 +37,7 @@ html.ingame:not(.wide) .board{background:var(--boardbg);border-radius:10px}
 .tally{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 html.ingame:not(.wide) .player .tally{font-size:.62rem}
 .sw{width:14px;height:14px;border-radius:3px;flex:none;display:inline-block;vertical-align:-2px;margin-right:4px}
+.dbm{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}.dbm .dbshape{display:block;flex:none}
 .sw.c0{background:var(--k0);border:1.5px solid var(--k0e)}
 .sw.c1{background:var(--k1);border:1.5px solid var(--k1e)}
 /* players' blocks (placeBlocks): #oppBlock (the opponent: card and pieces left) and #myBlock (the player: card, pieces
@@ -343,7 +344,21 @@ const E=DBEngine(),{W,N}=E;
 const cname=i=>'abcdefghijklmn'[i%W]+(W-((i/W)|0));
 const enc=m=>m.t==='s'?'s':'p'+m.k+':'+m.cells.slice().sort((a,b)=>a-b).join('.');
 function dec(code){if(code==='s')return {t:'s'};const m=/^p(\d+):([\d.]+)$/.exec(String(code||''));if(!m)return null;return {t:'p',k:+m[1],cells:m[2].split('.').map(Number)};}
-const txtOf=m=>m.t==='s'?t('swapLog'):E.P[m.k].name+' '+cname(Math.min(...m.cells));
+// The notation of a placement: the piece, and the square of it set on a corner of one's own pieces (the start square for
+// the first piece); several such squares: the first in a1, b1… a2 order. The move list draws the piece as placed, that
+// square picked out, beside its name (« F5 e10 »); es: the engine position the move is played from
+const a1Ord=(a,b)=>((b/W)|0)-((a/W)|0)||a%W-b%W;
+function anchorOf(es,m){const c=es.turn,me=c+1,b=es.b,cs=m.cells.slice().sort(a1Ord);
+  if(!es.cnt[c])return cs.includes(E.START[c])?E.START[c]:cs[0];
+  return cs.find(i=>{const r=(i/W)|0,q=i%W;return (r>0&&q>0&&b[i-W-1]===me)||(r>0&&q<W-1&&b[i-W+1]===me)||(r<W-1&&q>0&&b[i+W-1]===me)||(r<W-1&&q<W-1&&b[i+W+1]===me);})??cs[0];}
+const txtOf=(m,es)=>m.t==='s'?t('swapLog'):E.P[m.k].name+' '+cname(es?anchorOf(es,m):m.cells.slice().sort(a1Ord)[0]);
+// the piece drawn small, as placed, in its colour c, the corner square full and outlined, the others lighter
+function miniShape(cells,anc,c){const U=9,rs=cells.map(i=>(i/W)|0),qs=cells.map(i=>i%W),r0=Math.min(...rs),q0=Math.min(...qs),w=Math.max(...qs)-q0+1,h=Math.max(...rs)-r0+1;
+  const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`-1 -1 ${w*U+2} ${h*U+2}`);svg.setAttribute('width',w*U+2);svg.setAttribute('height',h*U+2);svg.setAttribute('class','dbshape');svg.setAttribute('aria-hidden','true');
+  for(const i of cells){const a=i===anc;el('rect',{x:(i%W-q0)*U+.5,y:(((i/W)|0)-r0)*U+.5,width:U-1,height:U-1,rx:.8,fill:`var(--k${c})`,opacity:a?1:.42,stroke:a?'var(--ink)':'none','stroke-width':a?1:0},svg);}
+  return svg;}
+function dbLogNode(e){if(e.mv.t==='s')return null;const s=document.createElement('span');s.className='dbm';
+  const x=document.createElement('span');x.textContent=' '+cname(e.anc);s.append(miniShape(e.mv.cells,e.anc,e.c),x);return s;}
 // End of the game: the score is the text of the reason (core's t() hands back a string that is not a key as it is;
 // applyStatic below drops the memoised replay on a language switch)
 function outcomeOf(st){const a=st.cnt[E.colorOf(st,0)],b=st.cnt[E.colorOf(st,1)];
@@ -354,7 +369,7 @@ const seatSt=es=>({...es,turn:E.seatOf(es,es.turn),ct:es.turn,es});
 // No rule options; replay() in core memoises and adds the result, replayKept keeps the positions replayed
 function dbReplay(rules,moves){const r=replayKept(rules,moves,{init:()=>E.init(),
   play(es,code){const c=es.turn,p=E.seatOf(es,c),mv=dec(code);if(!mv||!E.validate(es,mv))return null;
-    const nx=E.apply(es,mv);return {st:nx,e:{p,c,mv,txt:txtOf(mv)},last:{mv,c},over:nx.over?outcomeOf(nx):null};}});
+    const nx=E.apply(es,mv);return {st:nx,e:{p,c,mv,anc:mv.t==='p'?anchorOf(es,mv):-1,txt:txtOf(mv,es)},last:{mv,c},over:nx.over?outcomeOf(nx):null};}});
   r.st=seatSt(r.st);return r;}
 // Names as the game's messages say them (against the computer « The computer » / « You »); meIs(s): s is the player
 // against the computer, whose sentences are built in the second person
@@ -613,15 +628,15 @@ function innerFrame(p,cells,w,a){return el('path',Object.assign({d:insetPath(cel
 // hovered (legal only: translucent), pend (awaiting confirmation: opaque, dashed frame) or swap (the piece a pending
 // swap takes over: dashed frame); marks: set of corner cells for colour mc
 function drawBoard(st,last,pv,marks,mc,hov){const svg=$('svg');svg.textContent='';
-  // coordinates (core: coordsOn): a–n above the board, 14–1 on its left; without them, a tighter viewBox
-  svg.setAttribute('viewBox',coordsOn?'-22 -22 604 604':'-3 -3 566 566');
+  // coordinates (core: coordsOn): a–n under the board, 14–1 on its left; without them, a tighter viewBox
+  svg.setAttribute('viewBox',coordsOn?'-22 -3 585 585':'-3 -3 566 566');
   const g=el('g',{},svg);
   for(let i=0;i<N;i++){if(!E.OK[i])continue;const x=(i%W)*S,y=((i/W)|0)*S,v=st.b[i];
     el('rect',{x,y,width:S,height:S,fill:v?`var(--k${v-1})`:(i===E.START[0]||i===E.START[1])?'var(--start)':'var(--cell)',stroke:v?`var(--k${v-1}e)`:'var(--gridl)','stroke-width':v?.6:1,'stroke-opacity':v?.45:1},g);}
   // piece contours: same-colour pieces never share a side, so each same-colour block is one piece
   for(const c of [0,1]){const cells=[];for(let i=0;i<N;i++)if(st.b[i]===c+1)cells.push(i);if(cells.length)el('path',{d:outline(cells),fill:'none',stroke:`var(--k${c}e)`,'stroke-width':1.8,'stroke-linecap':'square'},svg);}
-  if(coordsOn){const lab=el('g',{'font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--coord)','text-anchor':'middle','pointer-events':'none'},svg);
-    for(let q=0;q<W;q++){const tx=el('text',{x:q*S+S/2,y:-8},lab);tx.textContent='abcdefghijklmn'[q];}
+  if(coordsOn){const lab=el('g',{class:'coord','font-size':12,'text-anchor':'middle'},svg);
+    for(let q=0;q<W;q++){const tx=el('text',{x:q*S+S/2,y:W*S+15},lab);tx.textContent='abcdefghijklmn'[q];}
     for(let r=0;r<W;r++){const tx=el('text',{x:-11,y:r*S+S/2+4},lab);tx.textContent=W-r;}}
   if(marks)for(const i of marks){if(pv&&pv.cells.includes(i))continue;el('circle',{cx:(i%W)*S+S/2,cy:((i/W)|0)*S+S/2,r:5,fill:`var(--k${mc})`,opacity:.55,'pointer-events':'none'},svg);}
   // last move: a solid frame inside its cells
@@ -930,7 +945,13 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
   
   replay:dbReplay,
   legal:(st,code)=>{const mv=dec(code);return mv&&E.validate(st.es,mv)?enc(mv):null;},
-  enc,describe:mv=>txtOf(mv),newUi,preparing,cancel:cancelPrep,
+  enc,describe:(mv,st)=>txtOf(mv,st&&st.es),logNode:dbLogNode,
+  // SGF: a placement is the list of the squares it covers, in a1, b1… a2 order (« e10,f10,f11,g11 », as Pentobi writes Blokus),
+  // the swap « swap »; B and W: seat 0 and seat 1
+  sgf:{val:code=>{const m=dec(code);return !m?code:m.t==='s'?'swap':m.cells.slice().sort(a1Ord).map(cname).join(',');},
+    code:(v,st)=>{v=String(v).trim().toLowerCase();if(v==='swap')return 's';
+      const cells=v.split(/\s*,\s*/).map(x=>{const m=/^([a-n])(\d+)$/.exec(x);return m&&+m[2]>=1&&+m[2]<=W?(W-m[2])*W+m[1].charCodeAt(0)-97:-1;});
+      if(cells.some(i=>i<0))return null;const sh=E.shapeOf(cells),k=E.P.findIndex(p=>p.size===cells.length&&p.keys.has(sh));return k<0?null:enc({t:'p',k,cells});}},newUi,preparing,cancel:cancelPrep,
   board:dbBoard,turnStatus:dbTurnStatus,waitStatus:dbWaitStatus,ownLayout:true,
   again:mv=>mv.t==='p',
   pendText:mv=>[mv.t==='s'?t('swapMv'):t('pend_mv',{m:txtOf(mv)}),t('confirmMv')],
