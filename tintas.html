@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tintas</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Tintas palette (light, dark), board and colour counters; the shared layout is in common/games.css */
 :root{
@@ -97,7 +97,6 @@ html:root{--accRight:0px}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">Who plays first</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
@@ -109,10 +108,10 @@ html:root{--accRight:0px}
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -179,7 +178,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -268,7 +267,7 @@ const TI_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10",lv_l11:"Level 11, the strongest",m_aiTxt:"Twelve levels, from 0 to 11: each one beats the one below about three games in four.",
- title:"Tintas",lede:"One shared pawn, seven colours: race to collect a set.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
+ title:"Tintas",lede:"One shared pawn, seven colours: race to collect a set.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game (new board, the other player starts).",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
  cb:"Colorblind",needConfirm:"Confirm each move",
@@ -295,7 +294,7 @@ const TI_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Original rules: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, Creative Commons BY-NC 4.0 licence.</p>`
 },es:{
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10",lv_l11:"Nivel 11, el más fuerte",m_aiTxt:"Doce niveles, de 0 a 11: cada uno gana al anterior unas tres partidas de cada cuatro.",
- title:"Tintas",lede:"Un peón común, siete colores: colecciónalos.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",firstIs:"Quién empieza",
+ title:"Tintas",lede:"Un peón común, siete colores: colecciónalos.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",
  endTurn:"Terminar el turno",endTurnS:"Terminar",confirmTurn:"Confirmar el turno",
  t_cont:"Puedes continuar con una pieza {c}, o terminar el turno.",t_pending:"Turno terminado: confírmalo, o reinicia.",
  cb:"Daltónico",needConfirm:"Confirmar cada jugada",
@@ -371,10 +370,10 @@ function tiBoard({r,d,mine,ms}){
 // the first player is then told so once.
 const swapped=r=>!r.over&&r.log.length===2&&r.log[1].kind==='swap';
 function tiTurnStatus({r,o,idle,RST}){const x=o.x;
-  if(!ui.seq.length){const base=x.kind==='first'?t('st_first'):x.kind==='jump'?t('st_jump'):solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn');
-    if(E.canSwap(r.st)){status(t('st_swap'),'turn',idle.concat([{label:t('swapBtn'),short:t('swapBtnS'),on:doSwap}]));return;}
+  if(!ui.seq.length){const base=x.kind==='first'?soloWho(r.st.turn,t('st_first')):x.kind==='jump'?soloWho(r.st.turn,t('st_jump')):solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn');
+    if(E.canSwap(r.st)){status(soloWho(r.st.turn,t('st_swap')),'turn',idle.concat([{label:t('swapBtn'),short:t('swapBtnS'),on:doSwap}]));return;}
     status(swapped(r)?t('st_swapped',{n:seatName(1-r.st.turn)})+' '+base:base,'turn',idle);return;}
-  status(t('t_cont',{c:t('colsF')[x.first]}),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:()=>endTurn(false)}]);}
+  status(soloWho(r.st.turn,t('t_cont',{c:t('colsF')[x.first]})),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:()=>endTurn(false)}]);}
 function tiWaitStatus({r}){if(r.over)return false;
   if(E.canSwap(r.st)){status(t('st_swapWait',{n:seatName(r.st.turn)}));return true;}
   if(swapped(r)){status(t('st_swappedW',{n:seatName(1-r.st.turn),m:seatName(r.st.turn)}));return true;}
@@ -402,7 +401,7 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
   if(k>=0){ui.seq=ui.seq.slice(0,k===ui.seq.length-1?k:k+1);ui.pending=null;ui.hover=-1;renderGame();return;}
   if(ui.pending)return;
   const ct=curTurn(r.st);if(!ct||!ct.opts.includes(i))return;
-  ui.seq.push(i);ui.hover=-1;tone(880,.06,.03);
+  ui.seq.push(i);ui.hover=-1;
   const nx=curTurn(r.st);if(!nx||!nx.opts.length){endTurn(true);return;}
   renderGame();}
 const HOVER=!!(window.matchMedia&&window.matchMedia('(hover:hover)').matches);

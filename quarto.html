@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Quarto</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
@@ -84,26 +84,25 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
       
       
       <form class="form" id="createForm" hidden>
-        
+        <label class="toggle" for="cSq"><input type="checkbox" id="cSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
-        <label class="toggle" for="cSq"><input type="checkbox" id="cSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label class="toggle" for="aSq"><input type="checkbox" id="aSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label class="toggle" for="aSq"><input type="checkbox" id="aSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
-        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
         <label class="toggle" for="fSq"><input type="checkbox" id="fSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label class="toggle" for="tSq"><input type="checkbox" id="tSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -170,7 +169,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Quarto: rules =====
@@ -627,7 +626,7 @@ function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null
   return r.score>=950?{k:'ai_win'}:r.score<=-950?{k:'ai_lost'}:{k:'ai_eq',d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'quarto',quietWhy:why=>!/^w_(time|resign|agree)$/.test(why),   // « Player 2 wins. »: no reason but the site's own
+const GAME={id:'quarto',   // the end says why, « four pieces in a line, all dark » (decision of 15.11.2026)
   size:16,codeTag:'QUARTO1',i18n:Q_I18N,
   rules:g=>({sq:!!(g&&g.sq)}),form:p=>({sq:$(p+'Sq').checked}),
   replay:qReplay,
@@ -641,6 +640,7 @@ const GAME={id:'quarto',quietWhy:why=>!/^w_(time|resign|agree)$/.test(why),   //
   playerCard:qCard,aiSearch:(st,opt)=>(pageAI=pageAI||QuartoAI()).search({b:st.b.slice(),hand:st.hand},opt),
   evalInfo:qEvalInfo,
   home:()=>drawBoard(scene(E.init()))};
+formKeep('Sq','sq',false);   // the advanced variant, as last chosen
 coreStart();
 </script>
 <script src="common/accueil.js?v=1"></script>

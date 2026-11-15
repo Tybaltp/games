@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -98,22 +98,21 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">First player (places the Swap2 opening)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the Swap2 opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -387,7 +386,7 @@ function aiSearch(p,o){o=o||{};const ms=o.ms||700;
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
  const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
 </script>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -423,7 +422,7 @@ const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n,es:'una línea de '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Cinq alignés, ou dix pierres capturées.",by:"Un jeu de Gary Gabrel.",
  lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10, le plus fort",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre.",
- firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
+ needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
  n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
  n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
@@ -448,7 +447,7 @@ const PE_I18N={fr:{
 },en:{
  title:"Pente",lede:"Five in a row, or capture ten.",by:"A game by Gary Gabrel.",
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10, the strongest",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four.",
- firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move",
+ needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
  n_open:"Place the opening: 2 black and 1 white ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",
  n_add2:"Add 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_openN:"{name} places the opening: 2 black and 1 white ({n}/3).",n_add2N:"{who} adds 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_choose1:"{name} added a black and a white stone: choose your colour.",
@@ -473,7 +472,7 @@ const PE_I18N={fr:{
 },es:{
  title:"Pente",lede:"Cinco en línea, o diez piedras capturadas.",by:"Un juego de Gary Gabrel.",
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10, el más fuerte",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro.",
- firstIs:"Primer jugador (coloca la apertura Swap2)",opener:"¿Quién coloca la apertura Swap2?",needConfirm:"Confirmar cada jugada",
+ needConfirm:"Confirmar cada jugada",
  black:"Negras",white:"Blancas",colw_1:"negra",colw_2:"blanca",captured:"{n} pares capturados de 5",
  n_open:"Coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_choose:"Te toca elegir: Negras, Blancas o 2 piedras más.",
  n_add2:"Añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_openN:"{name} coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_add2N:"{who} añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_choose1:"{name} ha añadido una negra y una blanca: elige tu color.",
@@ -746,7 +745,9 @@ function fromOld(S){try{const f=S.first,o=f==='H'?'G':'H',L=S.log||[],op=L.filte
   return {moves:mv,result:rs,first:f,names:S.names?[S.names[f]||'',S.names[o]||'']:['',''],clock:S.clocks?[S.clocks[f]||0,S.clocks[o]||0]:[0,0],tc:S.tc||null,started:S.phase!=='wait'};}catch(e){return null;}}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
+const GAME={id:'pente',seatCol:s=>{const m=view?view.moves:[],c1=m[1]==='B'||m[1]==='W'?m[1]:/^a/.test(m[1]||'')&&(m[2]==='B'||m[2]==='W')?(m[2]==='B'?'W':'B'):null;   // Swap2: Noir / Blanc once chosen
+    return c1?((s===1)===(c1==='B')?'black':'white'):null;},
+  size:N,codeTag:'PENTE1',i18n:PE_I18N,
   rules:()=>({}),form:()=>({}),
   replay:peReplay,
   legal:(st,code)=>legalCode(st,code),

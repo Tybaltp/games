@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Slither palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
@@ -78,7 +78,6 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
         <label class="toggle" for="cSwap"><input type="checkbox" id="cSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
@@ -88,20 +87,20 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
       <form class="form" id="aiForm" hidden>
         <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
         <label class="toggle" for="aSwap"><input type="checkbox" id="aSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
         <label class="toggle" for="fSwap"><input type="checkbox" id="fSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
         <label class="toggle" for="tSwap"><input type="checkbox" id="tSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -167,7 +166,7 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -259,8 +258,8 @@ const SL_I18N={fr:{
  lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
  title:"Slither",lede:"Serpentez jusqu'à relier vos bords.",by:"Un jeu de Corey Clark.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
- firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
- cB:"noir",cW:"blanc",eB:"haut–bas",eW:"gauche–droite",
+ needConfirm:"Confirmer chaque coup",
+ cB:"noir",sB:"Noir",sW:"Blanc",cW:"blanc",eB:"haut–bas",eW:"gauche–droite",
  swap:"Échanger",swapT:"Échanger : vous prenez la pierre posée et devenez Noir ; votre adversaire joue Blanc.",
  st_play:"Posez et déplacez une pierre.",
  st_playN:"Posez et déplacez une pierre.",
@@ -290,8 +289,8 @@ const SL_I18N={fr:{
  lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
  title:"Slither",lede:"Slither your way to connection.",by:"A game by Corey Clark.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
- firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
- cB:"black",cW:"white",eB:"top–bottom",eW:"left–right",
+ needConfirm:"Confirm each move",
+ cB:"black",sB:"Black",sW:"White",cW:"white",eB:"top–bottom",eW:"left–right",
  swap:"Swap",swapT:"Swap: you take the stone placed and become Black; your opponent plays White.",
  st_play:"Place and move a stone.",
  st_playN:"Place and move a stone.",
@@ -321,8 +320,8 @@ const SL_I18N={fr:{
  lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
  title:"Slither",lede:"Serpentea hasta unir tus bordes.",by:"Un juego de Corey Clark.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
- firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
- cB:"negras",cW:"blancas",eB:"arriba–abajo",eW:"izquierda–derecha",
+ needConfirm:"Confirmar cada jugada",
+ cB:"negras",sB:"Negras",sW:"Blancas",cW:"blancas",eB:"arriba–abajo",eW:"izquierda–derecha",
  swap:"Intercambiar",swapT:"Intercambiar: tomas la piedra colocada y pasas a ser Negras; tu adversario juega con Blancas.",
  st_play:"Coloca y mueve una piedra.",
  st_playN:"Coloca y mueve una piedra.",
@@ -372,13 +371,13 @@ function slBoard({r,d,mine,ms}){const live=navAt===null;if(mine&&live&&prepared(
   shown={d,ms,mine:mine&&live,over:r.over};drawBoard();return {};}
 function slTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=SL.toMove(st),me=seatName(st.turn);
   if(!SL.anyMove(st)){status(S?t('st_noneN',{name:me}):t('st_none'),'turn',[{label:t('pass'),primary:true,on:()=>{clearPrep();send('pass');}},...idle]);return;}
-  if(ui.f>=0&&ui.t<0){status(t('st_sel'),'turn',[RST]);return;}
-  if(ui.p<0&&ui.t>=0){status(t('st_moved'),'turn',[RST]);return;}
-  if(ui.p>=0){status(t('st_bad'),'turn',[RST]);return;}   // complete but illegal (a legal one is core's pending)
+  if(ui.f>=0&&ui.t<0){status(soloWho(st.turn,t('st_sel')),'turn',[RST]);return;}
+  if(ui.p<0&&ui.t>=0){status(soloWho(st.turn,t('st_moved')),'turn',[RST]);return;}
+  if(ui.p>=0){status(soloWho(st.turn,t('st_bad')),'turn',[RST]);return;}   // complete but illegal (a legal one is core's pending)
   const sw=st.swap&&st.ply===1;
-  status((S?t('st_playN',{name:me,c:CN(c),e:EN(c)}):t('st_play',{c:CN(c),e:EN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
+  status((S?soloWho(st.turn,t('st_play',{c:CN(c),e:EN(c)})):t('st_play',{c:CN(c),e:EN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
   if(sw&&$('bSwap'))$('bSwap').title=t('swapT');}
-function slWaitStatus({r}){const st=r.st;status(t('st_turnC',{name:seatName(st.turn),c:CN(SL.toMove(st))}));return true;}
+function slWaitStatus({r}){const st=r.st;status(tN('st_turnC',{name:seatName(st.turn),c:CN(SL.toMove(st))}));return true;}
 function pendText(mv,st){const m=SL.split(st.size,String(mv));if(!m)return [describe(mv,st),t('confirmTurn')];
   return [m.f>=0?t('pendM',{p:nm(st,m.p),f:nm(st,m.f),t:nm(st,m.t)}):t('pend',{p:nm(st,m.p)}),t('confirmTurn')];}
 function playerCard(el,p,d){const col=d.st.col[p],dot=el.querySelector&&el.querySelector('.dot');
@@ -395,7 +394,7 @@ function onCell(i){if(!view||navAt!==null)return;
   const st=meSt(r),n=st.size,c=SL.toMove(st);if(!SL.anyMove(st))return;
   const s=stepTo(st,i);if(!s||!(s.back||reach(st,s.p,s.f,s.t)))return;   // only an action that can still end in a legal turn
   ui.p=s.p;ui.f=s.f;ui.t=s.t;if(s.back&&!reach(st,ui.p,ui.f,ui.t))ui.p=-1;
-  tone(880,.05,.03);sync(st);renderGame();}
+  sync(st);renderGame();}
 $('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i);});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
@@ -1088,7 +1087,8 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 
 // ---------- the interface with common/core.js ----------
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'slither',size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
+const GAME={id:'slither',seatCol:s=>(s===0)!==(!!view&&view.moves[1]==='swap')?'sB':'sW',   // seat 0 Black, White once the swap is taken
+  size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
   rules:g=>SL.rules(g),
   form:p=>{const r=SL.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('slither-size',r.size);LS.set('slither-swap',r.swap);return r;},
   replay:(r,m)=>replayKept(r,m,{init:g=>SL.init(SL.rules(g)),

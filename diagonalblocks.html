@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Diagonal Blocks</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -62,10 +62,10 @@ html.ingame:not(.wide) .pblock .player{padding-inline:0}html.ingame:not(.wide) .
    opponent's sticks to the top of it, mine to the bottom */
 .pwrap{flex:none;display:flex;flex-direction:column}#oppWrap{justify-content:flex-start}#myWrap{justify-content:flex-end}
 #myBlock .notice{border:0;background:none;padding:2px 0 0;border-radius:0}
-/* phones: the bar is a single row, the buttons only when there are some (the message alone otherwise, on one line), so
-   that the reserves get the room */
-html.ingame:not(.wide) .notice{height:38px!important;min-height:0!important;flex-direction:row!important;align-items:center!important;padding-block:2px}
-html.ingame:not(.wide) .notice.has-btns .msg{display:none}html.ingame:not(.wide) .notice .msg{-webkit-line-clamp:1;line-clamp:1}
+/* phones: the bar always holds two rows (its height never changes, nor the reserves'): the message on one line, and
+   under it the buttons when there are some; the message alone is centred (decision of 15.11.2026: the message stays) */
+html.ingame:not(.wide) .notice{height:72px!important;min-height:0!important;flex-direction:column!important;justify-content:center!important;align-items:stretch!important;gap:4px!important;padding-block:2px}
+html.ingame:not(.wide) .notice .msg{-webkit-line-clamp:1;line-clamp:1;text-align:center;flex:none}
 html.ingame:not(.wide) .notice .btns{flex-wrap:nowrap!important;width:100%}html.ingame:not(.wide) .notice .btns:not(.measure) button{flex:1 1 auto}
 html.ingame.wide .pblock{--cell:9px}html.ingame.wide .pblock .tray{width:100%}
 /* wide screens (not landscape phones): a wider side column, so that the pieces are not dwarfed by the board */
@@ -137,7 +137,6 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">Who plays first</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
@@ -149,10 +148,10 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -223,7 +222,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -296,7 +295,7 @@ function DBEngine(){
 // Diagonal Blocks strings, merged over the shared ones (core.js)
 const DB_I18N={fr:{
  lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10, le plus fort",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre.",
- needConfirm:"Confirmer chaque coup",title:"Diagonal Blocks",lede:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",by:"Inspiré de Blokus, un jeu de Bernard Tavitian.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",st_play:"Choisissez une pièce dans votre réserve.",st_playN:"{n} : choisissez une pièce dans votre réserve.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_swappedMe:"Vous avez échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
+ needConfirm:"Confirmer chaque coup",title:"Diagonal Blocks",lede:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",by:"Inspiré de Blokus, un jeu de Bernard Tavitian.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",st_play:"Choisissez une pièce dans votre réserve.",st_playN:"{n} : choisissez une pièce dans votre réserve.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",sc0:"Vert",sc1:"Rose",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_swappedMe:"Vous avez échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : couvrir le plus de cases possible. Chaque joueur a sa couleur et 21 pièces de 1 à 5 carrés (89 carrés en tout). On peut tourner et retourner les pièces.</li>
  <li><b>Plateau</b> : 14 × 14, chaque coin amputé de 3 cases (184 cases). Deux cases de départ, en gris foncé.</li>
  <li><b>Première pièce</b> : elle couvre la case de départ de votre couleur (celle du premier joueur en haut à gauche).</li>
@@ -310,7 +309,7 @@ const DB_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10, the strongest",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four.",
- needConfirm:"Confirm each move",title:"Diagonal Blocks",lede:"Place your polyominoes corner to corner, cover the most squares.",by:"Inspired by Blokus, a game by Bernard Tavitian.",rm_ask:"{n} offers a new game, first player swapped.",firstIs:"Who plays first",placeHint:"Place the piece on the board.",st_play:"Choose a piece from your reserve.",st_playN:"{n}: choose a piece from your reserve.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_swappedMe:"You swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
+ needConfirm:"Confirm each move",title:"Diagonal Blocks",lede:"Place your polyominoes corner to corner, cover the most squares.",by:"Inspired by Blokus, a game by Bernard Tavitian.",rm_ask:"{n} offers a new game, first player swapped.",placeHint:"Place the piece on the board.",st_play:"Choose a piece from your reserve.",st_playN:"{n}: choose a piece from your reserve.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",sc0:"Green",sc1:"Pink",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_swappedMe:"You swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: cover as many cells as you can. Each player has a colour and 21 pieces of 1 to 5 squares (89 squares in all). Pieces may be rotated and flipped.</li>
  <li><b>Board</b>: 14 × 14 with 3 cells cut from each corner (184 cells). Two start cells, in dark grey.</li>
  <li><b>First piece</b>: it covers your colour's start cell (the first player's is top left).</li>
@@ -324,7 +323,7 @@ const DB_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Two-player adaptation of Diagonal Blocks (Dave Dyer); board size and swap rule chosen for this site.</p>`
 },es:{
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10, el más fuerte",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro.",
- needConfirm:"Confirmar cada jugada",title:"Diagonal Blocks",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",by:"Inspirado en Blokus, un juego de Bernard Tavitian.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",firstIs:"Quién empieza",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"↻ Girar",flip:"⇋ Voltear",trayHint:"Elige una pieza; R la gira, F la voltea.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_swappedMe:"Has intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
+ needConfirm:"Confirmar cada jugada",title:"Diagonal Blocks",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",by:"Inspirado en Blokus, un juego de Bernard Tavitian.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"↻ Girar",flip:"⇋ Voltear",trayHint:"Elige una pieza; R la gira, F la voltea.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",sc0:"Verde",sc1:"Rosa",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_swappedMe:"Has intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: cubrir el mayor número posible de casillas. Cada jugador tiene su color y 21 piezas de 1 a 5 cuadrados (89 cuadrados en total). Las piezas se pueden girar y voltear.</li>
  <li><b>Tablero</b>: 14 × 14, con 3 casillas recortadas en cada esquina (184 casillas). Dos casillas de salida, en gris oscuro.</li>
  <li><b>Primera pieza</b>: cubre la casilla de salida de tu color (la del primer jugador, arriba a la izquierda).</li>
@@ -925,7 +924,8 @@ let pageAI=null;   // the search on the page itself, when no worker can be made
 function dbEvalInfo(r,st){if(st.es.n<2)return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
   return {k:Math.abs(s)<1.5?'ai_eq':s>0?(s>6?'ai_much':'ai_better'):(s<-6?'ai_muchWorse':'ai_worse'),d:r.depth};}
 // ---------- the interface with common/core.js ----------
-const GAME={id:'dblk',size:184,codeTag:'DBD1',i18n:DB_I18N,
+const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).st,s)?'sc1':'sc0',   // Vert / Rose (they change hands with the swap)
+  size:184,codeTag:'DBD1',i18n:DB_I18N,
   rules:()=>({}),form:()=>({}),swapRule:()=>true,   // a Mochalunt table: the choice of seat says what the swap gives
   
   replay:dbReplay,

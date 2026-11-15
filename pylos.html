@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Pylos palette « terre cuite et poirier » (light, dark; decision of 13.11.2026: clay page, pear-wood board without grain
    but with its frame, teal accent and move marks), the board and the balls; the shared layout is in common/games.css.
@@ -94,18 +94,18 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
       </form>
       <form class="form" id="aiForm" hidden>
         <label for="aVariant"><span data-i18n="variantOpt">Rule</span><select id="aVariant"><option value="lines" data-i18n="v_lines">Square and line</option><option value="square" data-i18n="v_square">Square only</option></select></label>
-        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
         <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fVariant"><span data-i18n="variantOpt">Rule</span><select id="fVariant"><option value="lines" data-i18n="v_lines">Square and line</option><option value="square" data-i18n="v_square">Square only</option></select></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tVariant"><span data-i18n="variantOpt">Rule</span><select id="tVariant"><option value="lines" data-i18n="v_lines">Square and line</option><option value="square" data-i18n="v_square">Square only</option></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -390,7 +390,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -537,9 +537,9 @@ function pyTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.t
   // the same position for the third time (decision of 09.11.2026): the player may offer a draw (core's draw offer)
   if(!prep&&drawOK()&&ui.repSeen!==view.moves.length&&repeated(view)>=3){
     status(t('rep_ask'),'turn',[{label:t('rep_no'),on:()=>{ui.repSeen=view.moves.length;renderGame();}},{label:t('drawOffer'),primary:true,on:()=>{ui.repSeen=view.moves.length;drawSend('ask');}}]);return;}
-  if(ui.main&&ui.bonus&&!ui.rem.length){status(t(st.variant==='lines'?'st_bonusL':'st_bonus'),'turn',[RST]);return;}
-  if(ui.sel>=0){status(t('st_sel',{a:NAME(ui.sel)}),'turn',[RST]);return;}
-  status(S?t('st_turnC',{name:me,c}):t('st_play',{c}),'turn',prep?[RST]:idle);}
+  if(ui.main&&ui.bonus&&!ui.rem.length){status(soloWho(st.turn,t(st.variant==='lines'?'st_bonusL':'st_bonus')),'turn',[RST]);return;}
+  if(ui.sel>=0){status(soloWho(st.turn,t('st_sel',{a:NAME(ui.sel)})),'turn',[RST]);return;}
+  status(S?tN('st_turnC',{name:me,c}):t('st_play',{c}),'turn',prep?[RST]:idle);}
 // how many times the position shown (balls and side to move) has occurred along the game, this time included
 let repKey=null,repVal=0;
 function repeated(v){const key=v.moves.join(',');if(key===repKey)return repVal;
@@ -548,7 +548,7 @@ function repeated(v){const key=v.moves.join(',');if(key===repKey)return repVal;
   repKey=key;return repVal=seen[sig(st)]||0;}
 // a draw can be offered now (core: against the computer, face to face, by link)
 const drawOK=()=>!!view&&!view.draw&&(role==='ai'||role==='local'||role==='host'||role==='guest');
-function pyWaitStatus({r}){const st=r.st;status(t('st_turnC',{name:seatName(st.turn),c:CNL(st.turn)}));return true;}
+function pyWaitStatus({r}){const st=r.st;status(tN('st_turnC',{name:seatName(st.turn),c:CNL(st.turn)}));return true;}
 function pendText(mv,st){const m=parseCode(mv);
   // one removal made and a second one possible: say so
   if(ui.main&&ui.bonus&&m.rem.length===1){const L=legalsOf(st),more=L.some(x=>x.from===m.from&&x.to===m.to&&x.rem.length===2&&x.rem.includes(m.rem[0]));
@@ -568,9 +568,9 @@ function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)r
 function setMain(st,from,to){const L=legalsOf(st),bonus=L.some(m=>m.from===from&&m.to===to&&m.rem.length);
   ui.sel=-1;ui.main={from,to};ui.bonus=bonus;ui.rem=[];ui.pending=null;
   if(!bonus){const code=baseCode(ui.main);if(!confirmOn()||winsNow(st,code)){clearPrep();send(code);return;}ui.pending=code;}
-  tone(880,.05,.03);renderGame();}
+  renderGame();}
 function winsNow(st,code){const w=deepCopy(st),c=PY.legal(w,code);if(c===null)return false;PY.apply(w,c);const f=PY.finished(w);return !!f&&f.w===st.turn;}
-function setRem(st){ui.pending=ui.rem.length?PY.legal(st,fullCode(ui.main,ui.rem)):null;tone(880,.05,.03);renderGame();}
+function setRem(st){ui.pending=ui.rem.length?PY.legal(st,fullCode(ui.main,ui.rem)):null;renderGame();}
 // A click on a spot i. A free ball of mine: chosen to move up (again: released). An available spot: the ball placed there,
 // or the chosen ball moved up. After an action completing a square: a free ball of mine is taken back (again: kept).
 function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
@@ -586,7 +586,7 @@ function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(a
   if(ui.sel>=0){
     if(i===ui.sel){ui.sel=-1;renderGame();return;}
     if(L.some(m=>m.from===ui.sel&&m.to===i)){setMain(st,ui.sel,i);return;}}
-  if(st.b[i]===p&&L.some(m=>m.from===i)){ui.sel=i;tone(880,.05,.03);renderGame();return;}
+  if(st.b[i]===p&&L.some(m=>m.from===i)){ui.sel=i;renderGame();return;}
   if(st.b[i]===-1&&L.some(m=>m.from===-1&&m.to===i)){setMain(st,-1,i);return;}
   renderGame();}
 $('needConfirm').checked=LS.get('pylos-confirm',true)!==false;
@@ -806,7 +806,8 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 // ---------- the interface with common/core.js ----------
 const homeVariant=()=>PY.rules({variant:LS.get('pylos-variant','lines')}).variant;
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'pylos',size:4,codeTag:'PYLOS1',i18n:PY_I18N,
+const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Foncé
+  size:4,codeTag:'PYLOS1',i18n:PY_I18N,
   rules:g=>PY.rules(g),
   form:p=>{const v=PY.rules({variant:$(p+'Variant').value}).variant;LS.set('pylos-variant',v);return {variant:v};},
   replay:(r,m)=>replayKept(r,m,{init:g=>PY.init(PY.rules(g)),

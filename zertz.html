@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Zèrtz</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
@@ -96,7 +96,6 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cSize"><span data-i18n="board">Board</span><select id="cSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
         <label for="cFirst"><span data-i18n="firstIs">First player</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
@@ -111,11 +110,11 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
       <form class="form" id="faceForm" hidden>
         <label for="fSize"><span data-i18n="board">Board</span><select id="fSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSize"><span data-i18n="board">Board</span><select id="tSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -184,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 function ZertzEngine(size){
@@ -301,7 +300,7 @@ const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,tim
 const HINT=LEVELS.fort;
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{
- title:"Zèrtz",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
+ title:"Zèrtz",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",
  pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
  c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
@@ -319,7 +318,7 @@ const ZZ_I18N={fr:{
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
- title:"Zèrtz",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
+ title:"Zèrtz",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
  c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
@@ -337,7 +336,7 @@ const ZZ_I18N={fr:{
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
- title:"Zèrtz",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",firstIs:"Primer jugador",
+ title:"Zèrtz",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",
  pool:"Reserva común",poolN:"{n} bolas",poolLbl:"Reserva: {n}",poolLblE:"Reserva vacía",h_empty:"Reserva vacía: cada uno coloca sus propias bolas capturadas.",
  c0:"blanca",c1:"gris",c2:"negra",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmar cada jugada",
  st_capStart:"Captura obligatoria: haz clic en la bola que salta.",st_capPath:"Captura: haz clic en el anillo de llegada (resaltado), o en un anillo ya recorrido para volver a él.",st_remove:"Retira un anillo libre (en rojo), o vuelve a hacer clic en la bola para recuperarla.",
@@ -622,6 +621,7 @@ function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search
   aiPos:st=>Array.from(st),
   aiSearch:(st,opt)=>zzSearch(Int8Array.from(st),opt),
   evalInfo:res=>evalInfo(res)};
+formKeep('Size','size','48');   // the board, as last chosen
 coreStart();
 </script>
 <script src="common/accueil.js?v=1"></script>

@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Arimaa</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -87,22 +87,21 @@ html:root{--accRight:0px}
       
       
       <form class="form" id="createForm" hidden>
-        
-        <label for="cFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -169,7 +168,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -247,9 +246,9 @@ function ArimaaEngine(){
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
  mq_q:"Voulez-vous jouer Or (premier) ou Argent ?",mq_1:"Or",mq_p1:"Or",mq_p2:"Argent",mq_2:"Argent",
- title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
+ title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",
  m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
- setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
+ setupGo:"Confirmer la disposition",setupGoS:"Confirmer",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
  st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
  st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
@@ -273,7 +272,7 @@ const AR_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
  mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_p1:"Gold",mq_p2:"Silver",mq_2:"Silver",
- title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
+ title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",
  m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
  setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
  st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",st_soloTurn:"{n} to move.",
@@ -299,9 +298,9 @@ const AR_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },es:{
  mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_p1:"con Oro",mq_p2:"con Plata",mq_2:"Plata",
- title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",goldIs:"Oro (empieza)",
+ title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",
  m_aiTxt:"Sharp, el mejor programa de Arimaa de 2015: tres niveles, con deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
- setupGo:"Validar la colocación",setupGoS:"Validar",undoStep:"Deshacer el paso",undoStepS:"−1 paso",endTurn:"Terminar el turno",endTurnS:"Terminar",gold:"Oro",silver:"Plata",t_caps:"Piezas capturadas: {l}",
+ setupGo:"Confirmar la colocación",setupGoS:"Confirmar",undoStep:"Deshacer el paso",undoStepS:"−1 paso",endTurn:"Terminar el turno",endTurnS:"Terminar",gold:"Oro",silver:"Plata",t_caps:"Piezas capturadas: {l}",
  st_setup:"Coloca tus piezas: haz clic en dos casillas para intercambiarlas y luego valida.",st_oppSetup:"{n} coloca sus piezas.",st_soloTurn:"Le toca a {n}.",
  st_steps:"Paso {k}/4: continúa o termina el turno.",st_steps4:"Paso 4/4: termina el turno.",
  st_same:"El turno debe cambiar la posición.",st_rep3:"Este turno repetiría la posición por tercera vez: está prohibido.",
@@ -458,7 +457,7 @@ function hoverPreview(pv){const i=ui.hover,acts=hoverActs(pv.b,pv.used,i);if(!ac
   return {b,caps,n,to:i,walk:acts[0].k==='m'?[acts[0].f].concat(acts.map(a=>a.t)):null};}
 function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
-    if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;tone(520,.06,.03);}
+    if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;}
     renderGame();return;}
   const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
   const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
@@ -472,7 +471,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
   else if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k==='P'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
     const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
-    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();winNow();return;}
+    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();renderGame();winNow();return;}
     if(enemySq(i)&&acts.some(a=>a.k==='P'&&a.e===i&&a.a===ui.sel)){   // an enemy it can push (to pull, the enemy comes first)
       ui.enemy=i;ui.via=ui.sel;renderGame();return;}
     // a second click on the selection deselects it (and nothing else: going back is done with the numbered steps)
@@ -481,7 +480,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
   if(enemySq(i)&&pulls(i).length){ui.enemy=i;ui.pullOnly=true;renderGame();return;}   // an enemy piece that can be pulled: pull it, enemy first
   if(canAct){ui.sel=i;renderGame();return;}
   renderGame();}
-function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();winNow();}
+function doAct(a){ui.acts.push(a);clearSel();renderGame();winNow();}
 // C14: a step that wins the game at once (a rabbit on the far row, the last opposing rabbit taken, the opponent left
 // without a move) ends the turn by itself, with no confirmation
 function winNow(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;

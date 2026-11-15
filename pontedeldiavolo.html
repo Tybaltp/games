@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
@@ -110,7 +110,6 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
@@ -122,10 +121,10 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -192,7 +191,7 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -354,7 +353,7 @@ function scoreFixed(st){
 // Ponte strings, merged over the shared ones (core.js)
 const PD_I18N={fr:{
  lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9, le plus fort",m_aiTxt:"Dix niveaux, de 0 à 9 : jusqu'au 8, chacun bat le précédent environ trois parties sur quatre ; le 9 réfléchit 10 s par coup.",
- title:"Ponte del Diavolo",lede:"Bâtissez des îles et reliez-les par des ponts.",by:"Un jeu de Martin Ebel.",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
+ title:"Ponte del Diavolo",lede:"Bâtissez des îles et reliez-les par des ponts.",by:"Un jeu de Martin Ebel.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  needConfirm:"Confirmer chaque coup",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Terminer le tour",passEnd:"Passer et terminer",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Terminer",passEndS:"Passer",
  pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
  lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",lg_fixed:"Plus aucun coup ne peut changer le score : fin de la partie.",w_fixed:", plus aucun coup ne peut changer le score",
@@ -377,7 +376,7 @@ const PD_I18N={fr:{
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
 },en:{
  lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: up to 8, each one beats the one below about three games in four; level 9 thinks 10 s per move.",
- title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
+ title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",rm_ask:"{n} offers a new game, colours swapped.",
  needConfirm:"Confirm each move",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",
  pts:"pts",isl:"isl.",brg:"br.",ptsL:"points",islL:"islands",brgL:"bridges",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
  lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",lg_fixed:"No move can change the score any more: the game is over.",w_fixed:", no move can change the score any more",
@@ -400,7 +399,7 @@ const PD_I18N={fr:{
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
 },es:{
  lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: hasta el 8, cada uno gana al anterior unas tres partidas de cada cuatro; el 9 piensa 10 s por jugada.",
- title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",firstIs:"Primer jugador (coloca las dos losetas claras de apertura)",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
+ title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
  needConfirm:"Confirmar cada jugada",takeLight:"Tomar las claras",playDark:"Jugar las oscuras",endTurn:"Terminar el turno",passEnd:"Pasar y terminar",takeLightS:"Claras",playDarkS:"Oscuras",endTurnS:"Terminar",passEndS:"Pasar",
  pts:"pts",isl:"isl.",brg:"pte.",ptsL:"puntos",islL:"islas",brgL:"puentes",light:"Claras",dark:"Oscuras",mv_bridge:"puente",lg_pass:"pasa",lg_takeL:"toma las claras",lg_dark:"juega las oscuras",
  lg_forced:"{c}: ninguna jugada posible, pasa.",lg_lastTurn:"Las claras han pasado: las oscuras juegan un último turno.",lg_fixed:"Ninguna jugada puede ya cambiar el marcador: fin de la partida.",w_fixed:", ninguna jugada puede ya cambiar el marcador",
@@ -616,9 +615,9 @@ function pdBoard({r,d,mine}){const live=navAt===null&&mine&&(r.st.phase==='openi
   drawBoard(d.st,d.last,live?{w:work(r.st),p:mover(r.st),opening:r.st.phase==='opening'}:null);return {};}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
 function pdTurnStatus({r,idle,RST}){const st=r.st,p=mover(st);
-  if(st.phase==='pie'){status(t('st_pie'),'turn',[...idle,{label:t('takeLight'),short:t('takeLightS'),primary:true,on:()=>pie('L')},{label:t('playDark'),short:t('playDarkS'),on:()=>pie('D')}]);return;}
-  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?t('st_oneLeft'):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endOne}:null]);return;}
-  const msg=forced(r)+(st.phase==='opening'?t('st_opening'):st.finalTurn?t(solo()?'lg_lastTurn':'st_lastTurn'):solo()?t('st_turn',{n:seatName(st.turn)}):t('st_yourTurn'));
+  if(st.phase==='pie'){status(soloWho(st.turn,t('st_pie')),'turn',[...idle,{label:t('takeLight'),short:t('takeLightS'),primary:true,on:()=>pie('L')},{label:t('playDark'),short:t('playDarkS'),on:()=>pie('D')}]);return;}
+  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?soloWho(st.turn,t('st_oneLeft')):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endOne}:null]);return;}
+  const msg=forced(r)+(st.phase==='opening'?soloWho(st.turn,t('st_opening')):st.finalTurn?(solo()?t('lg_lastTurn')+' '+t('st_turn',{n:seatName(st.turn)}):t('st_lastTurn')):solo()?t('st_turn',{n:seatName(st.turn)}):t('st_yourTurn'));
   const canP=st.phase==='play'&&canPass(st,p);
   status(msg,'turn',[...idle,canP?{label:t(p===2||st.finalTurn?'passEnd':'pass'),short:p===2||st.finalTurn?t('passEndS'):undefined,on:doPass}:null]);}
 // The colour choice (seat 1, after the opening) always waits for Confirm, whatever the option (C14)
@@ -920,7 +919,8 @@ function pdHowto(k,A){const {svg,wait,cursor,click}=A,NSv='http://www.w3.org/200
 // ---------- the interface with common/core.js ----------
 $('needConfirm').checked=LS.get('pdd-confirmEach',true)!==false;
 $('needConfirm').onchange=e=>LS.set('pdd-confirmEach',e.target.checked);
-const GAME={howto:{off:true,titled:true,n:3,scene:pdHowto},id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
+const GAME={howto:{off:true,titled:true,n:3,scene:pdHowto},id:'pdd',seatCol:s=>{const c=view&&view.moves[1];return c==='L'||c==='D'?((s===1)===(c==='L')?'light':'dark'):null;},   // Clair / Foncé once chosen (seat 1: L takes Light)
+  size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
   rules:()=>({}),form:()=>({}),
   replay:pdReplay,
   legal:(st,code)=>{const m=parse(code);return m&&step(st,m)?enc(m):null;},

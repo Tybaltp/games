@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=52">
 <style>
 /* Ayu palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
@@ -79,7 +79,6 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
         <label class="toggle" for="cSwap"><input type="checkbox" id="cSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
@@ -89,20 +88,20 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
       <form class="form" id="aiForm" hidden>
         <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
         <label class="toggle" for="aSwap"><input type="checkbox" id="aSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
         <label class="toggle" for="fSwap"><input type="checkbox" id="fSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
         <label class="toggle" for="tSwap"><input type="checkbox" id="tSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -169,7 +168,7 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=86"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -256,8 +255,8 @@ const AY_I18N={fr:{
  lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
  title:"Ayu",lede:"Des pierres éparpillées partout : rassemblez les vôtres.",by:"Un jeu de Luis Bolaños Mures.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
- firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
- cB:"noir",cW:"blanc",units:"{n} unités",unit1:"1 unité",unitsT:"Unités : pierres seules ou groupes. Une seule unité, le plus souvent : plus de coup, c'est gagné.",
+ needConfirm:"Confirmer chaque coup",
+ cB:"noir",sB:"Noir",sW:"Blanc",cW:"blanc",units:"{n} unités",unit1:"1 unité",unitsT:"Unités : pierres seules ou groupes. Une seule unité, le plus souvent : plus de coup, c'est gagné.",
  swap:"Échanger",swapT:"Échanger : vous prenez le camp noir et le coup joué ; votre adversaire joue Blanc.",
  st_play:"À vous ({c}) : choisissez une pierre à déplacer.",st_playN:"{name} ({c}) : choisissez une pierre à déplacer.",st_swapQ:" Ou échangez.",
  st_sel:"Choisissez où elle va (points marqués).",st_selNone:"Cette pierre ne peut pas bouger : choisissez-en une autre.",
@@ -283,8 +282,8 @@ const AY_I18N={fr:{
  lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
  title:"Ayu",lede:"Stones scattered everywhere: gather yours.",by:"A game by Luis Bolaños Mures.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
- firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
- cB:"black",cW:"white",units:"{n} units",unit1:"1 unit",unitsT:"Units: lone stones or groups. A single unit usually means no more moves: a win.",
+ needConfirm:"Confirm each move",
+ cB:"black",sB:"Black",sW:"White",cW:"white",units:"{n} units",unit1:"1 unit",unitsT:"Units: lone stones or groups. A single unit usually means no more moves: a win.",
  swap:"Swap",swapT:"Swap: you take the black side and the move played; your opponent plays White.",
  st_play:"Your move ({c}): choose a stone to move.",st_playN:"{name} ({c}): choose a stone to move.",st_swapQ:" Or swap.",
  st_sel:"Choose where it goes (marked points).",st_selNone:"This stone cannot move: choose another one.",
@@ -310,8 +309,8 @@ const AY_I18N={fr:{
  lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
  title:"Ayu",lede:"Piedras dispersas por todas partes: reúne las tuyas.",by:"Un juego de Luis Bolaños Mures.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
- firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
- cB:"negras",cW:"blancas",units:"{n} unidades",unit1:"1 unidad",unitsT:"Unidades: piedras sueltas o grupos. Una sola unidad, casi siempre: no hay más jugadas, has ganado.",
+ needConfirm:"Confirmar cada jugada",
+ cB:"negras",sB:"Negras",sW:"Blancas",cW:"blancas",units:"{n} unidades",unit1:"1 unidad",unitsT:"Unidades: piedras sueltas o grupos. Una sola unidad, casi siempre: no hay más jugadas, has ganado.",
  swap:"Intercambiar",swapT:"Intercambiar: tomas el bando negro y la jugada hecha; tu adversario juega con Blancas.",
  st_play:"Te toca ({c}): elige una piedra para mover.",st_playN:"{name} ({c}): elige una piedra para mover.",st_swapQ:" O intercambia.",
  st_sel:"Elige adónde va (puntos marcados).",st_selNone:"Esta piedra no puede moverse: elige otra.",
@@ -358,11 +357,11 @@ function targets(st,f){const k=st.b.join('')+'|'+f;if(tgCache.key!==k){const out
 function ayBoard({r,d,mine,ms}){const live=navAt===null;if(mine&&live&&ui.f>=0&&ms.b[ui.f]!==AY.toMove(ms))clearPrep();
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function ayTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=AY.toMove(st),me=seatName(st.turn);
-  if(ui.f>=0){status(targets(st,ui.f).length?t('st_sel'):t('st_selNone'),'turn',[RST]);return;}
+  if(ui.f>=0){status(soloWho(st.turn,targets(st,ui.f).length?t('st_sel'):t('st_selNone')),'turn',[RST]);return;}
   const sw=st.swap&&st.ply===1;
-  status((S?t('st_playN',{name:me,c:CN(c)}):t('st_play',{c:CN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
+  status((S?tN('st_playN',{name:me,c:CN(c)}):t('st_play',{c:CN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
   if(sw&&$('bSwap'))$('bSwap').title=t('swapT');}
-function ayWaitStatus({r}){status(t('st_turnC',{name:seatName(r.st.turn),c:CN(AY.toMove(r.st))}));return true;}
+function ayWaitStatus({r}){status(tN('st_turnC',{name:seatName(r.st.turn),c:CN(AY.toMove(r.st))}));return true;}
 function pendText(mv,st){const [f,tt]=String(mv).split('-');return [t('pend',{f,t:tt}),t('confirm1')];}
 function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
   if(dot){dot.className='dot sst '+CK(col);dot.title=CN(col);}
@@ -377,7 +376,7 @@ function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i
   const st=meSt(r),c=AY.toMove(st);
   if(i===ui.t){if(ui.pending&&GAME.again(ui.pending)){pendAgain();return;}ui.t=-1;ui.pending=null;renderGame();return;}   // the provisional stone clicked again: played (C14)
   if(i===ui.f){clearPrep();renderGame();return;}
-  if(st.b[i]===c){clearPrep();ui.f=i;tone(880,.05,.03);renderGame();return;}
+  if(st.b[i]===c){clearPrep();ui.f=i;renderGame();return;}
   if(ui.f>=0&&targets(st,ui.f).includes(i)){const code=nm(st,ui.f)+'-'+nm(st,i);
     if(!confirmOn()&&!touch){clearPrep();send(code);return;}ui.t=i;ui.pending=code;renderGame();return;}}
 $('needConfirm').checked=LS.get('ayu-confirm',true)!==false;
@@ -973,7 +972,8 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 // ---------- the interface with common/core.js ----------
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
 const ayKey=st=>st.turn+':'+st.col[st.turn]+':'+st.b.join('');   // the engine's key of a position (repetitions)
-const GAME={id:'ayu',size:'square',codeTag:'AYU1',i18n:AY_I18N,
+const GAME={id:'ayu',seatCol:s=>(s===0)!==(!!view&&view.moves[1]==='swap')?'sB':'sW',   // seat 0 Black, White once the swap is taken
+  size:'square',codeTag:'AYU1',i18n:AY_I18N,
   again:mv=>/^[a-z]\d+-[a-z]\d+$/.test(String(mv)),
   rules:g=>AY.rules(g),
   form:p=>{const r=AY.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('ayu-size',r.size);LS.set('ayu-swap',r.swap);return r;},
