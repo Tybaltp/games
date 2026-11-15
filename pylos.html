@@ -390,7 +390,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=86"></script>
+<script src="common/core.js?v=87"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=2"></script>
 <script>
@@ -415,7 +415,6 @@ const PY_I18N={fr:{
  d_place:"poser en {a}",d_lift:"monter {a} en {b}",d_rem:", reprendre {r}",d_and:" et ",
  l_rem:"reprend {r}",
  res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
- rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_no:"Continuer",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
  lv_n0:"0 : un coup d'avance, au hasard parmi les bons",lv_n1:"1 : un coup d'avance",lv_n2:"2 : deux coups d'avance",lv_n3:"3 : trois coups d'avance",lv_n4:"4 : quatre coups d'avance",lv_n5:"5 : six coups d'avance, le plus fort",
  m_aiTxt:"Six niveaux, de 0 à 5 : de un à six coups d'avance.",
@@ -446,7 +445,6 @@ const PY_I18N={fr:{
  d_place:"place on {a}",d_lift:"move {a} up to {b}",d_rem:", take back {r}",d_and:" and ",
  l_rem:"takes back {r}",
  res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
- rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_no:"Keep playing",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
  lv_n0:"0: one move ahead, at random among the good ones",lv_n1:"1: one move ahead",lv_n2:"2: two moves ahead",lv_n3:"3: three moves ahead",lv_n4:"4: four moves ahead",lv_n5:"5: six moves ahead, the strongest",
  m_aiTxt:"Six levels, from 0 to 5: one to six moves ahead.",
@@ -477,7 +475,6 @@ const PY_I18N={fr:{
  d_place:"colocar en {a}",d_lift:"subir {a} a {b}",d_rem:", recuperar {r}",d_and:" y ",
  l_rem:"recupera {r}",
  res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
- rep_ask:"Has repetido la misma posición tres veces. ¿Quieres proponer tablas?",rep_no:"Continuar",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
  lv_n0:"0: una jugada de antelación, al azar entre las buenas",lv_n1:"1: una jugada de antelación",lv_n2:"2: dos jugadas de antelación",lv_n3:"3: tres jugadas de antelación",lv_n4:"4: cuatro jugadas de antelación",lv_n5:"5: seis jugadas de antelación, el más fuerte",
  m_aiTxt:"Seis niveles, de 0 a 5: de una a seis jugadas de antelación.",
@@ -516,9 +513,8 @@ const isFreeBall=(b,i)=>b[i]!==-1&&PG.above[i].every(j=>b[j]===-1);
 
 // ---------- game view ----------
 // ui: sel (my free ball chosen to move up, -1), main ({from,to} of the action made, null), bonus (the action completes a
-// square: removals to choose), rem (balls taken back so far), pending (the complete code awaiting confirmation), hover,
-// repSeen (the third repetition already answered at this move)
-const newUi=()=>({sel:-1,main:null,bonus:false,rem:[],pending:null,hover:-1,repSeen:-1});
+// square: removals to choose), rem (balls taken back so far), pending (the complete code awaiting confirmation), hover
+const newUi=()=>({sel:-1,main:null,bonus:false,rem:[],pending:null,hover:-1});
 const prepared=()=>ui.sel>=0||!!ui.main||!!ui.pending;
 function clearPrep(){ui.sel=-1;ui.main=null;ui.bonus=false;ui.rem=[];ui.pending=null;}
 function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
@@ -534,20 +530,9 @@ function pyBoard({r,d,mine,ms}){const live=navAt===null;
     else if(ui.main&&ui.rem.length&&PY.legal(ms,fullCode(ui.main,ui.rem))===null)clearPrep();}
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function pyTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.turn),c=CNL(st.turn);
-  // the same position for the third time (decision of 09.11.2026): the player may offer a draw (core's draw offer)
-  if(!prep&&drawOK()&&ui.repSeen!==view.moves.length&&repeated(view)>=3){
-    status(t('rep_ask'),'turn',[{label:t('rep_no'),on:()=>{ui.repSeen=view.moves.length;renderGame();}},{label:t('drawOffer'),primary:true,on:()=>{ui.repSeen=view.moves.length;drawSend('ask');}}]);return;}
   if(ui.main&&ui.bonus&&!ui.rem.length){status(soloWho(st.turn,t(st.variant==='lines'?'st_bonusL':'st_bonus')),'turn',[RST]);return;}
   if(ui.sel>=0){status(soloWho(st.turn,t('st_sel',{a:NAME(ui.sel)})),'turn',[RST]);return;}
   status(S?tN('st_turnC',{name:me,c}):t('st_play',{c}),'turn',prep?[RST]:idle);}
-// how many times the position shown (balls and side to move) has occurred along the game, this time included
-let repKey=null,repVal=0;
-function repeated(v){const key=v.moves.join(',');if(key===repKey)return repVal;
-  const st=PY.init(PY.rules(v)),seen={},sig=s=>Array.from(s.b).join('')+s.turn;seen[sig(st)]=1;
-  for(const m of v.moves){const code=PY.legal(st,m);if(code===null)break;PY.apply(st,code);const k=sig(st);seen[k]=(seen[k]||0)+1;}
-  repKey=key;return repVal=seen[sig(st)]||0;}
-// a draw can be offered now (core: against the computer, face to face, by link)
-const drawOK=()=>!!view&&!view.draw&&(role==='ai'||role==='local'||role==='host'||role==='guest');
 function pyWaitStatus({r}){const st=r.st;status(tN('st_turnC',{name:seatName(st.turn),c:CNL(st.turn)}));return true;}
 function pendText(mv,st){const m=parseCode(mv);
   // one removal made and a second one possible: say so
@@ -805,14 +790,16 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 
 // ---------- the interface with common/core.js ----------
 const homeVariant=()=>PY.rules({variant:LS.get('pylos-variant','lines')}).variant;
-// the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
+// the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy;
+// sig: the position for the repetition, balls and side to move (core: a frame the third time, a draw the fourth, 15.11.2026)
 const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Foncé
   size:4,codeTag:'PYLOS1',i18n:PY_I18N,
   rules:g=>PY.rules(g),
   form:p=>{const v=PY.rules({variant:$(p+'Variant').value}).variant;LS.set('pylos-variant',v);return {variant:v};},
   replay:(r,m)=>replayKept(r,m,{init:g=>PY.init(PY.rules(g)),
     play(prev,mv){const st=deepCopy(prev),code=PY.legal(st,mv);if(code===null)return null;   // as PY.replay, move by move
-      const p=st.turn,res=PY.apply(st,code);return {st,e:{p,txt:res.txt,code},last:{code,cells:res.cells},over:PY.finished(st)};}}),
+      const p=st.turn,res=PY.apply(st,code);return {st,e:{p,txt:res.txt,code},last:{code,cells:res.cells},over:PY.finished(st)};},
+    sig:st=>Array.from(st.b).join(',')+'|'+st.turn}),
   legal:(st,code)=>PY.legal(st,code),
   enc:mv=>PY.enc(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:pyBoard,turnStatus:pyTurnStatus,waitStatus:pyWaitStatus,pendText,again:()=>!!(ui.main&&!ui.bonus),

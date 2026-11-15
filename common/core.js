@@ -41,6 +41,9 @@
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
 //  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
 //  drawOffer?                    true: the players may offer a draw (accepted: drawn by agreement)
+//                                Repetition (Gygès, Pylos): the game's replayKept gets sig(st), the key of a position (pieces and
+//                                side to move); the third time a position comes back, a frame over the board asks both players
+//                                whether to offer a draw (the draw offer below, even without drawOffer); the fourth time, a draw (w_rep)
 //  quietWhy?(why)                true: the end of the game says only who wins (« Player 2 wins. »), not why
 //  rich?(txt)                    status texts with pictures: txt holds U+2063…U+2063 marks; returns {node(), plain}
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
@@ -88,7 +91,7 @@ const I18C={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Votre adversaire ne répond plus, reconnexion… Les pendules sont arrêtées.",st_lostWatch:"La table ne répond plus, nouvel essai…",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  
- w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",playGo:"Jouer",analyse:"Analyser",haveInvite:"J'ai un code d'invitation",modeOpt:"Mode de jeu",a_free:"Nouvelle analyse",a_freeTxt:"Les deux camps sur cet écran : retour en arrière, variantes, suggestions.",a_freeTxtN:"Les deux camps sur cet écran : retour en arrière, variantes.",a_load:"Charger une partie",a_loadTxt:"Un fichier SGF : une partie terminée à revoir, ou inachevée à poursuivre.",sgfFile:"Fichier SGF",sgfLoadBtn:"Charger la partie",sgfNoFile:"Choisissez d'abord un fichier.",editName:"Cliquez pour renommer",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"en premier",mq_p2:"en second",m_plays:"{n} joue {s}",mq_1s:"vous jouez l'ouverture",mq_2s:"vous décidez d'échanger ou non",sf_clicked:"{n} a cliqué Démarrer la partie.",sf_waitOpp:"En attente de votre adversaire",sf_waitPl:"En attente des joueurs",sf_choosing:"{n} choisit sa place…",sf_go:"La partie commence",mq_q:"Voulez-vous jouer en premier ou en second ?",mq_1:"En premier",mq_2:"En second",m_choosing:"{n} choisit sa place.",m_waitOpp:"En attente de votre adversaire à cette table.",m_chooseYou:"À vous de choisir votre place à cette table.",m_next:"Rejoindre la table suivante",m_follow:"Suivre à la table suivante",m_result:"Voir le résultat du match",m_live:"en cours",m_drawn:"nulle",m_won:"{n} gagne",m_unknown:"Ce match n'est pas connu sur cet appareil : ouvrez son lien d'invitation.",spectator:"Observateur",options:"Options",drawOffer:"Proposer la nulle",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
+ w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",w_rep:"la même position est revenue une quatrième fois",rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_warn:"Si la position revient encore, la nulle sera forcée.",rep_no:"Continuer",playGo:"Jouer",analyse:"Analyser",haveInvite:"J'ai un code d'invitation",modeOpt:"Mode de jeu",a_free:"Nouvelle analyse",a_freeTxt:"Les deux camps sur cet écran : retour en arrière, variantes, suggestions.",a_freeTxtN:"Les deux camps sur cet écran : retour en arrière, variantes.",a_load:"Charger une partie",a_loadTxt:"Un fichier SGF : une partie terminée à revoir, ou inachevée à poursuivre.",sgfFile:"Fichier SGF",sgfLoadBtn:"Charger la partie",sgfNoFile:"Choisissez d'abord un fichier.",editName:"Cliquez pour renommer",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"en premier",mq_p2:"en second",m_plays:"{n} joue {s}",mq_1s:"vous jouez l'ouverture",mq_2s:"vous décidez d'échanger ou non",sf_clicked:"{n} a cliqué Démarrer la partie.",sf_waitOpp:"En attente de votre adversaire",sf_waitPl:"En attente des joueurs",sf_choosing:"{n} choisit sa place…",sf_go:"La partie commence",mq_q:"Voulez-vous jouer en premier ou en second ?",mq_1:"En premier",mq_2:"En second",m_choosing:"{n} choisit sa place.",m_waitOpp:"En attente de votre adversaire à cette table.",m_chooseYou:"À vous de choisir votre place à cette table.",m_next:"Rejoindre la table suivante",m_follow:"Suivre à la table suivante",m_result:"Voir le résultat du match",m_live:"en cours",m_drawn:"nulle",m_won:"{n} gagne",m_unknown:"Ce match n'est pas connu sur cet appareil : ouvrez son lien d'invitation.",spectator:"Observateur",options:"Options",drawOffer:"Proposer la nulle",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
  sgfExport:"Exporter la partie (SGF)",sgfBusy:"Export en cours…",sgfDone:"Fichier SGF enregistré ✓",
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
@@ -115,7 +118,7 @@ const I18C={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Your opponent is not responding, reconnecting… The clocks are stopped.",st_lostWatch:"The table is not responding, trying again…",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  
- w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",playGo:"Play",analyse:"Analyse",haveInvite:"I have an invitation code",modeOpt:"Game mode",a_free:"New analysis",a_freeTxt:"Both sides on this screen: stepping back, variations, hints.",a_freeTxtN:"Both sides on this screen: stepping back, variations.",a_load:"Load a game",a_loadTxt:"An SGF file: a finished game to replay, or an unfinished one to go on with.",sgfFile:"SGF file",sgfLoadBtn:"Load the game",sgfNoFile:"Choose a file first.",editName:"Click to rename",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"first",mq_p2:"second",m_plays:"{n} plays {s}",mq_1s:"you play the opening",mq_2s:"you decide whether to swap",sf_clicked:"{n} has clicked Start the game.",sf_waitOpp:"Waiting for your opponent",sf_waitPl:"Waiting for the players",sf_choosing:"{n} is choosing their seat…",sf_go:"The game starts",mq_q:"Do you want to play first or second?",mq_1:"First",mq_2:"Second",m_choosing:"{n} is choosing their seat.",m_waitOpp:"Waiting for your opponent at this table.",m_chooseYou:"Your turn to choose your seat at this table.",m_next:"Join the next table",m_follow:"Follow to the next table",m_result:"See the match result",m_live:"in progress",m_drawn:"draw",m_won:"{n} wins",m_unknown:"This match is not known on this device: open its invitation link.",spectator:"Spectator",options:"Options",drawOffer:"Offer a draw",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
+ w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",w_rep:"the same position came back a fourth time",rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_warn:"If the position comes back once more, the draw will be forced.",rep_no:"Keep playing",playGo:"Play",analyse:"Analyse",haveInvite:"I have an invitation code",modeOpt:"Game mode",a_free:"New analysis",a_freeTxt:"Both sides on this screen: stepping back, variations, hints.",a_freeTxtN:"Both sides on this screen: stepping back, variations.",a_load:"Load a game",a_loadTxt:"An SGF file: a finished game to replay, or an unfinished one to go on with.",sgfFile:"SGF file",sgfLoadBtn:"Load the game",sgfNoFile:"Choose a file first.",editName:"Click to rename",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"first",mq_p2:"second",m_plays:"{n} plays {s}",mq_1s:"you play the opening",mq_2s:"you decide whether to swap",sf_clicked:"{n} has clicked Start the game.",sf_waitOpp:"Waiting for your opponent",sf_waitPl:"Waiting for the players",sf_choosing:"{n} is choosing their seat…",sf_go:"The game starts",mq_q:"Do you want to play first or second?",mq_1:"First",mq_2:"Second",m_choosing:"{n} is choosing their seat.",m_waitOpp:"Waiting for your opponent at this table.",m_chooseYou:"Your turn to choose your seat at this table.",m_next:"Join the next table",m_follow:"Follow to the next table",m_result:"See the match result",m_live:"in progress",m_drawn:"draw",m_won:"{n} wins",m_unknown:"This match is not known on this device: open its invitation link.",spectator:"Spectator",options:"Options",drawOffer:"Offer a draw",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
  sgfExport:"Export the game (SGF)",sgfBusy:"Exporting…",sgfDone:"SGF file saved ✓",
  sgfBad:"Unreadable SGF file.",sgfOther:"This file belongs to another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 },es:{
@@ -142,7 +145,7 @@ const I18C={fr:{
  st_pausedHost:"{n} no responde. Los relojes están parados hasta que vuelva.",st_pausedGuest:"Tu adversario no responde, reconectando… Los relojes están parados.",st_lostWatch:"La mesa no responde, nuevo intento…",st_pausedWatch:"Un jugador está desconectado. Los relojes están parados.",
  st_waitBoth:"Esperando a que los dos jugadores empiecen.",st_waitClick:"Esperando a que {n} pulse Empezar la partida.",st_bothHere:"Los dos jugadores están aquí. Pulsad Empezar la partida, cada uno por su lado.",
  
- w_time:"tiempo agotado",w_resign:"abandono",w_agree:"acuerdo mutuo",playGo:"Jugar",analyse:"Analizar",haveInvite:"Tengo un código de invitación",modeOpt:"Modo de juego",a_free:"Nuevo análisis",a_freeTxt:"Los dos bandos en esta pantalla: vuelta atrás, variantes, sugerencias.",a_freeTxtN:"Los dos bandos en esta pantalla: vuelta atrás, variantes.",a_load:"Cargar una partida",a_loadTxt:"Un archivo SGF: una partida terminada para repasarla, o sin terminar para continuarla.",sgfFile:"Archivo SGF",sgfLoadBtn:"Cargar la partida",sgfNoFile:"Elige primero un archivo.",editName:"Pulsa para cambiar el nombre",m_table:"Mochalunt · mesa {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"primero",mq_p2:"segundo",m_plays:"{n} juega {s}",mq_1s:"juegas la apertura",mq_2s:"decides si intercambiar o no",sf_clicked:"{n} ha pulsado Empezar la partida.",sf_waitOpp:"Esperando a tu adversario",sf_waitPl:"Esperando a los jugadores",sf_choosing:"{n} elige su sitio…",sf_go:"La partida empieza",mq_q:"¿Quieres jugar primero o segundo?",mq_1:"Primero",mq_2:"Segundo",m_choosing:"{n} elige su sitio.",m_waitOpp:"Esperando a tu adversario en esta mesa.",m_chooseYou:"Te toca elegir tu sitio en esta mesa.",m_next:"Ir a la mesa siguiente",m_follow:"Seguir en la mesa siguiente",m_result:"Ver el resultado del encuentro",m_live:"en curso",m_drawn:"tablas",m_won:"{n} gana",m_unknown:"Este encuentro no se conoce en este dispositivo: abre su enlace de invitación.",spectator:"Espectador",options:"Opciones",drawOffer:"Proponer tablas",drawWait:"Tablas propuestas: esperando la respuesta de {n}.",drawNo:"{n} rechaza las tablas.",drawAsk:"{n} propone tablas.",w_bad:"jugada ilegible",coords:"Coordenadas",
+ w_time:"tiempo agotado",w_resign:"abandono",w_agree:"acuerdo mutuo",w_rep:"la misma posición ha vuelto por cuarta vez",rep_ask:"Habéis repetido la misma posición tres veces. ¿Queréis proponer tablas?",rep_warn:"Si la posición vuelve otra vez, las tablas serán obligatorias.",rep_no:"Continuar",playGo:"Jugar",analyse:"Analizar",haveInvite:"Tengo un código de invitación",modeOpt:"Modo de juego",a_free:"Nuevo análisis",a_freeTxt:"Los dos bandos en esta pantalla: vuelta atrás, variantes, sugerencias.",a_freeTxtN:"Los dos bandos en esta pantalla: vuelta atrás, variantes.",a_load:"Cargar una partida",a_loadTxt:"Un archivo SGF: una partida terminada para repasarla, o sin terminar para continuarla.",sgfFile:"Archivo SGF",sgfLoadBtn:"Cargar la partida",sgfNoFile:"Elige primero un archivo.",editName:"Pulsa para cambiar el nombre",m_table:"Mochalunt · mesa {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"primero",mq_p2:"segundo",m_plays:"{n} juega {s}",mq_1s:"juegas la apertura",mq_2s:"decides si intercambiar o no",sf_clicked:"{n} ha pulsado Empezar la partida.",sf_waitOpp:"Esperando a tu adversario",sf_waitPl:"Esperando a los jugadores",sf_choosing:"{n} elige su sitio…",sf_go:"La partida empieza",mq_q:"¿Quieres jugar primero o segundo?",mq_1:"Primero",mq_2:"Segundo",m_choosing:"{n} elige su sitio.",m_waitOpp:"Esperando a tu adversario en esta mesa.",m_chooseYou:"Te toca elegir tu sitio en esta mesa.",m_next:"Ir a la mesa siguiente",m_follow:"Seguir en la mesa siguiente",m_result:"Ver el resultado del encuentro",m_live:"en curso",m_drawn:"tablas",m_won:"{n} gana",m_unknown:"Este encuentro no se conoce en este dispositivo: abre su enlace de invitación.",spectator:"Espectador",options:"Opciones",drawOffer:"Proponer tablas",drawWait:"Tablas propuestas: esperando la respuesta de {n}.",drawNo:"{n} rechaza las tablas.",drawAsk:"{n} propone tablas.",w_bad:"jugada ilegible",coords:"Coordenadas",
  sgfExport:"Exportar la partida (SGF)",sgfBusy:"Exportando…",sgfDone:"Archivo SGF guardado ✓",
  sgfBad:"Archivo SGF ilegible.",sgfOther:"Este archivo es una partida de otro juego ({g}).",sgfMove:"Archivo SGF: la jugada {n} no es legal."
 }};
@@ -194,8 +197,12 @@ const sameRules=(a,b)=>JSON.stringify(GAME.rules(a))===JSON.stringify(GAME.rules
 // the new position, never the one given, which is not to be changed; e: its log entry; last: the last move shown, or
 // undefined to keep the previous one; over: the end of the game, or null), or null for an illegal code (w_bad).
 // The position and the last move returned are copies: what the callers do to them never reaches the memory.
-const RK={key:null,codes:[],sts:[],log:[],lasts:[],over:null};
-function replayForget(){RK.key=null;RK.codes=[];RK.sts=[];RK.log=[];RK.lasts=[];RK.over=null;}
+// R.sig(st), optional: the key of a position for the repetition (pieces and side to move); the result then says in rep how
+// many times the position reached has occurred (this time included), and the fourth time ends the game drawn (w_rep).
+const RK={key:null,codes:[],sts:[],log:[],lasts:[],over:null,sigs:[]};
+function replayForget(){RK.key=null;RK.codes=[];RK.sts=[];RK.log=[];RK.lasts=[];RK.over=null;RK.sigs=[];}
+const REP_DRAW=4;   // the fourth time the same position occurs: drawn (decision of Thibault, 15.11.2026)
+const repCount=(sigs,n)=>{let c=0;for(let k=0;k<=n;k++)if(sigs[k]===sigs[n])c++;return c;};
 function deepCopy(x){if(x===null||typeof x!=='object')return x;
   if(ArrayBuffer.isView(x)){const c=new x.constructor(x);for(const k in x)if(!/^\d+$/.test(k))c[k]=deepCopy(x[k]);return c;}   // own fields too (st.turn)
   if(Array.isArray(x))return x.map(deepCopy);
@@ -204,15 +211,16 @@ function deepCopy(x){if(x===null||typeof x!=='object')return x;
   if(Object.getPrototypeOf(x)!==Object.prototype)return x;
   const c={};for(const k of Object.keys(x))c[k]=deepCopy(x[k]);return c;}
 function replayKept(rules,moves,R){const key=lang+'|'+JSON.stringify(GAME.rules(rules));
-  if(key!==RK.key){replayForget();RK.key=key;RK.sts.push(R.init(rules));RK.lasts.push(null);}
+  if(key!==RK.key){replayForget();RK.key=key;RK.sts.push(R.init(rules));RK.lasts.push(null);if(R.sig)RK.sigs.push(R.sig(RK.sts[0]));}
   const C=RK.codes;let L=0;while(L<moves.length&&L<C.length&&C[L]===moves[L])L++;
   let n=L,bad=null;
   if(L===C.length||L<moves.length){   // not a position already kept (navigating back): drop what follows L, replay the rest
-    if(L<C.length){C.length=L;RK.sts.length=L+1;RK.log.length=L;RK.lasts.length=L+1;RK.over=null;}
+    if(L<C.length){C.length=L;RK.sts.length=L+1;RK.log.length=L;RK.lasts.length=L+1;RK.sigs.length=R.sig?L+1:0;RK.over=null;}
     for(let k=L;k<moves.length&&!RK.over;k++){const x=R.play(RK.sts[k],moves[k],k);if(!x){bad={w:-1,why:'w_bad'};break;}
-      C.push(moves[k]);RK.sts.push(x.st);RK.log.push(x.e);RK.lasts.push(x.last===undefined?RK.lasts[k]:x.last);RK.over=x.over||null;}
+      C.push(moves[k]);RK.sts.push(x.st);RK.log.push(x.e);RK.lasts.push(x.last===undefined?RK.lasts[k]:x.last);RK.over=x.over||null;
+      if(R.sig){RK.sigs.push(R.sig(x.st));if(!RK.over&&repCount(RK.sigs,k+1)>=REP_DRAW)RK.over={w:-1,why:'w_rep'};}}
     n=C.length;}
-  return {st:deepCopy(RK.sts[n]),log:RK.log.slice(0,n),last:deepCopy(RK.lasts[n]),over:deepCopy(bad||(n===C.length?RK.over:null))};}
+  return {st:deepCopy(RK.sts[n]),log:RK.log.slice(0,n),last:deepCopy(RK.lasts[n]),over:deepCopy(bad||(n===C.length?RK.over:null)),rep:R.sig&&!bad?repCount(RK.sigs,n):0};}
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
@@ -294,7 +302,7 @@ function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.resu
 // (no new offer meanwhile); acceptance ends the game, drawn by agreement
 const drawAfter=(dr,s)=>!dr||dr.st!=='ask'?null:dr.from===s?dr:{from:dr.from,st:'no'};   // the offer once seat s has moved
 function drawOp(g,s,op){const dr=g.draw,r=replay(g,g.moves,g.result);if(r.over||!g.started)return false;
-  if(op==='ask'&&!dr)g.draw={from:s,st:'ask'};
+  if(op==='ask'&&!dr&&(GAME.drawOffer||r.rep===REP_DRAW-1))g.draw={from:s,st:'ask'};
   else if(op==='no'&&dr&&dr.from!==s&&dr.st==='ask')g.draw={from:dr.from,st:'no'};
   else if(op==='yes'&&dr&&dr.from!==s&&dr.st==='ask'){g.draw=null;g.result={winner:-1,reason:'agree'};}
   else return false;
@@ -309,6 +317,8 @@ function drawSend(op){if(!view)return;const r=replay(view,view.moves,view.result
     if(a&&!a.policy&&!a.forced&&typeof a.score==='number'&&a.score<.3){stopAI();hintMv=null;resetUi();view.draw=null;view.result={winner:-1,reason:'agree'};}
     else view.draw={from:mySeat,st:'no'};renderGame();}}
 const RMX={shut:false};   // the rematch frame closed by its cross (until the offer changes)
+const REPX={seen:null};   // the position whose third-repetition frame was answered: repKey()
+const repKey=()=>view?location.hash+'|'+view.moves.join(','):null;   // the game's address and its moves (forgotten when a game starts: renderGame)
 function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});else status(t('st_noHost2'));}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
@@ -436,7 +446,7 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
   if(d.t==='start')hostReady(s);
   if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
   if(d.t==='rematch')rematchOp(s,d.op);
-  if(d.t==='draw'&&GAME.drawOffer&&drawOp(g,s,d.op))hostBroadcast();
+  if(d.t==='draw'&&drawOp(g,s,d.op))hostBroadcast();   // drawOp: without GAME.drawOffer, only at a third repetition
   if(d.t==='mchoose')mChoose(s,d.c);
   if(d.t==='voice')voiceOnMsg(d.op);}
 function hostMove(s,n,code,conn){const g=H.game,pubFor=()=>({...hostPublic(),myHold:myHoldOf(s),...hostPriv()});if(conn&&n===g.moves.length-1&&g.moves[n]===code){conn.send({t:'state',game:pubFor()});return false;}
@@ -779,6 +789,12 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
     // a rematch offered to me: also in a frame over the board, until answered or closed (it stays in the end card)
     const recv=pl&&asked&&!mineRm&&!view.match;if(!recv)RMX.shut=false;
     if($('rmOv')){$('rmOv').hidden=!recv||RMX.shut;if(recv){$('rmOvTxt').textContent=t('rm_ask',{n:opp});$('rmOvNo').textContent=t('decline');$('rmOvYes').textContent=t('accept');$('rmOvX').title=t('close');$('rmOvX').setAttribute('aria-label',t('close'));}}}   // a match: the next table instead of a rematch
+  // the same position for the third time: a frame over the board for each player (once per position: REPX.seen), with the
+  // warning that the next time is a draw; Keep playing closes it, Offer a draw sends the draw offer to the other
+  if($('repOv')){if(!view.moves.length)REPX.seen=null;   // a new game (a rematch keeps the address)
+    const key=repKey(),on=r.rep===REP_DRAW-1&&!r.over&&!A&&navAt===null&&mySeat>=0&&!!view.started&&!view.draw&&REPX.seen!==key&&
+      (role==='ai'||role==='local'||(role==='host'||role==='guest')&&!!view.names[1-mySeat]);
+    $('repOv').hidden=!on;if(on){$('repOvTxt').textContent=t('rep_ask');$('repOvWarn').textContent=t('rep_warn');$('repOvNo').textContent=t('rep_no');$('repOvYes').textContent=t('drawOffer');}}
   if(view.match)$('endCard').hidden=true;   // and no way home (« Accueil ») during a match: the match card leads on
   const ol=$('log');ol.textContent='';
   // analysis: the whole line (the path, then the first child at each branching); a move with variations: ◆ and their number
@@ -1460,7 +1476,12 @@ function coreStart(){reportUi();againUi();if(window.ResizeObserver&&$('notice'))
   // a rematch offered to me: a frame over the board (renderGame), with a cross to close it without answering
   {const bd=document.querySelector('#game .board');if(bd){const o=document.createElement('div');o.className='rmov';o.id='rmOv';o.hidden=true;o.setAttribute('role','dialog');o.setAttribute('aria-labelledby','rmOvTxt');
     o.innerHTML='<div class="card"><button type="button" class="rmx" id="rmOvX">×</button><p class="sfmsg" id="rmOvTxt"></p><div class="confirm"><button type="button" id="rmOvNo"></button><button type="button" class="primary" id="rmOvYes"></button></div></div>';bd.appendChild(o);
-    $('rmOvX').onclick=()=>{RMX.shut=true;o.hidden=true;};$('rmOvNo').onclick=()=>rmSend('no');$('rmOvYes').onclick=()=>{sheet(false);rmSend('yes');};}}
+    $('rmOvX').onclick=()=>{RMX.shut=true;o.hidden=true;};$('rmOvNo').onclick=()=>rmSend('no');$('rmOvYes').onclick=()=>{sheet(false);rmSend('yes');};
+    // the third repetition (renderGame)
+    const q=document.createElement('div');q.className='rmov';q.id='repOv';q.hidden=true;q.setAttribute('role','dialog');q.setAttribute('aria-labelledby','repOvTxt');q.setAttribute('aria-describedby','repOvWarn');
+    q.innerHTML='<div class="card"><p class="sfmsg" id="repOvTxt"></p><p class="hint" id="repOvWarn"></p><div class="confirm"><button type="button" id="repOvNo"></button><button type="button" class="primary" id="repOvYes"></button></div></div>';bd.appendChild(q);
+    const seen=()=>{REPX.seen=repKey();q.hidden=true;};
+    $('repOvNo').onclick=()=>{seen();renderGame();};$('repOvYes').onclick=()=>{seen();drawSend('ask');renderGame();};}}
   resetUi();
   // host: periodic save, flag fall
   setInterval(()=>{if(role==='guest'&&view&&view.running&&++saveTick%5===0)guestSave();   // the clocks, every second
