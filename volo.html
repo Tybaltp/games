@@ -490,8 +490,8 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
   for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
   // coordinates (core: coordsOn): the first and last name of each row, at its two ends
   if(coordsOn)for(const r of ROWS){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.R[i]===r){if(lo<0||E.Q[i]<E.Q[lo])lo=i;if(hi<0||E.Q[i]>E.Q[hi])hi=i;}
-    el('text',{class:'coord',x:X(lo)-30,y:Y(lo)+4,'text-anchor':'middle','font-size':13},svg).textContent=name(lo);
-    el('text',{class:'coord',x:X(hi)+30,y:Y(hi)+4,'text-anchor':'middle','font-size':13},svg).textContent=name(hi);}
+    el('text',{class:'coord',x:X(lo)-25,y:Y(lo)+4,'text-anchor':'end','font-size':13},svg).textContent=name(lo);
+    el('text',{class:'coord',x:X(hi)+25,y:Y(hi)+4,'text-anchor':'start','font-size':13},svg).textContent=name(hi);}
   const pv=opt.pv||null,prov=pv&&pv.prov,last=opt.last,lm=last&&last.mv,me=mySeat+1;
   const st=prov?E.base(cur,prov):cur;   // the removed regions are only faded
   const marked=new Set(prov&&prov.t==='p'?[prov.at]:[]);   // a provisional flight is outlined by flightMark

@@ -11,7 +11,7 @@
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
   --bg:#f0e1e5;--panel:#fbf2f4;--ink:#22231f;--muted:#64655e;--line:#d9d7cf;
-  --boardbg:transparent;--cell:#d3cdc1;--gridl:#bcb5a6;--start:#a3967f;--lab:#8a877d;
+  --boardbg:transparent;--cell:#d3cdc1;--gridl:#bcb5a6;--start:#a3967f;--lab:#6f6b60;
   --k0:#12806f;--k0e:#07463d;--k1:#b73a67;--k1e:#641334;
   --s0:var(--k0);--s0e:var(--k0e);--s1:var(--k1);--s1e:var(--k1e);   /* players' swatches: by colour (dbDecorate) */
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
@@ -20,11 +20,11 @@
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1a1315;--panel:#251b1e;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
-  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--lab:#7d857f;
+  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--lab:#a7b0aa;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}}
 :root[data-theme="dark"]{
   --bg:#1a1315;--panel:#251b1e;--ink:#e6e8e3;--muted:#949a93;--line:#2c322f;
-  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--lab:#7d857f;
+  --boardbg:transparent;--cell:#252b28;--gridl:#38403c;--start:#5c665f;--lab:#a7b0aa;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k0:#22b39c;--k0e:#0d5a4e;--k1:#e0598c;--k1e:#7a1d45;}
 h1 span{white-space:nowrap}
 .board{background:var(--boardbg);border:0;border-radius:14px}
@@ -344,9 +344,9 @@ function anchorOf(es,m){const c=es.turn,me=c+1,b=es.b,cs=m.cells.slice().sort(a1
   return cs.find(i=>{const r=(i/W)|0,q=i%W;return (r>0&&q>0&&b[i-W-1]===me)||(r>0&&q<W-1&&b[i-W+1]===me)||(r<W-1&&q>0&&b[i+W-1]===me)||(r<W-1&&q<W-1&&b[i+W+1]===me);})??cs[0];}
 const txtOf=(m,es)=>m.t==='s'?t('swapLog'):E.P[m.k].name+' '+cname(es?anchorOf(es,m):m.cells.slice().sort(a1Ord)[0]);
 // the piece drawn small, as placed, in its colour c, the corner square full and outlined, the others lighter
-function miniShape(cells,anc,c){const U=9,rs=cells.map(i=>(i/W)|0),qs=cells.map(i=>i%W),r0=Math.min(...rs),q0=Math.min(...qs),w=Math.max(...qs)-q0+1,h=Math.max(...rs)-r0+1;
+function miniShape(cells,anc,c){const U=8,rs=cells.map(i=>(i/W)|0),qs=cells.map(i=>i%W),r0=Math.min(...rs),q0=Math.min(...qs),w=Math.max(...qs)-q0+1,h=Math.max(...rs)-r0+1;
   const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`-1 -1 ${w*U+2} ${h*U+2}`);svg.setAttribute('width',w*U+2);svg.setAttribute('height',h*U+2);svg.setAttribute('class','dbshape');svg.setAttribute('aria-hidden','true');
-  for(const i of cells){const a=i===anc;el('rect',{x:(i%W-q0)*U+.5,y:(((i/W)|0)-r0)*U+.5,width:U-1,height:U-1,rx:.8,fill:`var(--k${c})`,opacity:a?1:.42,stroke:a?'var(--ink)':'none','stroke-width':a?1:0},svg);}
+  for(const i of cells){const a=i===anc;el('rect',{x:(i%W-q0)*U+.5,y:(((i/W)|0)-r0)*U+.5,width:U-1,height:U-1,rx:.8,fill:`var(--k${c})`,opacity:a?1:.6,stroke:a?'var(--ink)':'none','stroke-width':a?1.6:0},svg);}
   return svg;}
 function dbLogNode(e){if(e.mv.t==='s')return null;const s=document.createElement('span');s.className='dbm';
   const x=document.createElement('span');x.textContent=' '+cname(e.anc);s.append(miniShape(e.mv.cells,e.anc,e.c),x);return s;}
@@ -433,7 +433,7 @@ function dbDecorate(){const r=replay(view,view.moves,view.result),d=navAt===null
   for(const p of [0,1]){const el=host.children[p];if(!el)continue;const c=E.colorOf(d.st,p),dot=el.querySelector('.dot');if(dot)dot.className='dot sw c'+c;
     const ty=document.createElement('div');ty.className='tally';
     ty.innerHTML=`<span title="${t('cells')}">${pad(d.st.cnt[c])}</span><span title="${t('pcs')}">${pad(E.left(d.st,c))}</span>`;el.appendChild(ty);}
-  const lis=$('log').children;for(let j=0;j<lis.length&&j<r.log.length;j++){const sp=lis[j].lastChild;if(!sp||!sp.prepend)continue;
+  const lis=$('log').children;for(let j=0;j<lis.length&&j<r.log.length;j++){const sp=lis[j].lastChild;if(!sp||!sp.prepend||sp.querySelector('.dbm'))continue;   // a placement: its piece is drawn in its colour
     const s=document.createElement('span');s.className='sw c'+r.log[j].c;s.style.cssText='width:9px;height:9px;margin-right:5px;vertical-align:0';sp.prepend(s);}}
 
 // ---------- piece reserve ----------
@@ -626,7 +626,7 @@ function drawBoard(st,last,pv,marks,mc,hov){const svg=$('svg');svg.textContent='
     el('rect',{x,y,width:S,height:S,fill:v?`var(--k${v-1})`:(i===E.START[0]||i===E.START[1])?'var(--start)':'var(--cell)',stroke:v?`var(--k${v-1}e)`:'var(--gridl)','stroke-width':v?.6:1,'stroke-opacity':v?.45:1},g);}
   // piece contours: same-colour pieces never share a side, so each same-colour block is one piece
   for(const c of [0,1]){const cells=[];for(let i=0;i<N;i++)if(st.b[i]===c+1)cells.push(i);if(cells.length)el('path',{d:outline(cells),fill:'none',stroke:`var(--k${c}e)`,'stroke-width':1.8,'stroke-linecap':'square'},svg);}
-  if(coordsOn){const lab=el('g',{class:'coord','font-size':12,'text-anchor':'middle'},svg);
+  if(coordsOn){const lab=el('g',{class:'coord','font-size':13,'text-anchor':'middle'},svg);
     for(let q=0;q<W;q++){const tx=el('text',{x:q*S+S/2,y:W*S+15},lab);tx.textContent='abcdefghijklmn'[q];}
     for(let r=0;r<W;r++){const tx=el('text',{x:-11,y:r*S+S/2+4},lab);tx.textContent=W-r;}}
   if(marks)for(const i of marks){if(pv&&pv.cells.includes(i))continue;el('circle',{cx:(i%W)*S+S/2,cy:((i/W)|0)*S+S/2,r:5,fill:`var(--k${mc})`,opacity:.55,'pointer-events':'none'},svg);}
