@@ -11,28 +11,27 @@
 <style>
 /* Slither palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
-  --bg:#d9e2d6;--panel:#ecf1ea;--ink:#1d2620;--muted:#5d6a60;--line:#c2cdbf;
-  --accent:#3f7a52;--accent-ink:#ffffff;--danger:#b3261e;
+  --bg:#e4e1ea;--panel:#f1eff5;--ink:#211c2a;--muted:#635c70;--line:#cdc6d8;
+  --accent:#7a32c8;--accent-ink:#ffffff;--danger:#b3261e;
   --sboard:#d9b77a;--sgrid:rgba(60,42,18,.7);--slab:rgba(60,42,18,.75);
-  --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.75);--mk:#c0392b;--sel:#2f6fd6;
+  --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.75);--mk:#8a3fd8;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#141a16;--panel:#1d2520;--ink:#e3eae4;--muted:#94a398;--line:#2c3830;
-  --accent:#6fb788;--accent-ink:#0d1a12;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#e5483a;--sel:#2f6fd6;color-scheme:dark;}}
+  --bg:#17151c;--panel:#211d28;--ink:#e8e4ef;--muted:#a199ae;--line:#342d3e;
+  --accent:#a57de6;--accent-ink:#1b0f30;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#141a16;--panel:#1d2520;--ink:#e3eae4;--muted:#94a398;--line:#2c3830;
-  --accent:#6fb788;--accent-ink:#0d1a12;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#e5483a;--sel:#2f6fd6;color-scheme:dark;}
+  --bg:#17151c;--panel:#211d28;--ink:#e8e4ef;--muted:#a199ae;--line:#342d3e;
+  --accent:#a57de6;--accent-ink:#1b0f30;--danger:#ef8579;
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
-/* players' cards: the seat's colour (it changes with the swap) and the edges it joins */
+/* players' cards: the seat's colour (it changes with the swap) */
 .dot.sst{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
 .player .who{padding:2px 0 2px 2px}
 .sst.b{background:var(--sb);border:1px solid #000;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
 .sst.w{background:var(--sw);border:1px solid rgba(0,0,0,.6)}
-.player .edges{font-size:.78rem;color:var(--muted);white-space:nowrap}
 .mini{display:inline-block;width:11px;height:11px;border-radius:50%;box-sizing:border-box;flex:none;vertical-align:-1px}
 .mini.b{background:var(--sb);border:1px solid #000}.mini.w{background:var(--sw);border:1px solid rgba(0,0,0,.55)}
 ol.log li{align-items:center}
@@ -261,16 +260,16 @@ const SL_I18N={fr:{
  title:"Slither",lede:"Serpentez jusqu'à relier vos bords.",by:"Un jeu de Corey Clark.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
  firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
- cB:"noir",cW:"blanc",eB:"haut–bas",eW:"gauche–droite",eBs:"↕ haut–bas",eWs:"↔ gauche–droite",
+ cB:"noir",cW:"blanc",eB:"haut–bas",eW:"gauche–droite",
  swap:"Échanger",swapT:"Échanger : vous prenez la pierre posée et devenez Noir ; votre adversaire joue Blanc.",
- st_play:"À vous ({c}, {e}) : posez une pierre ; vous pouvez aussi déplacer une des vôtres d'un pas, avant ou après.",
- st_playN:"{name} ({c}, {e}) : posez une pierre ; on peut aussi déplacer une de ses pierres d'un pas, avant ou après.",
+ st_play:"Posez et déplacez une pierre.",
+ st_playN:"Posez et déplacez une pierre.",
  st_swapQ:" Ou échangez.",
- st_sel:"Choisissez où va la pierre : une case voisine libre, diagonales comprises.",st_moved:"Pierre déplacée : posez maintenant une pierre.",
+ st_sel:"Choisissez où va la pierre.",st_moved:"Posez une pierre.",
  st_bad:"Diagonale nue : ce tour est interdit. Changez la pose ou le déplacement.",
  st_none:"Aucun coup possible : vous passez.",st_noneN:"{name} n'a aucun coup possible et passe.",
  st_turnC:"Au tour de {name} ({c}).",
- pend:"Pose en {p}. Vous pouvez encore déplacer une pierre, ou confirmer.",pendM:"Pose en {p}, pierre {f} → {t}.",confirmTurn:"Confirmer le tour",confirmS:"Confirmer",
+ pend:"Pose en {p}.",pendM:"Pose en {p}, pierre {f} → {t}.",confirmTurn:"Confirmer le tour",confirmS:"Confirmer",
  d_place:"pose en {p}",d_move:"pose en {p}, {f} → {t}",d_swap:"échange",d_pass:"passe",
  l_swap:"échange",l_pass:"passe",
  w_conn:"ses deux bords sont reliés",
@@ -292,16 +291,16 @@ const SL_I18N={fr:{
  title:"Slither",lede:"Slither your way to connection.",by:"A game by Corey Clark.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
  firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
- cB:"black",cW:"white",eB:"top–bottom",eW:"left–right",eBs:"↕ top–bottom",eWs:"↔ left–right",
+ cB:"black",cW:"white",eB:"top–bottom",eW:"left–right",
  swap:"Swap",swapT:"Swap: you take the stone placed and become Black; your opponent plays White.",
- st_play:"Your move ({c}, {e}): place a stone; you may also move one of yours one step, before or after.",
- st_playN:"{name} ({c}, {e}): place a stone; you may also move one of your stones one step, before or after.",
+ st_play:"Place and move a stone.",
+ st_playN:"Place and move a stone.",
  st_swapQ:" Or swap.",
- st_sel:"Choose where the stone goes: a free neighbouring point, diagonals included.",st_moved:"Stone moved: now place a stone.",
+ st_sel:"Choose where the stone goes.",st_moved:"Place a stone.",
  st_bad:"Naked diagonal: this turn is not allowed. Change the placement or the step.",
  st_none:"No move possible: you pass.",st_noneN:"{name} has no possible move and passes.",
  st_turnC:"{name} to move ({c}).",
- pend:"Stone on {p}. You may still move a stone, or confirm.",pendM:"Stone on {p}, stone {f} → {t}.",confirmTurn:"Confirm turn",confirmS:"Confirm",
+ pend:"Stone on {p}.",pendM:"Stone on {p}, stone {f} → {t}.",confirmTurn:"Confirm turn",confirmS:"Confirm",
  d_place:"place on {p}",d_move:"place on {p}, {f} → {t}",d_swap:"swap",d_pass:"pass",
  l_swap:"swap",l_pass:"passes",
  w_conn:"their two edges are joined",
@@ -323,16 +322,16 @@ const SL_I18N={fr:{
  title:"Slither",lede:"Serpentea hasta unir tus bordes.",by:"Un juego de Corey Clark.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
  firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
- cB:"negras",cW:"blancas",eB:"arriba–abajo",eW:"izquierda–derecha",eBs:"↕ arriba–abajo",eWs:"↔ izquierda–derecha",
+ cB:"negras",cW:"blancas",eB:"arriba–abajo",eW:"izquierda–derecha",
  swap:"Intercambiar",swapT:"Intercambiar: tomas la piedra colocada y pasas a ser Negras; tu adversario juega con Blancas.",
- st_play:"Te toca ({c}, {e}): coloca una piedra; también puedes mover una de las tuyas un paso, antes o después.",
- st_playN:"{name} ({c}, {e}): coloca una piedra; también se puede mover una de las propias un paso, antes o después.",
+ st_play:"Coloca y mueve una piedra.",
+ st_playN:"Coloca y mueve una piedra.",
  st_swapQ:" O intercambia.",
- st_sel:"Elige adónde va la piedra: una intersección vecina libre, diagonales incluidas.",st_moved:"Piedra movida: ahora coloca una piedra.",
+ st_sel:"Elige adónde va la piedra.",st_moved:"Coloca una piedra.",
  st_bad:"Diagonal desnuda: este turno está prohibido. Cambia la colocación o el movimiento.",
  st_none:"Ninguna jugada posible: pasas.",st_noneN:"{name} no tiene ninguna jugada posible y pasa.",
  st_turnC:"Turno de {name} ({c}).",
- pend:"Colocación en {p}. Aún puedes mover una piedra, o confirmar.",pendM:"Colocación en {p}, piedra {f} → {t}.",confirmTurn:"Confirmar el turno",confirmS:"Confirmar",
+ pend:"Piedra en {p}.",pendM:"Colocación en {p}, piedra {f} → {t}.",confirmTurn:"Confirmar el turno",confirmS:"Confirmar",
  d_place:"colocación en {p}",d_move:"colocación en {p}, {f} → {t}",d_swap:"intercambio",d_pass:"pasa",
  l_swap:"intercambio",l_pass:"pasa",
  w_conn:"sus dos bordes están unidos",
@@ -383,8 +382,7 @@ function slWaitStatus({r}){const st=r.st;status(t('st_turnC',{name:seatName(st.t
 function pendText(mv,st){const m=SL.split(st.size,String(mv));if(!m)return [describe(mv,st),t('confirmTurn')];
   return [m.f>=0?t('pendM',{p:nm(st,m.p),f:nm(st,m.f),t:nm(st,m.t)}):t('pend',{p:nm(st,m.p)}),t('confirmTurn')];}
 function playerCard(el,p,d){const col=d.st.col[p],dot=el.querySelector&&el.querySelector('.dot');
-  if(dot){dot.className='dot sst '+CK(col);dot.title=CN(col);}
-  const x=document.createElement('div');x.className='edges';x.textContent=t(col===SL.BLACK?'eBs':'eWs');el.appendChild(x);}
+  if(dot){dot.className='dot sst '+CK(col);dot.title=CN(col);}}
 function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
 
 // ---------- input ----------
@@ -419,14 +417,18 @@ function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.s
 let G={n:9,pad:CELL};
 const PX=i=>G.pad+(i%G.n)*CELL,PY=i=>G.pad+(G.n-1-Math.floor(i/G.n))*CELL;
 function stone(g,i,c,op,x,y){const e=el('circle',{cx:x===undefined?PX(i):x,cy:y===undefined?PY(i):y,r:SR,fill:c===0?'var(--sb)':'var(--sw)',stroke:c===0?'var(--sbe)':'var(--swe)','stroke-width':1.6},g);if(op!==undefined)e.setAttribute('opacity',op);return e;}
-const dashRing=(g,i,col)=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.72,fill:'none',stroke:col||'var(--mk)','stroke-width':2.2,'stroke-dasharray':'4 3'},g);
+const MKW=2.2,ring=(g,i,dot)=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.7,fill:'none',stroke:'var(--mk)','stroke-width':MKW,...(dot?{'stroke-dasharray':'4 3'}:{})},g);
+function moveMark(g,f,t,dot){const x0=PX(f),y0=PY(f),x1=PX(t),y1=PY(t),L=Math.hypot(x1-x0,y1-y0)||1,k=SR*.7/L;
+  el('circle',{cx:x0,cy:y0,r:CELL*.1,fill:'var(--mk)'},g);
+  el('line',{x1:x0,y1:y0,x2:x1-(x1-x0)*k,y2:y1-(y1-y0)*k,stroke:'var(--mk)','stroke-width':MKW,'stroke-linecap':'round'},g);
+  ring(g,t,dot);}
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const sh=shown,st=sh&&view?sh.d.st:SL.init(SL.rules(view||{size:homeSize()})),n=st.size;
   G={n,pad:coordsOn?CELL*1.35:CELL*.95};const W=2*G.pad+(n-1)*CELL;
   svg.setAttribute('viewBox',`0 0 ${W} ${W}`);document.documentElement.style.setProperty('--board-ar','1/1');
   el('rect',{x:0,y:0,width:W,height:W,fill:'var(--sboard)'},svg);
   // the players' edges: Black's above and below, White's left and right
-  const a=G.pad,b=G.pad+(n-1)*CELL,e1=G.pad-CELL*.62,e2=b+CELL*.62,ew=CELL*.16;
+  const a=G.pad,b=G.pad+(n-1)*CELL,e1=G.pad-CELL*.68,e2=b+CELL*.68,ew=CELL*.16;
   el('rect',{x:a,y:e1-ew/2,width:b-a,height:ew,rx:ew/2,fill:'var(--sb)'},svg);el('rect',{x:a,y:e2-ew/2,width:b-a,height:ew,rx:ew/2,fill:'var(--sb)'},svg);
   el('rect',{x:e1-ew/2,y:a,width:ew,height:b-a,rx:ew/2,fill:'var(--sw)',stroke:'var(--swe)','stroke-width':.6},svg);el('rect',{x:e2-ew/2,y:a,width:ew,height:b-a,rx:ew/2,fill:'var(--sw)',stroke:'var(--swe)','stroke-width':.6},svg);
   let d='';for(let k=0;k<n;k++){const v=G.pad+k*CELL;d+=`M${a} ${v}H${b}M${v} ${a}V${b}`;}
@@ -439,14 +441,13 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   if(mine&&hintOn()){const m=SL.split(n,String(hintMv));if(m){P=m.p;F=m.f;T=m.t;}}else if(mine){P=ui.p;F=ui.f;T=ui.t;}
   if(F>=0&&T>=0){b2[F]=-1;b2[T]=c;}if(P>=0)b2[P]=c;
   for(let i=0;i<n*n;i++)if(b2[i]>=0)stone(g,i,b2[i]);
-  if(F>=0&&T>=0){stone(g,F,c,.3);el('line',{x1:PX(F),y1:PY(F),x2:PX(T),y2:PY(T),stroke:'var(--mk)','stroke-width':2.2,'stroke-dasharray':'4 3','stroke-linecap':'round'},g);dashRing(g,T);}
-  if(F>=0&&T<0)dashRing(g,F,'var(--sel)');
-  if(P>=0)dashRing(g,P);
-  // the last turn: a dot on the stone placed; a step, a thin line from where the stone came, a dot on it
+  // markers, one colour (--mk), as in Ayu: a stone placed or chosen, a dotted ring; a stone stepped, a dot where it was
+  // and a solid line to its ring; the rings dotted until the turn is played, then solid (the last turn)
+  if(F>=0&&T>=0)moveMark(g,F,T,true);
+  else if(F>=0){ring(g,F,true);for(let tt=0;tt<n*n;tt++)if(b2[tt]===-1&&adj(n,F,tt))el('circle',{cx:PX(tt),cy:PY(tt),r:CELL*.1,fill:'var(--mk)',opacity:.75},g);}
+  if(P>=0)ring(g,P,true);
   const last=sh?sh.d.last:null;
-  if(view&&last&&last.kind==='move'&&P<0&&F<0&&T<0){const dot=i=>el('circle',{cx:PX(i),cy:PY(i),r:SR*.24,fill:'var(--mk)'},g);
-    if(last.f>=0){el('line',{x1:PX(last.f),y1:PY(last.f),x2:PX(last.t),y2:PY(last.t),stroke:'var(--mk)','stroke-width':2,'stroke-linecap':'round',opacity:.8},g);el('circle',{cx:PX(last.f),cy:PY(last.f),r:SR*.16,fill:'var(--mk)'},g);dot(last.t);}
-    dot(last.p);}
+  if(view&&last&&last.kind==='move'&&P<0&&F<0&&T<0){if(last.f>=0)moveMark(g,last.f,last.t,false);if(last.p>=0)ring(g,last.p,false);}
   // the winning chain
   if(sh&&sh.d.over&&sh.d.over.chain){const ch=sh.d.over.chain;el('polyline',{points:ch.map(i=>PX(i)+','+PY(i)).join(' '),fill:'none',stroke:'var(--mk)','stroke-width':CELL*.12,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.85},g);}
   for(const [i] of (sh?altCells():new Map()))if(!b2[i]||b2[i]<0)el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.4},g);
