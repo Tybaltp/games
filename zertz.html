@@ -309,14 +309,12 @@ const ZZ_I18N={fr:{
  draw:"Partie interrompue : {why}.",
  w_g0:"4 billes blanches",w_g1:"5 billes grises",w_g2:"6 billes noires",w_each:"3 billes de chaque couleur",w_nomove:"l'adversaire n'a plus de coup",
  ht_wL:"à gauche du plateau",ht_wU:"sous le plateau",ht_1:"<b>Poser une bille</b> Choisir la couleur {where}, cliquer sur un anneau vide, puis sur l'anneau à retirer.",ht_2:"<b>Prendre</b> Cliquer sur la bille encadrée, puis sur son anneau d'arrivée. Un clic par saut.",rules:`<summary>Règles en bref</summary><ul>
- <li>Les billes sont communes aux deux joueurs. Si une prise est possible, elle est obligatoire.</li>
- <li><b>Poser</b> : posez une bille de la réserve sur un anneau vide, puis retirez un anneau libre (vide, au bord, qui peut glisser hors du plateau).</li>
- <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
- <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
- <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
- <li><b>Jouer</b> : choisissez la couleur à côté du plateau (à gauche, ou dessous sur un écran étroit), cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile, un seul toucher suffit). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 48 anneaux (37 au choix), et une réserve commune de 6 billes blanches, 8 grises et 10 noires. Les billes n'appartiennent à personne.</li>
+ <li><b>Tour</b>, au choix, mais <b>la prise est obligatoire</b> dès qu'elle est possible.</li>
+ <li><b>Poser</b> : on pose une bille de la réserve, de la couleur qu'on veut, sur un anneau vide, puis on retire un anneau libre : vide, et qui peut glisser hors du plateau sans déplacer les autres. S'il n'y en a aucun, on ne retire rien. Quand la réserve est vide, on pose une de ses propres billes prises.</li>
+ <li><b>Prendre</b> : une bille, de n'importe quelle couleur, saute par-dessus une bille voisine jusqu'à l'anneau vide juste derrière, et prend la bille sautée ; tant qu'un nouveau saut est possible, elle continue. Entre plusieurs prises, on choisit.</li>
+ <li><b>Isoler</b> : un groupe d'anneaux séparé du reste du plateau et entièrement occupé revient, billes comprises, au joueur qui vient de poser.</li>
+ <li><b>Victoire</b> : 4 billes blanches, ou 5 grises, ou 6 noires, ou 3 de chaque couleur. Un joueur qui n'a plus de coup perd.</li></ul>`
 },en:{
  title:"Zèrtz",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
@@ -327,14 +325,12 @@ const ZZ_I18N={fr:{
  draw:"Game interrupted: {why}.",
  w_g0:"4 white marbles",w_g1:"5 grey marbles",w_g2:"6 black marbles",w_each:"3 marbles of each colour",w_nomove:"the opponent has no move left",
  ht_wL:"on the left of the board",ht_wU:"under the board",ht_1:"<b>Place a marble</b> Pick the colour {where}, click an empty ring, then the ring to remove.",ht_2:"<b>Capture</b> Click the framed marble, then its landing ring. One click per jump.",rules:`<summary>Rules in brief</summary><ul>
- <li>Marbles are shared by both players. If a capture is possible, it is mandatory.</li>
- <li><b>Place</b>: put a marble from the pool on an empty ring, then remove a free ring (empty, on the edge, able to slide off the board).</li>
- <li><b>Capture</b>: a marble jumps over a neighbour onto the empty ring just behind it; the capture continues as long as possible.</li>
- <li><b>Isolate</b>: a separated group of rings that is fully occupied goes to the player who isolated it.</li>
- <li><b>Win</b>: 3 of each colour, 4 white, 5 grey or 6 black. Also on time or by resignation.</li>
- <li><b>Play</b>: choose the colour beside the board (on the left, or under it on a narrow screen), click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen, a single tap is enough). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+ <li><b>Material</b>: a board of 48 rings (37 as you choose), and a shared pool of 6 white, 8 grey and 10 black marbles. The marbles belong to nobody.</li>
+ <li><b>Turn</b>, your choice, but <b>capturing is compulsory</b> as soon as it is possible.</li>
+ <li><b>Place</b>: put a marble from the pool, of any colour, on an empty ring, then remove a free ring: empty, and able to slide off the board without moving the others. If there is none, nothing is removed. When the pool is empty, you place one of your own captured marbles.</li>
+ <li><b>Capture</b>: a marble, of any colour, jumps over a neighbouring marble onto the empty ring just behind it, and takes the marble jumped; as long as a new jump is possible, it goes on. Between several captures, you choose.</li>
+ <li><b>Isolate</b>: a group of rings cut off from the rest of the board and fully occupied goes, marbles included, to the player who has just placed.</li>
+ <li><b>Winning</b>: 4 white marbles, or 5 grey, or 6 black, or 3 of each colour. A player with no move left loses.</li></ul>`
 },es:{
  title:"Zèrtz",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",
  pool:"Reserva común",poolN:"{n} bolas",poolLbl:"Reserva: {n}",poolLblE:"Reserva vacía",h_empty:"Reserva vacía: cada uno coloca sus propias bolas capturadas.",
@@ -345,14 +341,12 @@ const ZZ_I18N={fr:{
  draw:"Partida interrumpida: {why}.",
  w_g0:"4 bolas blancas",w_g1:"5 bolas grises",w_g2:"6 bolas negras",w_each:"3 bolas de cada color",w_nomove:"el adversario ya no tiene jugadas",
  ht_wL:"a la izquierda del tablero",ht_wU:"bajo el tablero",ht_1:"<b>Colocar una canica</b> Elige el color {where}, haz clic en un anillo vacío y luego en el anillo que retirar.",ht_2:"<b>Capturar</b> Haz clic en la canica enmarcada y luego en su anillo de llegada. Un clic por salto.",rules:`<summary>Reglas en breve</summary><ul>
- <li>Las bolas son comunes a los dos jugadores. Si una captura es posible, es obligatoria.</li>
- <li><b>Colocar</b>: coloca una bola de la reserva en un anillo vacío, y luego retira un anillo libre (vacío, en el borde, que pueda deslizarse fuera del tablero).</li>
- <li><b>Capturar</b>: una bola salta por encima de una vecina hasta el anillo vacío justo detrás; la captura continúa mientras sea posible.</li>
- <li><b>Aislar</b>: un grupo de anillos separado y totalmente ocupado pasa al jugador que lo ha aislado.</li>
- <li><b>Ganar</b>: 3 bolas de cada color, 4 blancas, 5 grises o 6 negras. También por tiempo o por abandono.</li>
- <li><b>Jugar</b>: elige el color junto al tablero (a la izquierda, o debajo en una pantalla estrecha), haz clic en un anillo vacío y luego en el anillo libre que quieres retirar (en rojo); para una captura, haz clic en la bola que salta y luego en cada anillo de llegada. Al pasar el ratón, la jugada se muestra en transparencia (en pantalla táctil, basta con un solo toque). Hacer clic en la bola colocada o en un anillo ya recorrido da marcha atrás. Los mandos de la jugada están en la barra de acciones: Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
+ <li><b>Material</b>: un tablero de 48 anillos (37 a elegir), y una reserva común de 6 bolas blancas, 8 grises y 10 negras. Las bolas no son de nadie.</li>
+ <li><b>Turno</b>, a elegir, pero <b>la captura es obligatoria</b> en cuanto es posible.</li>
+ <li><b>Colocar</b>: se coloca una bola de la reserva, del color que se quiera, en un anillo vacío, y luego se retira un anillo libre: vacío, y que pueda deslizarse fuera del tablero sin mover los demás. Si no hay ninguno, no se retira nada. Cuando la reserva está vacía, se coloca una de sus propias bolas capturadas.</li>
+ <li><b>Capturar</b>: una bola, de cualquier color, salta por encima de una bola vecina hasta el anillo vacío justo detrás, y toma la bola saltada; mientras sea posible un nuevo salto, continúa. Entre varias capturas, se elige.</li>
+ <li><b>Aislar</b>: un grupo de anillos separado del resto del tablero y totalmente ocupado pasa, con sus bolas, al jugador que acaba de colocar.</li>
+ <li><b>Victoria</b>: 4 bolas blancas, o 5 grises, o 6 negras, o 3 de cada color. Un jugador que ya no tiene jugada pierde.</li></ul>`
 }};
 const CN=k=>t('c'+k);
 
