@@ -282,7 +282,7 @@ const SL_I18N={fr:{
  <li><b>Diagonale</b> : à la fin de votre tour, deux de vos pierres en diagonale doivent avoir une voisine orthogonale commune de votre couleur. Un tour qui laisse une diagonale nue est interdit.</li>
  <li><b>Victoire</b> : vos deux bords reliés à la fin de votre tour. Sans coup possible, on passe ; passer est interdit sinon. Pas de nulle.</li>
  <li><b>Échange</b> (option, activée par défaut) : au premier tour du second joueur, il peut prendre la pierre posée à son compte : les couleurs s'échangent et le premier joueur, devenu Blanc, joue.</li>
- <li><b>Jouer</b> : cliquez une intersection libre pour y poser la pierre (au survol, elle s'affiche en transparence ; posée, elle a un cadre en pointillés). Pour déplacer une pierre, cliquez-la, puis cliquez sa destination. Cliquer de nouveau la pierre posée ou arrivée joue le tour (comme Confirmer) ; cliquer de nouveau une pierre sélectionnée la relâche ; Réinitialiser reprend tout. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer le tour ; selon la partie, Annuler le dernier coup et Suggestion.</li>
+ <li><b>Jouer</b> : cliquez une intersection libre pour y poser la pierre (au survol, elle s'affiche en transparence ; posée, elle a un cadre en pointillés). Pour déplacer une pierre, cliquez-la, puis cliquez sa destination. Seuls les choix qui mènent à un tour permis sont proposés. Cliquer de nouveau une pierre provisoire ou sélectionnée revient en arrière. Le tour attend toujours Confirmer, puisqu'on peut encore déplacer une pierre. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer le tour ; selon la partie, Annuler le dernier coup et Suggestion.</li>
  <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
  <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Règles : <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
@@ -313,7 +313,7 @@ const SL_I18N={fr:{
  <li><b>Diagonals</b>: at the end of your turn, two of your stones on a diagonal must share an orthogonal neighbour of your colour. A turn that leaves a naked diagonal is not allowed.</li>
  <li><b>Winning</b>: your two edges joined at the end of your turn. Without a possible move, you pass; passing is not allowed otherwise. No draws.</li>
  <li><b>Swap</b> (option, on by default): on the second player's first turn, they may take the stone placed as theirs: the colours are exchanged and the first player, now White, moves.</li>
- <li><b>Playing</b>: click a free point to place the stone there (hovering shows it in transparency; once placed, it has a dashed frame). To move a stone, click it, then click where it goes. Clicking the stone placed or moved again plays the turn (as Confirm does); clicking a selected stone again releases it; Reset takes everything back. The commands are in the bar under the board: Swap, Reset, Confirm turn; depending on the game, Undo last move and Hint.</li>
+ <li><b>Playing</b>: click a free point to place the stone there (hovering shows it in transparency; once placed, it has a dashed frame). To move a stone, click it, then click where it goes. Only choices that lead to an allowed turn are offered. Clicking a provisional or selected stone again takes it back. The turn always waits for Confirm, since you may still move a stone. The commands are in the bar under the board: Swap, Reset, Confirm turn; depending on the game, Undo last move and Hint.</li>
  <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
  <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Rules: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
@@ -344,7 +344,7 @@ const SL_I18N={fr:{
  <li><b>Diagonal</b>: al final de tu turno, dos piedras tuyas en diagonal deben tener una vecina ortogonal común de tu color. Un turno que deja una diagonal desnuda está prohibido.</li>
  <li><b>Victoria</b>: tus dos bordes unidos al final de tu turno. Sin jugada posible, se pasa; si no, pasar está prohibido. No hay tablas.</li>
  <li><b>Intercambio</b> (opción, activada por defecto): en el primer turno del segundo jugador, este puede quedarse con la piedra colocada: los colores se intercambian y el primer jugador, ahora Blancas, juega.</li>
- <li><b>Jugar</b>: haz clic en una intersección libre para colocar allí la piedra (al pasar el ratón, se muestra en transparencia; colocada, lleva un marco punteado). Para mover una piedra, haz clic en ella y luego en su destino. Volver a hacer clic en la piedra colocada o llegada juega el turno (como Confirmar); volver a hacer clic en una piedra seleccionada la suelta; Reiniciar lo deshace todo. Los mandos están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar el turno; según la partida, Deshacer la última jugada y Sugerencia.</li>
+ <li><b>Jugar</b>: haz clic en una intersección libre para colocar allí la piedra (al pasar el ratón, se muestra en transparencia; colocada, lleva un marco punteado). Para mover una piedra, haz clic en ella y luego en su destino. Solo se proponen las elecciones que llevan a un turno permitido. Volver a hacer clic en una piedra provisional o seleccionada da marcha atrás. El turno siempre espera a Confirmar, ya que aún se puede mover una piedra. Los mandos están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar el turno; según la partida, Deshacer la última jugada y Sugerencia.</li>
  <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
  <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Reglas: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
@@ -393,15 +393,8 @@ const adj=(n,a,b)=>{const ax=a%n,ay=(a-ax)/n,bx=b%n,by=(b-bx)/n;return Math.max(
 function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();
   const st=meSt(r),n=st.size,c=SL.toMove(st);if(!SL.anyMove(st))return;
-  if((i===ui.p||i===ui.t)&&ui.pending&&GAME.again(ui.pending)){pendAgain();return;}   // second click on the stone placed or moved: the turn is played
-  if(i===ui.p)ui.p=-1;
-  else if(i===ui.t)ui.t=-1;
-  else if(i===ui.f&&ui.t<0)ui.f=-1;
-  else if(i===ui.f&&ui.t>=0)ui.p=i;   // the point the stone has left
-  else if(st.b[i]===c&&ui.t<0)ui.f=i;
-  else if(ui.f>=0&&ui.t<0){if(st.b[i]===-1&&adj(n,ui.f,i))ui.t=i;else if(st.b[i]===-1)ui.p=i;else return;}
-  else if(st.b[i]===-1)ui.p=i;
-  else return;
+  const s=stepTo(st,i);if(!s||!(s.back||reach(st,s.p,s.f,s.t)))return;   // only an action that can still end in a legal turn
+  ui.p=s.p;ui.f=s.f;ui.t=s.t;if(s.back&&!reach(st,ui.p,ui.f,ui.t))ui.p=-1;
   tone(880,.05,.03);sync(st);renderGame();}
 $('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i);});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
@@ -423,6 +416,27 @@ function moveMark(g,f,t,dot){const x0=PX(f),y0=PY(f),x1=PX(t),y1=PY(t),L=Math.hy
   el('circle',{cx:x0,cy:y0,r:CELL*.1,fill:'var(--mk)'},g);
   el('line',{x1:x0,y1:y0,x2:x1-(x1-x0)*k,y2:y1-(y1-y0)*k,stroke:'var(--mk)','stroke-width':MKW,'stroke-linecap':'round'},g);
   ring(g,t,dot);}
+// what a click on i does to the turn being prepared: {p,f,t} (placement, step from f to t), back: it takes something back;
+// null: nothing
+function stepTo(st,i){const n=st.size,c=SL.toMove(st),{p,f,t}=ui;
+  if(i===p)return {p:-1,f,t,back:true};
+  if(i===t)return {p,f,t:-1,back:true};
+  if(i===f&&t<0)return {p,f:-1,t,back:true};
+  if(i===f&&t>=0)return {p:i,f,t};   // the point the stone has left
+  if(st.b[i]===c&&t<0)return {p,f:i,t};
+  if(st.b[i]!==-1)return null;
+  if(f>=0&&t<0)return adj(n,f,i)?{p,f,t:i}:null;   // a stone selected: only where it can go
+  return {p:i,f,t};}
+// the turn prepared (p, f→t, -1 when not chosen yet) can still be completed into a legal turn
+function reach(st,P,F,T){const n=st.size,N=n*n;
+  if(F<0)return P>=0?canPlace(st,P):SL.anyMove(st);
+  const ts=[];if(T>=0)ts.push(T);else for(let j=0;j<N;j++)if(st.b[j]===-1&&adj(n,F,j))ts.push(j);
+  for(const t of ts){if(P>=0){if(SL.after(st,P,F,t))return true;}else for(let q=0;q<N;q++)if(SL.after(st,q,F,t))return true;}
+  return false;}
+// a click on i is offered (pointer, preview): it takes something back, or the turn can still be completed after it
+const PL={st:null,k:'',m:null};
+function playable(st,i){const k=ui.p+','+ui.f+','+ui.t;if(PL.st!==st||PL.k!==k){PL.st=st;PL.k=k;PL.m=new Map();}
+  if(PL.m.has(i))return PL.m.get(i);const s=stepTo(st,i),v=!!s&&(s.back||reach(st,s.p,s.f,s.t));PL.m.set(i,v);return v;}
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const sh=shown,st=sh&&view?sh.d.st:SL.init(SL.rules(view||{size:homeSize()})),n=st.size;
   G={n,pad:coordsOn?CELL*1.35:CELL*.95};const W=2*G.pad+(n-1)*CELL;
@@ -454,15 +468,13 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   for(const [i] of (sh?altCells():new Map()))if(!b2[i]||b2[i]<0)el('circle',{cx:PX(i),cy:PY(i),r:SR*.3,fill:'none',stroke:'var(--mk)','stroke-width':2.4},g);
   el('g',{id:'hov','pointer-events':'none'},svg);
   const hit=el('g',{fill:'transparent'},svg);
-  for(let i=0;i<n*n;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&(ms.b[i]===-1||ms.b[i]===c||i===P||i===T))e.setAttribute('class','pt');}
+  for(let i=0;i<n*n;i++){const e=el('rect',{x:PX(i)-CELL/2,y:PY(i)-CELL/2,width:CELL,height:CELL,'data-i':i},hit);if(mine&&playable(ms,i))e.setAttribute('class','pt');}
   drawHover();}
 // under the mouse: the stone a click would place (or the stone moving there), in transparency, only where it can go
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
-  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending)return;const ms=sh.ms,n=ms.size,c=SL.toMove(ms);
-  if(ms.b[i]!==-1||i===ui.p||i===ui.t)return;
-  if(ui.f>=0&&ui.t<0){if(adj(n,ui.f,i))stone(g,i,c,.5);return;}
-  if(ui.p>=0)return;
-  if(ui.f>=0&&ui.t>=0?SL.after(ms,i,ui.f,ui.t):canPlace(ms,i))stone(g,i,c,.5);}
+  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending)return;const ms=sh.ms,c=SL.toMove(ms);
+  if(!playable(ms,i))return;const s=stepTo(ms,i);if(s.back)return;
+  if(s.t===i||s.p===i)stone(g,i,c,.5);}   // the stone placed there, or the stone moving there; nothing for a selection
 // a placement on i can belong to a legal turn (alone, or with a step)
 function canPlace(st,i){if(SL.after(st,i,-1,-1))return true;const n=st.size,c=SL.toMove(st);
   for(let f=0;f<n*n;f++){if(st.b[f]!==c)continue;const fx=f%n,fy=(f-fx)/n;
@@ -1078,7 +1090,6 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 // ---------- the interface with common/core.js ----------
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
 const GAME={id:'slither',size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
-  again:mv=>!!mv,
   rules:g=>SL.rules(g),
   form:p=>{const r=SL.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('slither-size',r.size);LS.set('slither-swap',r.swap);return r;},
   replay:(r,m)=>replayKept(r,m,{init:g=>SL.init(SL.rules(g)),
