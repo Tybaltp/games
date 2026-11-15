@@ -190,7 +190,9 @@ function GygesEngine(){
     for(let i=0;i<36;i++){if(b[i])continue;const r=rowOf(i);if(nr>=0&&(o===0?r>nr:r<nr))continue;out.push(i);}return out;}
   // Context of a move of the piece on `start`, the piece lifted from the board.
   function ctxOf(s,start,adv){const b=s.b.slice(),k=b[start];b[start]=0;return {b,k,p:s.turn,start,adv:!!adv,used:new Uint8Array(60),path:[],dropMemo:{},nodes:0,limit:Infinity,cut:false};}
-  function dropsAt(ctx,land){let d=ctx.dropMemo[land];if(d)return d;const b2=ctx.b.slice();b2[land]=ctx.k;d=ctx.dropMemo[land]=dropCells(b2,ctx.p);return d;}
+  // A move must change the board (decision of 15.11.2026): no stop on the start cell, and a displaced piece of the same
+  // kind as the moving one may not go to the start cell (the two would just swap).
+  function dropsAt(ctx,land){let d=ctx.dropMemo[land];if(d)return d;const b2=ctx.b.slice();b2[land]=ctx.k;d=dropCells(b2,ctx.p);if(ctx.b[land]===ctx.k)d=d.filter(i=>i!==ctx.start);return ctx.dropMemo[land]=d;}
   // Depth-first search of the completions from the current spot `cur` with `rem` steps left (rem>=1).
   // emit(kind,cell) with kind 'stop' | 'goal' | 'rep' (replacement possible on the occupied cell `cell`); returning true aborts.
   function rec(ctx,cur,rem,emit){
@@ -199,7 +201,7 @@ function GygesEngine(){
     if(rem===1&&rowOf(cur)===far(p)){path.push(G);const ab=emit('goal',G);path.pop();if(ab)return true;}
     for(const [nx,e] of NB[cur]){if(used[e])continue;
       if(rem>1){if(b[nx])continue;used[e]=1;path.push(nx);const ab=rec(ctx,nx,rem-1,emit);path.pop();used[e]=0;if(ab)return true;}
-      else if(!b[nx]){path.push(nx);const ab=emit('stop',nx);path.pop();if(ab)return true;}
+      else if(!b[nx]){if(nx===ctx.start)continue;path.push(nx);const ab=emit('stop',nx);path.pop();if(ab)return true;}
       else{used[e]=1;path.push(nx);let ab=false;
         if(ctx.adv&&dropsAt(ctx,nx).length)ab=emit('rep',nx);
         if(!ab)ab=rec(ctx,nx,b[nx],emit);
@@ -214,7 +216,7 @@ function GygesEngine(){
       if(x===G){if(rem!==1||rowOf(cur)!==far(s.turn))return null;done='goal';cur=G;rem=0;ctx.path.push(G);continue;}
       const e=edge(cur,x);if(e<0||ctx.used[e])return null;
       if(rem>1){if(b[x])return null;ctx.used[e]=1;cur=x;rem--;}
-      else if(!b[x]){cur=x;rem=0;done='stop';}
+      else if(!b[x]){if(x===start)return null;cur=x;rem=0;done='stop';}
       else{ctx.used[e]=1;cur=x;rem=0;landed=true;}
       ctx.path.push(x);}
     return {ctx,cur,rem,landed,done};}
@@ -284,17 +286,17 @@ function GygesAI(E){
   function gen(s,adv,maxSeg,nodeCap,go){const p=s.turn,out=[],fr=far(p),cnt=go>=2;let goal=null,n=0,fm=0;const st=++stamp;
     for(const s0 of E.playable(s,adv)){const b=s.b.slice(),k=b[s0];b[s0]=0;const used=new Uint8Array(60),path=[],memo=new Set();let nodes=0;
       // drop cells: the board with the piece landed on an occupied cell has the same empty cells as b
-      const drops=adv&&go!==1?E.dropCells(b,p):null;
+      const drops=adv&&go!==1?E.dropCells(b,p):null,dS0=drops?drops.includes(s0):false;   // dS0: the start cell is a drop (barred for a piece of the same kind)
       const rec=(cur,rem,seg,lo,hi,bn)=>{if(goal||++nodes>nodeCap)return;
         if(bn){const key=cur*64+rem*8+seg+'|'+lo+'|'+hi;if(memo.has(key))return;memo.add(key);}   // memo at bounces only
         if(rem===1&&rowOf(cur)===fr){goal={s:s0,path:path.concat([G]),rep:-1,goal:true};return;}
         for(const [nx,e] of NB[cur]){if(used[e])continue;
           const l2=e<30?lo|(1<<e):lo,h2=e<30?hi:hi|(1<<(e-30));
           if(rem>1){if(b[nx])continue;used[e]=1;path.push(nx);rec(nx,rem-1,seg,l2,h2,false);path.pop();used[e]=0;if(goal)return;continue;}
-          if(!b[nx]){if(go===1)continue;const id=s0*64+nx;if(SEEN[id]!==st){SEEN[id]=st;if(cnt){n++;if(rowOf(nx)===fr)fm|=1<<(nx%6);}else out.push(new Mv(s0,path.concat([nx]),-1,(s0*37+nx)*37,b,nx,k));}continue;}
+          if(!b[nx]){if(go===1||nx===s0)continue;const id=s0*64+nx;if(SEEN[id]!==st){SEEN[id]=st;if(cnt){n++;if(rowOf(nx)===fr)fm|=1<<(nx%6);}else out.push(new Mv(s0,path.concat([nx]),-1,(s0*37+nx)*37,b,nx,k));}continue;}
           used[e]=1;path.push(nx);
-          if(drops&&cnt){const id=4096+s0*36+nx;if(SEEN[id]!==st&&drops.length){SEEN[id]=st;n+=go===2?drops.length:1;if(rowOf(nx)===fr)fm|=1<<(nx%6);}}
-          else if(drops){let pc=null;for(const d of drops){const id=4096+(s0*36+nx)*36+d;if(SEEN[id]===st)continue;SEEN[id]=st;if(!pc)pc=path.slice();out.push(new Mv(s0,pc,d,(s0*37+nx)*37+d+1,b,nx,k));}}
+          if(drops&&cnt){const id=4096+s0*36+nx,dn=drops.length-(dS0&&b[nx]===k?1:0);if(SEEN[id]!==st&&dn){SEEN[id]=st;n+=go===2?dn:1;if(rowOf(nx)===fr)fm|=1<<(nx%6);}}
+          else if(drops){let pc=null;for(const d of drops){if(d===s0&&b[nx]===k)continue;const id=4096+(s0*36+nx)*36+d;if(SEEN[id]===st)continue;SEEN[id]=st;if(!pc)pc=path.slice();out.push(new Mv(s0,pc,d,(s0*37+nx)*37+d+1,b,nx,k));}}
           if(seg<maxSeg)rec(nx,b[nx],seg+1,l2,h2,true);
           path.pop();used[e]=0;if(goal)return;}};
       rec(s0,k,1,0,0,false);if(goal)return [goal];}
