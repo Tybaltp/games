@@ -1106,7 +1106,7 @@ function fillWatch(wc){const web=/^https?:$/.test(location.protocol);linkOnly(fa
 // a Mochalunt table: the match's links (mochalunt.html), not the table's codes; a spectator only gets the spectators' one
 function linkOnly(on){for(const id of ['codePBox','codeWBox'])if($(id))$(id).classList.toggle('linkonly',on);}
 function fillMatch(){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0].replace(/[^/]*$/,'')+'mochalunt.html';
-  const tl=(MATCH.excl<0?'a':String(MATCH.excl))+MATCH.j1,pl=!!MATCH.me,wc=pl?MATCH.wcode:MATCH.code;
+  const tl=(MATCH.excl<0?'a':String(MATCH.excl))+MATCH.j1+(/^\d{4}-\d+$/.test(MATCH.ed||'')?MATCH.ed.replace('-','r'):''),pl=!!MATCH.me,wc=pl?MATCH.wcode:MATCH.code;   // then the year and round (2026r7)
   // a match: its pages' links only (no code to type): the rows show their « Link » button alone
   for(const [id,on] of [['codePBox',pl],['codeWBox',!!wc]])if($(id)){$(id).hidden=!(on&&web);$(id).classList.add('linkonly');}
   $('hostNote').hidden=true;$('linksBox').hidden=!web;$('fileNote').hidden=web;
@@ -1306,7 +1306,7 @@ function mVoiceAuto(){if(mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!v
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
   return {size:GAME.size,...GAME.rules(G.rules||{}),hold:null,tc,first:'host',names:[MATCH.name,''],moves:[],clock:[tc.base,tc.base],running:false,result:null,started:false,
-    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
+    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,ed:MATCH.ed||null,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
 // The chooser takes the first seat or the second (c: 1 first, 2 second); the seats are swapped when needed
 function mChoose(s,c){const g=H.game,m=g.match;if(!m||m.chosen||g.started||!g.names[0]||!g.names[1])return;if(m.seats[s]!==mChooser(m,m.k))return;
   if((s===0)!==(c===1)){g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();m.seats.reverse();g.ready.reverse();mySeat=1-mySeat;
@@ -1317,6 +1317,11 @@ function mChooseSend(c){if(htOpen())return;if(role==='host')mChoose(mySeat,c);el
 function mSync(r){const m=view&&view.match;if(!m||!MATCH)return;let ch=false;
   if(MATCH.excl===undefined||MATCH.j1===undefined){MATCH.excl=m.excl;MATCH.j1=m.j1;ch=true;}
   if(MATCH.me&&MATCH.cur!==MTK&&MTW==='t'){MATCH.cur=MTK;ch=true;}
+  if(!MATCH.ed&&m.ed){MATCH.ed=m.ed;ch=true;}
+  // a match taken up on another device (a record new here, the match already under way): this player's role is that of their seat
+  if(MATCH.me&&MTW==='t'&&!MATCH.on&&mySeat>=0&&m.seats[mySeat]&&m.seats[mySeat]!==MATCH.me&&(MTK>0||view.started||Object.keys(m.res||{}).length)){MATCH.me=m.seats[mySeat];ch=true;}
+  // begun (on): both players have been at a table together (until then the match is not listed on its page)
+  if(MATCH.me&&MTW==='t'&&!MATCH.on&&view.names[0]&&view.names[1]){MATCH.on=1;ch=true;}
   for(const k in m.res||{})if(!MATCH.res[k]){MATCH.res[k]=m.res[k];ch=true;}
   const nm={};m.seats.forEach((ro,s)=>{if(view.names[s])nm[ro]=view.names[s];});if(JSON.stringify({...MATCH.names,...nm})!==JSON.stringify(MATCH.names||{})){MATCH.names={...MATCH.names,...nm};ch=true;}
   if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length&&JSON.stringify(view.chat)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=view.chat.slice(-CHATMAX);ch=true;}
