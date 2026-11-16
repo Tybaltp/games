@@ -169,7 +169,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=90"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Quarto: rules =====
@@ -231,8 +231,8 @@ function qReplay(rules,moves){const sq=!!(rules&&rules.sq);
 // ---------- strings ----------
 const Q_I18N={fr:{
  title:"Quarto",lede:"Alignez quatre pièces qui partagent une caractéristique, avec la pièce que l'adversaire vous donne.",by:"Un jeu de Blaise Müller.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",v_persp:"3D en perspective",needConfirm:"Confirmer chaque coup",
- m_aiTxt:"Six niveaux, de 0 à 5 : chacun bat le précédent environ trois parties sur quatre.",
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5, le plus fort",
+ lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_dk:"profondeur {n}, {k} positions au plus",m_aiMore:"La profondeur se compte en coups entiers : poser une pièce, puis en donner une.",
+ 
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
  traits:["claire","foncée","ronde","carrée","pleine","creuse","petite","grande"],
  gives:"donne la {p}",givesM:"donne {p}",sep:" : ",toPlace:"à poser",
@@ -247,8 +247,8 @@ const Q_I18N={fr:{
  <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li></ul>`
 },en:{
  title:"Quarto",lede:"Line up four pieces sharing a trait, with the piece your opponent hands you.",by:"A game by Blaise Müller.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",v_persp:"3D perspective",needConfirm:"Confirm each move",
- m_aiTxt:"Six levels, from 0 to 5: each one beats the one below about three games in four.",
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5, the strongest",
+ lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_dk:"depth {n}, at most {k} positions",m_aiMore:"Depth counts whole moves: placing a piece, then giving one.",
+ 
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
  traits:["light","dark","round","square","solid","hollow","small","large"],
  gives:"gives the {p}",givesM:"gives {p}",sep:": ",toPlace:"to place",
@@ -263,8 +263,8 @@ const Q_I18N={fr:{
  <li><b>Draw</b>: all 16 pieces are placed without a win.</li></ul>`
 },es:{
  title:"Quarto",lede:"Alinea cuatro piezas que compartan una característica, con la pieza que te da el adversario.",by:"Un juego de Blaise Müller.",viewOpt:"Vista",v_2d:"2D, vista cenital",v_iso:"3D isométrica",v_persp:"3D en perspectiva",needConfirm:"Confirmar cada jugada",
- m_aiTxt:"Seis niveles, de 0 a 5: cada uno gana al anterior unas tres partidas de cada cuatro.",
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5, el más fuerte",
+ lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_dk:"profundidad {n}, {k} posiciones como máximo",m_aiMore:"La profundidad se cuenta en jugadas enteras: colocar una pieza y luego dar una.",
+ 
  sqOpt:"Variante avanzada: los cuadrados 2 × 2 también ganan",sqOn:"activada en esta partida",sqOff:"desactivada en esta partida",
  traits:["clara","oscura","redonda","cuadrada","maciza","hueca","pequeña","grande"],
  gives:"da la {p}",givesM:"da {p}",sep:": ",toPlace:"por colocar",
@@ -617,6 +617,10 @@ const LEVELS={
   l4:{depth:6},
   l5:{depth:8,nodes:7300000}};
 const HINT={...LEVELS.l5,nodes:6800000};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.nodes?['lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 let pageAI=null;
 function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null;
   return r.score>=950?{k:'ai_win'}:r.score<=-950?{k:'ai_lost'}:{k:'ai_eq',d:r.depth};}
@@ -637,7 +641,7 @@ const GAME={id:'quarto',   // the end says why, « four pieces in a line, all da
       const a=m[1]?(4-m[2])*4+m[1].charCodeAt(0)-97:-1,g=m[3]?(m[3]==='D'?1:0)|(m[6]==='T'?2:0)|(m[4]==='S'?4:0)|(m[5]==='H'?8:0):-1;return enc({a,g});}},rich:qRich,logNode:qLogNode,newUi,preparing,cancel:cancelPrep,
   board:qBoard,turnStatus:qTurnStatus,
   applyStatic:()=>{viewSelects();sqLine();},
-  levels:LEVELS,levelDefault:'l2',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return QA.search(pos,opt);}',
   aiPos:st=>({b:st.b.slice(),hand:st.hand}),aiOpt:v=>({sq:!!v.sq}),
   playerCard:qCard,aiSearch:(st,opt)=>(pageAI=pageAI||QuartoAI()).search({b:st.b.slice(),hand:st.hand},opt),

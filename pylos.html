@@ -390,7 +390,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=90"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -420,8 +420,8 @@ const PY_I18N={fr:{
  l_rem:"reprend {r}",
  res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
- lv_n0:"0 : un coup d'avance, au hasard parmi les bons",lv_n1:"1 : un coup d'avance",lv_n2:"2 : deux coups d'avance",lv_n3:"3 : trois coups d'avance",lv_n4:"4 : quatre coups d'avance",lv_n5:"5 : six coups d'avance, le plus fort",
- m_aiTxt:"Six niveaux, de 0 à 5 : de un à six coups d'avance.",
+ 
+ lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_g1:"un coup d'avance",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
  boardLbl:"Plateau de Pylos",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>Matériel</b> : un socle de 4 × 4 creux ; au-dessus se bâtit une pyramide de 3 × 3, puis 2 × 2, puis une bille au sommet. Chaque joueur a 15 billes. Clair commence.</li>
@@ -446,8 +446,8 @@ const PY_I18N={fr:{
  l_rem:"takes back {r}",
  res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
- lv_n0:"0: one move ahead, at random among the good ones",lv_n1:"1: one move ahead",lv_n2:"2: two moves ahead",lv_n3:"3: three moves ahead",lv_n4:"4: four moves ahead",lv_n5:"5: six moves ahead, the strongest",
- m_aiTxt:"Six levels, from 0 to 5: one to six moves ahead.",
+ 
+ lvd_g1r:"one move ahead, at random among the best",lvd_g1:"one move ahead",lvd_beam:"{n} moves ahead, on the best candidates",
  boardLbl:"Pylos board",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a base of 4 × 4 hollows; above it rises a pyramid of 3 × 3, then 2 × 2, then one ball on top. Each player has 15 balls. Light starts.</li>
@@ -472,8 +472,8 @@ const PY_I18N={fr:{
  l_rem:"recupera {r}",
  res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
- lv_n0:"0: una jugada de antelación, al azar entre las buenas",lv_n1:"1: una jugada de antelación",lv_n2:"2: dos jugadas de antelación",lv_n3:"3: tres jugadas de antelación",lv_n4:"4: cuatro jugadas de antelación",lv_n5:"5: seis jugadas de antelación, el más fuerte",
- m_aiTxt:"Seis niveles, de 0 a 5: de una a seis jugadas de antelación.",
+ 
+ lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_g1:"una jugada de antelación",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
  boardLbl:"Tablero de Pylos",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Material</b>: una base de 4 × 4 huecos; encima se levanta una pirámide de 3 × 3, luego 2 × 2 y una bola en la cima. Cada jugador tiene 15 bolas. Claro empieza.</li>
@@ -790,6 +790,10 @@ return {search,fromPos,gen,play,evalS};
 const LEVELS={n0:{algo:'greedy',pick:8,temp:4},n1:{algo:'greedy'},n2:{algo:'beam',depth:2,widths:[20,12]},
   n3:{algo:'beam',depth:3,widths:[24,14,8]},n4:{algo:'beam',depth:4,widths:[28,16,10,6]},n5:{algo:'beam',depth:6,widths:[32,18,12,8,6,6]}};
 const HINT={...LEVELS.n5};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const levelDesc=o=>o.algo==='greedy'?[o.pick>1?'lvd_g1r':'lvd_g1']:['lvd_beam',o.depth];
 const aiPos=st=>({variant:st.variant,b:Array.from(st.b),res:st.res.slice(),turn:st.turn});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 const aiSrc=()=>AISearch.toString()+'\n'+PY_SRC+'\n'+PylosAI.toString()+'\nconst PA=PylosAI(MOTEUR);function aiSearch(pos,opt){return PA.search(pos,opt);}';
@@ -820,7 +824,7 @@ const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Fonc
   sgf:{val:c=>SHOWC(c),code:v=>SHOWC(String(v).trim().toLowerCase())},
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Variant');if(s&&!s.value)s.value=homeVariant();}},
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'n2',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiOpt:v=>({hist:histOf(v)}),aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PylosAI(PY)).search(aiPos(st),opt),
   evalInfo};
 for(const p of ['c','a','f','t'])if($(p+'Variant')){$(p+'Variant').value=homeVariant();$(p+'Variant').addEventListener('change',e=>LS.set('pylos-variant',e.target.value));}

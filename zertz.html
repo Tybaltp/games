@@ -183,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=90"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 function ZertzEngine(size){
@@ -303,9 +303,13 @@ const GOAL=[4,5,6];
 // searched in their former 1.5 and 3 s (outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={debutant:{depth:1,fb:1,noise:600},moyen:{depth:2,fb:2,nodes:2600000,noise:150},fort:{depth:3,fb:3,nodes:5300000}};
 const HINT=LEVELS.fort;
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.nodes?[o.noise?'lvd_dkn':'lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{
- title:"Zèrtz",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",
+ title:"Zèrtz",lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_dk:"profondeur {n}, {k} positions au plus",lvd_dkn:"profondeur {n}, {k} positions au plus, avec une part de hasard",m_aiMore:"Au-delà de cette profondeur, l'ordinateur lit encore les prises.",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",
  pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
  c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
@@ -321,7 +325,7 @@ const ZZ_I18N={fr:{
  <li><b>Isoler</b> : un groupe d'anneaux séparé du reste du plateau et entièrement occupé revient, billes comprises, au joueur qui vient de poser.</li>
  <li><b>Victoire</b> : 4 billes blanches, ou 5 grises, ou 6 noires, ou 3 de chaque couleur. Un joueur qui n'a plus de coup perd.</li></ul>`
 },en:{
- title:"Zèrtz",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",
+ title:"Zèrtz",lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_dk:"depth {n}, at most {k} positions",lvd_dkn:"depth {n}, at most {k} positions, with some randomness",m_aiMore:"Beyond that depth, the computer still reads captures.",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
  c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
@@ -337,7 +341,7 @@ const ZZ_I18N={fr:{
  <li><b>Isolate</b>: a group of rings cut off from the rest of the board and fully occupied goes, marbles included, to the player who has just placed.</li>
  <li><b>Winning</b>: 4 white marbles, or 5 grey, or 6 black, or 3 of each colour. A player with no move left loses.</li></ul>`
 },es:{
- title:"Zèrtz",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",
+ title:"Zèrtz",lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_dk:"profundidad {n}, {k} posiciones como máximo",lvd_dkn:"profundidad {n}, {k} posiciones como máximo, con algo de azar",m_aiMore:"Más allá de esa profundidad, el ordenador sigue leyendo las capturas.",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",
  pool:"Reserva común",poolN:"{n} bolas",poolLbl:"Reserva: {n}",poolLblE:"Reserva vacía",h_empty:"Reserva vacía: cada uno coloca sus propias bolas capturadas.",
  c0:"blanca",c1:"gris",c2:"negra",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmar cada jugada",
  st_capStart:"Captura obligatoria: haz clic en la bola que salta.",st_capPath:"Captura: haz clic en el anillo de llegada (resaltado), o en un anillo ya recorrido para volver a él.",st_remove:"Retira un anillo libre (en rojo), o vuelve a hacer clic en la bola para recuperarla.",
@@ -627,7 +631,7 @@ const GAME={howto:{off:true,titled:true,n:2,scene:zzHowto,vars:()=>({where:t(zBa
   board:zzBoard,turnStatus:zzTurnStatus,
   logText:e=>logTxt(e),
   home:()=>{setBoard(48);drawBoard(ENG[48].init(),[],false,null);},
-  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>ZertzEngine.toString()+`
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
 function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.depth&&!r.fb};}`,

@@ -182,7 +182,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=90"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -243,7 +243,7 @@ function TintasEngine(){
 const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10",lv_l11:"Niveau 11, le plus fort",m_aiTxt:"Douze niveaux, de 0 à 11 : chacun bat le précédent environ trois parties sur quatre.",
+ lvd_ab:"alpha-bêta, profondeur {n}",lvd_mc:"recherche Monte-Carlo, {n} simulations par coup",
  title:"Tintas",lede:"Un pion commun, sept couleurs : collectez-les.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
@@ -266,7 +266,7 @@ const TI_I18N={fr:{
  <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Gagne aussi celui qui a au moins une pièce de chaque couleur et au moins 4 pièces dans au moins 4 couleurs.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10",lv_l11:"Level 11, the strongest",m_aiTxt:"Twelve levels, from 0 to 11: each one beats the one below about three games in four.",
+ lvd_ab:"alpha-beta, depth {n}",lvd_mc:"Monte Carlo search, {n} simulations a move",
  title:"Tintas",lede:"One shared pawn, seven colours: race to collect a set.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game (new board, the other player starts).",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
@@ -289,7 +289,7 @@ const TI_I18N={fr:{
  <li><b>Winning</b>: all 7 pieces of one colour win at once. A player also wins with at least one piece of each colour and at least 4 pieces in at least 4 colours.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Original rules: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, Creative Commons BY-NC 4.0 licence.</p>`
 },es:{
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10",lv_l11:"Nivel 11, el más fuerte",m_aiTxt:"Doce niveles, de 0 a 11: cada uno gana al anterior unas tres partidas de cada cuatro.",
+ lvd_ab:"alfa-beta, profundidad {n}",lvd_mc:"búsqueda Monte Carlo, {n} simulaciones por jugada",
  title:"Tintas",lede:"Un peón común, siete colores: colecciónalos.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",
  endTurn:"Terminar el turno",endTurnS:"Terminar",confirmTurn:"Confirmar el turno",
  t_cont:"Puedes continuar con una pieza {c}, o terminar el turno.",t_pending:"Turno terminado: confírmalo, o reinicia.",
@@ -623,7 +623,7 @@ return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dis
 // turns whose colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening.
 const MC={algo:'mcts',cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
 const LEVELS={
-  l0:{algo:'random'},
+  l0:{algo:'random',random:true},
   l1:{algo:'ab',depth:1,temp:2},
   l2:{algo:'ab',depth:1},
   l3:{algo:'ab',depth:2,temp:.85},
@@ -636,6 +636,10 @@ const LEVELS={
   l10:{...MC,sims:30000},
   l11:{...MC,sims:300000}};
 const HINT={...MC,sims:240000};   // level 11's search with the simulations of 5 s at most on the reference Mac
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const levelDesc=o=>o.algo==='mcts'?['lvd_mc',o.sims]:['lvd_ab',o.depth];
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: its score is a logit (×scale) of its winning chances, or a sure result
@@ -651,7 +655,7 @@ const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   enc:encT,describe:txtOf,newUi,preparing,cancel:cancelPrep,
   board:tiBoard,turnStatus:tiTurnStatus,waitStatus:tiWaitStatus,
   pendText:p=>p==='s'?[t('t_swapPend'),t('confirmSwap')]:[t('t_pending'),t('confirmTurn')],
-  levels:LEVELS,levelDefault:'l4',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+TintasEngine.toString()+'\n'+TintasAI.toString()+'\nconst TA=TintasAI(TintasEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TintasAI(E)).search(aiPos(st),opt),
   evalInfo:tiEvalInfo,

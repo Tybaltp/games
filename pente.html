@@ -392,7 +392,7 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
  const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=90"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -423,13 +423,17 @@ const LEVELS={
  l9:{nodes:150000},
  l10:{nodes:520000}};
 const HINT={...LEVELS.l10,hint:true};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.nodes?['lvd_nodes',o.nodes]:[o.noise?'lvd_dn':'lvd_d_ab',o.maxDepth];
 
 
 // Pente strings, merged over the shared ones (core.js)
 const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n,es:'una línea de '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Cinq alignés, ou dix pierres capturées.",by:"Un jeu de Gary Gabrel.",
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10, le plus fort",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre.",
+ lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_nodes:"{n} positions lues",
  needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
  n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
@@ -452,7 +456,7 @@ const PE_I18N={fr:{
  <li><b>Fin</b> : gagne celui qui aligne 5 pierres ou plus, ou qui a capturé 5 paires. Plateau plein sans vainqueur : nulle.</li></ul>`
 },en:{
  title:"Pente",lede:"Five in a row, or capture ten.",by:"A game by Gary Gabrel.",
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10, the strongest",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four.",
+ lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_nodes:"{n} positions read",
  needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
  n_open:"Place the opening: 2 black and 1 white ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",
@@ -475,7 +479,7 @@ const PE_I18N={fr:{
  <li><b>End</b>: whoever lines up 5 or more stones, or has captured 5 pairs, wins. Board full with no winner: a draw.</li></ul>`
 },es:{
  title:"Pente",lede:"Cinco en línea, o diez piedras capturadas.",by:"Un juego de Gary Gabrel.",
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10, el más fuerte",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro.",
+ lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_nodes:"{n} posiciones leídas",
  needConfirm:"Confirmar cada jugada",
  black:"Negras",white:"Blancas",colw_1:"negra",colw_2:"blanca",captured:"{n} pares capturados de 5",
  n_open:"Coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_choose:"Te toca elegir: Negras, Blancas o 2 piedras más.",
@@ -761,7 +765,7 @@ const GAME={id:'pente',seatCol:s=>{const m=view?view.moves:[],c1=m[1]==='B'||m[1
   playerCard,
   logText:e=>logTxt(e),
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'l4',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc,aiPos,aiSearch:aiSearchPage,
   evalInfo:res=>evalInfo(res)};
 coreStart();

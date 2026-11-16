@@ -168,7 +168,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=90"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -247,7 +247,7 @@ function ArimaaEngine(){
 const AR_I18N={fr:{
  mq_q:"Voulez-vous jouer Or (premier) ou Argent ?",mq_1:"Or",mq_p1:"Or",mq_p2:"Argent",mq_2:"Argent",
  title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",
- m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
+ lvd_steps:"{n} pas de profondeur",m_aiMore:"Sharp, le meilleur programme d'Arimaa de 2015. Quatre pas font un tour. Annulation possible.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
  setupGo:"Confirmer la disposition",setupGoS:"Confirmer",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
  st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
  st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
@@ -273,7 +273,7 @@ const AR_I18N={fr:{
 },en:{
  mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_p1:"Gold",mq_p2:"Silver",mq_2:"Silver",
  title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",
- m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
+ lvd_steps:"{n} steps deep",m_aiMore:"Sharp, the strongest Arimaa program of 2015. Four steps make a turn. Undo allowed.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
  setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
  st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",st_soloTurn:"{n} to move.",
  st_steps:"Step {k}/4: go on, or end the turn.",st_steps4:"Step 4/4: end the turn.",
@@ -299,7 +299,7 @@ const AR_I18N={fr:{
 },es:{
  mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_p1:"con Oro",mq_p2:"con Plata",mq_2:"Plata",
  title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",
- m_aiTxt:"Sharp, el mejor programa de Arimaa de 2015: tres niveles, con deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
+ lvd_steps:"{n} pasos de profundidad",m_aiMore:"Sharp, el mejor programa de Arimaa de 2015. Cuatro pasos hacen un turno. Se puede deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
  setupGo:"Confirmar la colocación",setupGoS:"Confirmar",undoStep:"Deshacer el paso",undoStepS:"−1 paso",endTurn:"Terminar el turno",endTurnS:"Terminar",gold:"Oro",silver:"Plata",t_caps:"Piezas capturadas: {l}",
  st_setup:"Coloca tus piezas: haz clic en dos casillas para intercambiarlas y luego valida.",st_oppSetup:"{n} coloca sus piezas.",st_soloTurn:"Le toca a {n}.",
  st_steps:"Paso {k}/4: continúa o termina el turno.",st_steps4:"Paso 4/4: termina el turno.",
@@ -612,6 +612,10 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
 // outils/aitools/res/budgets-2026-11-16.md).
 const SHARP_V=1,SHARP_T=86400;
 const LEVELS={debutant:{d:4},moyen:{d:10},fort:{d:11}};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"Sharp, de David Wu",en:"Sharp, by David Wu",es:"Sharp, de David Wu"};
+const levelDesc=o=>['lvd_steps',o.d];
 // Sharp's setup tokens (« Ra1 … ») -> 'S' + the 16 letters in E.SETUP_SQ order
 function sharpSetup(E,toks,s){const at={};for(const t of toks){const m=/^([RCDHME])([a-h][1-8])$/i.exec(t);if(m)at[m[2]]=m[1].toUpperCase();}
   const L=E.SETUP_SQ[s].map(i=>at[E.sq(i)]);return L.every(Boolean)?'S'+L.join(''):null;}
@@ -710,7 +714,7 @@ const GAME={id:'arimaa',howto:{n:4,scene:arHowto,titled:true},size:'arimaa',code
   enc:c=>c,describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:arBoard,turnStatus:arTurnStatus,waitStatus:arWaitStatus,
   hintable:()=>false,   // no Hint button (core offers it otherwise, now that there is a computer)
-  levels:LEVELS,levelDefault:'moyen',hintLevel:LEVELS.moyen,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:LEVELS.moyen,
   aiSrc,aiPos:st=>({b:Array.from(st.b),turn:st.turn,n:st.n}),aiOpt:v=>({hist:sharpHist(v)}),
   aiSearch:()=>null,    // no worker (some file:// setups): no computer move
   evalInfo:()=>null,
