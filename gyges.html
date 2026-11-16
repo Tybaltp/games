@@ -497,10 +497,11 @@ const E=GygesEngine(),G=E.G;
 // Computer levels: depth of reading (half-moves), bounces seen per move, random noise on the choice, nodes (positions
 // searched at most); shuffle + placeTol:0 = random among equal moves and equal setups (no cost;
 // outils/aitools/res/gyges/niveaux.md). A level is an amount of work, never a time (16.11.2026): the first two stop on
-// their depth, Fort and Très fort on their nodes, what the reference Mac (M3 Pro) searched in their former 3 and 8 s
+// their depth, Fort and Très fort on their nodes, what the reference Mac (M3 Pro) searched in their former 3 and 8 s,
+// the positions of the game known (opt.hist)
 // (outils/aitools/res/budgets-2026-11-16.md). Hints use Fort, the highest level that answers within 5 s on that Mac.
 const LEVELS={debutant:{depth:1,maxSeg:3,noise:300},moyen:{depth:2,maxSeg:3,noise:100,placeTries:4},
-  fort:{depth:12,nodes:225000,placeTries:6,shuffle:true,placeTol:0,ts:true},tresfort:{depth:12,nodes:620000,placeTries:6,shuffle:true,placeTol:0,ts:true}};
+  fort:{depth:12,nodes:200000,placeTries:6,shuffle:true,placeTol:0,ts:true},tresfort:{depth:12,nodes:560000,placeTries:6,shuffle:true,placeTol:0,ts:true}};
 const HINT=LEVELS.fort;
 // Setup modes: 'piece' one piece at a time in turn (default) · 'simul' both rows chosen at the same time, hidden until both
 // are validated · 'seq' J1's whole row, then J2's. Missing (old saves, resume codes) = 'piece'.
