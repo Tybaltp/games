@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Siam palette (light, dark), board, animals and rocks; the shared layout is in common/games.css */
 :root{
@@ -84,21 +84,21 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
       
       <form class="form" id="createForm" hidden>
         
-        <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -165,9 +165,9 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Siam (Didier Dhorbait, Ferti, 2005) =====
 // Rules kept (from memory and public summaries; to be checked against the publisher's rules): a 5 × 5 board; three rocks
@@ -270,13 +270,14 @@ const SM=SiamEngine();
 // ===== Siam: the page's side of common/core.js =====
 const SM_I18N={fr:{
  title:"Siam",lede:"Éléphants contre rhinocéros : poussez un rocher hors du plateau.",by:"Un jeu de Didier Dhorbait.",
- firstIs:"Qui commence (Éléphants)",needConfirm:"Confirmer chaque coup",
+ needConfirm:"Confirmer chaque coup",
  camp0:"Éléphants",camp1:"Rhinocéros",an0:"éléphant",an1:"rhinocéros",resv:"{n} en réserve",
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"Nord",dEl:"Est",dSl:"Sud",dWl:"Ouest",
  enter:"Faire entrer",enterT:"Faire entrer un animal de la réserve sur une case du bord",exit:"Sortir",exitT:"Sortir cet animal du plateau (il retourne en réserve)",
- st_play:"À vous ({camp}) : choisissez un animal, ou faites-en entrer un.",st_playN:"{name} ({camp}) : choisissez un animal, ou faites-en entrer un.",
+ st_play:"À vous ({camp}) : choisissez un animal, ou faites-en entrer un.",st_playN:"{name} ({c}) : choisissez un animal, ou faites-en entrer un.",
  st_enter:"Choisissez une case du bord (points marqués).",st_sel:"Avancez ou poussez (points marqués), tournez-le, ou sortez-le s'il est au bord.",
- st_turnC:"Au tour de {name} ({camp}).",
+ st_turnC:"Au trait : {name} ({c}).",
+ lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
  p_dir:"{m} ; changez l'orientation si vous voulez, puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
  d_enter:"entre en {t}, {d}",d_enterP:"entre en {t} en poussant, {d}",d_turn:"{f} tourne : {d}",d_exit:"{f} sort",d_move:"{f} → {t}, {d}",d_push:"{f} pousse vers {t}",
  l_out:"sort {x}",w_rock:"un rocher est sorti",
@@ -285,21 +286,18 @@ const SM_I18N={fr:{
  <li><b>Matériel</b> : un plateau de 5 × 5 cases, trois rochers au centre (b3, c3, d3), cinq éléphants et cinq rhinocéros hors du plateau. Chaque animal regarde dans une direction (sa pointe). Les éléphants commencent.</li>
  <li><b>Un tour</b>, une seule action avec un de ses animaux : <i>entrer</i> sur une case libre du bord, orientation au choix ; <i>avancer</i> d'une case vers une case libre, orientation au choix ; <i>tourner</i> sur place ; <i>sortir</i> du plateau depuis une case du bord (il revient en réserve) ; <i>pousser</i>.</li>
  <li><b>Pousser</b> : un animal avance dans la direction où il regarde sur une case occupée, ou entre sur une case du bord occupée en regardant vers l'intérieur, et pousse toute la file d'une case. Dans la file, comptez les animaux qui regardent dans le sens de la poussée (F), ceux qui regardent en sens contraire (B) et les rochers (R) ; ceux de côté ne comptent pas. La poussée passe si F − B ≥ 1 et F − B ≥ R. Un animal poussé hors du plateau retourne dans sa réserve.</li>
- <li><b>Victoire</b> : un rocher poussé hors du plateau termine la partie. Gagne le camp de l'animal le plus proche du rocher, derrière lui dans la file, qui regarde dans le sens de la poussée, même si ce n'est pas lui qui a poussé.</li>
- <li><b>Cartes joueurs</b> : le camp de chacun et ses animaux en réserve.</li>
- <li><b>Jouer</b> : cliquez un de vos animaux (ou une case libre du bord, ou « Faire entrer ») ; les cases où il peut aller sont marquées d'un point. Cliquez-en une : l'animal s'y pose à titre provisoire (cadre en pointillés), tourné dans le sens du déplacement ; les flèches de la barre changent son orientation, puis Confirmer. Une poussée garde l'orientation et, sans « Confirmer chaque coup », part aussitôt. Animal sélectionné : flèches pour le tourner sur place, « Sortir » au bord.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <li><b>Victoire</b> : un rocher poussé hors du plateau termine la partie. Gagne le camp de l'animal le plus proche du rocher, derrière lui dans la file, qui regarde dans le sens de la poussée, même si ce n'est pas lui qui a poussé.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 },en:{
  title:"Siam",lede:"Elephants against rhinos: push a rock off the board.",by:"A game by Didier Dhorbait.",
- firstIs:"Who starts (Elephants)",needConfirm:"Confirm each move",
+ needConfirm:"Confirm each move",
  camp0:"Elephants",camp1:"Rhinoceroses",an0:"elephant",an1:"rhino",resv:"{n} in reserve",
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"North",dEl:"East",dSl:"South",dWl:"West",
  enter:"Bring in",enterT:"Bring an animal from the reserve onto an edge square",exit:"Leave",exitT:"Take this animal off the board (back to the reserve)",
- st_play:"Your move ({camp}): choose an animal, or bring one in.",st_playN:"{name} ({camp}): choose an animal, or bring one in.",
+ st_play:"Your move ({camp}): choose an animal, or bring one in.",st_playN:"{name} ({c}): choose an animal, or bring one in.",
  st_enter:"Choose an edge square (marked points).",st_sel:"Move or push (marked points), turn it, or take it off from the edge.",
- st_turnC:"{name} to move ({camp}).",
+ st_turnC:"To move: {name} ({c}).",
+ lvd_g1r:"one move ahead, at random among the best",lvd_beam:"{n} moves ahead, on the best candidates",
  p_dir:"{m}; change the direction if you like, then confirm.",p_mv:"{m}.",confirm1:"Confirm",
  d_enter:"enters on {t}, {d}",d_enterP:"enters on {t} pushing, {d}",d_turn:"{f} turns: {d}",d_exit:"{f} leaves",d_move:"{f} → {t}, {d}",d_push:"{f} pushes towards {t}",
  l_out:"{x} off",w_rock:"a rock was pushed off",
@@ -308,21 +306,18 @@ const SM_I18N={fr:{
  <li><b>Material</b>: a board of 5 × 5 squares, three rocks in the middle (b3, c3, d3), five elephants and five rhinoceroses off the board. Each animal faces a direction (its point). The elephants start.</li>
  <li><b>A turn</b>, a single action with one of your animals: <i>enter</i> on a free edge square, facing any way; <i>move</i> one square to a free square, facing any way; <i>turn</i> on the spot; <i>leave</i> the board from an edge square (back to the reserve); <i>push</i>.</li>
  <li><b>Pushing</b>: an animal moves the way it faces onto an occupied square, or enters on an occupied edge square facing inwards, and pushes the whole row one square. In the row, count the animals facing the push (F), those facing the other way (B) and the rocks (R); those facing sideways do not count. The push goes through if F − B ≥ 1 and F − B ≥ R. An animal pushed off the board goes back to its reserve.</li>
- <li><b>Winning</b>: a rock pushed off the board ends the game. The camp of the animal nearest the rock, behind it in the row, facing the push wins, even if it is not the one that pushed.</li>
- <li><b>Player cards</b>: each player's camp and animals in reserve.</li>
- <li><b>Playing</b>: click one of your animals (or a free edge square, or “Bring in”); the squares it can go to are marked with a dot. Click one: the animal is placed there provisionally (dashed frame), facing the way it moved; the bar's arrows change its direction, then Confirm. A push keeps its direction and, without “Confirm each move”, goes at once. Animal selected: arrows to turn it on the spot, “Leave” from the edge.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <li><b>Winning</b>: a rock pushed off the board ends the game. The camp of the animal nearest the rock, behind it in the row, facing the push wins, even if it is not the one that pushed.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 },es:{
  title:"Siam",lede:"Elefantes contra rinocerontes: empuja una roca fuera del tablero.",by:"Un juego de Didier Dhorbait.",
- firstIs:"Quién empieza (Elefantes)",needConfirm:"Confirmar cada jugada",
+ needConfirm:"Confirmar cada jugada",
  camp0:"Elefantes",camp1:"Rinocerontes",an0:"elefante",an1:"rinoceronte",resv:"{n} en reserva",
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"Norte",dEl:"Este",dSl:"Sur",dWl:"Oeste",
  enter:"Hacer entrar",enterT:"Hacer entrar un animal de la reserva en una casilla del borde",exit:"Sacar",exitT:"Sacar este animal del tablero (vuelve a la reserva)",
- st_play:"Te toca ({camp}): elige un animal, o haz entrar uno.",st_playN:"{name} ({camp}): elige un animal, o haz entrar uno.",
+ st_play:"Te toca ({camp}): elige un animal, o haz entrar uno.",st_playN:"{name} ({c}): elige un animal, o haz entrar uno.",
  st_enter:"Elige una casilla del borde (puntos marcados).",st_sel:"Avanza o empuja (puntos marcados), gíralo, o sácalo si está en el borde.",
- st_turnC:"Turno de {name} ({camp}).",
+ st_turnC:"Turno: {name} ({c}).",
+ lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
  p_dir:"{m}; cambia la orientación si quieres y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
  d_enter:"entra en {t}, {d}",d_enterP:"entra en {t} empujando, {d}",d_turn:"{f} gira: {d}",d_exit:"{f} sale",d_move:"{f} → {t}, {d}",d_push:"{f} empuja hacia {t}",
  l_out:"sale {x}",w_rock:"ha salido una roca",
@@ -331,11 +326,7 @@ const SM_I18N={fr:{
  <li><b>Material</b>: un tablero de 5 × 5 casillas, tres rocas en el centro (b3, c3, d3), cinco elefantes y cinco rinocerontes fuera del tablero. Cada animal mira en una dirección (su punta). Empiezan los elefantes.</li>
  <li><b>Un turno</b>, una sola acción con uno de tus animales: <i>entrar</i> en una casilla libre del borde, con la orientación que quieras; <i>avanzar</i> una casilla hasta una casilla libre, con la orientación que quieras; <i>girar</i> en el sitio; <i>salir</i> del tablero desde una casilla del borde (vuelve a la reserva); <i>empujar</i>.</li>
  <li><b>Empujar</b>: un animal avanza en la dirección en que mira hacia una casilla ocupada, o entra en una casilla ocupada del borde mirando hacia el interior, y empuja toda la fila una casilla. En la fila, cuenta los animales que miran en el sentido del empuje (F), los que miran en sentido contrario (B) y las rocas (R); los que miran de lado no cuentan. El empuje pasa si F − B ≥ 1 y F − B ≥ R. Un animal empujado fuera del tablero vuelve a su reserva.</li>
- <li><b>Victoria</b>: una roca empujada fuera del tablero termina la partida. Gana el bando del animal más cercano a la roca, detrás de ella en la fila, que mira en el sentido del empuje, aunque no sea él quien ha empujado.</li>
- <li><b>Tarjetas de jugador</b>: el bando de cada uno y sus animales en reserva.</li>
- <li><b>Jugar</b>: haz clic en uno de tus animales (o en una casilla libre del borde, o en «Hacer entrar»); las casillas adonde puede ir se marcan con un punto. Haz clic en una: el animal se coloca allí provisionalmente (marco de puntos), orientado en el sentido del desplazamiento; las flechas de la barra cambian su orientación, y luego Confirmar. Un empuje conserva la orientación y, sin «Confirmar cada jugada», se hace de inmediato. Animal seleccionado: flechas para girarlo en el sitio, «Sacar» en el borde.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
+ <li><b>Victoria</b>: una roca empujada fuera del tablero termina la partida. Gana el bando del animal más cercano a la roca, detrás de ella en la fila, que mira en el sentido del empuje, aunque no sea él quien ha empujado.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 }};
 const CAMP=c=>t('camp'+c),CK=c=>c===SM.ELE?'e':'r',DL=d=>t('d'+d+'l').toLowerCase(),NM=SM.name;
@@ -373,14 +364,14 @@ function smBoard({r,d,mine,ms}){const live=navAt===null;
   if(mine&&live&&ui.f>=0&&!(ms.p[ui.f]&&ms.p[ui.f].t===SM.toMove(ms)))clearPrep();
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function smTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=SM.toMove(st),me=seatName(st.turn);
-  if(ui.enter){status(t('st_enter'),'turn',[RST]);return;}
+  if(ui.enter){status(soloWho(st.turn,t('st_enter')),'turn',[RST]);return;}
   if(ui.f>=0){const f=NM(ui.f),q=st.p[ui.f],rot='NESW'.split('').filter(d=>d!==q.d).map(d=>({label:t('d'+d),on:()=>pickRot(d)}));
     const ex=moves(st).includes(f+'-x')?{label:t('exit'),on:()=>pickCode(f+'-x',true)}:null;
-    status(t('st_sel'),'turn dirs',[RST,...rot,ex]);
+    status(soloWho(st.turn,t('st_sel')),'turn dirs',[RST,...rot,ex]);
     document.querySelectorAll('#notice .btns button').forEach(b=>{const k=Object.keys({N:1,E:1,S:1,W:1}).find(d=>t('d'+d)===b.textContent);if(k)b.title=t('d'+k+'l');else if(b.textContent===t('exit'))b.title=t('exitT');});return;}
   const ent=st.res[st.turn]&&moves(st).some(m=>m[0]==='+')?{id:'bEnter',label:t('enter')+' ('+st.res[st.turn]+')',on:()=>{dropHint();clearPrep();ui.enter=true;renderGame();}}:null;
-  status(S?t('st_playN',{name:me,camp:CAMP(c)}):t('st_play',{camp:CAMP(c)}),'turn',[ent,...idle]);if($('bEnter'))$('bEnter').title=t('enterT');}
-function smWaitStatus({r}){status(t('st_turnC',{name:seatName(r.st.turn),camp:CAMP(SM.toMove(r.st))}));return true;}
+  status(S?tN('st_playN',{name:me,c:CAMP(c)}):t('st_play',{camp:CAMP(c)}),'turn',[ent,...idle]);if($('bEnter'))$('bEnter').title=t('enterT');}
+function smWaitStatus({r}){status(tN('st_turnC',{name:seatName(r.st.turn),c:CAMP(SM.toMove(r.st))}));return true;}
 // a move with a free direction: the direction buttons beside Confirm
 function pendText(mv,st){const e=SM.info(String(mv)),free=(e.kind==='enter'||e.kind==='move')&&!st.p[e.t];
   return [free?t('p_dir',{m:describe(mv,st),d:DL(e.d)}):t('p_mv',{m:describe(mv,st)}),t('confirm1')];}
@@ -442,7 +433,7 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   // the squares (the board is drawn from y = 0; the coordinates in the left and bottom margins)
   for(let i=0;i<25;i++){const x=PX(i)-CS/2,y=PY(i)-CS/2;el('rect',{x,y,width:CS,height:CS,fill:(i%5+Math.floor(i/5))%2?'var(--cell2)':'var(--cell)',stroke:'var(--cell-e)','stroke-width':1.5},svg);}
   const g=el('g',{'pointer-events':'none'},svg);
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':20,fill:'var(--lab)'},svg);e.textContent=s;};
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':20},svg);e.textContent=s;};
     for(let k=0;k<5;k++){lab(PAD+k*CS+CS/2,5*CS+PAD/2,String.fromCharCode(97+k));lab(PAD/2,(4-k)*CS+CS/2,String(k+1));}}
   const mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?SM.toMove(ms):-1;
   // the position shown: with the move prepared (or the suggestion) played on a copy
@@ -493,18 +484,27 @@ function play(S,m){const st=SM.clone(S.st),r=SM.plan(st,m)();let win=-1;
   if(r.out&&r.out.t===SM.ROCK)win=st.col.indexOf(r.winner);st.turn=1-st.turn;return {st,win};}
 function gen(S){const out=[];for(const m of SM.legalMoves(S.st)){const T=play(S,m),p=S.st.turn;out.push({m,s:T.win>=0?(T.win===p?2000:-2000):evalS(T,p)});}
   out.sort((a,b)=>b.s-a.s);return out;}
-const KS=AISearch({moves:gen,play,turn:S=>S.st.turn,done:S=>S.win>=0,result,eval:evalS,playout:()=>{},scratch:S=>S});
-function search(P,opt){const st={p:P.p.map(q=>q&&{...q}),res:P.res.slice(),turn:P.turn,col:P.col.slice()},S={st,win:-1};KS.start(opt.time);
+// TELL: the search in flight is the move's own: its best move so far goes to aiBest (core's worker, « Jouer maintenant »)
+let TELL=false;
+const KS=AISearch({moves:gen,play,turn:S=>S.st.turn,done:S=>S.win>=0,result,eval:evalS,playout:()=>{},scratch:S=>S,
+  best:r=>{if(TELL)aiBest({move:r.m,score:r.s,depth:r.depth});}});
+function search(P,opt){const st={p:P.p.map(q=>q&&{...q}),res:P.res.slice(),turn:P.turn,col:P.col.slice()},S={st,win:-1};KS.start(opt.nodes);
   const C=gen(S);if(!C.length)return null;if(C[0].s>=2000)return {move:C[0].m,score:1000,depth:1};
-  const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);
+  TELL=typeof aiBest==='function';const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=false;
   return {move:r.m,score:r.s,depth:r.depth,forced:C.length===1};}
 return {search,evalS,gen};
 }
 /*AIEND*/
-// Levels: Débutant, one move ahead with some randomness; Moyen, three plies; Fort, four (beam). Over 10 games from
-// varied openings: Moyen beats Débutant 8 times, Fort beats Moyen 7 times.
-const LEVELS={debutant:{algo:'greedy',pick:6,temp:.5},moyen:{algo:'beam',depth:3,widths:[12,8,6],time:4000},fort:{algo:'beam',depth:4,widths:[16,10,8,6],time:5000}};
+// Levels (named by the core: Niveau 0, 1, 2): one move ahead with some randomness; three plies; four (beam). Over 10
+// games from varied openings: level 1 beats level 0 8 times, level 2 beats level 1 7 times. A level is its depth, never
+// a time (main, 16.11.2026): the former caps of 4 and 5 s were never reached (at most 0.14 s a move at level 2 on this
+// Mac, 31 positions of a game). Hints use level 2, the highest.
+const LEVELS={debutant:{algo:'greedy',pick:6,temp:.5},moyen:{algo:'beam',depth:3,widths:[12,8,6]},fort:{algo:'beam',depth:4,widths:[16,10,8,6]}};
 const HINT={...LEVELS.fort};
+// The engine: its version (a new scale, a new number) and its kind, under the level and in « Signaler un défaut » ·
+// levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const levelDesc=o=>o.algo==='greedy'?['lvd_g1r']:['lvd_beam',o.depth];
 const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice()});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+SiamEngine.toString()+'\n'+SiamAI.toString()+'\nconst XA=SiamAI(SiamEngine());function aiSearch(pos,opt){return XA.search(pos,opt);}';
@@ -513,7 +513,8 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 
 // ---------- the interface with common/core.js ----------
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'siam',size:5,codeTag:'SIAM1',i18n:SM_I18N,
+const GAME={id:'siam',seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
+  size:5,codeTag:'SIAM1',i18n:SM_I18N,
   rules:()=>({}),form:()=>({}),
   replay:(r,m)=>replayKept(r,m,{init:()=>SM.init(),
     play(prev,mv){const st=deepCopy(prev),code=SM.legal(st,mv);if(code===null)return null;   // as SM.replay, move by move
@@ -526,7 +527,7 @@ const GAME={id:'siam',size:5,codeTag:'SIAM1',i18n:SM_I18N,
   board:smBoard,turnStatus:smTurnStatus,waitStatus:smWaitStatus,pendText,pendBtns,
   playerCard,logNode,logText,
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||SiamAI(SM)).search(aiPos(st),opt),
   evalInfo};
 coreStart();
