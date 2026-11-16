@@ -6,13 +6,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=52">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
   --bg:#c9d6cf;--panel:#e4ece8;--ink:#1a2622;--muted:#4f625b;--line:#a3b8ad;   /* page: velvet green, the board's own tone lightened */
   /* the board: a dark green velvet in both themes, like a jeweller's tray; --hl is the highlight on it */
-  --wood:#203530;--wood-edge:#182a25;--sq:#2d4a43;--gridl:rgba(255,255,255,.10);--trap:#223b35;--trapk:rgba(255,255,255,.26);--coord:#8ea8a1;
+  --wood:#203530;--wood-edge:#182a25;--sq:#2d4a43;--gridl:rgba(255,255,255,.10);--trap:#223b35;--trapk:rgba(255,255,255,.26);--lab:#8ea8a1;
   /* the pieces: highlight, body, shade, rim (g = gold, s = silver), and the ink of the animal */
   --ghi:#f8e4a4;--g1:#d9ab3a;--gsh:#a67a1e;--g3:#6b4b10;--gk:#3a2908;--shi:#fbfdfe;--s1:#b7c1c9;--ssh:#7f8b94;--s3:#3d474f;--sk:#1b2228;
   --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
@@ -23,12 +23,12 @@
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#111a17;--panel:#1a2521;--ink:#ece6d6;--muted:#a39a80;--line:#4a4128;
-  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
+  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--lab:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
   --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#111a17;--panel:#1a2521;--ink:#ece6d6;--muted:#a39a80;--line:#4a4128;
-  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
+  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--lab:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
   --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}
 /* the board sits on its wood frame, on phones too (thinner there) */
@@ -567,8 +567,8 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   // coordinates (core: coordsOn): a–h under the board, 1–8 on its left; without them, a tighter viewBox (--board-ar too)
   svg.setAttribute('viewBox',coordsOn?'-22 -4 506 508':'-4 -4 488 488');
   if(coordsOn){
-    for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=(flip?'hgfedcba':'abcdefgh')[c];}
-    for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(flip?8-r:r+1);}}
+    for(let c=0;c<8;c++){const tx=el('text',{class:'coord',x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-size':15},svg);tx.textContent=(flip?'hgfedcba':'abcdefgh')[c];}
+    for(let r=0;r<8;r++){const tx=el('text',{class:'coord',x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-size':15},svg);tx.textContent=String(flip?8-r:r+1);}}
   const lay=el('g',{'pointer-events':'none'},svg);trapLinks(lay,shown);
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
     for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
@@ -715,6 +715,11 @@ const GAME={id:'arimaa',howto:{n:4,scene:arHowto,titled:true},size:'arimaa',code
   aiSearch:()=>null,    // no worker (some file:// setups): no computer move
   evalInfo:()=>null,
   playerCard:arPlayerCard,logDesc:e=>turnPhrase(e.det),
+  logNum:j=>(Math.floor(j/2)+1)+(j%2?'s':'g'),   // the official turn numbers: 1g, 1s (the setups), 2g, 2s…
+  // SGF: one node per turn, its value the turn in the official notation (« Ed2n Ed3n rc3x », the setup « Ra1 Rb1 … »),
+  // read back step by step (Sharp's reader); a file of the site written before XV holds the page's codes (core)
+  sgf:{val:(code,st)=>describe(code,st),
+    code:(v,st)=>{const toks=String(v).trim().split(/\s+/);return st.n<2?sharpSetup(E,toks,st.turn):sharpTurn(E,st.b,st.turn,toks.filter(x=>!/x$/.test(x)));}},
   home:()=>drawBoard({real:new Int8Array(64),shown:new Int8Array(64)})};
 coreStart();
 </script>

@@ -6,12 +6,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=52">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
   --bg:#ece4d9;--panel:#f8f4ed;--ink:#1d2729;--muted:#5a6869;--line:rgba(29,39,41,.14);
-  --water:#7da19e;--water-deep:#6a908d;--grid:rgba(255,255,255,.22);--coord:#4d6362;
+  --water:#7da19e;--water-deep:#6a908d;--grid:rgba(255,255,255,.22);--lab:#243634;
   --stone:#f1ebde;--stone-edge:#9c8f74;
   --trach:#454b52;--trach-edge:#1c1f23;
   --oak:#c89c5f;--oak-edge:#8a6532;--walnut:#5e3b22;--walnut-edge:#2e1c10;
@@ -25,14 +25,14 @@
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1e1a15;--panel:#29241c;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
-  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--coord:#8fa9a8;
+  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--lab:#c6d8d6;
   --stone:#f0e3c8;--stone-edge:#a8916b;--trach:#2e2723;--trach-edge:#110c09;
   --oak:#d2a463;--oak-edge:#86622f;--walnut:#5a3720;--walnut-edge:#1f130a;
   --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
   --danger:#ef7b65;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1e1a15;--panel:#29241c;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
-  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--coord:#8fa9a8;
+  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--lab:#c6d8d6;
   --stone:#f0e3c8;--stone-edge:#a8916b;--trach:#2e2723;--trach-edge:#110c09;
   --oak:#d2a463;--oak-edge:#86622f;--walnut:#5a3720;--walnut-edge:#1f130a;
   --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
@@ -421,7 +421,7 @@ const PD_I18N={fr:{
 // Move codes: 't12.34' two tiles (placement order; 't12' a single tile when no square is left for a second one),
 // 'b12-34' a bridge (smaller square first), 'x' pass, 'L' / 'D' the colour choice (seat 1 takes Light / plays Dark).
 // A player with no move at all passes automatically: replay applies it after the move before (noted in its log entry).
-const LET='ABCDEFGHIJ',lab=i=>LET[CL(i)]+(N-RW(i));
+const LET='abcdefghij',lab=i=>LET[CL(i)]+(N-RW(i)),sqi=n=>{const m=/^([a-j])(\d+)$/.exec(n);return m&&+m[2]>=1&&+m[2]<=N?(N-m[2])*N+LET.indexOf(m[1]):-1;};
 const CS=80,M=36,SZ=CS*N+2*M;
 const findEdge=(a,b)=>BR[a].find(e=>e.b===b);
 const NAME=c=>t(c===1?'light':'dark');
@@ -529,8 +529,9 @@ function drawBoard(real,last,a){
   out.push(`<rect x="${M}" y="${M}" width="${CS*N}" height="${CS*N}" fill="var(--water)"/>`);
   for(let k=1;k<N;k++){out.push(`<line x1="${X(k)}" y1="${M}" x2="${X(k)}" y2="${M+CS*N}" stroke="var(--grid)" stroke-width="1.5"/>`);
     out.push(`<line x1="${M}" y1="${Y(k)}" x2="${M+CS*N}" y2="${Y(k)}" stroke="var(--grid)" stroke-width="1.5"/>`);}
-  const tx=(x,y,s)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="15" fill="var(--coord)" font-family="Karla,sans-serif">${s}</text>`;
-  if(coordsOn)for(let k=0;k<N;k++)out.push(tx(X(k)+CS/2,24,LET[k]),tx(X(k)+CS/2,M+CS*N+25,LET[k]),tx(18,Y(k)+CS/2+5,N-k),tx(M+CS*N+18,Y(k)+CS/2+5,N-k));
+  // coordinates (core: coordsOn): a–j under the board, 1–10 on its left (a1 bottom left)
+  const tx=(x,y,s)=>`<text class="coord" x="${x}" y="${y}" text-anchor="middle" font-size="21">${s}</text>`;
+  if(coordsOn)for(let k=0;k<N;k++)out.push(tx(X(k)+CS/2,M+CS*N+25,LET[k]),tx(18,Y(k)+CS/2+6,N-k));
   const g=5;
   // flat tiles: a thin outline (the same shape, slightly larger) under a plain fill
   const shapes=(p,inf,fill)=>{
@@ -922,6 +923,11 @@ const GAME={howto:{off:true,titled:true,n:3,scene:pdHowto},id:'pdd',seatCol:s=>{
   legal:(st,code)=>{const m=parse(code);return m&&step(st,m)?enc(m):null;},
   enc:m=>{resetUi();return enc(m);},   // called by the shared send(): the move leaves, the preparation is dropped
   describe,newUi,preparing,cancel:cancelPrep,
+  // SGF: two tiles « a1,b2 » (in the order placed), a bridge « c3-c5 », « pass », the colour choice « light » or « dark »
+  sgf:{val:code=>{const m=parse(code);return !m?code:m.t==='t'?m.cells.map(lab).join(','):m.t==='b'?lab(m.a)+'-'+lab(m.b):m.t==='x'?'pass':m.t==='L'?'light':'dark';},
+    code:v=>{v=String(v).trim().toLowerCase();if(v==='pass')return 'x';if(v==='light')return 'L';if(v==='dark')return 'D';
+      let m=/^([a-j]\d+)(?:\s*,\s*([a-j]\d+))?$/.exec(v);if(m){const c=[m[1],m[2]].filter(Boolean).map(sqi);return c.some(x=>x<0)?null:'t'+c.join('.');}
+      m=/^([a-j]\d+)-([a-j]\d+)$/.exec(v);if(!m)return null;const a=sqi(m[1]),b=sqi(m[2]);return a<0||b<0?null:enc({t:'b',a:Math.min(a,b),b:Math.max(a,b)});}},
   board:pdBoard,turnStatus:pdTurnStatus,waitStatus:pdWaitStatus,pendText:pdPendText,
   levels:LEVELS,levelDefault:'l5',hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+PonteAI.toString()+'\nconst PA=PonteAI();function aiSearch(pos,opt){return PA.search(pos,opt);}',

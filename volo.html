@@ -6,25 +6,25 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=52">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Volo palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
   --bg:#ccd9e9;--panel:#e5ecf4;--ink:#1c282d;--muted:#5d6d74;--line:#b4bfcd;
-  --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--ghost:#355b75;
+  --sky:#bcd8ea;--sky-edge:#8db4cf;--grid:#5f8aa6;--dot:#3f6a86;--lab:#355b75;
   --o1:#ffb347;--o2:#e07a12;--o3:#8a4300;--b1:#6fb3ff;--b2:#1f6fd6;--b3:#0b3a7a;
   --s0:var(--o2);--s0e:var(--o3);--s1:var(--b2);--s1e:var(--b3);
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  --board-ar:650/579.615;        /* viewBox of the board (650×579.6; 610×579.6 without the coordinates) */
+  --board-ar:662/579.615;        /* viewBox of the board (662×579.6; 610×579.6 without the coordinates) */
 }
 html.nocoords{--board-ar:610/579.615}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#12151a;--panel:#1a1e26;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --sky:#14283a;--sky-edge:#0c1a26;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
+  --sky:#14283a;--sky-edge:#0c1a26;--grid:#4e7a97;--dot:#7fa6bf;--lab:#9cc0d6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--b2:#5aa2f5;--b3:#1b4f99;--o2:#f08a24;}}
 :root[data-theme="dark"]{
   --bg:#12151a;--panel:#1a1e26;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --sky:#14283a;--sky-edge:#0c1a26;--grid:#4e7a97;--dot:#7fa6bf;--ghost:#9cc0d6;
+  --sky:#14283a;--sky-edge:#0c1a26;--grid:#4e7a97;--dot:#7fa6bf;--lab:#9cc0d6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--b2:#5aa2f5;--b3:#1b4f99;--o2:#f08a24;}
 /* the sky behind the board, on every layout */
 .board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 30%,var(--sky),var(--sky-edge));border:0}
@@ -258,7 +258,7 @@ function VoloEngine(){
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",mq_p1:"Orange",mq_p2:"Bleu",
  lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",st_autoPass:"Aucun coup possible : vous passez.",
- needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",w_pass:"les deux joueurs ont passé",ht_1:"<b>Ajouter un oiseau</b> Cliquer un emplacement légal.",ht_2:"<b>Faire voler un oiseau</b> Sélectionner et cliquer sur la destination.",ht_3:"<b>Faire voler une ligne</b> Cliquer aux deux extrémités. Choisir la destination.",rules:`<summary>Règles en bref</summary><ul>
+ needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",l_pass:"passe",w_pass:"les deux joueurs ont passé",ht_1:"<b>Ajouter un oiseau</b> Cliquer un emplacement légal.",ht_2:"<b>Faire voler un oiseau</b> Sélectionner et cliquer sur la destination.",ht_3:"<b>Faire voler une ligne</b> Cliquer aux deux extrémités. Choisir la destination.",rules:`<summary>Règles en bref</summary><ul>
  <li><b>Plateau</b> : un hexagone de 7 points de côté, privé de ses 6 coins et de son centre (120 points).</li>
  <li><b>But</b> : réunir tous ses oiseaux en une seule nuée, des oiseaux qui se touchent de proche en proche. Les oiseaux sont illimités. Au départ, 3 oiseaux par camp sont dans les six nids, un point à l'intérieur de chaque coin retiré, en alternance. Orange commence.</li>
  <li>À son tour, on <b>ajoute un oiseau</b> ou on <b>fait voler</b> des oiseaux.</li>
@@ -271,7 +271,7 @@ const VO_I18N={fr:{
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",mq_p1:"Orange",mq_p2:"Blue",
  lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",st_autoPass:"No move available: you pass.",
- needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game, colours swapped.",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",w_pass:"both players passed",ht_1:"<b>Add a bird</b> Click a legal point.",ht_2:"<b>Fly a bird</b> Select it and click its destination.",ht_3:"<b>Fly a line</b> Click both ends. Choose the destination.",rules:`<summary>Rules in brief</summary><ul>
+ needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game, colours swapped.",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",l_pass:"pass",w_pass:"both players passed",ht_1:"<b>Add a bird</b> Click a legal point.",ht_2:"<b>Fly a bird</b> Select it and click its destination.",ht_3:"<b>Fly a line</b> Click both ends. Choose the destination.",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Board</b>: a hexagon with 7 points per side, without its 6 corners and its centre (120 points).</li>
  <li><b>Goal</b>: bring all your birds together into a single flock, birds touching one another from neighbour to neighbour. Birds are unlimited. At the start, 3 birds per side are in the six nests, one point inside each removed corner, alternating. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
@@ -284,7 +284,7 @@ const VO_I18N={fr:{
 },es:{
  mq_q:"¿Quieres jugar con Naranja (primero) o con Azul?",mq_1:"Naranja",mq_2:"Azul",mq_p1:"con Naranja",mq_p2:"con Azul",
  lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",st_autoPass:"Ninguna jugada posible: pasas.",
- needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",w_pass:"los dos jugadores han pasado",ht_1:"<b>Añadir un pájaro</b> Haz clic en un punto legal.",ht_2:"<b>Hacer volar un pájaro</b> Selecciónalo y haz clic en el destino.",ht_3:"<b>Hacer volar una línea</b> Haz clic en los dos extremos. Elige el destino.",rules:`<summary>Reglas en breve</summary><ul>
+ needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",l_pass:"pasa",w_pass:"los dos jugadores han pasado",ht_1:"<b>Añadir un pájaro</b> Haz clic en un punto legal.",ht_2:"<b>Hacer volar un pájaro</b> Selecciónalo y haz clic en el destino.",ht_3:"<b>Hacer volar una línea</b> Haz clic en los dos extremos. Elige el destino.",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Tablero</b>: un hexágono de 7 puntos de lado, sin sus 6 esquinas ni su centro (120 puntos).</li>
  <li><b>Objetivo</b>: reunir todos sus pájaros en una sola bandada, pájaros que se tocan de vecino en vecino. Los pájaros son ilimitados. Al principio, 3 pájaros por bando están en los seis nidos, un punto hacia dentro de cada esquina retirada, alternándose. Naranja empieza.</li>
  <li>En su turno, se <b>añade un pájaro</b> o se <b>hacen volar</b> pájaros.</li>
@@ -301,12 +301,21 @@ const CN=p=>t(p?'blue':'orange');
 // ---------- board ----------
 const SP=50,X=i=>SP*(E.Q[i]+E.R[i]/2),Y=i=>SP*0.866025*E.R[i];
 const ROWS=[],QMIN={};for(let i=0;i<N;i++){if(!ROWS.includes(E.R[i]))ROWS.push(E.R[i]);QMIN[E.R[i]]=Math.min(QMIN[E.R[i]]??99,E.Q[i]);}ROWS.sort((a,b)=>a-b);
-const name=i=>'abcdefghijklm'[ROWS.indexOf(E.R[i])]+(E.Q[i]-QMIN[E.R[i]]+1);
-// viewBox: room on the left for the row letters (core: coordsOn); without them, the same margin on both sides (--board-ar too)
+// Names: boardspace's (the one archive of Volo games), turned a quarter turn: its columns A–M are the rows here, a at the
+// top, and the number counts along the row from its left end as if the board were the full hexagon of side 7 (the six
+// corners and the centre, which Volo leaves out, keep their numbers): a2–a6, b1–b8 … f1–f12, g2–g12 without g7, h1–h12 …
+// m2–m6. On the upper half a number follows one diagonal, on the lower half the other. The board writes the first and
+// last name of each row at its two ends.
+const name=i=>'abcdefghijklm'[ROWS.indexOf(E.R[i])]+(E.Q[i]-Math.max(-6,-6-E.R[i])+1);
+// viewBox: room on both sides for the names at the rows' ends (core: coordsOn); without them, the same margin on both sides (--board-ar too)
 const VB=(()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
-  return [`${x0-56} ${y0-30} ${x1-x0+100} ${y1-y0+60}`,`${x0-30} ${y0-30} ${x1-x0+60} ${y1-y0+60}`];})();
+  return [`${x0-56} ${y0-30} ${x1-x0+112} ${y1-y0+60}`,`${x0-30} ${y0-30} ${x1-x0+60} ${y1-y0+60}`];})();
 const enc=m=>m.t==='x'?'x':(m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'+m.k)+(m.keep>=0?'k'+m.keep:'');
-const txtOf=m=>m.t==='x'?'pass':m.t==='p'?'+'+name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
+// the move list: a bird added « c4 », a flight « c3–c5→e4 » (first and last bird of the line, the first one's landing point)
+const txtOf=m=>m.t==='x'?t('l_pass'):m.t==='p'?name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
+// SGF: the same without arrows, « c4 », « c3-c5 e4 » (« c3 e4 » for one bird), « pass »; « /d6 »: a bird of the opponent's
+// region that stays, when the move cuts them into several
+const sgfV=m=>(m.t==='x'?'pass':m.t==='p'?name(m.at):(m.cells.length>1?name(m.cells[0])+'-'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+' '+name(E.dest(m,m.cells[0])))+(m.keep>=0?' /'+name(m.keep):'');
 // a move awaiting confirmation: « Passer » for a pass, the regions mentioned when the move removes some
 const describe=m=>m.t==='x'?t('pass'):txtOf(m)+(m.keep>=0?' ('+t('regions').toLowerCase()+')':'');
 // st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code.
@@ -479,7 +488,10 @@ function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
     // grid lines between neighbouring points
   const grid=el('g',{stroke:'var(--grid)','stroke-width':1.3,opacity:.75},svg);
   for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
-  if(coordsOn)for(const r of ROWS){const t=el('text',{x:SP*(QMIN[r]+r/2)-34,y:SP*0.866025*r+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':12,fill:'var(--ghost)',opacity:.8},svg);t.textContent='abcdefghijklm'[ROWS.indexOf(r)];}
+  // coordinates (core: coordsOn): the first and last name of each row, at its two ends
+  if(coordsOn)for(const r of ROWS){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.R[i]===r){if(lo<0||E.Q[i]<E.Q[lo])lo=i;if(hi<0||E.Q[i]>E.Q[hi])hi=i;}
+    el('text',{class:'coord',x:X(lo)-25,y:Y(lo)+4,'text-anchor':'end','font-size':13},svg).textContent=name(lo);
+    el('text',{class:'coord',x:X(hi)+25,y:Y(hi)+4,'text-anchor':'start','font-size':13},svg).textContent=name(hi);}
   const pv=opt.pv||null,prov=pv&&pv.prov,last=opt.last,lm=last&&last.mv,me=mySeat+1;
   const st=prov?E.base(cur,prov):cur;   // the removed regions are only faded
   const marked=new Set(prov&&prov.t==='p'?[prov.at]:[]);   // a provisional flight is outlined by flightMark
@@ -1121,6 +1133,8 @@ const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',seatCol:s=>s?'mq_2':
   again:mv=>mv.t==='p'&&!(mv.keep>=0),size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
   rules:()=>({}),form:()=>({}),
   // against the computer, its level and the options it plays with (the network's version among them), in the SGF only
+  sgf:{val:(code,st)=>{const m=E.gen(st).find(x=>enc(x)===code);return m?sgfV(m):code;},
+    code:(v,st)=>{v=String(v).trim().toLowerCase().replace(/\s+/g,' ');const m=E.gen(st).find(x=>sgfV(x)===v);return m?enc(m):null;}},
   sgfHead:()=>{const o=role==='ai'&&LEVELS[level];return o?{XA:JSON.stringify({level,...o})}:{};},
   replay:voReplay,
   legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,

@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=52">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -19,18 +19,18 @@
   --f-mono:ui-monospace,Menlo,Consolas,monospace;
   /* the board is square, with or without the coordinates (without them the margins are tighter and the board grows) */
   --board-ar:1/1;color-scheme:light;
-  --pboard:#c49a5e;--pgrid:rgba(58,40,20,.75);--pstar:rgba(58,40,20,.85);   /* board: wood, lines, star points */
+  --pboard:#c49a5e;--lab:rgba(58,40,20,.75);--pgrid:rgba(58,40,20,.75);--pstar:rgba(58,40,20,.85);   /* board: wood, lines, star points */
   --pb:#1c1f1e;--pbe:#000;--pw:#f7f6f1;--pwe:rgba(0,0,0,.85);--mk:#C42B3A;   /* stones (fill, rim), marks */
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1a1313;--panel:#251b1b;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
-  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}}
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--lab:rgba(40,26,10,.85);--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}}
 :root[data-theme="dark"]{
   --bg:#1a1313;--panel:#251b1b;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
-  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--lab:rgba(40,26,10,.85);--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}
 h1{font-weight:400;letter-spacing:0}
 /* the wooden board, edge to edge in its frame, on every screen */
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--pboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
@@ -694,7 +694,7 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'var(--pgrid)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
   for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'var(--pstar)'},svg);
   // coordinates (core: coordsOn): letters under the board, numbers on its left
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Figtree, system-ui, sans-serif','font-weight':600,'font-size':CELL*.36,fill:'rgba(58,40,20,.7)'},svg);e.textContent=s;};
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':CELL*.32},svg);e.textContent=s;};
     for(let k=0;k<N;k++){lab(P(k),SZ-PAD*.45,LET[k]);lab(PAD*.45,P(k),String(N-k));}}
   const sh=shown;
   if(sh&&view){const st=sh.d.st,g=el('g',{},svg);
