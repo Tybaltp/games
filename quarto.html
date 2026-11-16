@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Quarto</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Quarto palette (light, dark) and board; the shared layout is in common/games.css */
 .qhand{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:.78rem;color:var(--muted)}
 .qhand svg.qmini{width:auto;height:34px;margin:0;flex:none}
 :root{
   --bg:#cad4bb;--panel:#f0f4eb;--ink:#26231d;--muted:#6c675c;--line:#dcd7cb;
-  --wood:#c9a273;--wood-s:#a47a4e;--wood-f:#8e6640;--grid:#8e6640;--lbl:#6f532f;--res:transparent;--boardbox:transparent;--boardline:transparent;
+  --wood:#c9a273;--wood-s:#a47a4e;--wood-f:#8e6640;--grid:#8e6640;--lab:#6f532f;--res:transparent;--boardbox:transparent;--boardline:transparent;
   /* light pieces: face, outline, carved parts, sides (3D) */
   --pl:#f6ecd6;--pl-l:#6f5a3a;--pl-g:#9a8264;--pl-a:#e2d2b0;--pl-b:#c4ae86;
   /* dark pieces */
@@ -24,14 +24,14 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#152518;--panel:#1d2f21;--ink:#ebe5d8;--muted:#a19985;--line:#2f4132;
-  --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#233625;--boardbox:var(--panel);--boardline:var(--line);
+  --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lab:#b7a47c;--res:#233625;--boardbox:var(--panel);--boardline:var(--line);
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
   --accent:#efa93c;--accent-ink:#3d2700;--hov:color-mix(in srgb,var(--accent) 42%,transparent);--danger:#e8634d;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#152518;--panel:#1d2f21;--ink:#ebe5d8;--muted:#a19985;--line:#2f4132;
-  --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lbl:#b7a47c;--res:#233625;--boardbox:var(--panel);--boardline:var(--line);
+  --wood:#5a432b;--wood-s:#45331f;--wood-f:#3a2a19;--grid:#8c6f47;--lab:#b7a47c;--res:#233625;--boardbox:var(--panel);--boardline:var(--line);
   --pl:#f3e6cc;--pl-l:#2a1d0e;--pl-g:#8f775a;--pl-a:#d9c7a3;--pl-b:#b9a37b;
   --pd:#9a5631;--pd-l:#1a0c04;--pd-g:#2a1308;--pd-a:#7a4224;--pd-b:#5c301a;
   --s0:#45b592;--s0e:#226b55;--s1:#de7660;--s1e:#8a3a2a;
@@ -84,26 +84,25 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
       
       
       <form class="form" id="createForm" hidden>
-        
+        <label class="toggle" for="cSq"><input type="checkbox" id="cSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
-        <label class="toggle" for="cSq"><input type="checkbox" id="cSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label class="toggle" for="aSq"><input type="checkbox" id="aSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label class="toggle" for="aSq"><input type="checkbox" id="aSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
-        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
         <label class="toggle" for="fSq"><input type="checkbox" id="fSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label class="toggle" for="tSq"><input type="checkbox" id="tSq"> <span data-i18n="sqOpt">Advanced variant: 2×2 squares win too</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -170,7 +169,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Quarto: rules =====
@@ -232,8 +231,8 @@ function qReplay(rules,moves){const sq=!!(rules&&rules.sq);
 // ---------- strings ----------
 const Q_I18N={fr:{
  title:"Quarto",lede:"Alignez quatre pièces qui partagent une caractéristique, avec la pièce que l'adversaire vous donne.",by:"Un jeu de Blaise Müller.",viewOpt:"Vue",v_2d:"2D, vue de dessus",v_iso:"3D isométrique",v_persp:"3D en perspective",needConfirm:"Confirmer chaque coup",
- m_aiTxt:"Six niveaux, de 0 à 5 : chacun bat le précédent environ trois parties sur quatre.",
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5, le plus fort",
+ lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_dk:"profondeur {n}, {k} positions au plus",m_aiMore:"La profondeur se compte en coups entiers : poser une pièce, puis en donner une.",
+ 
  sqOpt:"Variante avancée : les carrés 2 × 2 gagnent aussi",sqOn:"activée dans cette partie",sqOff:"désactivée dans cette partie",
  traits:["claire","foncée","ronde","carrée","pleine","creuse","petite","grande"],
  gives:"donne la {p}",givesM:"donne {p}",sep:" : ",toPlace:"à poser",
@@ -241,18 +240,15 @@ const Q_I18N={fr:{
  st_giveNow:"choisissez la pièce suivante.",st_placeNow:"posez la pièce encadrée.",
  w_full:"plateau plein sans alignement",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces toutes différentes, communes aux deux joueurs : claires ou foncées, rondes ou carrées, creuses ou pleines, petites ou grandes.</li>
- <li><b>Tour</b> : on pose sur une case libre la pièce choisie par l'adversaire, puis on choisit celle qu'il posera. Au premier coup, le premier joueur choisit seulement.</li>
- <li><b>Victoire</b> : gagne celui qui complète une ligne de quatre pièces (rangée, colonne ou diagonale) partageant au moins une caractéristique.</li>
- <li><b>Variante avancée</b> (<span class="sqState"></span>) : un carré 2 × 2 de quatre pièces partageant une caractéristique gagne aussi.</li>
- <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li>
- <li><b>Jouer</b> : posez la pièce reçue en cliquant une case libre (au survol, elle s'affiche en transparence), puis cliquez dans la réserve la pièce que l'adversaire posera. Cliquer la case ou la pièce choisie l'abandonne. Vue 2D ou 3D dans les Options. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, six niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 4 × 4 cases et 16 pièces toutes différentes, communes aux deux joueurs : claires ou foncées, rondes ou carrées, creuses ou pleines, petites ou grandes.</li>
+ <li><b>Tour</b> : on pose sur une case libre la pièce que l'adversaire a choisie, puis on choisit celle qu'il posera. Au premier tour, le premier joueur choisit seulement.</li>
+ <li><b>Victoire</b> : gagne celui qui pose la quatrième pièce d'une ligne (rangée, colonne ou diagonale) dont les quatre pièces partagent au moins un caractère.</li>
+ <li><b>Variante avancée</b> (option, désactivée par défaut) : un carré de 2 × 2 cases voisines, dont les quatre pièces partagent un caractère, gagne aussi.</li>
+ <li><b>Nulle</b> : les 16 pièces sont posées sans victoire.</li></ul>`
 },en:{
  title:"Quarto",lede:"Line up four pieces sharing a trait, with the piece your opponent hands you.",by:"A game by Blaise Müller.",viewOpt:"View",v_2d:"2D, top view",v_iso:"3D isometric",v_persp:"3D perspective",needConfirm:"Confirm each move",
- m_aiTxt:"Six levels, from 0 to 5: each one beats the one below about three games in four.",
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5, the strongest",
+ lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_dk:"depth {n}, at most {k} positions",m_aiMore:"Depth counts whole moves: placing a piece, then giving one.",
+ 
  sqOpt:"Advanced variant: 2 × 2 squares win too",sqOn:"on in this game",sqOff:"off in this game",
  traits:["light","dark","round","square","solid","hollow","small","large"],
  gives:"gives the {p}",givesM:"gives {p}",sep:": ",toPlace:"to place",
@@ -261,17 +257,14 @@ const Q_I18N={fr:{
  w_full:"board full with no line",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a 4 × 4 board and 16 different pieces shared by both players: light or dark, round or square, hollow or solid, small or large.</li>
- <li><b>Turn</b>: place the piece your opponent chose on an empty cell, then choose the one they will place. On the first move, the first player only chooses.</li>
- <li><b>Winning</b>: whoever completes a line of four pieces (row, column or diagonal) sharing at least one trait wins.</li>
- <li><b>Advanced variant</b> (<span class="sqState"></span>): a 2 × 2 square of four pieces sharing a trait wins too.</li>
- <li><b>Draw</b>: all 16 pieces are placed without a win.</li>
- <li><b>Playing</b>: place the piece received by clicking an empty cell (hovering shows it in transparency), then click in the reserve the piece your opponent will place. Clicking the chosen cell or piece drops it. 2D or 3D view in the Options. The move commands are in the bar under the board: Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, six levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+ <li><b>Turn</b>: place the piece your opponent chose on an empty cell, then choose the one they will place. On the first turn, the first player only chooses.</li>
+ <li><b>Winning</b>: whoever places the fourth piece of a line (row, column or diagonal) whose four pieces share at least one trait wins.</li>
+ <li><b>Advanced variant</b> (option, off by default): a square of 2 × 2 neighbouring cells whose four pieces share a trait wins too.</li>
+ <li><b>Draw</b>: all 16 pieces are placed without a win.</li></ul>`
 },es:{
  title:"Quarto",lede:"Alinea cuatro piezas que compartan una característica, con la pieza que te da el adversario.",by:"Un juego de Blaise Müller.",viewOpt:"Vista",v_2d:"2D, vista cenital",v_iso:"3D isométrica",v_persp:"3D en perspectiva",needConfirm:"Confirmar cada jugada",
- m_aiTxt:"Seis niveles, de 0 a 5: cada uno gana al anterior unas tres partidas de cada cuatro.",
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5, el más fuerte",
+ lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_dk:"profundidad {n}, {k} posiciones como máximo",m_aiMore:"La profundidad se cuenta en jugadas enteras: colocar una pieza y luego dar una.",
+ 
  sqOpt:"Variante avanzada: los cuadrados 2 × 2 también ganan",sqOn:"activada en esta partida",sqOff:"desactivada en esta partida",
  traits:["clara","oscura","redonda","cuadrada","maciza","hueca","pequeña","grande"],
  gives:"da la {p}",givesM:"da {p}",sep:": ",toPlace:"por colocar",
@@ -280,13 +273,10 @@ const Q_I18N={fr:{
  w_full:"tablero lleno sin alineación",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Material</b>: un tablero de 4 × 4 casillas y 16 piezas todas distintas, comunes a los dos jugadores: claras u oscuras, redondas o cuadradas, huecas o macizas, pequeñas o grandes.</li>
- <li><b>Turno</b>: se coloca en una casilla libre la pieza elegida por el adversario, y luego se elige la que él colocará. En la primera jugada, el primer jugador solo elige.</li>
- <li><b>Victoria</b>: gana quien completa una línea de cuatro piezas (fila, columna o diagonal) que comparten al menos una característica.</li>
- <li><b>Variante avanzada</b> (<span class="sqState"></span>): un cuadrado 2 × 2 de cuatro piezas que comparten una característica también gana.</li>
- <li><b>Tablas</b>: las 16 piezas están colocadas sin victoria.</li>
- <li><b>Jugar</b>: coloca la pieza recibida haciendo clic en una casilla libre (al pasar el ratón, se muestra en transparencia), y luego haz clic en la reserva sobre la pieza que colocará el adversario. Hacer clic en la casilla o en la pieza elegida la abandona. Vista 2D o 3D en las Opciones. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, seis niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
+ <li><b>Turno</b>: se coloca en una casilla libre la pieza que eligió el adversario, y luego se elige la que él colocará. En el primer turno, el primer jugador solo elige.</li>
+ <li><b>Victoria</b>: gana quien coloca la cuarta pieza de una línea (fila, columna o diagonal) cuyas cuatro piezas comparten al menos una característica.</li>
+ <li><b>Variante avanzada</b> (opción, desactivada por defecto): un cuadrado de 2 × 2 casillas vecinas, cuyas cuatro piezas comparten una característica, también gana.</li>
+ <li><b>Tablas</b>: las 16 piezas están colocadas sin victoria.</li></ul>`
 }};
 // The texts of a win: « four pieces in a line, all dark and hollow » (whyKey: the shape, the traits all have, none has)
 {const ADJ={fr:{all:["foncées","grandes","carrées","creuses"],none:["claires","petites","rondes","pleines"],line:"quatre pièces alignées, toutes ",sq:"quatre pièces en carré, toutes ",and:" et "},
@@ -414,7 +404,7 @@ function draw2D(svg,sc){const S=80,m=10,B=4*S+2*m,lw=coordsOn?22:0,band=qBandOn.
   el('rect',{x:0,y:0,width:B,height:B,rx:6,fill:'var(--wood)'},svg);
   const L=[];for(let i=0;i<=4;i++){const q=m+i*S;L.push(`M${m},${q}H${m+4*S}`,`M${q},${m}V${m+4*S}`);}
   el('path',{d:L.join(''),stroke:'var(--grid)','stroke-width':2,fill:'none','stroke-linecap':'square'},svg);
-  if(coordsOn){const lab={'font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--lbl)','text-anchor':'middle'};
+  if(coordsOn){const lab={class:'coord','font-size':13,'text-anchor':'middle'};
     for(let j=0;j<4;j++){el('text',{...lab,x:m+j*S+S/2,y:B+17},svg).textContent='abcd'[j];el('text',{...lab,x:-11,y:m+j*S+S/2+4},svg).textContent=String(4-j);}}
   for(let i=0;i<16;i++){const x=m+(i%4)*S,y=m+((i/4)|0)*S,k='c'+i,g=el('g',sc.click.has(k)?{class:'cell','data-k':k}:{},svg);
     el('rect',{x,y,width:S,height:S,fill:'transparent'},g);const c=sc.cells[i];if(c)piece2D(g,c.p,x+S/2,y+S/2,S*.36,c.op);
@@ -449,7 +439,7 @@ function drawIso(svg,sc){const S=60,hb=2.18,T=.16,persp=qView==='persp',P=(x,y,z
   el('polygon',{points:pts([A,B,C,D]),fill:'var(--wood)'},svg);
   const L=[];for(let k=0;k<=4;k++){const v=k-2;const a=P(v,-2),b=P(v,2),c=P(-2,v),d=P(2,v);L.push(`M${f1(a[0])},${f1(a[1])}L${f1(b[0])},${f1(b[1])}M${f1(c[0])},${f1(c[1])}L${f1(d[0])},${f1(d[1])}`);}
   el('path',{d:L.join(''),stroke:'var(--grid)','stroke-width':1.8,fill:'none'},svg);
-  if(coordsOn){const lab={'font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--lbl)','text-anchor':'middle'};
+  if(coordsOn){const lab={class:'coord','font-size':13,'text-anchor':'middle'};
     for(let j=0;j<4;j++){const a=P(j-1.5,hb+.32),b=P(-hb-.32,j-1.5);el('text',{...lab,x:f1(a[0]),y:f1(a[1]+5)},svg).textContent='abcd'[j];el('text',{...lab,x:f1(b[0]),y:f1(b[1]+5)},svg).textContent=String(4-j);}}
   // cells (click targets and frames) under the pieces; pieces from the back to the front
   const cellPoly=(i,ins)=>{const x=cx(i),y=cy(i),h=.5-ins;return pts([P(x-h,y-h),P(x+h,y-h),P(x+h,y+h),P(x-h,y+h)]);};
@@ -551,16 +541,17 @@ $('needConfirm').onchange=e=>{LS.set('quarto-confirm',e.target.checked);if(view)
 // ---------- computer opponent ----------
 // Alpha-beta (negamax) over whole moves: place the piece received, then give one. A gift the opponent could win with at
 // once is never searched below the root (it loses); a position whose depth runs out is worth 0, so the search only knows
-// wins, losses and « nothing found ». opt: depth (moves looked ahead; iterative deepening), time (ms cap of the
-// deepening), noise (probability of a random legal move instead), sq (the 2×2 squares win too). Runs in the worker
-// (GAME.aiSrc): no page globals.
+// wins, losses and « nothing found ». opt: depth (moves looked ahead; iterative deepening), nodes (positions searched at
+// most: past them the last depth completed is played; no clock is read, so a level plays the same on every device,
+// 16.11.2026), noise (probability of a random legal move instead), sq (the 2×2 squares win too). Runs in the worker
+// (GAME.aiSrc): no page globals but aiBest (core's worker: the best move so far, for « Play now »).
 function QuartoAI(){'use strict';
   const L0=[];for(let k=0;k<4;k++){L0.push([0,1,2,3].map(c=>k*4+c));L0.push([0,1,2,3].map(r=>r*4+k));}
   L0.push([0,5,10,15]);L0.push([3,6,9,12]);
   const L1=L0.slice();for(let r=0;r<3;r++)for(let c=0;c<3;c++){const i=r*4+c;L1.push([i,i+1,i+4,i+5]);}
   const lof=LS=>{const o=Array.from({length:16},()=>[]);LS.forEach(L=>L.forEach(c=>o[c].push(L)));return o;},LOF0=lof(L0),LOF1=lof(L1);
   let LINES=L0,LOF=LOF0;   // the winning groups of the game searched
-  const WIN=1000,STOP={};let nodes=0,dl=Infinity;
+  const WIN=1000,STOP={},FIRST=2500000;let nodes=0,maxN=Infinity;   // FIRST: the budget of the first placement
   // a line through a (just filled) whose four pieces share a trait
   function winsAt(b,a){for(const L of LOF[a]){let and=15,nor=15,full=true;for(const j of L){const p=b[j];if(p<0){full=false;break;}and&=p;nor&=~p;}
       if(full&&((and|nor)&15))return true;}return false;}
@@ -568,7 +559,7 @@ function QuartoAI(){'use strict';
   function deadly(b){let m=0;for(const L of LINES){let e=0,and=15,nor=15;for(const j of L){const p=b[j];if(p<0)e++;else{and&=p;nor&=~p;}}
       and&=15;nor&=15;if(e!==1||!(and|nor))continue;for(let g=0;g<16;g++)if((g&and)||(~g&nor))m|=1<<g;}return m;}
   // value for the side to move, who holds h; F: the pieces still free (not on the board, not h)
-  function neg(b,h,F,d,al,be,ply){if((++nodes&4095)===0&&Date.now()>dl)throw STOP;
+  function neg(b,h,F,d,al,be,ply){if((++nodes&4095)===0&&nodes>maxN)throw STOP;
     for(let a=0;a<16;a++)if(b[a]<0){b[a]=h;const w=winsAt(b,a);b[a]=-1;if(w)return WIN-ply;}
     let best=-Infinity;
     for(let a=0;a<16&&al<be;a++){if(b[a]>=0)continue;b[a]=h;let v;
@@ -600,13 +591,13 @@ function QuartoAI(){'use strict';
       const pick=A=>A[(Math.random()*A.length)|0],cells=[pick([0,3,12,15]),pick([1,2,4,7,8,11,13,14]),pick([5,6,9,10])];
       const bits=x=>{let n=0;for(;x;x&=x-1)n++;return n;},gifts=[1,2,3,4].map(k=>pick(L.filter(m=>m.a===0&&bits(m.g^h)===k).map(m=>m.g)));
       L.length=0;for(const a of cells)for(const g of gifts)L.push({a,g});
-      opt={...opt,time:Math.min(opt.time||3000,1500)};}   // so early, a deeper search tells these 12 moves no further apart
+      opt={...opt,nodes:Math.min(opt.nodes||Infinity,FIRST)};}   // so early, a deeper search tells these 12 moves no further apart
     if(Math.random()<(opt.noise||0))return {move:L[(Math.random()*L.length)|0],score:0,depth:0};
     for(let i=L.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[L[i],L[j]]=[L[j],L[i]];}   // equal moves: one at random
-    let res=null;nodes=0;const t0=Date.now();
-    for(let d=1;d<=(opt.depth||1);d++){dl=d===1?Infinity:t0+(opt.time||3000);
+    let res=null;nodes=0;const tell=typeof aiBest==='function'?aiBest:null;
+    for(let d=1;d<=(opt.depth||1);d++){maxN=d===1?Infinity:opt.nodes||Infinity;
       try{let al=-Infinity,bm=null;for(const m of L){const v=rootVal(b,h,m,d,al,Infinity);if(v>al){al=v;bm=m;}}
-        res={move:bm,score:al,depth:d};
+        res={move:bm,score:al,depth:d};if(tell)tell(res);
         L.splice(L.indexOf(bm),1);L.unshift(bm);   // the best first at the next depth
         if(Math.abs(al)>=WIN-50)break;}   // decided
       catch(e){if(e!==STOP)throw e;break;}}
@@ -614,33 +605,49 @@ function QuartoAI(){'use strict';
   return {search,legal,deadly,winsAt,WIN};}
 // The ladder (10.11.2026, outils/aitools/res/quarto/niveaux.md, 300 games a pair): each level beats the one below by
 // 74-78 % (draws count half; level 5, the strongest, beats 4 by 70 %). depth = depth in whole moves (place, then
-// give), noise = probability of a random legal move, time = cap in ms.
+// give), noise = probability of a random legal move, nodes = positions searched at most. A level is an amount of work,
+// never a time (16.11.2026): levels 0 to 4 stop on their depth (the former 3 s cap of level 4 was never reached on the
+// reference Mac), level 5 on its depth or its nodes, what that Mac (M3 Pro) searched in the former 5 s
+// (outils/aitools/res/budgets-2026-11-16.md). Hints: level 5 with the nodes of 5 s at most on that Mac.
 const LEVELS={
   l0:{depth:1,noise:.5},
   l1:{depth:1,noise:.15},
   l2:{depth:2,noise:.02},
   l3:{depth:3,noise:.01},
-  l4:{depth:6,time:3000},
-  l5:{depth:8,time:5000}};
+  l4:{depth:6},
+  l5:{depth:8,nodes:7300000}};
+const HINT={...LEVELS.l5,nodes:6800000};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.nodes?['lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 let pageAI=null;
 function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null;
   return r.score>=950?{k:'ai_win'}:r.score<=-950?{k:'ai_lost'}:{k:'ai_eq',d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'quarto',quietWhy:why=>!/^w_(time|resign|agree)$/.test(why),   // « Player 2 wins. »: no reason but the site's own
+const GAME={id:'quarto',   // the end says why, « four pieces in a line, all dark » (decision of 15.11.2026)
   size:16,codeTag:'QUARTO1',i18n:Q_I18N,
   rules:g=>({sq:!!(g&&g.sq)}),form:p=>({sq:$(p+'Sq').checked}),
   replay:qReplay,
   legal:(st,code,g)=>{const mv=E.dec(code);return mv&&E.play(st,mv,!!(g&&g.sq))?enc(mv):null;},
-  enc,describe:mv=>richOfMv(mv),rich:qRich,logNode:qLogNode,newUi,preparing,cancel:cancelPrep,
+  enc,describe:mv=>richOfMv(mv),
+  // SGF: the square played and the piece given, « b3 DSHT »; the piece in four letters, one per trait, always in this
+  // order: L light / D dark, R round / S square, F full / H hollow, S small / T tall (the first move gives only, the
+  // last one may only place)
+  sgf:{val:code=>{const m=E.dec(code);if(!m)return code;const P=p=>(p&1?'D':'L')+(p&4?'S':'R')+(p&8?'H':'F')+(p&2?'T':'S');
+      return [m.a>=0?cellName(m.a):'',m.g>=0?P(m.g):''].filter(Boolean).join(' ');},
+    code:v=>{const m=/^\s*(?:([a-d])([1-4]))?\s*(?:([LD])([RS])([FH])([ST]))?\s*$/.exec(String(v));if(!m||!m[1]&&!m[3])return null;
+      const a=m[1]?(4-m[2])*4+m[1].charCodeAt(0)-97:-1,g=m[3]?(m[3]==='D'?1:0)|(m[6]==='T'?2:0)|(m[4]==='S'?4:0)|(m[5]==='H'?8:0):-1;return enc({a,g});}},rich:qRich,logNode:qLogNode,newUi,preparing,cancel:cancelPrep,
   board:qBoard,turnStatus:qTurnStatus,
   applyStatic:()=>{viewSelects();sqLine();},
-  levels:LEVELS,levelDefault:'l2',hintLevel:LEVELS.l5,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return QA.search(pos,opt);}',
   aiPos:st=>({b:st.b.slice(),hand:st.hand}),aiOpt:v=>({sq:!!v.sq}),
   playerCard:qCard,aiSearch:(st,opt)=>(pageAI=pageAI||QuartoAI()).search({b:st.b.slice(),hand:st.hand},opt),
   evalInfo:qEvalInfo,
   home:()=>drawBoard(scene(E.init()))};
+formKeep('Sq','sq',false);   // the advanced variant, as last chosen
 coreStart();
 </script>
 <script src="common/accueil.js?v=1"></script>

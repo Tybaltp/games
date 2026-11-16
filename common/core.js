@@ -9,7 +9,7 @@
 // Globals the game may read: view (the game shown: {size,…rules,tc,names,first,moves,clock,running,elapsed,result,
 // started,ready,paused,held,myHold,…}), role ('host'|'guest'|'watch'|'ai'|'local'|'test'), mySeat (-1 = spectator), ui,
 // flip (mySeat 1 over the network), navAt (null = live), busy (''|'ai'|'hint'), hintMv (suggested move shown), sending,
-// coordsOn (board coordinates shown), solo(), hintOn(), isMyTurn(r), meSt(r), netSim(r), seatName(s), replay(rules,moves,result) (memoised, adds the
+// coordsOn (board coordinates shown), solo(), hintOn(), isMyTurn(r), meSt(r), netSim(r), seatName(s), soloWho(s,txt) (« Name — text » on one screen), tN(k,v) (t() naming {name} and its colour {c} once), formKeep(suffix,key,def), replay(rules,moves,result) (memoised, adds the
 // result), renderGame(), status(txt,cls,btns), quiet(), send(mv), stopAI(), t(k,vars), $(id), LS, nickGet().
 // ui is the game's object (GAME.newUi()); the shared code only clears ui.pending (on send) and ui.hover (hint off).
 //
@@ -39,8 +39,12 @@
 //  playerCard?(el,p,d)          Add game content to seat p's card (d: the position shown)
 //  logDesc?(e)                   Extra description line under a move-list entry
 //  logText?(e,r)                 text of a move-list entry (default e.txt)
+//  logNum?(j,e)                  the number shown before move j (from 0) in the move list (default « j+1. »)
 //  logNode?(e,r)                 a DOM node for a move-list entry instead of the text (pictures)
 //  drawOffer?                    true: the players may offer a draw (accepted: drawn by agreement)
+//                                Repetition (Gygès, Pylos): the game's replayKept gets sig(st), the key of a position (pieces and
+//                                side to move); the third time a position comes back, a frame over the board asks both players
+//                                whether to offer a draw (the draw offer below, even without drawOffer); the fourth time, a draw (w_rep)
 //  quietWhy?(why)                true: the end of the game says only who wins (« Player 2 wins. »), not why
 //  rich?(txt)                    status texts with pictures: txt holds U+2063…U+2063 marks; returns {node(), plain}
 //  applyStatic?()                the game's static texts and selects, on load and on a language switch
@@ -48,27 +52,44 @@
 //  simMode?(g), simHold?(g,r), holdLegal?(r,s,code,g)  simultaneous hidden first moves over the network: the rules use it ·
 //                                it is that phase now · seat s's held code is legal
 //  clockOff?(v,st)               no clock runs in st (face to face)
-//  sgf?                          {gm, sz: the game's SGF number and size · nodes?(r,view) → [{B|W|other prop: value}],
-//                                codes?(nodes) → move codes: a notation of its own · black?(st) → the seat of B};
-//                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value
+//  sgf?                          {gm, sz: the game's SGF number and size (sz: or a function of the view) · nodes?(r,view) → [{B|W|other prop: value}],
+//                                codes?(nodes,{old,root,rules}) → move codes: a notation of its own · black?(st) → the seat of B ·
+//                                val?(code,st,e,view) → the move's value in the file, its notation (st: the position it is played
+//                                from, e: its log entry) · code?(val,st,rules) → the move code of a value, or null ·
+//                                accept?(root) → true: a file from elsewhere, without XG, in the game's format ·
+//                                rulesOf?(root,rules) → the rules of such a file};
+//                                by default, one node per move: B (seat 0) or W (seat 1), the move's code as value (val: its notation)
 //  howto?                       {n, scene(k,A), key?}: the « Comment jouer » card (n pages, texts ht_1…ht_n in i18n;
 //                                scene(k,A) plays page k's animation once, async, replayed while the page is shown;
 //                                A: htKit below); key: the localStorage key of « Ne plus montrer » (default id-howto-off)
 //  sgfHead?(v)                   extra private properties of the file's header {XA: …}: not shown in the game
+//  seatCol?(s)                   i18n key of seat s's colour (« Or », « Noir »…), its name when no name was typed; null: not settled
 //  rulesTxt?(rules)              a short text of the rules chosen (rules: GAME.rules()), in « Parties en cours » on the home page
-//  levels, levelDefault, hintLevel  computer levels {key:opt} (labels lv_key), the default key, the options of hints
+//  levels, levelDefault?, hintLevel  computer levels {key:opt}, weakest first; the options of hints. The shared code names
+//                                them (« Niveau n » by place, n from 0; opt.random: « au hasard »; the last one « le plus
+//                                fort »), stores the choice under id-level-v<engine.v> (another version, or an unknown
+//                                key: back to the default) and picks the default: levelDefault if given, else the level
+//                                nearest a third of the scale (decision of 15.11.2026: a quarter to a third)
+//  engine                        {v, fr, en, es}: the engine's version and kind, the grey line under the level and in
+//                                « Signaler un défaut » (« Moteur : recherche alpha-bêta, v1 »)
+//  levelDesc(opt)                [i18n key, number?, {other values}?]: what a level does, for the help text under
+//                                « Ordinateur »; runs of levels with the same key (and no other values) are put together,
+//                                their numbers listed, or as a range beyond three ({n} in the text)
+//                                and m_aiMore, an optional sentence of the page, follows them
 //  aiSrc(), aiPos(st), aiSearch(st,opt), aiOpt?(v), aiView?(st), evalInfo(res,st)  worker source defining
 //                                aiSearch(pos,opt) on the aiPos() form · page fallback search · extra search options ·
-//                                position the computer is shown · {k,d} opinion line or null
+//                                position the computer is shown · {k,d} opinion line or null. A level is an amount of
+//                                work, never a time; a search may call aiBest({move,score,depth}) (defined in the
+//                                worker) with its best move so far, for « Play now » (see « computer opponent »)
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
 const I18C={fr:{
  ht_title:"Comment jouer",ht_skip:"Passer",ht_done:"C'est parti",ht_never:"Ne plus montrer",ht_prev:"Précédent",ht_next:"Suivant",
- fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_debutant:"Débutant",lv_moyen:"Moyen",lv_fort:"Fort",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",pend_again:"Cliquez à nouveau pour jouer ce coup.",pend_againT:"Touchez à nouveau pour jouer ce coup.",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de la table…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",rematch:"Rejouer",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_wait:"En attente de la réponse de {n}.",close:"Fermer",rm_no:"{n} a refusé.",rm_away:"{n} n'est plus connecté.",
+ fullscreen:"Plein écran (toucher à nouveau pour en sortir)", computer:"L'ordinateur",level:"Niveau",lv_n:"Niveau {n}",lv_rand:"Niveau {n}, au hasard",lv_top:"Niveau {n}, le plus fort",lv_one:"niveau {a}",lv_two:"niveaux {a} et {b}",lv_run:"niveaux {a} à {b}",lv_and:" et ",lv_grp:"{l} : {d}",lv_sep:" ; ",lvd_rand:"au hasard",lv_rg:"de {a} à {b}",lv_cnt:"{n} niveaux, de 0 à {m}.",eng_line:"Moteur : {e}, v{v}",undo:"Annuler le dernier coup",undoS:"Annuler",hintPlayS:"Jouer",hint:"Suggestion",hintPlay:"Jouer ce coup",dismiss:"Ignorer",reset:"Réinitialiser",pend_mv:"Coup : {m}",pend_again:"Cliquez à nouveau pour jouer ce coup.",pend_againT:"Touchez à nouveau pour jouer ce coup.",st_yourTurn:"À vous de jouer.",st_turn:"Au tour de {n}.",hint_move:"Suggestion : {m}",st_aiThinking:"L'ordinateur réfléchit…",hintBusy:"Recherche d'une suggestion…",aiSlow:"Appareil lent pour ce niveau : le calcul peut être long.",hintSlow:"Appareil lent pour cette recherche : elle peut être longue.",playNow:"Jouer maintenant",hintNow:"Afficher maintenant",ai_eq:"Ordinateur : position équilibrée (profondeur {d}).",ai_better:"Ordinateur : se juge mieux (profondeur {d}).",ai_much:"Ordinateur : se juge nettement mieux (profondeur {d}).",ai_worse:"Ordinateur : se juge moins bien (profondeur {d}).",ai_muchWorse:"Ordinateur : se juge nettement moins bien (profondeur {d}).",ai_win:"Ordinateur : gain forcé en vue.",ai_lost:"Ordinateur : se sait perdu.",ai_forced:"Ordinateur : coup forcé.",leaveQ:"Une partie est en cours. La quitter ?",st_waitHost:"Coup envoyé, en attente de la table…",nav_first:"Début de la partie (Début, ou Maj + ←)",nav_prev:"Coup précédent (←)",nav_next:"Coup suivant (→)",nav_last:"Fin de la ligne (Fin, ou Maj + →)",nav_brP:"Branchement précédent (↑)",nav_brN:"Branchement suivant (↓)",nav_altU:"Variante précédente de ce coup (Maj + ↑)",nav_altD:"Variante suivante de ce coup (Maj + ↓)",altN:"{n} variantes de ce coup",opts:"Options",nav_pos:"Coup {k} / {n}",home:"Accueil",sepN:" — ",report:"Signaler un défaut",rp_subj:"{g} : défaut",rp_body:"Décrivez le défaut ici :",rp_info:"Renseignements ajoutés par la page",rp_mode:"Mode",rp_moves:"Coups",rp_long:"liste trop longue pour un courriel ; exportez la partie en SGF et joignez le fichier",rp_none:"aucune partie ouverte",turnPhone:"Tournez votre téléphone en hauteur pour jouer.",rematch:"Revanche",accept:"Accepter",decline:"Refuser",rm_ask:"{n} propose une nouvelle partie, côtés inversés.",rm_wait:"En attente de la réponse de {n}.",close:"Fermer",rm_no:"{n} a refusé.",rm_away:"{n} n'est plus connecté.",
  sub:"pair à pair",create:"Créer une partie",nick:"Votre nom",firstIs:"Qui commence",rnd:"Aléatoire",me:"Moi",opp:"Mon adversaire",tc:"Pendule",tc_none:"Sans pendule",tc_fmt:"{m} min + {s} s par coup",tc_inc:"+{s} s/coup",createBtn:"Créer la partie",
  join:"Rejoindre une partie avec un code",code:"Code de la partie",play:"Jouer",watch:"Observer",linkHint:"Avec un lien d'invitation, la page se connecte toute seule.",
- pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_aiTxt:"Trois niveaux, pour s'entraîner.",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",localBtn:"Commencer la partie",
+ pickOpp:"Contre qui ?",back:"Retour",m_link:"Inviter par un lien",m_linkTxt:"Un adversaire sur un autre appareil, avec un lien ou un code.",m_ai:"Ordinateur",m_face:"Face à face",m_faceTxt:"Deux joueurs sur le même écran, avec pendule si vous voulez.",localBtn:"Démarrer la partie",
  invitedT:"Vous êtes invité à une partie",invitedTxt:"Choisissez le nom que verra votre adversaire, puis cliquez Jouer.",watchT:"Vous êtes invité à observer une partie",watchTxt:"Choisissez le nom que verront les joueurs, puis cliquez Observer, ou restez anonyme.",anon:"Anonyme",watchersT:"Observateurs ({n})",chat:"Discussion",chatN:"Discussion ({n})",chatPh:"Votre message",chatSend:"Envoyer",chatName:"Choisir un nom pour écrire",chatEmpty:"Aucun message.",chatW:"obs.",chatHintP:"Les messages des observateurs s'affichent à la fin de la partie.",chatHintW:"Les joueurs ne verront vos messages qu'à la fin de la partie.",voice:"Vocal",lg_join:"{n} a rejoint la partie.",lg_watch:"{n} a rejoint la partie en observateur.",lg_left:"{n} s'est déconnecté.",lg_back:"{n} est revenu.",lg_start:"La partie commence.",lg_rematch:"Revanche : la partie recommence, camps échangés.",lg_table:"Table {k} : {g}.",vAsk:"🎙 Proposer le vocal",vOut:"Vocal proposé à {n}…",vInvite:"{n} propose de parler à voix haute.",vConn:"Connexion du vocal…",vOn:"Vocal avec {n}",vMute:"Couper le micro",vUnmute:"Rétablir le micro",vVol:"Volume de la voix",vHang:"Raccrocher",vNo:"{n} a refusé le vocal.",vEnd:"Vocal terminé.",vMic:"Micro inaccessible : le vocal n'a pas démarré.",vFail:"Le vocal n'a pas pu se connecter (réseau).",
  resumeBtn:"Reprendre",rs_title:"Parties en cours",rs_link:"Par lien",rs_move:"coup {n}",rs_del:"Supprimer",rs_delOk:"Confirmer",
  cancel:"Annuler",confirmMv:"Confirmer",
@@ -87,15 +108,15 @@ const I18C={fr:{
  st_pausedHost:"{n} est injoignable. Les pendules sont arrêtées jusqu'à son retour.",st_pausedGuest:"Votre adversaire ne répond plus, reconnexion… Les pendules sont arrêtées.",st_lostWatch:"La table ne répond plus, nouvel essai…",st_pausedWatch:"Un joueur est déconnecté. Les pendules sont arrêtées.",
  st_waitBoth:"En attente du démarrage par les deux joueurs.",st_waitClick:"En attente que {n} clique Démarrer la partie.",st_bothHere:"Les deux joueurs sont là. Cliquez Démarrer la partie, chacun de votre côté.",
  
- w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",playGo:"Jouer",analyse:"Analyser",haveInvite:"J'ai un code d'invitation",modeOpt:"Mode de jeu",a_free:"Nouvelle analyse",a_freeTxt:"Les deux camps sur cet écran : retour en arrière, variantes, suggestions.",a_freeTxtN:"Les deux camps sur cet écran : retour en arrière, variantes.",a_load:"Charger une partie",a_loadTxt:"Un fichier SGF : une partie terminée à revoir, ou inachevée à poursuivre.",sgfFile:"Fichier SGF",sgfLoadBtn:"Charger la partie",sgfNoFile:"Choisissez d'abord un fichier.",editName:"Cliquez pour renommer",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"en premier",mq_p2:"en second",m_plays:"{n} joue {s}",mq_1s:"vous jouez l'ouverture",mq_2s:"vous décidez d'échanger ou non",sf_clicked:"{n} a cliqué Démarrer la partie.",sf_waitOpp:"En attente de votre adversaire",sf_waitPl:"En attente des joueurs",sf_choosing:"{n} choisit sa place…",sf_go:"La partie commence",mq_q:"Voulez-vous jouer en premier ou en second ?",mq_1:"En premier",mq_2:"En second",m_choosing:"{n} choisit sa place.",m_waitOpp:"En attente de votre adversaire à cette table.",m_chooseYou:"À vous de choisir votre place à cette table.",m_next:"Rejoindre la table suivante",m_follow:"Suivre à la table suivante",m_result:"Voir le résultat du match",m_live:"en cours",m_drawn:"nulle",m_won:"{n} gagne",m_unknown:"Ce match n'est pas connu sur cet appareil : ouvrez son lien d'invitation.",spectator:"Observateur",options:"Options",drawOffer:"Proposer la nulle",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
+ w_time:"temps écoulé",w_resign:"abandon",w_agree:"accord mutuel",w_rep:"la même position est revenue une quatrième fois",rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_warn:"Si la position revient encore, la nulle sera forcée.",rep_no:"Continuer",playGo:"Jouer",analyse:"Analyser",haveInvite:"J'ai un code d'invitation",modeOpt:"Mode de jeu",a_free:"Nouvelle analyse",a_freeTxt:"Les deux camps sur cet écran : retour en arrière, variantes, suggestions.",a_freeTxtN:"Les deux camps sur cet écran : retour en arrière, variantes.",a_load:"Charger une partie",a_loadTxt:"Un fichier SGF : une partie terminée à revoir, ou inachevée à poursuivre.",sgfFile:"Fichier SGF",sgfLoadBtn:"Charger la partie",sgfNoFile:"Choisissez d'abord un fichier.",editName:"Cliquez pour renommer",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"en premier",mq_p2:"en second",m_plays:"{n} joue {s}",mq_1s:"vous jouez l'ouverture",mq_2s:"vous décidez d'échanger ou non",sf_clicked:"{n} a cliqué Démarrer la partie.",sf_waitOpp:"En attente de votre adversaire",sf_waitPl:"En attente des joueurs",sf_choosing:"{n} choisit sa place…",sf_go:"La partie commence",mq_q:"Voulez-vous jouer en premier ou en second ?",mq_1:"En premier",mq_2:"En second",m_choosing:"{n} choisit sa place.",m_waitOpp:"En attente de votre adversaire à cette table.",m_chooseYou:"À vous de choisir votre place à cette table.",m_next:"Rejoindre la table suivante",m_follow:"Suivre à la table suivante",m_result:"Voir le résultat du match",m_live:"en cours",m_drawn:"nulle",m_won:"{n} gagne",m_unknown:"Ce match n'est pas connu sur cet appareil : ouvrez son lien d'invitation.",spectator:"Observateur",options:"Options",drawOffer:"Proposer la nulle",drawWait:"Nulle proposée : en attente de la réponse de {n}.",drawNo:"{n} refuse la nulle.",drawAsk:"{n} propose la nulle.",w_bad:"coup illisible",coords:"Coordonnées",
  sgfExport:"Exporter la partie (SGF)",sgfBusy:"Export en cours…",sgfDone:"Fichier SGF enregistré ✓",
  sgfBad:"Fichier SGF illisible.",sgfOther:"Ce fichier est une partie d'un autre jeu ({g}).",sgfMove:"Fichier SGF : le coup {n} n'est pas légal."
 },en:{
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
- fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_debutant:"Beginner",lv_moyen:"Medium",lv_fort:"Strong",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_again:"Click again to play this move.",pend_againT:"Tap again to play this move.",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_wait:"Waiting for {n}'s answer.",close:"Close",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
+ fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_n:"Level {n}",lv_rand:"Level {n}, at random",lv_top:"Level {n}, the strongest",lv_one:"level {a}",lv_two:"levels {a} and {b}",lv_run:"levels {a} to {b}",lv_and:" and ",lv_grp:"{l}: {d}",lv_sep:"; ",lvd_rand:"at random",lv_rg:"{a} to {b}",lv_cnt:"{n} levels, from 0 to {m}.",eng_line:"Engine: {e}, v{v}",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_again:"Click again to play this move.",pend_againT:"Tap again to play this move.",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",aiSlow:"Slow device for this level: this may take a while.",hintSlow:"Slow device for this search: it may take a while.",playNow:"Play now",hintNow:"Show now",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",sepN:" — ",report:"Report a problem",rp_subj:"{g}: problem",rp_body:"Describe the problem here:",rp_info:"Details added by the page",rp_mode:"Mode",rp_moves:"Moves",rp_long:"list too long for an email; export the game as SGF and attach the file",rp_none:"no game open",turnPhone:"Turn your phone upright to play.",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_wait:"Waiting for {n}'s answer.",close:"Close",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
  sub:"peer to peer",create:"Create a game",nick:"Your name",firstIs:"Who starts",rnd:"Random",me:"Me",opp:"My opponent",tc:"Time control",tc_none:"No clock",tc_fmt:"{m} min + {s} s per move",tc_inc:"+{s} s/move",createBtn:"Create game",
  join:"Join a game with a code",code:"Game code",play:"Play",watch:"Watch",linkHint:"With an invitation link, the page connects on its own.",
- pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_aiTxt:"Three levels, to practise.",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",localBtn:"Start the game",
+ pickOpp:"Against whom?",back:"Back",m_link:"Invite with a link",m_linkTxt:"An opponent on another device, with a link or a code.",m_ai:"Computer",m_face:"Face to face",m_faceTxt:"Two players on the same screen, with a clock if you like.",localBtn:"Start the game",
  invitedT:"You are invited to a game",invitedTxt:"Choose the name your opponent will see, then click Play.",watchT:"You are invited to watch a game",watchTxt:"Choose the name the players will see, then click Watch, or stay anonymous.",anon:"Anonymous",watchersT:"Spectators ({n})",chat:"Chat",chatN:"Chat ({n})",chatPh:"Your message",chatSend:"Send",chatName:"Choose a name to write",chatEmpty:"No messages yet.",chatW:"spect.",chatHintP:"Spectators' messages are shown once the game is over.",chatHintW:"The players will only see your messages once the game is over.",voice:"Voice",lg_join:"{n} joined the game.",lg_watch:"{n} joined as a spectator.",lg_left:"{n} disconnected.",lg_back:"{n} is back.",lg_start:"The game begins.",lg_rematch:"Rematch: a new game begins, sides swapped.",lg_table:"Table {k}: {g}.",vAsk:"🎙 Offer voice chat",vOut:"Voice chat offered to {n}…",vInvite:"{n} offers to talk out loud.",vConn:"Connecting voice…",vOn:"Voice with {n}",vMute:"Mute the mic",vUnmute:"Unmute the mic",vVol:"Voice volume",vHang:"Hang up",vNo:"{n} declined voice chat.",vEnd:"Voice chat ended.",vMic:"Microphone unavailable: voice chat did not start.",vFail:"Voice chat could not connect (network).",
  resumeBtn:"Resume",rs_title:"Games in progress",rs_link:"By link",rs_move:"move {n}",rs_del:"Delete",rs_delOk:"Confirm",
  cancel:"Cancel",confirmMv:"Confirm",
@@ -114,15 +135,15 @@ const I18C={fr:{
  st_pausedHost:"{n} is unreachable. The clocks are stopped until they are back.",st_pausedGuest:"Your opponent is not responding, reconnecting… The clocks are stopped.",st_lostWatch:"The table is not responding, trying again…",st_pausedWatch:"A player is disconnected. The clocks are stopped.",
  st_waitBoth:"Waiting for both players to start.",st_waitClick:"Waiting for {n} to click Start the game.",st_bothHere:"Both players are here. Click Start the game, each on your side.",
  
- w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",playGo:"Play",analyse:"Analyse",haveInvite:"I have an invitation code",modeOpt:"Game mode",a_free:"New analysis",a_freeTxt:"Both sides on this screen: stepping back, variations, hints.",a_freeTxtN:"Both sides on this screen: stepping back, variations.",a_load:"Load a game",a_loadTxt:"An SGF file: a finished game to replay, or an unfinished one to go on with.",sgfFile:"SGF file",sgfLoadBtn:"Load the game",sgfNoFile:"Choose a file first.",editName:"Click to rename",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"first",mq_p2:"second",m_plays:"{n} plays {s}",mq_1s:"you play the opening",mq_2s:"you decide whether to swap",sf_clicked:"{n} has clicked Start the game.",sf_waitOpp:"Waiting for your opponent",sf_waitPl:"Waiting for the players",sf_choosing:"{n} is choosing their seat…",sf_go:"The game starts",mq_q:"Do you want to play first or second?",mq_1:"First",mq_2:"Second",m_choosing:"{n} is choosing their seat.",m_waitOpp:"Waiting for your opponent at this table.",m_chooseYou:"Your turn to choose your seat at this table.",m_next:"Join the next table",m_follow:"Follow to the next table",m_result:"See the match result",m_live:"in progress",m_drawn:"draw",m_won:"{n} wins",m_unknown:"This match is not known on this device: open its invitation link.",spectator:"Spectator",options:"Options",drawOffer:"Offer a draw",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
+ w_time:"time ran out",w_resign:"resignation",w_agree:"mutual agreement",w_rep:"the same position came back a fourth time",rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_warn:"If the position comes back once more, the draw will be forced.",rep_no:"Keep playing",playGo:"Play",analyse:"Analyse",haveInvite:"I have an invitation code",modeOpt:"Game mode",a_free:"New analysis",a_freeTxt:"Both sides on this screen: stepping back, variations, hints.",a_freeTxtN:"Both sides on this screen: stepping back, variations.",a_load:"Load a game",a_loadTxt:"An SGF file: a finished game to replay, or an unfinished one to go on with.",sgfFile:"SGF file",sgfLoadBtn:"Load the game",sgfNoFile:"Choose a file first.",editName:"Click to rename",m_table:"Mochalunt · table {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"first",mq_p2:"second",m_plays:"{n} plays {s}",mq_1s:"you play the opening",mq_2s:"you decide whether to swap",sf_clicked:"{n} has clicked Start the game.",sf_waitOpp:"Waiting for your opponent",sf_waitPl:"Waiting for the players",sf_choosing:"{n} is choosing their seat…",sf_go:"The game starts",mq_q:"Do you want to play first or second?",mq_1:"First",mq_2:"Second",m_choosing:"{n} is choosing their seat.",m_waitOpp:"Waiting for your opponent at this table.",m_chooseYou:"Your turn to choose your seat at this table.",m_next:"Join the next table",m_follow:"Follow to the next table",m_result:"See the match result",m_live:"in progress",m_drawn:"draw",m_won:"{n} wins",m_unknown:"This match is not known on this device: open its invitation link.",spectator:"Spectator",options:"Options",drawOffer:"Offer a draw",drawWait:"Draw offered: waiting for {n}'s answer.",drawNo:"{n} declines the draw.",drawAsk:"{n} offers a draw.",w_bad:"unreadable move",coords:"Coordinates",
  sgfExport:"Export the game (SGF)",sgfBusy:"Exporting…",sgfDone:"SGF file saved ✓",
  sgfBad:"Unreadable SGF file.",sgfOther:"This file belongs to another game ({g}).",sgfMove:"SGF file: move {n} is not legal."
 },es:{
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
- fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_debutant:"Principiante",lv_moyen:"Medio",lv_fort:"Fuerte",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",pend_again:"Haz clic de nuevo para hacer esta jugada.",pend_againT:"Toca de nuevo para hacer esta jugada.",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_wait:"Esperando la respuesta de {n}.",close:"Cerrar",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
+ fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_n:"Nivel {n}",lv_rand:"Nivel {n}, al azar",lv_top:"Nivel {n}, el más fuerte",lv_one:"nivel {a}",lv_two:"niveles {a} y {b}",lv_run:"niveles {a} a {b}",lv_and:" y ",lv_grp:"{l}: {d}",lv_sep:"; ",lvd_rand:"al azar",lv_rg:"de {a} a {b}",lv_cnt:"{n} niveles, de 0 a {m}.",eng_line:"Motor: {e}, v{v}",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",pend_again:"Haz clic de nuevo para hacer esta jugada.",pend_againT:"Toca de nuevo para hacer esta jugada.",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",aiSlow:"Dispositivo lento para este nivel: el cálculo puede tardar.",hintSlow:"Dispositivo lento para esta búsqueda: puede tardar.",playNow:"Jugar ahora",hintNow:"Mostrar ahora",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",sepN:" — ",report:"Informar de un fallo",rp_subj:"{g}: fallo",rp_body:"Describe el fallo aquí:",rp_info:"Datos añadidos por la página",rp_mode:"Modo",rp_moves:"Jugadas",rp_long:"lista demasiado larga para un correo; exporta la partida en SGF y adjunta el archivo",rp_none:"ninguna partida abierta",turnPhone:"Pon el teléfono en vertical para jugar.",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_wait:"Esperando la respuesta de {n}.",close:"Cerrar",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
  sub:"entre navegadores",create:"Crear una partida",nick:"Tu nombre",firstIs:"Quién empieza",rnd:"Al azar",me:"Yo",opp:"Mi adversario",tc:"Reloj",tc_none:"Sin reloj",tc_fmt:"{m} min + {s} s por jugada",tc_inc:"+{s} s/jugada",createBtn:"Crear la partida",
  join:"Unirse a una partida con un código",code:"Código de la partida",play:"Jugar",watch:"Observar",linkHint:"Con un enlace de invitación, la página se conecta sola.",
- pickOpp:"¿Contra quién?",back:"Volver",m_link:"Invitar con un enlace",m_linkTxt:"Un adversario en otro dispositivo, con un enlace o un código.",m_ai:"Ordenador",m_aiTxt:"Tres niveles, para entrenarse.",m_face:"Cara a cara",m_faceTxt:"Dos jugadores en la misma pantalla, con reloj si quieres.",localBtn:"Empezar la partida",
+ pickOpp:"¿Contra quién?",back:"Volver",m_link:"Invitar con un enlace",m_linkTxt:"Un adversario en otro dispositivo, con un enlace o un código.",m_ai:"Ordenador",m_face:"Cara a cara",m_faceTxt:"Dos jugadores en la misma pantalla, con reloj si quieres.",localBtn:"Empezar la partida",
  invitedT:"Te han invitado a una partida",invitedTxt:"Elige el nombre que verá tu adversario y pulsa Jugar.",watchT:"Te han invitado a observar una partida",watchTxt:"Elige el nombre que verán los jugadores y pulsa Observar, o quédate anónimo.",anon:"Anónimo",watchersT:"Espectadores ({n})",chat:"Chat",chatN:"Chat ({n})",chatPh:"Tu mensaje",chatSend:"Enviar",chatName:"Elige un nombre para escribir",chatEmpty:"Ningún mensaje.",chatW:"esp.",chatHintP:"Los mensajes de los espectadores se muestran al final de la partida.",chatHintW:"Los jugadores solo verán tus mensajes al final de la partida.",voice:"Voz",lg_join:"{n} se ha unido a la partida.",lg_watch:"{n} se ha unido como espectador.",lg_left:"{n} se ha desconectado.",lg_back:"{n} ha vuelto.",lg_start:"Empieza la partida.",lg_rematch:"Revancha: la partida vuelve a empezar, con los bandos cambiados.",lg_table:"Mesa {k}: {g}.",vAsk:"🎙 Proponer hablar por voz",vOut:"Voz propuesta a {n}…",vInvite:"{n} propone hablar por voz.",vConn:"Conectando la voz…",vOn:"Voz con {n}",vMute:"Silenciar el micro",vUnmute:"Activar el micro",vVol:"Volumen de la voz",vHang:"Colgar",vNo:"{n} ha rechazado la voz.",vEnd:"Voz terminada.",vMic:"Micrófono inaccesible: la voz no ha arrancado.",vFail:"La voz no ha podido conectarse (red).",
  resumeBtn:"Reanudar",rs_title:"Partidas en curso",rs_link:"Por enlace",rs_move:"jugada {n}",rs_del:"Borrar",rs_delOk:"Confirmar",
  cancel:"Cancelar",confirmMv:"Confirmar",
@@ -141,7 +162,7 @@ const I18C={fr:{
  st_pausedHost:"{n} no responde. Los relojes están parados hasta que vuelva.",st_pausedGuest:"Tu adversario no responde, reconectando… Los relojes están parados.",st_lostWatch:"La mesa no responde, nuevo intento…",st_pausedWatch:"Un jugador está desconectado. Los relojes están parados.",
  st_waitBoth:"Esperando a que los dos jugadores empiecen.",st_waitClick:"Esperando a que {n} pulse Empezar la partida.",st_bothHere:"Los dos jugadores están aquí. Pulsad Empezar la partida, cada uno por su lado.",
  
- w_time:"tiempo agotado",w_resign:"abandono",w_agree:"acuerdo mutuo",playGo:"Jugar",analyse:"Analizar",haveInvite:"Tengo un código de invitación",modeOpt:"Modo de juego",a_free:"Nuevo análisis",a_freeTxt:"Los dos bandos en esta pantalla: vuelta atrás, variantes, sugerencias.",a_freeTxtN:"Los dos bandos en esta pantalla: vuelta atrás, variantes.",a_load:"Cargar una partida",a_loadTxt:"Un archivo SGF: una partida terminada para repasarla, o sin terminar para continuarla.",sgfFile:"Archivo SGF",sgfLoadBtn:"Cargar la partida",sgfNoFile:"Elige primero un archivo.",editName:"Pulsa para cambiar el nombre",m_table:"Mochalunt · mesa {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"primero",mq_p2:"segundo",m_plays:"{n} juega {s}",mq_1s:"juegas la apertura",mq_2s:"decides si intercambiar o no",sf_clicked:"{n} ha pulsado Empezar la partida.",sf_waitOpp:"Esperando a tu adversario",sf_waitPl:"Esperando a los jugadores",sf_choosing:"{n} elige su sitio…",sf_go:"La partida empieza",mq_q:"¿Quieres jugar primero o segundo?",mq_1:"Primero",mq_2:"Segundo",m_choosing:"{n} elige su sitio.",m_waitOpp:"Esperando a tu adversario en esta mesa.",m_chooseYou:"Te toca elegir tu sitio en esta mesa.",m_next:"Ir a la mesa siguiente",m_follow:"Seguir en la mesa siguiente",m_result:"Ver el resultado del encuentro",m_live:"en curso",m_drawn:"tablas",m_won:"{n} gana",m_unknown:"Este encuentro no se conoce en este dispositivo: abre su enlace de invitación.",spectator:"Espectador",options:"Opciones",drawOffer:"Proponer tablas",drawWait:"Tablas propuestas: esperando la respuesta de {n}.",drawNo:"{n} rechaza las tablas.",drawAsk:"{n} propone tablas.",w_bad:"jugada ilegible",coords:"Coordenadas",
+ w_time:"tiempo agotado",w_resign:"abandono",w_agree:"acuerdo mutuo",w_rep:"la misma posición ha vuelto por cuarta vez",rep_ask:"Habéis repetido la misma posición tres veces. ¿Queréis proponer tablas?",rep_warn:"Si la posición vuelve otra vez, las tablas serán obligatorias.",rep_no:"Continuar",playGo:"Jugar",analyse:"Analizar",haveInvite:"Tengo un código de invitación",modeOpt:"Modo de juego",a_free:"Nuevo análisis",a_freeTxt:"Los dos bandos en esta pantalla: vuelta atrás, variantes, sugerencias.",a_freeTxtN:"Los dos bandos en esta pantalla: vuelta atrás, variantes.",a_load:"Cargar una partida",a_loadTxt:"Un archivo SGF: una partida terminada para repasarla, o sin terminar para continuarla.",sgfFile:"Archivo SGF",sgfLoadBtn:"Cargar la partida",sgfNoFile:"Elige primero un archivo.",editName:"Pulsa para cambiar el nombre",m_table:"Mochalunt · mesa {k} / {n} · {g}",m_score:"{a} {x} – {y} {b}",mq_p1:"primero",mq_p2:"segundo",m_plays:"{n} juega {s}",mq_1s:"juegas la apertura",mq_2s:"decides si intercambiar o no",sf_clicked:"{n} ha pulsado Empezar la partida.",sf_waitOpp:"Esperando a tu adversario",sf_waitPl:"Esperando a los jugadores",sf_choosing:"{n} elige su sitio…",sf_go:"La partida empieza",mq_q:"¿Quieres jugar primero o segundo?",mq_1:"Primero",mq_2:"Segundo",m_choosing:"{n} elige su sitio.",m_waitOpp:"Esperando a tu adversario en esta mesa.",m_chooseYou:"Te toca elegir tu sitio en esta mesa.",m_next:"Ir a la mesa siguiente",m_follow:"Seguir en la mesa siguiente",m_result:"Ver el resultado del encuentro",m_live:"en curso",m_drawn:"tablas",m_won:"{n} gana",m_unknown:"Este encuentro no se conoce en este dispositivo: abre su enlace de invitación.",spectator:"Espectador",options:"Opciones",drawOffer:"Proponer tablas",drawWait:"Tablas propuestas: esperando la respuesta de {n}.",drawNo:"{n} rechaza las tablas.",drawAsk:"{n} propone tablas.",w_bad:"jugada ilegible",coords:"Coordenadas",
  sgfExport:"Exportar la partida (SGF)",sgfBusy:"Exportando…",sgfDone:"Archivo SGF guardado ✓",
  sgfBad:"Archivo SGF ilegible.",sgfOther:"Este archivo es una partida de otro juego ({g}).",sgfMove:"Archivo SGF: la jugada {n} no es legal."
 }};
@@ -150,6 +171,25 @@ let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.p
 function t(k,v){let s=I18N[lang][k];if(s===undefined)s=I18N.en[k];if(s===undefined)return k;if(v)s=s.replace(/\{(\w+)\}/g,(m,n)=>v[n]!==undefined?v[n]:m);return s;}
 const tcLabel=x=>x.id==='none'?t('tc_none'):t('tc_fmt',{m:x.base/60e3,s:x.inc/1e3});
 const K=s=>GAME.id+'-'+s;   // this game's localStorage keys
+// The computer's levels (decisions of 15.11.2026): named by their place in GAME.levels, never by a text of the page
+const lvKeys=()=>Object.keys(GAME.levels||{});
+function lvName(k){const L=lvKeys(),i=L.indexOf(k);if(i<0)return k;const o=GAME.levels[k];
+  return t(o&&o.random?'lv_rand':i===L.length-1&&L.length>1?'lv_top':'lv_n',{n:i});}
+function lvDefault(){const L=lvKeys();return GAME.levels[GAME.levelDefault]?GAME.levelDefault:L[Math.round((L.length-1)/3)];}
+const lvKey=()=>K('level-v'+(GAME.engine&&GAME.engine.v||0));   // a new engine version, a new scale: the stored level is forgotten
+const engTxt=()=>t('eng_line',{e:GAME.engine[lang]||GAME.engine.en,v:GAME.engine.v});
+// the grey line under a level's select (made once, after its label)
+function engLine(sel){const lb=sel.closest('label');if(!GAME.engine||!lb)return;let p=lb.nextElementSibling;
+  if(!p||!p.classList.contains('engline')){p=document.createElement('p');p.className='hint engline';lb.after(p);}p.textContent=engTxt();}
+// the help text of « Ordinateur »: how many levels, then what they do, runs of the same kind put together
+function aiHelp(){const L=lvKeys(),n=L.length,nf=x=>typeof x==='number'?x.toLocaleString(lang==='en'?'en-US':lang==='es'?'es-ES':'fr-FR'):x;
+  const G=[];L.forEach((k,i)=>{const o=GAME.levels[k],d=o.random?['lvd_rand']:GAME.levelDesc?GAME.levelDesc(o)||['']:[''];const g=G[G.length-1];
+    if(g&&g.k===d[0]&&d[0]&&!g.x&&!d[2]){g.b=i;if(d.length>1)g.v.push(d[1]);}else G.push({k:d[0],a:i,b:i,v:d.length>1?[d[1]]:[],x:d[2]});});
+  const parts=G.filter(g=>g.k).map(g=>{const v=[...new Set(g.v)].sort((a,b)=>a-b).map(nf),r=v.length>3?t('lv_rg',{a:v[0],b:v[v.length-1]}):v.length>1?v.slice(0,-1).join(', ')+t('lv_and')+v[v.length-1]:v.join('');   // up to three values listed, more as a range
+    const l=g.a===g.b?t('lv_one',{a:g.a}):g.b===g.a+1?t('lv_two',{a:g.a,b:g.b}):t('lv_run',{a:g.a,b:g.b});
+    const x={};for(const j in g.x||{})x[j]=nf(g.x[j]);return t('lv_grp',{l,d:t(g.k,{n:r,...x})});});
+  const more=I18N[lang].m_aiMore||I18N.en.m_aiMore;
+  return [t('lv_cnt',{n,m:n-1})+(parts.length?' '+parts.join(t('lv_sep')).replace(/^./,c=>c.toUpperCase())+'.':''),more].filter(Boolean).join(' ');}
 function applyStatic(){document.documentElement.lang=lang;document.title=t('title');$('ttl').textContent=t('title');
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-t]').forEach(e=>{e.title=t(e.dataset.i18nT);e.setAttribute('aria-label',e.title);});
@@ -161,7 +201,7 @@ function applyStatic(){document.documentElement.lang=lang;document.title=t('titl
     sel.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===cur?'selected':''}>${tcLabel(x)}</option>`).join('');}
   // face to face: its own time control, no clock by default
   const fs=$('fTc');if(fs){const fcur=fs.value||LS.get(K('local-tc'),'none');fs.innerHTML=TCS.map(x=>`<option value="${x.id}" ${x.id===fcur?'selected':''}>${tcLabel(x)}</option>`).join('');}
-  if(GAME.levels)for(const id of ['aLevel','gLevel']){const s=$(id);if(!s)continue;s.innerHTML=Object.keys(GAME.levels).map(k=>`<option value="${k}">${t('lv_'+k)}</option>`).join('');s.value=level;}
+  if(GAME.levels)for(const id of ['aLevel','gLevel']){const s=$(id);if(!s)continue;s.innerHTML=Object.keys(GAME.levels).map(k=>`<option value="${k}">${lvName(k)}</option>`).join('');s.value=level;engLine(s);}
   if(GAME.applyStatic)GAME.applyStatic();
   if(SV.on)saveRender();mTexts();}
 let level=null;
@@ -193,8 +233,12 @@ const sameRules=(a,b)=>JSON.stringify(GAME.rules(a))===JSON.stringify(GAME.rules
 // the new position, never the one given, which is not to be changed; e: its log entry; last: the last move shown, or
 // undefined to keep the previous one; over: the end of the game, or null), or null for an illegal code (w_bad).
 // The position and the last move returned are copies: what the callers do to them never reaches the memory.
-const RK={key:null,codes:[],sts:[],log:[],lasts:[],over:null};
-function replayForget(){RK.key=null;RK.codes=[];RK.sts=[];RK.log=[];RK.lasts=[];RK.over=null;}
+// R.sig(st), optional: the key of a position for the repetition (pieces and side to move); the result then says in rep how
+// many times the position reached has occurred (this time included), and the fourth time ends the game drawn (w_rep).
+const RK={key:null,codes:[],sts:[],log:[],lasts:[],over:null,sigs:[]};
+function replayForget(){RK.key=null;RK.codes=[];RK.sts=[];RK.log=[];RK.lasts=[];RK.over=null;RK.sigs=[];}
+const REP_DRAW=4;   // the fourth time the same position occurs: drawn (decision of Thibault, 15.11.2026)
+const repCount=(sigs,n)=>{let c=0;for(let k=0;k<=n;k++)if(sigs[k]===sigs[n])c++;return c;};
 function deepCopy(x){if(x===null||typeof x!=='object')return x;
   if(ArrayBuffer.isView(x)){const c=new x.constructor(x);for(const k in x)if(!/^\d+$/.test(k))c[k]=deepCopy(x[k]);return c;}   // own fields too (st.turn)
   if(Array.isArray(x))return x.map(deepCopy);
@@ -203,15 +247,16 @@ function deepCopy(x){if(x===null||typeof x!=='object')return x;
   if(Object.getPrototypeOf(x)!==Object.prototype)return x;
   const c={};for(const k of Object.keys(x))c[k]=deepCopy(x[k]);return c;}
 function replayKept(rules,moves,R){const key=lang+'|'+JSON.stringify(GAME.rules(rules));
-  if(key!==RK.key){replayForget();RK.key=key;RK.sts.push(R.init(rules));RK.lasts.push(null);}
+  if(key!==RK.key){replayForget();RK.key=key;RK.sts.push(R.init(rules));RK.lasts.push(null);if(R.sig)RK.sigs.push(R.sig(RK.sts[0]));}
   const C=RK.codes;let L=0;while(L<moves.length&&L<C.length&&C[L]===moves[L])L++;
   let n=L,bad=null;
   if(L===C.length||L<moves.length){   // not a position already kept (navigating back): drop what follows L, replay the rest
-    if(L<C.length){C.length=L;RK.sts.length=L+1;RK.log.length=L;RK.lasts.length=L+1;RK.over=null;}
+    if(L<C.length){C.length=L;RK.sts.length=L+1;RK.log.length=L;RK.lasts.length=L+1;RK.sigs.length=R.sig?L+1:0;RK.over=null;}
     for(let k=L;k<moves.length&&!RK.over;k++){const x=R.play(RK.sts[k],moves[k],k);if(!x){bad={w:-1,why:'w_bad'};break;}
-      C.push(moves[k]);RK.sts.push(x.st);RK.log.push(x.e);RK.lasts.push(x.last===undefined?RK.lasts[k]:x.last);RK.over=x.over||null;}
+      C.push(moves[k]);RK.sts.push(x.st);RK.log.push(x.e);RK.lasts.push(x.last===undefined?RK.lasts[k]:x.last);RK.over=x.over||null;
+      if(R.sig){RK.sigs.push(R.sig(x.st));if(!RK.over&&repCount(RK.sigs,k+1)>=REP_DRAW)RK.over={w:-1,why:'w_rep'};}}
     n=C.length;}
-  return {st:deepCopy(RK.sts[n]),log:RK.log.slice(0,n),last:deepCopy(RK.lasts[n]),over:deepCopy(bad||(n===C.length?RK.over:null))};}
+  return {st:deepCopy(RK.sts[n]),log:RK.log.slice(0,n),last:deepCopy(RK.lasts[n]),over:deepCopy(bad||(n===C.length?RK.over:null)),rep:R.sig&&!bad?repCount(RK.sigs,n):0};}
 
 // ---------- network (PeerJS) ----------
 // Roles: the host (creator) is authoritative for rules and clock; the guest and spectators connect to it.
@@ -293,7 +338,7 @@ function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.resu
 // (no new offer meanwhile); acceptance ends the game, drawn by agreement
 const drawAfter=(dr,s)=>!dr||dr.st!=='ask'?null:dr.from===s?dr:{from:dr.from,st:'no'};   // the offer once seat s has moved
 function drawOp(g,s,op){const dr=g.draw,r=replay(g,g.moves,g.result);if(r.over||!g.started)return false;
-  if(op==='ask'&&!dr)g.draw={from:s,st:'ask'};
+  if(op==='ask'&&!dr&&(GAME.drawOffer||r.rep===REP_DRAW-1))g.draw={from:s,st:'ask'};
   else if(op==='no'&&dr&&dr.from!==s&&dr.st==='ask')g.draw={from:dr.from,st:'no'};
   else if(op==='yes'&&dr&&dr.from!==s&&dr.st==='ask'){g.draw=null;g.result={winner:-1,reason:'agree'};}
   else return false;
@@ -308,6 +353,8 @@ function drawSend(op){if(!view)return;const r=replay(view,view.moves,view.result
     if(a&&!a.policy&&!a.forced&&typeof a.score==='number'&&a.score<.3){stopAI();hintMv=null;resetUi();view.draw=null;view.result={winner:-1,reason:'agree'};}
     else view.draw={from:mySeat,st:'no'};renderGame();}}
 const RMX={shut:false};   // the rematch frame closed by its cross (until the offer changes)
+const REPX={seen:null};   // the position whose third-repetition frame was answered: repKey()
+const repKey=()=>view?location.hash+'|'+view.moves.join(','):null;   // the game's address and its moves (forgotten when a game starts: renderGame)
 function rmSend(op){if(role==='host')rematchOp(mySeat,op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});else status(t('st_noHost2'));}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
 function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
@@ -435,7 +482,7 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
   if(d.t==='start')hostReady(s);
   if(d.t==='resign'&&!g.result&&g.started){g.result={winner:1-s,reason:'resign'};hostBroadcast();}
   if(d.t==='rematch')rematchOp(s,d.op);
-  if(d.t==='draw'&&GAME.drawOffer&&drawOp(g,s,d.op))hostBroadcast();
+  if(d.t==='draw'&&drawOp(g,s,d.op))hostBroadcast();   // drawOp: without GAME.drawOffer, only at a third repetition
   if(d.t==='mchoose')mChoose(s,d.c);
   if(d.t==='voice')voiceOnMsg(d.op);}
 function hostMove(s,n,code,conn){const g=H.game,pubFor=()=>({...hostPublic(),myHold:myHoldOf(s),...hostPriv()});if(conn&&n===g.moves.length-1&&g.moves[n]===code){conn.send({t:'state',game:pubFor()});return false;}
@@ -656,7 +703,14 @@ function anaMainLine(){const p=[];let n=view.tree;while(n.c.length){n=n.c[0];p.p
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
 // names typed in an analysis or read from a file (customNames: true, or one flag per seat; a loaded game read only: its own names)
 const nmCustom=s=>{const c=view.customNames;return role==='file'&&c===undefined||c===true||Array.isArray(c)&&!!c[s];};
-const seatName=s=>solo()||role==='file'?((role==='test'||role==='file')&&nmCustom(s)&&view.names[s]||t(s===0?'p1':'p2')):role==='ai'?(s===meS()?t('you'):t('computer')):(view.names[s]||t(s===0?'p1':'p2'));
+// a seat without a typed name: its side's colour when the game has one (GAME.seatCol(s): an i18n key, or null while the
+// colour is not settled yet, e.g. before a swap), else « Player 1 / 2 »
+const seatDef=s=>t((GAME.seatCol&&view&&GAME.seatCol(s))||(s===0?'p1':'p2'));
+// one screen (face to face, analysis): a status names the seat to act, « Clair — bille a1 choisie… » (decision of 15.11.2026)
+const soloWho=(s,txt)=>solo()&&txt?seatName(s)+t('sepN')+txt.charAt(0).toLowerCase()+txt.slice(1):txt;
+// a text naming a seat and its colour ({name}, {c}): the colour once only when it is the seat's name (« Noir », not « Noir (noir) »)
+function tN(k,v){if(v&&v.c&&v.name&&String(v.name).toLowerCase()===String(v.c).toLowerCase())return t(k,{...v,c:'\u0000'}).replace(/\s*\(\u0000\)/,'').replace('\u0000','');return t(k,v);}
+const seatName=s=>solo()||role==='file'?((role==='test'||role==='file')&&nmCustom(s)&&view.names[s]||seatDef(s)):role==='ai'?(s===meS()?t('you'):t('computer')):(view.names[s]||seatDef(s));
 
 // A player's name, editable in place (nothing shows it but the text cursor): Enter or leaving the field keeps it
 function nameEdit(sp,p){sp.className='nmEdit';sp.contentEditable='plaintext-only';sp.spellcheck=false;sp.title=t('editName');
@@ -690,8 +744,8 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
   const idle=[undoB,hintB];
   if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
     status(r.over.w<0?t('draw'+q,{why:t(r.over.why)}):r.over.w===meS()&&!solo()&&role!=='file'?t('youWin'+q,{why:t(r.over.why)}):t('wins'+q,{n:nm(r.over.w),why:t(r.over.why)}),'win',navAt===null?[undoB]:null);}
-  else if(busy==='hint')status(t('hintBusy'),'turn',[{label:t('dismiss'),on:hintOff}]);
-  else if(role==='ai'&&busy)status(t('st_aiThinking'));
+  else if(busy==='hint')status(t(aiSlow?'hintSlow':'hintBusy'),'turn',[aiSlow?{label:t('hintNow'),primary:true,on:playNow}:null,{label:t('dismiss'),on:hintOff}]);
+  else if(role==='ai'&&busy)status(t(aiSlow?'aiSlow':'st_aiThinking'),'',aiSlow?[{label:t('playNow'),primary:true,on:playNow}]:null);
   else if(!view.started&&(role==='host'||role==='guest'||role==='watch'))status('');   // before the game: the frame over the board says it all
   else if(role==='host'&&!view.names[1-mySeat])status(t(view.match?'m_waitOpp':'st_waitOpp'));
   else if(view.paused&&view.started)status(role==='host'?t('st_pausedHost',{n:nm(1-mySeat)}):mySeat>=0?t('st_pausedGuest'):t('st_pausedWatch'));
@@ -771,12 +825,18 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
     // a rematch offered to me: also in a frame over the board, until answered or closed (it stays in the end card)
     const recv=pl&&asked&&!mineRm&&!view.match;if(!recv)RMX.shut=false;
     if($('rmOv')){$('rmOv').hidden=!recv||RMX.shut;if(recv){$('rmOvTxt').textContent=t('rm_ask',{n:opp});$('rmOvNo').textContent=t('decline');$('rmOvYes').textContent=t('accept');$('rmOvX').title=t('close');$('rmOvX').setAttribute('aria-label',t('close'));}}}   // a match: the next table instead of a rematch
+  // the same position for the third time: a frame over the board for each player (once per position: REPX.seen), with the
+  // warning that the next time is a draw; Keep playing closes it, Offer a draw sends the draw offer to the other
+  if($('repOv')){if(!view.moves.length)REPX.seen=null;   // a new game (a rematch keeps the address)
+    const key=repKey(),on=r.rep===REP_DRAW-1&&!r.over&&!A&&navAt===null&&mySeat>=0&&!!view.started&&!view.draw&&REPX.seen!==key&&
+      (role==='ai'||role==='local'||(role==='host'||role==='guest')&&!!view.names[1-mySeat]);
+    $('repOv').hidden=!on;if(on){$('repOvTxt').textContent=t('rep_ask');$('repOvWarn').textContent=t('rep_warn');$('repOvNo').textContent=t('rep_no');$('repOvYes').textContent=t('drawOffer');}}
   if(view.match)$('endCard').hidden=true;   // and no way home (« Accueil ») during a match: the match card leads on
   const ol=$('log');ol.textContent='';
   // analysis: the whole line (the path, then the first child at each branching); a move with variations: ◆ and their number
   const AL=A?anaLine():null,rl=A&&AL.length>view.moves.length?GAME.replay(view,AL):r;
   const nv=A||canNav(r),cur=A?view.moves.length:navAt===null?r.log.length:navAt,go=A?anaGo:navGo;
-  rl.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>go(j+1);}const a=document.createElement('span');a.className='n';a.textContent=(j+1)+'.';
+  rl.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>go(j+1);}const a=document.createElement('span');a.className='n';a.textContent=GAME.logNum?GAME.logNum(j,e):(j+1)+'.';
     if(A){const par=anaNode(AL.slice(0,j));if(par&&par.c.length>1){const x=document.createElement('span');x.className='alt';x.textContent='◆'+par.c.length;x.title=t('altN',{n:par.c.length});a.appendChild(x);}}
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
     const c=document.createElement('span'),cn=GAME.logNode&&GAME.logNode(e,rl);if(cn)c.append(cn);else c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
@@ -959,11 +1019,21 @@ function pendClear(){C.pending=null;LS.del(netKey('pending',C.code));}
 
 // ---------- computer opponent ----------
 // The search runs in a worker built from the game's source (GAME.aiSrc), so the page stays responsive.
-let worker=null,pool=[],reqId=0,cbs={},busy='',aiInfo=null,hintMv=null,aiLast=null;   // aiLast: the computer's last search (draw offers)
+// A level is an amount of work (depth, simulations, positions searched), never a time (decision of Thibault, 15.11.2026):
+// no clock stops a search, so a level plays the same on every device and a slow one only takes longer. Past AI_SLOW_MS
+// the bar says so and offers « Play now » (a suggestion: « Show now »): the best move found so far, which the worker
+// reports as it goes (the game's search calls aiBest({move,score,depth}), defined in the worker below; a message
+// {id,p} to the page), or, when nothing was reported yet, the answer of the game's first level, asked at once.
+const AI_SLOW_MS=10000;
+let worker=null,pool=[],reqId=0,cbs={},prog={},busy='',aiInfo=null,hintMv=null,aiLast=null;   // aiLast: the computer's last search (draw offers)
+let aiSlow=false,slowT=0,aiNow=null;   // the search in flight has passed AI_SLOW_MS · its timer · what « Play now » does
 function makeWorker(){const src=GAME.aiSrc()+`
-self.onmessage=e=>{const m=e.data;self.__aiRoot=null;const r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy,root:self.__aiRoot||undefined}});};`;
-  const w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));w.onmessage=e=>{const cb=cbs[e.data.id];delete cbs[e.data.id];if(cb)cb(e.data.r);};return w;}
-function stopAI(){if(worker)worker.terminate();worker=null;for(const w of pool)w.terminate();pool=[];cbs={};busy='';}
+let __aiId=0;self.aiBest=(r,id)=>{if(r&&r.move!=null)self.postMessage({id:id===undefined?__aiId:id,p:{move:r.move,score:r.score,depth:r.depth}});};
+self.onmessage=e=>{const m=e.data;__aiId=m.id;self.__aiRoot=null;const r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy,root:self.__aiRoot||undefined}});};`;
+  const w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+  w.onmessage=e=>{const d=e.data;if(d.p){if(prog[d.id])prog[d.id](d.p);return;}const cb=cbs[d.id];delete cbs[d.id];delete prog[d.id];if(cb)cb(d.r);};return w;}
+function killAI(){if(worker)worker.terminate();worker=null;for(const w of pool)w.terminate();pool=[];cbs={};prog={};}
+function stopAI(){killAI();clearTimeout(slowT);aiSlow=false;aiNow=null;busy='';}
 // Several cores (a level's opt.par: a number of workers, or 'auto' for the cores the browser reports less one, at most 8):
 // root parallelism for mcts. Each worker searches the whole budget with its own random numbers (opt.rootOut: common/ai.js
 // leaves its root visits in __aiRoot); the visits are added up by move, the most visited is played (drawn by
@@ -981,10 +1051,17 @@ function askPar(msg,k,cb){while(pool.length<k)pool.push(makeWorker());const o={.
     if(r){cb({...r,score,depth,root:undefined});return;}
     const id=++reqId;cbs[id]=p=>cb(p&&{...p,score,depth,root:undefined});pool[0].postMessage({st:msg.st,opt:{...o,rootOut:false,rootPick:x.k},id});};
   for(let i=0;i<k;i++){const id=++reqId;cbs[id]=r=>{R[i]=r;if(--left===0)done();};pool[i].postMessage({st:msg.st,opt:o,id});}}
-function ask(st,opt,cb){opt={...opt,...(GAME.aiOpt?GAME.aiOpt(view):{})};const msg={st:GAME.aiPos(st),opt};
+function ask(st,opt,cb0){const xo=GAME.aiOpt?GAME.aiOpt(view):{};opt={...opt,...xo};const msg={st:GAME.aiPos(st),opt};
+  let best=null,over=false;const cb=r=>{if(over)return;over=true;clearTimeout(slowT);aiSlow=false;aiNow=null;cb0(r);};
+  clearTimeout(slowT);aiSlow=false;slowT=setTimeout(()=>{if(over||!aiNow)return;aiSlow=true;if(view)renderGame();},AI_SLOW_MS);
+  // « Play now »: the search is dropped; its best move so far, or the first level's answer
+  aiNow=()=>{if(over)return;killAI();clearTimeout(slowT);aiSlow=false;aiNow=null;if(best){cb(best);return;}
+    const lo=GAME.levels&&Object.values(GAME.levels)[0];if(view)renderGame();
+    try{worker=makeWorker();const id=++reqId;cbs[id]=cb;worker.postMessage({st:msg.st,opt:{...lo,...xo},id});}catch(e){worker=null;cb(null);}};
   const k=parN(opt);if(k>1&&typeof Worker!=='undefined'){try{askPar(msg,k,cb);return;}catch(e){for(const w of pool)w.terminate();pool=[];}}
-  try{if(!worker)worker=makeWorker();msg.id=++reqId;cbs[msg.id]=cb;worker.postMessage(msg);}
-  catch(e){worker=null;setTimeout(()=>cb(GAME.aiSearch(st,opt)),30);}}   // no worker (some file:// setups): search on the page
+  try{if(!worker)worker=makeWorker();msg.id=++reqId;cbs[msg.id]=cb;prog[msg.id]=p=>{best=p;};worker.postMessage(msg);}
+  catch(e){worker=null;aiNow=null;setTimeout(()=>cb(GAME.aiSearch(st,opt)),30);}}   // no worker (some file:// setups): search on the page
+function playNow(){if(aiNow)aiNow();}
 const AK=()=>K('ai-'+SGID);   // this tab's game against the computer, kept across a reload (one save per game)
 const aiView=st=>GAME.aiView?GAME.aiView(st):st;
 function startAI(seat,rules){stopAI();navAt=null;role='ai';mySeat=seat;C.stop=true;SGID=gidNew();setHash('ai-'+SGID);
@@ -1027,7 +1104,7 @@ let homeK='';
 // a link or the computer) · 'ana' (create a game in free play, or load an SGF file) · 'free' · 'load'
 function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
   $('homeMain').hidden=k!=='';$('newHead').hidden=k==='';$('anaPick').hidden=k!=='ana';
-  $('modeWrap').hidden=$('modeTxt').hidden=!play;$('modeTxt').textContent=t('m_'+mode+'Txt');$('nameWrap').hidden=!(play&&(mode==='link'||mode==='ai'));
+  $('modeWrap').hidden=$('modeTxt').hidden=!play;$('modeTxt').textContent=mode==='ai'?aiHelp():t('m_'+mode+'Txt');$('nameWrap').hidden=!(play&&(mode==='link'||mode==='ai'));
   const F={link:'createForm',ai:'aiForm',face:'faceForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=!(play&&mode===x);
   $('testForm').hidden=k!=='free';$('loadForm').hidden=k!=='load';if(k==='load')$('sgfErr').textContent='';
   const h=$('newTitle');h.dataset.i18n={play:'playGo',ana:'analyse',free:'a_free',load:'a_load'}[k]||'playGo';h.textContent=t(h.dataset.i18n);}
@@ -1077,7 +1154,7 @@ function fillWatch(wc){const web=/^https?:$/.test(location.protocol);linkOnly(fa
 // a Mochalunt table: the match's links (mochalunt.html), not the table's codes; a spectator only gets the spectators' one
 function linkOnly(on){for(const id of ['codePBox','codeWBox'])if($(id))$(id).classList.toggle('linkonly',on);}
 function fillMatch(){const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0].replace(/[^/]*$/,'')+'mochalunt.html';
-  const tl=(MATCH.excl<0?'a':String(MATCH.excl))+MATCH.j1,pl=!!MATCH.me,wc=pl?MATCH.wcode:MATCH.code;
+  const tl=(MATCH.excl<0?'a':String(MATCH.excl))+MATCH.j1+(/^\d{4}-\d+$/.test(MATCH.ed||'')?MATCH.ed.replace('-','r'):''),pl=!!MATCH.me,wc=pl?MATCH.wcode:MATCH.code;   // then the year and round (2026r7)
   // a match: its pages' links only (no code to type): the rows show their « Link » button alone
   for(const [id,on] of [['codePBox',pl],['codeWBox',!!wc]])if($(id)){$(id).hidden=!(on&&web);$(id).classList.add('linkonly');}
   $('hostNote').hidden=true;$('linksBox').hidden=!web;$('fileNote').hidden=web;
@@ -1091,12 +1168,13 @@ function joinClick(asWatch){if(typeof Peer==='undefined'){status(t('noPeer'));re
   const r=codeRead($('jCode').value);if(r.e){$('joinErr').textContent=t(r.e);return;}const w=asWatch||!!r.w;
   const nm=nmClean($('jName').value);if(nm)nickSet(nm);if(r.m||r.g.id!==GAME.id){location.href=codeHref(r.m?r:{...r,w});return;}clientStart(r.c,w?nm:nm||t('p2'),w);if(w&&C.code)LS.set(K('p2p-watch'),{code:C.code,name:nm});}
 // ---------- SGF: export of the game shown, reading of a file (read only) ----------
-// The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XR[rules, JSON] ;B[…];W[…]…). B and W are
-// seat 0 and seat 1 (Pente: the stone colours), their values the page's move codes unless the game has a notation of
-// its own (GAME.sgf). XG and XR are private properties (the SGF lets readers skip them), and so are the page's own (GAME.sgfHead).
+// The file: (;FF[4]CA[UTF-8]AP[…]GM[…]SZ[…]GN[…]DT[…]PB[…]PW[…]RE[…]XG[game id]XV[2]XR[rules, JSON] ;B[…];W[…]…). B and W are
+// seat 0 and seat 1 (Pente: the stone colours), their values the game's notation (GAME.sgf). XG, XV and XR are private
+// properties (the SGF lets readers skip them), and so are the page's own (GAME.sgfHead). XV[2]: the values are the
+// notation; a file of the site without XV (written before 16.11.2026) holds the page's move codes, and is still read.
 const AP='tybaltp.github.io/games';
 const sgfEsc=v=>String(v).replace(/\\/g,'\\\\').replace(/\]/g,'\\]');
-function sgfName(s){if(role==='ai')return s===meS()?nickGet()||t('you'):t('computer')+' ('+t('lv_'+level)+')';return solo()||role==='file'?seatName(s):view.names[s]||t(s===0?'p1':'p2');}
+function sgfName(s){if(role==='ai')return s===meS()?nickGet()||t('you'):t('computer')+' ('+lvName(level)+')';return solo()||role==='file'?seatName(s):view.names[s]||t(s===0?'p1':'p2');}
 // The whole tree of an analysis: the main line first, each branching as (;…)(;…) in the tree's order; the header (players,
 // result) is the main line's. A move gives one node or more (GAME.sgf.nodes: those of a line, the move's are the ones its
 // line adds to the line before it).
@@ -1104,9 +1182,9 @@ function sgfText(){const A=ana(),main=A?anaMainLine():view.moves,r=replay(view,m
   const pad=n=>String(n).padStart(2,'0'),d=new Date(),dt=view.sgfDT||d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const col=s=>s===bs?'B':'W',o=r.over;
   const re=!o?'':o.w<0?'0':col(o.w)+'+'+(o.why==='w_resign'?'R':o.why==='w_time'?'T':'');
-  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&G.sz,GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XR:JSON.stringify(GAME.rules(view)),...(GAME.sgfHead?GAME.sgfHead(view):{})};
+  const head={FF:4,CA:'UTF-8',AP,GM:G&&G.gm,SZ:G&&(typeof G.sz==='function'?G.sz(view):G.sz),GN:t('title'),DT:dt,PB:sgfName(bs),PW:sgfName(1-bs),RE:re,XG:GAME.id,XV:'2',XR:JSON.stringify(GAME.rules(view)),...(GAME.sgfHead?GAME.sgfHead(view):{})};
   const node=o=>';'+Object.keys(o).filter(k=>o[k]!==undefined&&o[k]!=='').map(k=>k+'['+sgfEsc(o[k])+']').join('');
-  const nodesOf=p=>{const rr=GAME.replay(view,p);return G&&G.nodes?G.nodes(rr,{...view,moves:p}):rr.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:p[j]}));};
+  const nodesOf=p=>{const rr=GAME.replay(view,p);return G&&G.nodes?G.nodes(rr,{...view,moves:p}):rr.log.map((e,j)=>({[(e.p===undefined?j%2:e.p)===0?'B':'W']:G&&G.val?G.val(p[j],GAME.replay(view,p.slice(0,j)).st,e,view):p[j]}));};
   const cnt=new Map(),count=p=>{const k=p.join(',');if(!cnt.has(k))cnt.set(k,nodesOf(p).length);return cnt.get(k);};
   const mv=(p,m)=>{const q=p.concat(m),all=nodesOf(q);cnt.set(q.join(','),all.length);return '\n'+all.slice(count(p)).map(node).join('\n');};
   const tree=A?view.tree:(()=>{const root={c:[]};let n=root;for(const m of view.moves){const x={m,c:[]};n.c.push(x);n=x;}return root;})();
@@ -1140,10 +1218,14 @@ function sgfLoad(txt){let T;try{T=sgfParse(String(txt).replace(/^\uFEFF/,''));}c
   const lines=[],walk=(x,pre)=>{const q=pre.concat(x.nodes);if(!x.vars.length){lines.push(q);return;}for(const y of x.vars)walk(y,q);};walk(T,[]);
   if(lines.length>5000)return t('sgfBad');
   const root=lines[0][0]||{},v=k=>root[k]&&root[k][0],G=GAME.sgf;
-  if(v('XG')?v('XG')!==GAME.id:!(G&&G.gm&&+v('GM')===G.gm))return v('XG')?t('sgfOther',{g:(Object.values(CODE_GAMES).find(x=>x.id===v('XG'))||{n:v('XG')}).n}):t('sgfBad');
+  if(v('XG')?v('XG')!==GAME.id:!(G&&(G.gm&&+v('GM')===G.gm||G.accept&&G.accept(root))))return v('XG')?t('sgfOther',{g:(Object.values(CODE_GAMES).find(x=>x.id===v('XG'))||{n:v('XG')}).n}):t('sgfBad');
   let rules={};try{rules=JSON.parse(v('XR')||'{}');}catch(e){}rules=GAME.rules(rules);
+  if(!v('XG')&&G&&G.rulesOf)try{rules=GAME.rules(G.rulesOf(root,rules));}catch(e){return t('sgfBad');}
+  // old: a file of the site written before the notation (XG, no XV): its values are the page's move codes
+  const old=!!v('XG')&&!v('XV'),raw=body=>body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);
+  const conv=body=>{const cs=[];for(const nd of body){const x=(nd.B||nd.W||[])[0];if(x===undefined)continue;const c=G.code(x,GAME.replay(rules,cs).st,rules);if(c==null)throw {n:cs.length+1};cs.push(c);}return cs;};
   const tree={c:[]};let codes=null;
-  for(const ln of lines){const body=ln.slice(1);let cs;try{cs=G&&G.codes?G.codes(body):body.map(nd=>(nd.B||nd.W||[])[0]).filter(x=>x!==undefined);}catch(e){return t('sgfBad');}
+  for(const ln of lines){const body=ln.slice(1);let cs;try{cs=G&&G.codes?G.codes(body,{old,root,rules}):G&&G.code&&!old?conv(body):raw(body);}catch(e){return e&&e.n?t('sgfMove',{n:e.n}):t('sgfBad');}
     const rr=GAME.replay(rules,cs);if(rr.over&&rr.over.why==='w_bad')return t('sgfMove',{n:rr.log.length+1});
     let n=tree;for(const m of cs){let x=n.c.find(y=>y.m===m);if(!x){x={m,c:[]};n.c.push(x);}n=x;}if(!codes)codes=cs;}
   const r=GAME.replay(rules,codes);
@@ -1215,7 +1297,7 @@ function saveRender(){const box=$('resumeCard');if(!box)return;SV.on=true;saveCa
   const hb=mk('button','rsTog','',mk('h2','rsHead','',box));hb.type='button';hb.setAttribute('aria-expanded',SV.all?'true':'false');mk('span','',t('rs_title'),hb);mk('span','rsN',String(L.length),hb);hb.onclick=()=>{SV.all=!SV.all;saveRender();};
   const ul=mk('ul','rsList','',box);ul.hidden=!SV.all;const now=new Date(),loc=lang==='fr'?'fr-FR':lang==='es'?'es-ES':'en-GB';
   L.forEach((e,i)=>{const v=e.v,li=mk('li','','',ul),mi=mk('span','rsInfo','',li),ax=mk('span','rsActs','',li);
-    mk('b','',e.mode==='ai'?t('m_ai')+(GAME.levels&&GAME.levels[e.level]?' · '+t('lv_'+e.level):''):e.mode==='local'?t('m_face'):[t('rs_link'),v.names&&v.names[1-e.seat]].filter(Boolean).join(' · '),mi);
+    mk('b','',e.mode==='ai'?t('m_ai')+(GAME.levels&&GAME.levels[e.level]?' · '+lvName(e.level):''):e.mode==='local'?t('m_face'):[t('rs_link'),v.names&&v.names[1-e.seat]].filter(Boolean).join(' · '),mi);
     const d=new Date(e.at),o={day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'};if(d.getFullYear()!==now.getFullYear())o.year='numeric';
     mk('span','',[new Intl.DateTimeFormat(loc,o).format(d),GAME.rulesTxt?GAME.rulesTxt(GAME.rules(v)):'',v.tc?tcLabel({id:'',base:v.tc.base,inc:v.tc.inc}):'',t('rs_move',{n:v.moves.length})].filter(Boolean).join(' · '),mi);
     mk('button','primary',t('resumeBtn'),ax).onclick=()=>saveResume(e);
@@ -1272,7 +1354,7 @@ function mVoiceAuto(){if(mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!v
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
   return {size:GAME.size,...GAME.rules(G.rules||{}),hold:null,tc,first:'host',names:[MATCH.name,''],moves:[],clock:[tc.base,tc.base],running:false,result:null,started:false,
-    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
+    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,ed:MATCH.ed||null,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
 // The chooser takes the first seat or the second (c: 1 first, 2 second); the seats are swapped when needed
 function mChoose(s,c){const g=H.game,m=g.match;if(!m||m.chosen||g.started||!g.names[0]||!g.names[1])return;if(m.seats[s]!==mChooser(m,m.k))return;
   if((s===0)!==(c===1)){g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();m.seats.reverse();g.ready.reverse();mySeat=1-mySeat;
@@ -1283,6 +1365,11 @@ function mChooseSend(c){if(htOpen())return;if(role==='host')mChoose(mySeat,c);el
 function mSync(r){const m=view&&view.match;if(!m||!MATCH)return;let ch=false;
   if(MATCH.excl===undefined||MATCH.j1===undefined){MATCH.excl=m.excl;MATCH.j1=m.j1;ch=true;}
   if(MATCH.me&&MATCH.cur!==MTK&&MTW==='t'){MATCH.cur=MTK;ch=true;}
+  if(!MATCH.ed&&m.ed){MATCH.ed=m.ed;ch=true;}
+  // a match taken up on another device (a record new here, the match already under way): this player's role is that of their seat
+  if(MATCH.me&&MTW==='t'&&!MATCH.on&&mySeat>=0&&m.seats[mySeat]&&m.seats[mySeat]!==MATCH.me&&(MTK>0||view.started||Object.keys(m.res||{}).length)){MATCH.me=m.seats[mySeat];ch=true;}
+  // begun (on): both players have been at a table together (until then the match is not listed on its page)
+  if(MATCH.me&&MTW==='t'&&!MATCH.on&&view.names[0]&&view.names[1]){MATCH.on=1;ch=true;}
   for(const k in m.res||{})if(!MATCH.res[k]){MATCH.res[k]=m.res[k];ch=true;}
   const nm={};m.seats.forEach((ro,s)=>{if(view.names[s])nm[ro]=view.names[s];});if(JSON.stringify({...MATCH.names,...nm})!==JSON.stringify(MATCH.names||{})){MATCH.names={...MATCH.names,...nm};ch=true;}
   if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length&&JSON.stringify(view.chat)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=view.chat.slice(-CHATMAX);ch=true;}
@@ -1409,9 +1496,35 @@ function htAnim(k){if(HT.tok)HT.tok.live=false;const tok={live:true};HT.tok=tok;
   const A={svg,el,frame,wait,tween,mover,cursor,click,goTo};
   (async()=>{try{for(;;){svg.textContent='';svg.setAttribute('viewBox','0 0 240 180');await GAME.howto.scene(k,A);}}catch(e){if(e!==dead)throw e;}})();}
 
-function coreStart(){againUi();if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en},es:{...I18C.es,...(GAME.i18n.es||{})}};sgfUi();
+// A rule option of the home forms kept from one game to the next (decision of 15.11.2026: every option but « Qui
+// commence »): the fields c/a/f/t+suffix ('Adv' → cAdv, aAdv, fAdv, tAdv) show the value saved in K(key), def at first,
+// and a change in one of them is saved and shown in the others. Checkboxes and selects.
+function formKeep(suffix,key,def){const F=['c','a','f','t'].map(p=>$(p+suffix)).filter(Boolean),box=e=>e.type==='checkbox';
+  const set=v=>F.forEach(e=>{if(box(e))e.checked=v===true;else e.value=String(v);});
+  let v=LS.get(K(key),def);if(F.length&&!box(F[0])&&F[0].options&&![...F[0].options].some(o=>o.value===String(v)))v=def;set(v);
+  F.forEach(e=>e.addEventListener('change',()=>{const x=box(e)?e.checked:e.value;LS.set(K(key),x);set(x);}));}
+// « Signaler un défaut » (decision of 15.11.2026): a link at the end of Options; a click opens an email filled in with the
+// game, the mode, the level, the site's version (the ?v= of the shared files), the device and, when they fit in a mailto
+// link, the moves of the game shown. The address is put together at the click, never written out in the page.
+function reportMail(){const ver=f=>{const e=document.querySelector('[src*="common/'+f+'"],[href*="common/'+f+'"]'),m=e&&/[?&]v=(\d+)/.exec(e.getAttribute('src')||e.getAttribute('href'));return m?m[1]:'?';};
+  const L=[t('rp_body'),'','','— '+t('rp_info')+' —',t('title')+' ('+GAME.id+')'];
+  L.push(t('rp_mode')+': '+(view?role+(role==='ai'&&level?' · '+lvName(level)+' ('+level+')':'')+(mySeat>=0?' · seat '+mySeat:''):t('rp_none')));
+  if(view){try{L.push('rules: '+JSON.stringify(GAME.rules(view)));}catch(e){}if(view.result)L.push('result: '+JSON.stringify(view.result));}
+  if(GAME.engine)L.push(engTxt());
+  L.push('site: core v'+ver('core.js')+' · css v'+ver('games.css')+' · '+location.pathname.split('/').pop());
+  L.push(navigator.userAgent);L.push(innerWidth+'×'+innerHeight+' @'+(devicePixelRatio||1)+' · '+lang+' · '+(document.documentElement.dataset.theme||'auto'));
+  const addr=['tybaltp','games'].join('.')+String.fromCharCode(64)+['gmail','com'].join('.');
+  const url=b=>'mailto:'+addr+'?subject='+encodeURIComponent(t('rp_subj',{g:t('title')}))+'&body='+encodeURIComponent(b.join('\n'));
+  const mv=view&&view.moves&&view.moves.length?view.moves.join(' '):'';
+  if(mv){const w=url(L.concat([t('rp_moves')+' ('+view.moves.length+'): '+mv]));if(w.length<=1900)return w;L.push(t('rp_moves')+' ('+view.moves.length+'): '+t('rp_long'));}
+  return url(L);}
+function reportUi(){const box=$('myCard');if(!box||$('reportLink'))return;const p=document.createElement('p');p.className='rpline';
+  const a=document.createElement('a');a.id='reportLink';a.href='#';a.dataset.i18n='report';a.onclick=e=>{e.preventDefault();location.href=reportMail();};p.appendChild(a);box.appendChild(p);
+  // a phone held sideways: one line asking to turn it (games.css shows it; no layout for landscape yet, decision of 15.11.2026)
+  const r=document.createElement('div');r.id='rotateMsg';r.className='rotatemsg';const q=document.createElement('p');q.dataset.i18n='turnPhone';r.appendChild(q);document.body.appendChild(r);}
+function coreStart(){reportUi();againUi();if(window.ResizeObserver&&$('notice'))new ResizeObserver(()=>fitBtns()).observe($('notice'));I18N={fr:{...I18C.fr,...GAME.i18n.fr},en:{...I18C.en,...GAME.i18n.en},es:{...I18C.es,...(GAME.i18n.es||{})}};sgfUi();
   if(!hintsAny())for(const l in I18N)I18N[l].a_freeTxt=I18N[l].a_freeTxtN;   // « Nouvelle analyse »: no « suggestions » in a game without hints
-  if(GAME.levels){level=LS.get(K('level'),null);if(!GAME.levels[level])level=GAME.levelDefault;}
+  if(GAME.levels){GAME.levelDefault=lvDefault();level=LS.get(lvKey(),null);if(!GAME.levels[level])level=GAME.levelDefault;}   // GAME.levelDefault: the page's, or the rule's
   applyStatic();
   document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('games-lang',JSON.stringify(lang));localStorage.setItem('volo-lang',JSON.stringify(lang));}catch(e){}applyStatic();if(view)renderGame();else status('');});
   MYID=pickTabId(GAME.id,LS.get(K('p2p-cid'),null));
@@ -1427,7 +1540,12 @@ function coreStart(){againUi();if(window.ResizeObserver&&$('notice'))new ResizeO
   // a rematch offered to me: a frame over the board (renderGame), with a cross to close it without answering
   {const bd=document.querySelector('#game .board');if(bd){const o=document.createElement('div');o.className='rmov';o.id='rmOv';o.hidden=true;o.setAttribute('role','dialog');o.setAttribute('aria-labelledby','rmOvTxt');
     o.innerHTML='<div class="card"><button type="button" class="rmx" id="rmOvX">×</button><p class="sfmsg" id="rmOvTxt"></p><div class="confirm"><button type="button" id="rmOvNo"></button><button type="button" class="primary" id="rmOvYes"></button></div></div>';bd.appendChild(o);
-    $('rmOvX').onclick=()=>{RMX.shut=true;o.hidden=true;};$('rmOvNo').onclick=()=>rmSend('no');$('rmOvYes').onclick=()=>{sheet(false);rmSend('yes');};}}
+    $('rmOvX').onclick=()=>{RMX.shut=true;o.hidden=true;};$('rmOvNo').onclick=()=>rmSend('no');$('rmOvYes').onclick=()=>{sheet(false);rmSend('yes');};
+    // the third repetition (renderGame)
+    const q=document.createElement('div');q.className='rmov';q.id='repOv';q.hidden=true;q.setAttribute('role','dialog');q.setAttribute('aria-labelledby','repOvTxt');q.setAttribute('aria-describedby','repOvWarn');
+    q.innerHTML='<div class="card"><p class="sfmsg" id="repOvTxt"></p><p class="hint" id="repOvWarn"></p><div class="confirm"><button type="button" id="repOvNo"></button><button type="button" class="primary" id="repOvYes"></button></div></div>';bd.appendChild(q);
+    const seen=()=>{REPX.seen=repKey();q.hidden=true;};
+    $('repOvNo').onclick=()=>{seen();renderGame();};$('repOvYes').onclick=()=>{seen();drawSend('ask');renderGame();};}}
   resetUi();
   // host: periodic save, flag fall
   setInterval(()=>{if(role==='guest'&&view&&view.running&&++saveTick%5===0)guestSave();   // the clocks, every second
@@ -1553,7 +1671,7 @@ function coreStart(){againUi();if(window.ResizeObserver&&$('notice'))new ResizeO
       if(R.classList.contains('chatup')){chatSize();const l=$('chatList');if(l&&k)l.scrollTop=l.scrollHeight;}};
       vv.addEventListener('resize',kb);vv.addEventListener('scroll',kb);kb();}}window.addEventListener('resize',()=>chatFit());
   $('nameOv').onsubmit=e=>{e.preventDefault();nameOvDone(false);};$('nameOvAnon').onclick=()=>nameOvDone(true);
-  if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(K('level'),level);$('aLevel').value=level;$('gLevel').value=level;});
+  if(GAME.levels){for(const id of ['aLevel','gLevel'])if($(id))$(id).addEventListener('change',e=>{level=e.target.value;LS.set(lvKey(),level);$('aLevel').value=level;$('gLevel').value=level;});
     if($('aiForm'))$('aiForm').addEventListener('submit',e=>{e.preventDefault();const nm=$('hName').value.trim();if(nm)nickSet(nm);HT.want=true;startAI(aiFirst(),GAME.form('a'));});}
   document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const inp=$(b.dataset.copy);inp.select();
     const ok=()=>{b.textContent=t('copied');setTimeout(()=>b.textContent=t(b.dataset.i18n||'copy'),1500);};

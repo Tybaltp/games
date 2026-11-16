@@ -7,24 +7,24 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Slither palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
   --bg:#e4e1ea;--panel:#f1eff5;--ink:#211c2a;--muted:#635c70;--line:#cdc6d8;
   --accent:#7a32c8;--accent-ink:#ffffff;--danger:#b3261e;
-  --sboard:#d9b77a;--sgrid:rgba(60,42,18,.7);--sstar:rgba(60,42,18,.85);--slab:rgba(60,42,18,.75);
+  --sboard:#d9b77a;--sgrid:rgba(60,42,18,.7);--sstar:rgba(60,42,18,.85);--lab:rgba(60,42,18,.75);
   --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.75);--mk:#8a3fd8;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#17151c;--panel:#211d28;--ink:#e8e4ef;--muted:#a199ae;--line:#342d3e;
   --accent:#a57de6;--accent-ink:#1b0f30;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}}
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--lab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#17151c;--panel:#211d28;--ink:#e8e4ef;--muted:#a199ae;--line:#342d3e;
   --accent:#a57de6;--accent-ink:#1b0f30;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--sstar:rgba(40,26,10,.9);--lab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--mk:#8a3fd8;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
 /* players' cards: the seat's colour (it changes with the swap) */
@@ -78,7 +78,6 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
         <label class="toggle" for="cSwap"><input type="checkbox" id="cSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
@@ -88,20 +87,20 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
       <form class="form" id="aiForm" hidden>
         <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
         <label class="toggle" for="aSwap"><input type="checkbox" id="aSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
         <label class="toggle" for="fSwap"><input type="checkbox" id="fSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
         <label class="toggle" for="tSwap"><input type="checkbox" id="tSwap" checked> <span data-i18n="swapOpt">Swap rule</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -167,9 +166,9 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Slither (Corey Clark, 2010), base rules =====
 // Rules kept: a square board of n × n points (9 by default; 9, 11 or 13), empty at the start. Black moves first and joins
@@ -256,11 +255,11 @@ const SL=SlitherEngine();
 
 // ===== Slither: the page's side of common/core.js =====
 const SL_I18N={fr:{
- lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
+ lvd_g1:"un coup d'avance",lvd_gr:"un coup d'avance, avec une part de hasard",lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",
  title:"Slither",lede:"Serpentez jusqu'à relier vos bords.",by:"Un jeu de Corey Clark.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
- firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
- cB:"noir",cW:"blanc",eB:"haut–bas",eW:"gauche–droite",
+ needConfirm:"Confirmer chaque coup",
+ cB:"noir",sB:"Noir",sW:"Blanc",cW:"blanc",eB:"haut–bas",eW:"gauche–droite",
  swap:"Échanger",swapT:"Échanger : vous prenez la pierre posée et devenez Noir ; votre adversaire joue Blanc.",
  st_play:"Posez et déplacez une pierre.",
  st_playN:"Posez et déplacez une pierre.",
@@ -276,22 +275,19 @@ const SL_I18N={fr:{
  ai_swapped:"Ordinateur : échange.",
  boardLbl:"Plateau de Slither",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 9 × 9 intersections (11 × 11 ou 13 × 13 au choix), vide au départ, des pierres noires et blanches.</li>
+ <li><b>Matériel</b> : un plateau de 9 × 9 points (11 × 11 ou 13 × 13 au choix), vide au départ ; des pierres noires et blanches.</li>
  <li><b>But</b> : Noir relie le haut et le bas, Blanc la gauche et la droite, par une chaîne de ses pierres reliées orthogonalement (pas en diagonale). Un coin touche les deux bords. Noir commence.</li>
- <li><b>Un tour</b> : posez une pierre sur une intersection libre (obligatoire) et, si vous voulez, déplacez une de vos pierres déjà posées d'un pas, dans l'une des 8 directions, vers une intersection libre, avant ou après la pose.</li>
- <li><b>Diagonale</b> : à la fin de votre tour, deux de vos pierres en diagonale doivent avoir une voisine orthogonale commune de votre couleur. Un tour qui laisse une diagonale nue est interdit.</li>
- <li><b>Victoire</b> : vos deux bords reliés à la fin de votre tour. Sans coup possible, on passe ; passer est interdit sinon. Pas de nulle.</li>
- <li><b>Échange</b> (option, activée par défaut) : au premier tour du second joueur, il peut prendre la pierre posée à son compte : les couleurs s'échangent et le premier joueur, devenu Blanc, joue.</li>
- <li><b>Jouer</b> : cliquez une intersection libre pour y poser la pierre (au survol, elle s'affiche en transparence ; posée, elle a un cadre en pointillés). Pour déplacer une pierre, cliquez-la, puis cliquez sa destination. Seuls les choix qui mènent à un tour permis sont proposés. Cliquer de nouveau une pierre provisoire ou sélectionnée revient en arrière. Le tour attend toujours Confirmer, puisqu'on peut encore déplacer une pierre. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer le tour ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <li><b>Tour</b> : on pose une pierre sur un point libre (obligatoire) et, si l'on veut, on déplace d'un pas, dans l'une des 8 directions, une de ses pierres déjà sur le plateau, vers un point libre, avant ou après la pose.</li>
+ <li><b>Diagonale</b> : à la fin du tour, deux de ses pierres en diagonale doivent avoir une voisine orthogonale commune de sa couleur. Un tour qui laisse une diagonale nue est interdit.</li>
+ <li><b>Fin</b> : gagne celui dont les deux bords sont reliés à la fin de son tour. Sans tour possible, on passe ; sinon, passer est interdit. Pas de nulle.</li>
+ <li><b>Échange</b> (option, activée par défaut) : au premier tour du second joueur, il peut prendre à son compte la pierre posée : les couleurs s'échangent et le premier joueur, devenu Blanc, joue.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Règles : <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },en:{
- lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
+ lvd_g1:"one move ahead",lvd_gr:"one move ahead, with some randomness",lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",
  title:"Slither",lede:"Slither your way to connection.",by:"A game by Corey Clark.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
- firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
- cB:"black",cW:"white",eB:"top–bottom",eW:"left–right",
+ needConfirm:"Confirm each move",
+ cB:"black",sB:"Black",sW:"White",cW:"white",eB:"top–bottom",eW:"left–right",
  swap:"Swap",swapT:"Swap: you take the stone placed and become Black; your opponent plays White.",
  st_play:"Place and move a stone.",
  st_playN:"Place and move a stone.",
@@ -307,22 +303,19 @@ const SL_I18N={fr:{
  ai_swapped:"Computer: swaps.",
  boardLbl:"Slither board",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: a board of 9 × 9 points (11 × 11 or 13 × 13 as you choose), empty at the start, black and white stones.</li>
+ <li><b>Material</b>: a board of 9 × 9 points (11 × 11 or 13 × 13 as you choose), empty at the start; black and white stones.</li>
  <li><b>Goal</b>: Black joins top and bottom, White left and right, with a chain of their stones joined orthogonally (not diagonally). A corner touches both edges. Black moves first.</li>
- <li><b>A turn</b>: place a stone on a free point (compulsory) and, if you like, move one of your stones already on the board one step, in any of the 8 directions, to a free point, before or after the placement.</li>
- <li><b>Diagonals</b>: at the end of your turn, two of your stones on a diagonal must share an orthogonal neighbour of your colour. A turn that leaves a naked diagonal is not allowed.</li>
- <li><b>Winning</b>: your two edges joined at the end of your turn. Without a possible move, you pass; passing is not allowed otherwise. No draws.</li>
- <li><b>Swap</b> (option, on by default): on the second player's first turn, they may take the stone placed as theirs: the colours are exchanged and the first player, now White, moves.</li>
- <li><b>Playing</b>: click a free point to place the stone there (hovering shows it in transparency; once placed, it has a dashed frame). To move a stone, click it, then click where it goes. Only choices that lead to an allowed turn are offered. Clicking a provisional or selected stone again takes it back. The turn always waits for Confirm, since you may still move a stone. The commands are in the bar under the board: Swap, Reset, Confirm turn; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <li><b>Turn</b>: place a stone on a free point (compulsory) and, if you like, move one of your stones already on the board one step, in any of the 8 directions, to a free point, before or after the placement.</li>
+ <li><b>Diagonals</b>: at the end of the turn, two of your stones on a diagonal must share an orthogonal neighbour of your colour. A turn that leaves a naked diagonal is not allowed.</li>
+ <li><b>End</b>: whoever has their two edges joined at the end of their turn wins. With no possible turn, you pass; otherwise, passing is not allowed. No draws.</li>
+ <li><b>Swap</b> (option, on by default): on the second player's first turn, they may take the stone placed as theirs: the colours are exchanged and the first player, now White, moves.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Rules: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },es:{
- lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
+ lvd_g1:"una jugada de antelación",lvd_gr:"una jugada de antelación, con algo de azar",lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",
  title:"Slither",lede:"Serpentea hasta unir tus bordes.",by:"Un juego de Corey Clark.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
- firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
- cB:"negras",cW:"blancas",eB:"arriba–abajo",eW:"izquierda–derecha",
+ needConfirm:"Confirmar cada jugada",
+ cB:"negras",sB:"Negras",sW:"Blancas",cW:"blancas",eB:"arriba–abajo",eW:"izquierda–derecha",
  swap:"Intercambiar",swapT:"Intercambiar: tomas la piedra colocada y pasas a ser Negras; tu adversario juega con Blancas.",
  st_play:"Coloca y mueve una piedra.",
  st_playN:"Coloca y mueve una piedra.",
@@ -338,15 +331,12 @@ const SL_I18N={fr:{
  ai_swapped:"Ordenador: intercambio.",
  boardLbl:"Tablero de Slither",
  rules:`<summary>Reglas en breve</summary><ul>
- <li><b>Material</b>: un tablero de 9 × 9 intersecciones (11 × 11 o 13 × 13 a elegir), vacío al principio, piedras negras y blancas.</li>
+ <li><b>Material</b>: un tablero de 9 × 9 puntos (11 × 11 o 13 × 13 a elegir), vacío al principio; piedras negras y blancas.</li>
  <li><b>Objetivo</b>: Negras unen arriba y abajo, Blancas izquierda y derecha, con una cadena de sus piedras unidas ortogonalmente (no en diagonal). Una esquina toca los dos bordes. Negras empiezan.</li>
- <li><b>Un turno</b>: coloca una piedra en una intersección libre (obligatorio) y, si quieres, mueve una de tus piedras ya colocadas un paso, en una de las 8 direcciones, a una intersección libre, antes o después de la colocación.</li>
- <li><b>Diagonal</b>: al final de tu turno, dos piedras tuyas en diagonal deben tener una vecina ortogonal común de tu color. Un turno que deja una diagonal desnuda está prohibido.</li>
- <li><b>Victoria</b>: tus dos bordes unidos al final de tu turno. Sin jugada posible, se pasa; si no, pasar está prohibido. No hay tablas.</li>
- <li><b>Intercambio</b> (opción, activada por defecto): en el primer turno del segundo jugador, este puede quedarse con la piedra colocada: los colores se intercambian y el primer jugador, ahora Blancas, juega.</li>
- <li><b>Jugar</b>: haz clic en una intersección libre para colocar allí la piedra (al pasar el ratón, se muestra en transparencia; colocada, lleva un marco punteado). Para mover una piedra, haz clic en ella y luego en su destino. Solo se proponen las elecciones que llevan a un turno permitido. Volver a hacer clic en una piedra provisional o seleccionada da marcha atrás. El turno siempre espera a Confirmar, ya que aún se puede mover una piedra. Los mandos están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar el turno; según la partida, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
+ <li><b>Turno</b>: se coloca una piedra en un punto libre (obligatorio) y, si se quiere, se mueve un paso, en una de las 8 direcciones, una de sus piedras ya colocadas en el tablero, a un punto libre, antes o después de la colocación.</li>
+ <li><b>Diagonal</b>: al final del turno, dos piedras propias en diagonal deben tener una vecina ortogonal común de su color. Un turno que deja una diagonal desnuda está prohibido.</li>
+ <li><b>Final</b>: gana aquel cuyos dos bordes están unidos al final de su turno. Sin turno posible, se pasa; si no, pasar está prohibido. No hay tablas.</li>
+ <li><b>Intercambio</b> (opción, activada por defecto): en el primer turno del segundo jugador, este puede quedarse con la piedra colocada: los colores se intercambian y el primer jugador, ahora con Blancas, juega.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Reglas: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 }};
 const CN=c=>t(c===SL.BLACK?'cB':'cW'),EN=c=>t(c===SL.BLACK?'eB':'eW'),CK=c=>c===SL.BLACK?'b':'w';
@@ -372,13 +362,13 @@ function slBoard({r,d,mine,ms}){const live=navAt===null;if(mine&&live&&prepared(
   shown={d,ms,mine:mine&&live,over:r.over};drawBoard();return {};}
 function slTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=SL.toMove(st),me=seatName(st.turn);
   if(!SL.anyMove(st)){status(S?t('st_noneN',{name:me}):t('st_none'),'turn',[{label:t('pass'),primary:true,on:()=>{clearPrep();send('pass');}},...idle]);return;}
-  if(ui.f>=0&&ui.t<0){status(t('st_sel'),'turn',[RST]);return;}
-  if(ui.p<0&&ui.t>=0){status(t('st_moved'),'turn',[RST]);return;}
-  if(ui.p>=0){status(t('st_bad'),'turn',[RST]);return;}   // complete but illegal (a legal one is core's pending)
+  if(ui.f>=0&&ui.t<0){status(soloWho(st.turn,t('st_sel')),'turn',[RST]);return;}
+  if(ui.p<0&&ui.t>=0){status(soloWho(st.turn,t('st_moved')),'turn',[RST]);return;}
+  if(ui.p>=0){status(soloWho(st.turn,t('st_bad')),'turn',[RST]);return;}   // complete but illegal (a legal one is core's pending)
   const sw=st.swap&&st.ply===1;
-  status((S?t('st_playN',{name:me,c:CN(c),e:EN(c)}):t('st_play',{c:CN(c),e:EN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
+  status((S?soloWho(st.turn,t('st_play',{c:CN(c),e:EN(c)})):t('st_play',{c:CN(c),e:EN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
   if(sw&&$('bSwap'))$('bSwap').title=t('swapT');}
-function slWaitStatus({r}){const st=r.st;status(t('st_turnC',{name:seatName(st.turn),c:CN(SL.toMove(st))}));return true;}
+function slWaitStatus({r}){const st=r.st;status(tN('st_turnC',{name:seatName(st.turn),c:CN(SL.toMove(st))}));return true;}
 function pendText(mv,st){const m=SL.split(st.size,String(mv));if(!m)return [describe(mv,st),t('confirmTurn')];
   return [m.f>=0?t('pendM',{p:nm(st,m.p),f:nm(st,m.f),t:nm(st,m.t)}):t('pend',{p:nm(st,m.p)}),t('confirmTurn')];}
 function playerCard(el,p,d){const col=d.st.col[p],dot=el.querySelector&&el.querySelector('.dot');
@@ -395,7 +385,7 @@ function onCell(i){if(!view||navAt!==null)return;
   const st=meSt(r),n=st.size,c=SL.toMove(st);if(!SL.anyMove(st))return;
   const s=stepTo(st,i);if(!s||!(s.back||reach(st,s.p,s.f,s.t)))return;   // only an action that can still end in a legal turn
   ui.p=s.p;ui.f=s.f;ui.t=s.t;if(s.back&&!reach(st,ui.p,ui.f,ui.t))ui.p=-1;
-  tone(880,.05,.03);sync(st);renderGame();}
+  sync(st);renderGame();}
 $('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i);});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
@@ -448,7 +438,7 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('path',{d,stroke:'var(--sgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
   // the star points, as on a go board
   {const e=n>11?3:2,h=[e,(n-1)/2,n-1-e];for(const x of h)for(const y of h)if(x===y||x+y===n-1)el('circle',{cx:G.pad+x*CELL,cy:G.pad+y*CELL,r:CELL*.11,fill:'var(--sstar)'},svg);}
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':CELL*.32,fill:'var(--slab)'},svg);e.textContent=s;};
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':CELL*.3},svg);e.textContent=s;};
     for(let k=0;k<n;k++){lab(G.pad+k*CELL,W-CELL*.32,String.fromCharCode(97+k));lab(CELL*.32,G.pad+(n-1-k)*CELL,String(k+1));}}
   const g=el('g',{'pointer-events':'none'},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?SL.toMove(ms):-1;
   // the stones shown: the position, with the turn being prepared on it (or the suggestion)
@@ -530,8 +520,12 @@ function gen(S,w){const n=S.n,N=n*n,c=S.c,st=stShim(S),out=[];
     out.sort((a,b)=>b.s-a.s);}
   return out;}
 function play(S,m){if(!m)return {n:S.n,b:S.b,c:1-S.c,win:-1};const st=stShim(S);return mk(S,SL.after(st,m[0],m[1],m[2]));}
-const KS=AISearch({moves:(S,w)=>gen(S,w||1),play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
-function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn],win:-1};KS.start(opt.time);
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=0;   // the board's size while it is on
+const KS=AISearch({moves:(S,w)=>gen(S,w||1),play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
+  best:r=>{if(TELL)aiBest({move:code(TELL,r.m),score:r.s,depth:r.depth});}});
+function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn],win:-1};KS.start(opt.nodes);
   // the swap: taken when the first stone is near the centre
   if(P.swap&&P.ply===1){let p=-1;for(let i=0;i<n*n;i++)if(S.b[i]>=0)p=i;const x=p%n,y=(p-x)/n,m=(n-1)/2;
     if(p>=0&&Math.max(Math.abs(x-m),Math.abs(y-m))<=Math.floor(n/4))return {move:'swap',score:0,depth:0,kind:'swap'};}
@@ -540,7 +534,7 @@ function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]
     return {move:SL.name(n,pts[(Math.random()*pts.length)|0]),score:0,depth:0};}
   const C=gen(S,0);if(!C.length)return {move:'pass',score:0,depth:0,forced:true};
   for(const x of C)if(x.s>=2000)return {move:code(n,x.m),score:1000,depth:1};
-  const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);
+  TELL=typeof aiBest==='function'?n:0;const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=0;
   return {move:code(n,r.m),score:r.s,depth:r.depth,forced:C.length===1};}
 const code=(n,m)=>SL.name(n,m[0])+(m[1]>=0?','+SL.name(n,m[1])+'-'+SL.name(n,m[2]):'');
 return {search,dist,gen};
@@ -550,7 +544,7 @@ return {search,dist,gen};
 // GENERATED by ~/Jeux/ia/games/slither/site/build.js from games/slither/fast.js, games/slither/encode.js and lib/mcts.js — do not edit here.
 // The neural network computer (AlphaZero-style PUCT): SlitherNN(SlitherEngine(), page URL).search(pos, opt) is async;
 // pos: the aiPos() form; opt: {algo:'nn', sims (1: the network's intuition, no search; per half-move: the placement, then
-// the step), temp (choice temperature), time (ms, a cap for the whole turn), net (weights URL, relative to the page),
+// the step), temp (choice temperature), net (weights URL, relative to the page),
 // cpuct, fpu}. onnxruntime-web (onnxruntime-web@1.20.1, WASM, one thread) and the weights are loaded on the first search.
 function SlitherNN(SL, base) {
 const M = {}, req = p => M[p.split('/').pop().replace(/\.js$/, '')];
@@ -1024,28 +1018,35 @@ async function evalNet(leaf) {
   return {pol: o.pol.data, sc: o.sc.data, value: V[0] - V[2]};
 }
 const logit = v => { v = Math.max(-.999, Math.min(.999, v)); return Math.log((1 + v) / (1 - v)); };
-// one half-move from the search s's root, until its sims or the cap (t0 + opt.time)
-async function run(s, opt, t0) {
+// the most visited root move so far (index), for « Play now »
+const topOf = r => { let b = 0; for (let k = 1; k < r.N.length; k++) if (r.N[k] > r.N[b]) b = k; return b; };
+// one half-move from the search s's root, until its sims: no clock stops it (16.11.2026). tell (optional): given the most
+// visited move so far, every 16 evaluations.
+async function run(s, opt, tell) {
   s.begin({sims: opt.sims, cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null, forced: 0});
-  while (!s.done() && !(opt.time && s.root.P && Date.now() - t0 > opt.time)) { const leaf = s.step(); if (leaf) s.deliver(await evalNet(leaf)); }
+  let k = 0;
+  while (!s.done()) { const leaf = s.step(); if (leaf) { s.deliver(await evalNet(leaf)); if (tell && (++k & 15) === 0 && s.root.N) tell(s.root.moves[topOf(s.root)]); } }
   return s.root.moves[s.pick(opt.temp || 0)];
 }
 // the search on a fast position S (temps 1): {m1 (placement, swap or pass), m2 (step, or undefined), value, depth (half-moves)}
-async function searchS(S, opt) {
-  const t0 = Date.now(), s = new Search(game, S, new Set([F.key(S)]), cache);
-  const m1 = await run(s, opt, t0), value = s.value(); let d = 0, n = s.root;
+// tell (optional): the turn so far, once its placement is chosen (the step still being searched). opt.step: the
+// simulations of the step's search when they differ from sims (the tree of the placement is kept: its visits count, so
+// step 1 plays the step the placement's search liked best, after one more simulation)
+async function searchS(S, opt, tell) {
+  const s = new Search(game, S, new Set([F.key(S)]), cache);
+  const m1 = await run(s, opt, null), value = s.value(); let d = 0, n = s.root;
   while (n && n.N) { let b = 0; for (let k = 1; k < n.N.length; k++) if (n.N[k] > n.N[b]) b = k; if (!n.N[b]) break; d++; n = n.ch[b]; }
   if (m1 === F.SWAP || m1 === F.PASS) return {m1, value, depth: d, nodes: s.sims};
   s.advance(m1); const L = s.root.moves; let m2;
-  if (s.root.term !== null || L.length <= 1) m2 = L.length ? L[0] : F.NOSTEP; else m2 = await run(s, opt, t0);
+  if (s.root.term !== null || L.length <= 1) m2 = L.length ? L[0] : F.NOSTEP; else m2 = await run(s, opt.step ? {...opt, sims: opt.step} : opt, tell && (m => tell(m1, m)));
   return {m1, m2, value, depth: d, nodes: s.sims};
 }
 // the answer in the page's form (as SlitherAI.search): the score a logit of the winning chances, nn: true (evalInfo)
-async function search(P, opt) {
+async function search(P, opt, tell) {
   const S = state(P), L = []; F.gen(S, L); if (!L.length) return null;
   if (L.length === 1 && L[0] === F.PASS) return {move: 'pass', score: 0, depth: 0, forced: true, nn: true};
   await load(opt);
-  const r = await searchS(S, opt);
+  const r = await searchS(S, opt, tell && ((m1, m2) => tell({move: turnCode(S.n, m1, m2), score: 0, depth: 0})));
   return {move: turnCode(S.n, r.m1, r.m2), score: logit(r.value), depth: Math.ceil(r.depth / 2), forced: false, nn: true, nodes: r.nodes};
 }
 return {search, searchS, state, turnCode, load, X, F, Search};
@@ -1054,24 +1055,28 @@ return {search, searchS, state, turnCode, load, X, F, Search};
 // Former levels: Débutant (now 0), the best moves with some randomness; Moyen (now 1), the best move one turn ahead; Fort (now BEAM), two plies. Deeper
 // searches did not play better with this evaluation (depth 3 and 4 against 2: 8 and 4 wins out of 16).
 // The neural network levels (2 to 10, algo 'nn', SlitherNN, the NN block above): the network of ~/Jeux/ia (n° 112, 14.11.2026) with a PUCT
-// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · time, a cap in ms for slower devices,
-// which stop short of `sims` · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
+// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · no time cap (16.11.2026): a slower
+// device takes longer and plays the same · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
 // BEAM, the former Fort level (two plies): what answers when the network cannot load.
 const NN_NET='slither-net.onnx?v=112';
-const BEAM={algo:'beam',depth:2,widths:[12,10],time:5000};
+const BEAM={algo:'beam',depth:2,widths:[12,10]};
 const LEVELS={
   l0:{algo:'greedy',pick:5,temp:.8},
   l1:{algo:'greedy',pick:1},
-  l2:{algo:'nn',sims:1,time:10000,net:NN_NET},
-  l3:{algo:'nn',sims:6,time:10000,net:NN_NET},
-  l4:{algo:'nn',sims:10,time:10000,net:NN_NET},
-  l5:{algo:'nn',sims:22,time:10000,net:NN_NET},
-  l6:{algo:'nn',sims:50,time:10000,net:NN_NET},
-  l7:{algo:'nn',sims:130,time:10000,net:NN_NET},
-  l8:{algo:'nn',sims:300,time:10000,net:NN_NET},
-  l9:{algo:'nn',sims:700,time:10000,net:NN_NET},
-  l10:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
-const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
+  l2:{algo:'nn',sims:1,net:NN_NET},
+  l3:{algo:'nn',sims:6,net:NN_NET},
+  l4:{algo:'nn',sims:10,net:NN_NET},
+  l5:{algo:'nn',sims:22,net:NN_NET},
+  l6:{algo:'nn',sims:50,net:NN_NET},
+  l7:{algo:'nn',sims:130,net:NN_NET},
+  l8:{algo:'nn',sims:300,net:NN_NET},
+  l9:{algo:'nn',sims:700,net:NN_NET},
+  l10:{algo:'nn',sims:2600,step:1,net:NN_NET}};   // what the reference Mac did in the former 10 s of a turn: the placement alone searched (16.11.2026)
+const HINT={algo:'nn',sims:700,net:NN_NET};   // level 9, the highest that answers within 5 s on the reference Mac
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const levelDesc=o=>o.algo==='nn'?(o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims]):[o.pick>1||o.temp?'lvd_gr':'lvd_g1'];
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+SlitherEngine.toString()+'\n'+SlitherAI.toString()+'\n'+SlitherNN.toString()+'\nconst SA=SlitherAI(SlitherEngine());function aiSearch(pos,opt){return SA.search(pos,opt);}'+
@@ -1079,7 +1084,7 @@ const aiSrc=()=>AISearch.toString()+'\n'+SlitherEngine.toString()+'\n'+SlitherAI
   // if the network cannot load (offline, old browser), the BEAM level answers instead
   '\nconst NV=SlitherNN(SlitherEngine(),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(BEAM)+';'+
   '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
-  'NV.search(m.st,m.opt).catch(()=>SA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
+  'NV.search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>SA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
 // the network levels (r.nn): a logit of the winning chances, as Volo
 function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;if(r.forced)return {k:'ai_forced'};
   if(r.nn){if(s>4)return {k:'ai_win'};if(s<-4)return {k:'ai_lost'};return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
@@ -1088,8 +1093,22 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 
 // ---------- the interface with common/core.js ----------
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'slither',size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
+const GAME={id:'slither',seatCol:s=>(s===0)!==(!!view&&view.moves[1]==='swap')?'sB':'sW',   // seat 0 Black, White once the swap is taken
+  size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
   rules:g=>SL.rules(g),
+  // SGF: Little Golem's format (the one archive of Slither games): a point in two letters as at go (column, then row from
+  // the top), a turn « from, to, placed » in six letters (« malbhh ») or the point placed (« hh »), swap, pass; B and W the
+  // stones' colours. Read: the values in their order, whatever B or W (Little Golem's files start with W); FF[Slither]
+  // marks Little Golem's own files
+  sgf:{sz:v=>SL.rules(v).size,black:st=>st.col.indexOf(SL.BLACK),
+    accept:root=>/^slither$/i.test((root.FF||[])[0]||''),
+    rulesOf:(root,r)=>({...r,size:+((root.SZ||[])[0])||r.size}),
+    nodes:(r,v)=>{const n=SL.rules(v).size,P=i=>String.fromCharCode(97+i%n)+String.fromCharCode(97+n-1-Math.floor(i/n));
+      return r.log.map(e=>({[e.c===SL.BLACK?'B':'W']:e.kind==='swap'?'swap':e.kind==='pass'?'pass':(e.f>=0?P(e.f)+P(e.t):'')+P(e.pl)}));},
+    code:(x,st)=>{x=String(x).trim().toLowerCase();if(x==='swap'||x==='pass')return x;const n=st.size;
+      if(!/^([a-z]{2}){1,3}$/.test(x)||x.length===4)return null;
+      const N=k=>{const c=x.charCodeAt(k)-97,r=n-1-(x.charCodeAt(k+1)-97);return c>=0&&c<n&&r>=0&&r<n?SL.name(n,c+n*r):null;},pts=[];for(let k=0;k<x.length;k+=2){const q=N(k);if(!q)return null;pts.push(q);}
+      return SL.legal(st,pts.length===3?pts[2]+','+pts[0]+'-'+pts[1]:pts[0]);}},
   form:p=>{const r=SL.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('slither-size',r.size);LS.set('slither-swap',r.swap);return r;},
   replay:(r,m)=>replayKept(r,m,{init:g=>SL.init(SL.rules(g)),
     play(prev,mv){const st=deepCopy(prev),code=SL.legal(st,mv);if(code===null)return null;   // as SL.replay, move by move
@@ -1101,7 +1120,7 @@ const GAME={id:'slither',size:'square',codeTag:'SLITHER1',i18n:SL_I18N,
   playerCard,logNode,logText,
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Size');if(!s)continue;const v=s.value||homeSize();s.innerHTML=SL.SIZES.map(n=>`<option value="${n}">${t('size_fmt',{n})}</option>`).join('');s.value=v;}},
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'l2',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||SlitherAI(SL)).search(aiPos(st),opt.algo==='nn'?BEAM:opt),   // no worker: no network either
   evalInfo};
 for(const p of ['c','a','f','t']){if($(p+'Swap'))$(p+'Swap').checked=LS.get('slither-swap',true)!==false;if($(p+'Size'))$(p+'Size').addEventListener('change',e=>{LS.set('slither-size',+e.target.value);if(!view)GAME.home();});}

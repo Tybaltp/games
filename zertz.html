@@ -1,30 +1,30 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Zèrtz</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Zèrtz palette (light, dark), board and marbles; the shared layout is in common/games.css */
 :root{
   --bg:#c5dce2;--panel:#e2eef1;--ink:#1c282d;--muted:#5d6d74;--line:#aec2c7;
-  --plate:#2a4852;--plate-edge:#1f3840;--ring:#e5edee;--ring-hole:#2a4852;--ghost:#6d8a93;
+  --plate:#2a4852;--plate-edge:#1f3840;--ring:#e5edee;--ring-hole:#2a4852;--ghost:#6d8a93;--lab:#a3bcc3;
   --m0:#f7f9fa;--m0e:#5f6b70;--m1:#6f7a7f;--m1e:#3c4549;--m2:#22272a;--m2e:#000000;
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  /* the board is square: its viewBox is widened left and right to its height (48 rings 595×595, 565 without the
-     coordinates; 37 rings 526, 496) */
+  /* the board is square: its viewBox is widened left and right to its height (48 rings 615×615, 565 without the
+     coordinates; 37 rings 546, 496) */
   --board-ar:1/1;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f1618;--panel:#152023;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;--lab:#8fadb6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f1618;--panel:#152023;--ink:#e2e9eb;--muted:#8d9fa5;--line:#28373c;
-  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;
+  --plate:#1c3640;--plate-edge:#132a32;--ring:#dfe5e7;--ring-hole:#1c3640;--ghost:#4f6d77;--lab:#8fadb6;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark}
 /* the plate under the rings, on every screen (the light rings need it) */
 .board,html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 40%,var(--plate),var(--plate-edge));border-color:var(--plate-edge)}
@@ -96,7 +96,6 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cSize"><span data-i18n="board">Board</span><select id="cSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
         <label for="cFirst"><span data-i18n="firstIs">First player</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
@@ -111,11 +110,11 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
       <form class="form" id="faceForm" hidden>
         <label for="fSize"><span data-i18n="board">Board</span><select id="fSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSize"><span data-i18n="board">Board</span><select id="tSize"><option value="48" selected data-i18n="b48">48 rings (tournament)</option><option value="37" data-i18n="b37">37 rings</option></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -184,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 function ZertzEngine(size){
@@ -244,8 +243,10 @@ function ZertzEngine(size){
       for(const c of cols)for(const f of rms)out.push({t:0,c,at:x,rm:f});}
     return out;}
   const key=m=>m.c*10000+m.at*100+m.rm+1;
-  let deadline=0,stop=false,nodes=0,BEAM=10,FB=3,QK=12,QM=450;
-  function tick(){if((++nodes&1023)===0&&Date.now()>deadline)stop=true;}
+  // maxN: positions searched at most (o.nodes; none: the depth is completed). No clock is read (16.11.2026): a level plays
+  // the same on every device. MORE: what is granted at least after the first look at every move (the former 200 ms).
+  let maxN=Infinity,stop=false,nodes=0,BEAM=10,FB=3,QK=12,QM=450;const MORE=340000;
+  function tick(){if((++nodes&1023)===0&&nodes>maxN)stop=true;}
   // Quiescence search: captures are played out to the end; without a capture, the side to move may stop
   // or try a forcing move (budget fb per line).
   function qs(s,alpha,beta,ply,fb){const sp=evalS(s);if(fb<=0||ply>60)return sp;if(sp>=beta)return sp;if(sp>alpha)alpha=sp;
@@ -271,12 +272,12 @@ function ZertzEngine(size){
     let best=-INF;
     for(const x of cand){const v=-neg(x[1],depth-1,-beta,-alpha,ply+1,fb);if(stop)return best>-INF?best:0;if(v>best)best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
   // Iterative deepening on two axes: depth of quiet moves and number of forcing moves read beyond it.
-  function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,time=o.time||3000,K0=o.rootBeam||30;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
-    deadline=Date.now()+time;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
+  function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,K0=o.rootBeam||30,tell=typeof aiBest==='function'?aiBest:null;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
+    maxN=o.nodes||Infinity;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
     const fk=new Set(moves[0].t===0?forcing(s).map(key):[]);
     let list=[];for(const mv of moves){const c=apply(s,mv);const sc=won(c,p)?WIN:-neg(c,0,-INF,INF,1,0);list.push({mv,c,sc,f:mv.t===0&&fk.has(key(mv))});}
-    deadline=Math.max(deadline,Date.now()+200);stop=false;
-    list.sort((a,b)=>b.sc-a.sc);let reached=[0,0];
+    maxN=Math.max(maxN,nodes+MORE);stop=false;
+    list.sort((a,b)=>b.sc-a.sc);let reached=[0,0];if(tell)tell({move:list[0].mv,score:list[0].sc,depth:0});
     // forced lines first, then depth of quiet moves
     const plan=[];for(let f=1;f<=maxF;f++)plan.push([1,f]);for(let d=2;d<=maxD;d++)for(let f=Math.max(1,maxF-1);f<=maxF;f++)plan.push([d,f]);
     if(list[0].sc<WIN/2)for(const [d,f] of plan){let alpha=-INF;const res=[],rest=[];
@@ -285,7 +286,7 @@ function ZertzEngine(size){
       for(const x of res){const v=-neg(x.c,d-1,-INF,-alpha,1,f);if(stop)break;done.push({...x,sc:v});if(v>alpha)alpha=v;if(alpha>WIN/2)break;}
       if(stop){if(done.length&&done.some(x=>x.sc>WIN/2)){done.sort((a,b)=>b.sc-a.sc);list=done.concat(list);}break;}
       const seen=new Set(done.map(x=>x.mv));
-      done.sort((a,b)=>b.sc-a.sc);list=done.concat(list.filter(x=>!seen.has(x.mv)).map(x=>({...x,sc:-INF})));reached=[d,f];
+      done.sort((a,b)=>b.sc-a.sc);list=done.concat(list.filter(x=>!seen.has(x.mv)).map(x=>({...x,sc:-INF})));reached=[d,f];if(tell)tell({move:list[0].mv,score:list[0].sc,depth:d});
       if(list[0].sc>WIN/2)break;}
     // avoid a move that loses by force if another one does not
     let pick=list[0];
@@ -296,12 +297,19 @@ function ZertzEngine(size){
 // ===== Zèrtz on the shared code (common/core.js) =====
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
 const GOAL=[4,5,6];
-// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, time, random choice among near-best moves)
-const LEVELS={debutant:{depth:1,fb:1,time:600,noise:600},moyen:{depth:2,fb:2,time:1500,noise:150},fort:{depth:3,fb:3,time:3000}};
+// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, nodes:
+// positions searched at most, random choice among near-best moves). A level is an amount of work, never a time
+// (16.11.2026): Débutant stops on its depth, Moyen and Fort on their depth or their nodes, what the reference Mac (M3 Pro)
+// searched in their former 1.5 and 3 s (outils/aitools/res/budgets-2026-11-16.md).
+const LEVELS={debutant:{depth:1,fb:1,noise:600},moyen:{depth:2,fb:2,nodes:2600000,noise:150},fort:{depth:3,fb:3,nodes:5300000}};
 const HINT=LEVELS.fort;
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.nodes?[o.noise?'lvd_dkn':'lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{
- title:"Zèrtz",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",firstIs:"Premier joueur",
+ title:"Zèrtz",lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_dk:"profondeur {n}, {k} positions au plus",lvd_dkn:"profondeur {n}, {k} positions au plus, avec une part de hasard",m_aiMore:"Au-delà de cette profondeur, l'ordinateur lit encore les prises.",lede:"Des billes sur un plateau d'anneaux qui rétrécit : collectez-les.",by:"Un jeu de Kris Burm.",board:"Plateau",b48:"48 anneaux (tournoi)",b37:"37 anneaux",
  pool:"Réserve commune",poolN:"{n} billes",poolLbl:"Réserve : {n}",poolLblE:"Réserve vide",h_empty:"Réserve vide : chacun pose ses propres billes capturées.",
  c0:"blanche",c1:"grise",c2:"noire",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmer chaque coup",
  st_capStart:"Prise obligatoire : cliquez la bille qui saute.",st_capPath:"Prise : cliquez l'anneau d'arrivée (en surbrillance), ou un anneau déjà parcouru pour y revenir.",st_remove:"Retirez un anneau libre (en rouge), ou recliquez la bille pour la reprendre.",
@@ -310,16 +318,14 @@ const ZZ_I18N={fr:{
  draw:"Partie interrompue : {why}.",
  w_g0:"4 billes blanches",w_g1:"5 billes grises",w_g2:"6 billes noires",w_each:"3 billes de chaque couleur",w_nomove:"l'adversaire n'a plus de coup",
  ht_wL:"à gauche du plateau",ht_wU:"sous le plateau",ht_1:"<b>Poser une bille</b> Choisir la couleur {where}, cliquer sur un anneau vide, puis sur l'anneau à retirer.",ht_2:"<b>Prendre</b> Cliquer sur la bille encadrée, puis sur son anneau d'arrivée. Un clic par saut.",rules:`<summary>Règles en bref</summary><ul>
- <li>Les billes sont communes aux deux joueurs. Si une prise est possible, elle est obligatoire.</li>
- <li><b>Poser</b> : posez une bille de la réserve sur un anneau vide, puis retirez un anneau libre (vide, au bord, qui peut glisser hors du plateau).</li>
- <li><b>Prendre</b> : une bille saute par-dessus une voisine jusqu'à l'anneau vide juste derrière ; la prise continue tant que possible.</li>
- <li><b>Isoler</b> : un groupe d'anneaux séparé et entièrement occupé revient au joueur qui l'a isolé.</li>
- <li><b>Gagner</b> : 3 billes de chaque couleur, 4 blanches, 5 grises ou 6 noires. Aussi au temps ou par abandon.</li>
- <li><b>Jouer</b> : choisissez la couleur à côté du plateau (à gauche, ou dessous sur un écran étroit), cliquez un anneau vide, puis l'anneau libre à retirer (en rouge) ; pour une prise, cliquez la bille qui saute, puis chaque anneau d'arrivée. Au survol, le coup s'affiche en transparence (sur écran tactile, un seul toucher suffit). Cliquer la bille posée ou un anneau déjà parcouru revient en arrière. Les commandes du coup sont dans la barre d'actions : Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 48 anneaux (37 au choix), et une réserve commune de 6 billes blanches, 8 grises et 10 noires. Les billes n'appartiennent à personne.</li>
+ <li><b>Tour</b>, au choix, mais <b>la prise est obligatoire</b> dès qu'elle est possible.</li>
+ <li><b>Poser</b> : on pose une bille de la réserve, de la couleur qu'on veut, sur un anneau vide, puis on retire un anneau libre : vide, et qui peut glisser hors du plateau sans déplacer les autres. S'il n'y en a aucun, on ne retire rien. Quand la réserve est vide, on pose une de ses propres billes prises.</li>
+ <li><b>Prendre</b> : une bille, de n'importe quelle couleur, saute par-dessus une bille voisine jusqu'à l'anneau vide juste derrière, et prend la bille sautée ; tant qu'un nouveau saut est possible, elle continue. Entre plusieurs prises, on choisit.</li>
+ <li><b>Isoler</b> : un groupe d'anneaux séparé du reste du plateau et entièrement occupé revient, billes comprises, au joueur qui vient de poser.</li>
+ <li><b>Victoire</b> : 4 billes blanches, ou 5 grises, ou 6 noires, ou 3 de chaque couleur. Un joueur qui n'a plus de coup perd.</li></ul>`
 },en:{
- title:"Zèrtz",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",firstIs:"First player",
+ title:"Zèrtz",lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_dk:"depth {n}, at most {k} positions",lvd_dkn:"depth {n}, at most {k} positions, with some randomness",m_aiMore:"Beyond that depth, the computer still reads captures.",lede:"Marbles on a shrinking board of rings: race to collect a set.",by:"A game by Kris Burm.",board:"Board",b48:"48 rings (tournament)",b37:"37 rings",
  pool:"Shared pool",poolN:"{n} marbles",poolLbl:"Pool: {n}",poolLblE:"Pool empty",h_empty:"Pool empty: players place their own captured marbles.",
  c0:"white",c1:"grey",c2:"black",L0:"W",L1:"G",L2:"B",needConfirm:"Confirm each move",
  st_capStart:"Capture is mandatory: click the jumping marble.",st_capPath:"Capture: click the landing ring (highlighted), or a ring already visited to go back to it.",st_remove:"Remove a free ring (marked in red), or click the marble again to take it back.",
@@ -328,16 +334,14 @@ const ZZ_I18N={fr:{
  draw:"Game interrupted: {why}.",
  w_g0:"4 white marbles",w_g1:"5 grey marbles",w_g2:"6 black marbles",w_each:"3 marbles of each colour",w_nomove:"the opponent has no move left",
  ht_wL:"on the left of the board",ht_wU:"under the board",ht_1:"<b>Place a marble</b> Pick the colour {where}, click an empty ring, then the ring to remove.",ht_2:"<b>Capture</b> Click the framed marble, then its landing ring. One click per jump.",rules:`<summary>Rules in brief</summary><ul>
- <li>Marbles are shared by both players. If a capture is possible, it is mandatory.</li>
- <li><b>Place</b>: put a marble from the pool on an empty ring, then remove a free ring (empty, on the edge, able to slide off the board).</li>
- <li><b>Capture</b>: a marble jumps over a neighbour onto the empty ring just behind it; the capture continues as long as possible.</li>
- <li><b>Isolate</b>: a separated group of rings that is fully occupied goes to the player who isolated it.</li>
- <li><b>Win</b>: 3 of each colour, 4 white, 5 grey or 6 black. Also on time or by resignation.</li>
- <li><b>Play</b>: choose the colour beside the board (on the left, or under it on a narrow screen), click an empty ring, then the free ring to remove (in red); for a capture, click the jumping marble, then each landing ring. Hovering shows the move in transparency (on a touch screen, a single tap is enough). Clicking the placed marble or a ring already visited goes back. The move commands are in the action bar: Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+ <li><b>Material</b>: a board of 48 rings (37 as you choose), and a shared pool of 6 white, 8 grey and 10 black marbles. The marbles belong to nobody.</li>
+ <li><b>Turn</b>, your choice, but <b>capturing is compulsory</b> as soon as it is possible.</li>
+ <li><b>Place</b>: put a marble from the pool, of any colour, on an empty ring, then remove a free ring: empty, and able to slide off the board without moving the others. If there is none, nothing is removed. When the pool is empty, you place one of your own captured marbles.</li>
+ <li><b>Capture</b>: a marble, of any colour, jumps over a neighbouring marble onto the empty ring just behind it, and takes the marble jumped; as long as a new jump is possible, it goes on. Between several captures, you choose.</li>
+ <li><b>Isolate</b>: a group of rings cut off from the rest of the board and fully occupied goes, marbles included, to the player who has just placed.</li>
+ <li><b>Winning</b>: 4 white marbles, or 5 grey, or 6 black, or 3 of each colour. A player with no move left loses.</li></ul>`
 },es:{
- title:"Zèrtz",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",firstIs:"Primer jugador",
+ title:"Zèrtz",lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_dk:"profundidad {n}, {k} posiciones como máximo",lvd_dkn:"profundidad {n}, {k} posiciones como máximo, con algo de azar",m_aiMore:"Más allá de esa profundidad, el ordenador sigue leyendo las capturas.",lede:"Bolas en un tablero de anillos que se encoge: colecciónalas.",by:"Un juego de Kris Burm.",board:"Tablero",b48:"48 anillos (torneo)",b37:"37 anillos",
  pool:"Reserva común",poolN:"{n} bolas",poolLbl:"Reserva: {n}",poolLblE:"Reserva vacía",h_empty:"Reserva vacía: cada uno coloca sus propias bolas capturadas.",
  c0:"blanca",c1:"gris",c2:"negra",L0:"B",L1:"G",L2:"N",needConfirm:"Confirmar cada jugada",
  st_capStart:"Captura obligatoria: haz clic en la bola que salta.",st_capPath:"Captura: haz clic en el anillo de llegada (resaltado), o en un anillo ya recorrido para volver a él.",st_remove:"Retira un anillo libre (en rojo), o vuelve a hacer clic en la bola para recuperarla.",
@@ -346,14 +350,12 @@ const ZZ_I18N={fr:{
  draw:"Partida interrumpida: {why}.",
  w_g0:"4 bolas blancas",w_g1:"5 bolas grises",w_g2:"6 bolas negras",w_each:"3 bolas de cada color",w_nomove:"el adversario ya no tiene jugadas",
  ht_wL:"a la izquierda del tablero",ht_wU:"bajo el tablero",ht_1:"<b>Colocar una canica</b> Elige el color {where}, haz clic en un anillo vacío y luego en el anillo que retirar.",ht_2:"<b>Capturar</b> Haz clic en la canica enmarcada y luego en su anillo de llegada. Un clic por salto.",rules:`<summary>Reglas en breve</summary><ul>
- <li>Las bolas son comunes a los dos jugadores. Si una captura es posible, es obligatoria.</li>
- <li><b>Colocar</b>: coloca una bola de la reserva en un anillo vacío, y luego retira un anillo libre (vacío, en el borde, que pueda deslizarse fuera del tablero).</li>
- <li><b>Capturar</b>: una bola salta por encima de una vecina hasta el anillo vacío justo detrás; la captura continúa mientras sea posible.</li>
- <li><b>Aislar</b>: un grupo de anillos separado y totalmente ocupado pasa al jugador que lo ha aislado.</li>
- <li><b>Ganar</b>: 3 bolas de cada color, 4 blancas, 5 grises o 6 negras. También por tiempo o por abandono.</li>
- <li><b>Jugar</b>: elige el color junto al tablero (a la izquierda, o debajo en una pantalla estrecha), haz clic en un anillo vacío y luego en el anillo libre que quieres retirar (en rojo); para una captura, haz clic en la bola que salta y luego en cada anillo de llegada. Al pasar el ratón, la jugada se muestra en transparencia (en pantalla táctil, basta con un solo toque). Hacer clic en la bola colocada o en un anillo ya recorrido da marcha atrás. Los mandos de la jugada están en la barra de acciones: Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
+ <li><b>Material</b>: un tablero de 48 anillos (37 a elegir), y una reserva común de 6 bolas blancas, 8 grises y 10 negras. Las bolas no son de nadie.</li>
+ <li><b>Turno</b>, a elegir, pero <b>la captura es obligatoria</b> en cuanto es posible.</li>
+ <li><b>Colocar</b>: se coloca una bola de la reserva, del color que se quiera, en un anillo vacío, y luego se retira un anillo libre: vacío, y que pueda deslizarse fuera del tablero sin mover los demás. Si no hay ninguno, no se retira nada. Cuando la reserva está vacía, se coloca una de sus propias bolas capturadas.</li>
+ <li><b>Capturar</b>: una bola, de cualquier color, salta por encima de una bola vecina hasta el anillo vacío justo detrás, y toma la bola saltada; mientras sea posible un nuevo salto, continúa. Entre varias capturas, se elige.</li>
+ <li><b>Aislar</b>: un grupo de anillos separado del resto del tablero y totalmente ocupado pasa, con sus bolas, al jugador que acaba de colocar.</li>
+ <li><b>Victoria</b>: 4 bolas blancas, o 5 grises, o 6 negras, o 3 de cada color. Un jugador que ya no tiene jugada pierde.</li></ul>`
 }};
 const CN=k=>t('c'+k);
 
@@ -372,7 +374,15 @@ function setBoard(sz){if(sz===SIZE)return;SIZE=sz;E=ENG[sz];({N,M,CAP,POOL,TURN}
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
   VB=[x0-40,y0-40,x1-x0+80,y1-y0+80];BOTTOM=y1+52;document.documentElement.classList.toggle('b37',sz===37);}
 const enc=m=>m.t===1?'x'+m.path.join('.'):'p'+[m.c,m.at,m.rm].join('.');
-const txtOf=m=>m.t===1?m.path.map(name).join('×'):t('L'+m.c)+' '+name(m.at)+(m.rm>=0?' −'+name(m.rm):'');
+// The notation of the publisher (gipf.com), the same in every language: the marbles W (white), G (grey), B (black); a
+// placement « Wd4,d1 » (the marble and its ring, then the ring removed), a capture « x d1Gd3Wd5 » (the start, then for
+// each jump the marble jumped and the landing ring), marbles won by isolating rings added « Bd7,b2 x Wa1Wa2 ». b: the
+// position the move is played from (the jumped marbles), iso: the marbles isolated [ring, colour + 1]
+const CL='WGB';
+const txtOf=(m,b,iso)=>m.t===1?'x '+name(m.path[0])+m.path.slice(1).map((x,k)=>(b?CL[b[M+E.MID[m.path[k]*N+x]]-1]||'':'')+name(x)).join(''):
+  CL[m.c]+name(m.at)+(m.rm>=0?','+name(m.rm):'')+(iso&&iso.length?' x '+iso.map(([i,c])=>CL[c-1]+name(i)).join(''):'');
+// the marbles a placement isolates (b before it, a after it)
+const isoOf=(m,b,a)=>{if(m.t===1)return [];const o=[];for(let i=0;i<N;i++)if(b[i]&&!a[i]&&i!==m.rm){const c=i===m.at?m.c+1:b[M+i];if(c)o.push([i,c]);}return o;};
 function reasonWin(st,p){const c=CAP+p*3;for(let k=0;k<3;k++)if(st[c+k]>=GOAL[k])return 'w_g'+k;return 'w_each';}
 // rules: the game or view object (its size); replay() in core memoises and adds the result, replayKept keeps the
 // positions already replayed (the board of that size is set at each call, as the drawing reads it). st is the engine's array,
@@ -383,8 +393,8 @@ function zzReplay(rules,moves){setBoard(ringsOf(rules));
       const st=E.apply(before,mv);st.turn=st[TURN];let g=0;
       if(mv.t===0){for(let k=0;k<6;k++)g+=st[CAP+k]-before[CAP+k];if(before[POOL+mv.c]===0)g++;}
       const removed=[];for(let i=0;i<N;i++)if(before[i]&&!st[i])removed.push(i);
-      return {st,e:{p,mv,g},last:{mv,removed},over:E.won(st,p)?{w:p,why:reasonWin(st,p)}:!E.gen(st).length?{w:p,why:'w_nomove'}:null};}});}
-const logTxt=e=>txtOf(e.mv)+(e.g>0?' ⊕'+e.g:'');
+      return {st,e:{p,mv,g,txt:txtOf(mv,before,isoOf(mv,before,st))},last:{mv,removed},over:E.won(st,p)?{w:p,why:reasonWin(st,p)}:!E.gen(st).length?{w:p,why:'w_nomove'}:null};}});}
+const logTxt=e=>e.txt;
 
 // ---------- game view ----------
 // ui: color (of the marble to place), at (marble placed, waiting for its ring removal), path (capture being played),
@@ -512,10 +522,13 @@ const NS='http://www.w3.org/2000/svg';
 function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function marble(g,x,y,c,op){const e=el('circle',{cx:x,cy:y,r:22,fill:`var(--m${c})`,stroke:`var(--m${c}e)`,'stroke-width':2},g);if(op)e.setAttribute('opacity',op);}
 function drawBoard(st,legal,interactive,last,pv){const svg=$('svg');svg.textContent='';if(pv&&(pv.prov||pv.atProv))last=null;   // a mere hover keeps the last move's marks
-  // coordinates (core: coordsOn): the column letters under the board; without them, a tighter viewBox
-  const vh=VB[3]+(coordsOn?30:0),vw=Math.max(VB[2],vh);   // square: as wide as high, the rings centred
-  svg.setAttribute('viewBox',`${VB[0]-(vw-VB[2])/2} ${VB[1]} ${vw} ${vh}`);
-  if(coordsOn)for(const q of COLQ){const t=el('text',{x:60*q-CX,y:BOTTOM,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':13,fill:'var(--ghost)'},svg);t.textContent='abcdefgh'[COLQ.indexOf(q)];}
+  // coordinates (core: coordsOn): the names at both ends of each column; without them, a tighter viewBox
+  const vh=VB[3]+(coordsOn?50:0),vw=Math.max(VB[2],vh);   // square: as wide as high, the rings centred
+  svg.setAttribute('viewBox',`${VB[0]-(vw-VB[2])/2} ${VB[1]-(coordsOn?16:0)} ${vw} ${vh}`);
+  // (the publisher's diagram: each column's first and last name, under and over it)
+  if(coordsOn)for(const q of COLQ){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.Q[i]===q){if(lo<0||E.R[i]>E.R[lo])lo=i;if(hi<0||E.R[i]<E.R[hi])hi=i;}
+    el('text',{class:'coord',x:X(lo),y:Y(lo)+46,'text-anchor':'middle','font-size':14},svg).textContent=name(lo);
+    el('text',{class:'coord',x:X(hi),y:Y(hi)-36,'text-anchor':'middle','font-size':14},svg).textContent=name(hi);}
   const caps=legal.length&&legal[0].t===1,lm=last&&last.mv;
   const starters=new Set(),targets=new Set(),removable=new Set();
   if(interactive&&caps){if(!ui.path)legal.forEach(m=>starters.add(m.path[0]));else{const P=ui.path;legal.filter(m=>P.every((x,k)=>m.path[k]===x)).forEach(m=>{if(m.path[P.length]!==undefined)targets.add(m.path[P.length]);});}}
@@ -606,22 +619,26 @@ function zzHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
   return S[k]();}
 // ---------- the interface with common/core.js ----------
 const GAME={howto:{off:true,titled:true,n:2,scene:zzHowto,vars:()=>({where:t(zBandOn()?'ht_wL':'ht_wU')})},id:'zertz',size:48,codeTag:'ZERTZ1',i18n:ZZ_I18N,
-  sgf:{gm:22},   // Zèrtz has an SGF number but no notation defined: the moves are the page's codes
+  // SGF: Zèrtz's number, the moves in the publisher's notation (txtOf); read back by its first part (the isolated marbles
+  // follow from the move)
+  sgf:{gm:22,val:(code,st)=>{const m=E.gen(st).find(x=>enc(x)===code);return m?txtOf(m,st,isoOf(m,st,E.apply(st,m))):code;},
+    code:(v,st)=>{v=String(v).trim().replace(/\s+/g,' ');if(/^[WGB]/i.test(v))v=v.split(' x ')[0];const m=E.gen(st).find(x=>txtOf(x,st)===v);return m?enc(m):null;}},
   rules:g=>{const n=ringsOf(g);return {size:n,rings:n};},
   form:p=>{const n=+$(p+'Size').value;return {size:ENG[n]?n:48,rings:ENG[n]?n:48};},
   replay:zzReplay,
   legal:(st,code,g)=>ENG[ringsOf(g)].gen(st).some(m=>enc(m)===code)?code:null,
-  enc,describe:mv=>txtOf(mv),newUi,preparing:prepared,cancel:cancelPrep,
+  enc,describe:(mv,st)=>txtOf(mv,st),newUi,preparing:prepared,cancel:cancelPrep,
   board:zzBoard,turnStatus:zzTurnStatus,
   logText:e=>logTxt(e),
   home:()=>{setBoard(48);drawBoard(ENG[48].init(),[],false,null);},
-  levels:LEVELS,levelDefault:'moyen',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>ZertzEngine.toString()+`
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
 function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.depth&&!r.fb};}`,
   aiPos:st=>Array.from(st),
   aiSearch:(st,opt)=>zzSearch(Int8Array.from(st),opt),
   evalInfo:res=>evalInfo(res)};
+formKeep('Size','size','48');   // the board, as last chosen
 coreStart();
 </script>
 <script src="common/accueil.js?v=1"></script>

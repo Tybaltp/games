@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Pylos palette « terre cuite et poirier » (light, dark; decision of 13.11.2026: clay page, pear-wood board without grain
    but with its frame, teal accent and move marks), the board and the balls; the shared layout is in common/games.css.
@@ -94,18 +94,18 @@ ol.log .pym .tag{color:var(--muted);font-size:.72rem;font-family:var(--f-body)}
       </form>
       <form class="form" id="aiForm" hidden>
         <label for="aVariant"><span data-i18n="variantOpt">Rule</span><select id="aVariant"><option value="lines" data-i18n="v_lines">Square and line</option><option value="square" data-i18n="v_square">Square only</option></select></label>
-        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
         <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fVariant"><span data-i18n="variantOpt">Rule</span><select id="fVariant"><option value="lines" data-i18n="v_lines">Square and line</option><option value="square" data-i18n="v_square">Square only</option></select></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tVariant"><span data-i18n="variantOpt">Rule</span><select id="tVariant"><option value="lines" data-i18n="v_lines">Square and line</option><option value="square" data-i18n="v_square">Square only</option></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -390,9 +390,9 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Pylos (David G. Royffe, 1993): the page around the engine =====
 // The engine (MOTEUR: rules, geo, init, legalMoves, legal, apply, finished, replay, enc, describe) is the text block
@@ -401,6 +401,10 @@ const MOTEUR=(()=>{
 const PY_SRC=document.getElementById('pylosEngine').textContent;
 const PY=new Function(PY_SRC+'\nreturn MOTEUR;')();
 const PG=PY.geo(),CELLS=PG.cells,NAME=i=>CELLS[i].name,IDX=n=>PG.byName[n];
+// What the player reads: the rows numbered from the bottom (a1 bottom left, as in the other games), on every level, while
+// the codes keep the engine's names (row 1 at the top): a level of s rows shows row r as s + 1 − r. The same turn both
+// ways: SHOWC(code) is the code as read, and the code of what is read
+const SHOWC=c=>String(c).replace(/([234]?)([a-d])([1-4])/g,(m,l,x,r)=>l+x+((l?6-l:5)-r)),SHOW=i=>SHOWC(NAME(i));
 
 const PY_I18N={fr:{
  title:"Pylos",lede:"Bâtissez la pyramide : qui atteint le sommet gagne.",by:"Un jeu de David G. Royffe.",
@@ -415,23 +419,18 @@ const PY_I18N={fr:{
  d_place:"poser en {a}",d_lift:"monter {a} en {b}",d_rem:", reprendre {r}",d_and:" et ",
  l_rem:"reprend {r}",
  res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
- rep_ask:"Vous avez répété la même position trois fois. Souhaitez-vous proposer la nulle ?",rep_no:"Continuer",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
- lv_n0:"0 : un coup d'avance, au hasard parmi les bons",lv_n1:"1 : un coup d'avance",lv_n2:"2 : deux coups d'avance",lv_n3:"3 : trois coups d'avance",lv_n4:"4 : quatre coups d'avance",lv_n5:"5 : six coups d'avance, le plus fort",
- m_aiTxt:"Six niveaux, de 0 à 5 : de un à six coups d'avance.",
+ 
+ lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_g1:"un coup d'avance",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
  boardLbl:"Plateau de Pylos",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>Matériel</b> : un socle de 4 × 4 creux ; au-dessus se bâtit une pyramide de 3 × 3, puis 2 × 2, puis une bille au sommet. Chaque joueur a 15 billes. Clair commence.</li>
  <li><b>Emplacement disponible</b> : au socle, tout creux vide ; aux étages, un emplacement vide posé sur quatre billes, de n'importe quelles couleurs.</li>
- <li><b>Coup</b>, au choix : <i>poser</i> une bille de sa réserve sur un emplacement disponible, à n'importe quel étage ; ou <i>monter</i> une de ses billes libres (rien ne repose dessus) sur un emplacement disponible d'un étage plus haut, qui ne repose pas sur elle. Monter épargne une bille de la réserve.</li>
- <li><b>Carré à sa couleur</b> : si la bille posée ou montée achève un carré de quatre billes de sa couleur à son étage, on reprend aussitôt une ou deux de ses billes libres, celle qu'on vient de jouer comprise, et on les remet dans sa réserve. La seconde se choisit après la première.</li>
- <li><b>Fin</b> : celui qui pose la bille du sommet gagne. Un joueur qui ne peut plus jouer (réserve vide, aucune bille à monter) perd. Pas d'égalité, pas de passe. Quand un joueur ne peut plus jouer, la page pose d'elle-même les billes qui restent à l'autre, sans reprise ni montée, jusqu'au sommet : la partie ne pouvait pas finir autrement.</li>
- <li><b>Alignement</b> : par défaut, la reprise vaut aussi pour un alignement complet à sa couleur, en ligne ou en colonne (quatre billes au socle, trois au deuxième étage), jamais en diagonale. En option, le carré seul.</li>
- <li><b>Répétition</b> : quand la même position revient pour la troisième fois, la page propose au joueur de proposer la nulle ; si l'adversaire accepte, la partie s'arrête sur une nulle, sinon elle continue.</li>
- <li><b>Cartes joueurs</b> : les billes qu'il reste à chacun, aussi dessinées de part et d'autre du plateau. <b>Bille cachée</b> : une bille du troisième étage cache entièrement celle du socle qui est dessous ; au survol de la souris, ou en la touchant sur téléphone, elle devient transparente ; la toucher à nouveau, ou toucher ailleurs, la rend opaque.</li>
- <li><b>Jouer</b> : cliquez un emplacement pour y poser une bille ; cliquez une de vos billes libres puis un emplacement plus haut pour la monter. Au survol, la bille à poser s'affiche en transparence ; la bille provisoire est cerclée de pointillés. Quand un carré est achevé, cliquez la ou les billes à reprendre (en fantôme), puis Confirmer. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Dernier coup</b> : halo plein à l'arrivée ; pour une montée, le départ en pointillés et une trace ; une bille reprise reste un instant en fantôme.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li></ul>
+ <li><b>Coup</b>, au choix : <i>poser</i> une bille de sa réserve sur un emplacement disponible, à n'importe quel étage ; ou <i>monter</i> une de ses billes libres (rien ne repose dessus) sur un emplacement disponible d'un étage plus haut, qui ne repose pas sur elle. Monter épargne une bille de la réserve. On ne passe pas.</li>
+ <li><b>Carré à sa couleur</b> : si la bille posée ou montée achève un carré de quatre billes de sa couleur à son étage, on reprend aussitôt une ou deux de ses billes libres, celle qu'on vient de jouer comprise, et on les remet dans sa réserve. La seconde se choisit après la première. Plusieurs carrés achevés d'un même coup ne donnent toujours qu'une ou deux reprises.</li>
+ <li><b>Alignement</b> (règle par défaut) : la reprise vaut aussi pour une rangée complète à sa couleur, en ligne ou en colonne (quatre billes au socle, trois au deuxième étage), jamais en diagonale. Un carré et un alignement achevés d'un même coup ne comptent qu'une fois. En option, le carré seul.</li>
+ <li><b>Fin</b> : celui qui pose la bille du sommet gagne. Un joueur qui doit jouer et ne le peut plus (réserve vide, aucune bille à monter) perd : l'autre achève la pyramide avec ses billes.</li>
+ <li><b>Répétition</b> : quand la même position revient pour la troisième fois, les joueurs peuvent convenir de la nulle ; si elle revient une quatrième fois, la partie est nulle.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 },en:{
  title:"Pylos",lede:"Build the pyramid: whoever reaches the top wins.",by:"A game by David G. Royffe.",
@@ -446,23 +445,18 @@ const PY_I18N={fr:{
  d_place:"place on {a}",d_lift:"move {a} up to {b}",d_rem:", take back {r}",d_and:" and ",
  l_rem:"takes back {r}",
  res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
- rep_ask:"You have repeated the same position three times. Do you want to offer a draw?",rep_no:"Keep playing",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
- lv_n0:"0: one move ahead, at random among the good ones",lv_n1:"1: one move ahead",lv_n2:"2: two moves ahead",lv_n3:"3: three moves ahead",lv_n4:"4: four moves ahead",lv_n5:"5: six moves ahead, the strongest",
- m_aiTxt:"Six levels, from 0 to 5: one to six moves ahead.",
+ 
+ lvd_g1r:"one move ahead, at random among the best",lvd_g1:"one move ahead",lvd_beam:"{n} moves ahead, on the best candidates",
  boardLbl:"Pylos board",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a base of 4 × 4 hollows; above it rises a pyramid of 3 × 3, then 2 × 2, then one ball on top. Each player has 15 balls. Light starts.</li>
  <li><b>Available spot</b>: on the base, any empty hollow; higher up, an empty spot resting on four balls, of any colours.</li>
- <li><b>Move</b>, either: <i>place</i> a ball from your reserve on an available spot, at any level; or <i>move up</i> one of your free balls (nothing rests on it) to an available spot one level higher at least, which does not rest on it. Moving up saves a ball of your reserve.</li>
- <li><b>Square of your colour</b>: if the ball placed or moved up completes a square of four balls of your colour at its level, you take back at once one or two of your free balls, the one just played included, into your reserve. The second one is chosen after the first.</li>
- <li><b>End</b>: whoever places the top ball wins. A player who cannot move (empty reserve, no ball to move up) loses. No draw, no passing. When a player cannot move, the page places the other player's remaining balls by itself, with no take-back and no move up, up to the top: the game could not end otherwise.</li>
- <li><b>Line</b>: by default, the take-back also applies to a complete line of your colour, row or column (four balls on the base, three on the second level), never a diagonal. As an option, the square only.</li>
- <li><b>Repetition</b>: when the same position comes back for the third time, the page offers the player to propose a draw; if the opponent accepts, the game ends in a draw, otherwise it goes on.</li>
- <li><b>Player cards</b>: the balls each player has left, also drawn on either side of the board. <b>Hidden ball</b>: a ball of the third level fully hides the base ball under it; hovering it with the mouse, or tapping it on a phone, makes it transparent; tapping it again, or anywhere else, makes it opaque again.</li>
- <li><b>Playing</b>: click a spot to place a ball there; click one of your free balls then a higher spot to move it up. Hovering shows the ball to place in transparency; the provisional ball has a dashed ring. When a square is completed, click the ball or balls to take back (shown as ghosts), then Confirm. The move commands are in the bar under the board: Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Last move</b>: a solid halo on arrival; for a move up, the start in dashes and a trace; a ball taken back stays a moment as a ghost.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li></ul>
+ <li><b>Move</b>, either: <i>place</i> a ball from your reserve on an available spot, at any level; or <i>move up</i> one of your free balls (nothing rests on it) to an available spot on a higher level, which does not rest on it. Moving up saves a ball of your reserve. There is no passing.</li>
+ <li><b>Square of your colour</b>: if the ball placed or moved up completes a square of four balls of your colour at its level, you take back at once one or two of your free balls, the one just played included, into your reserve. The second one is chosen after the first. Several squares completed by the same move still give only one or two take-backs.</li>
+ <li><b>Line</b> (default rule): the take-back also applies to a complete row of your colour, across or down (four balls on the base, three on the second level), never a diagonal. A square and a line completed by the same move count only once. As an option, the square only.</li>
+ <li><b>End</b>: whoever places the top ball wins. A player who must move and cannot (empty reserve, no ball to move up) loses: the other completes the pyramid with their balls.</li>
+ <li><b>Repetition</b>: when the same position comes back for the third time, the players may agree to a draw; if it comes back a fourth time, the game is a draw.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 },es:{
  title:"Pylos",lede:"Construye la pirámide: quien llega a la cima gana.",by:"Un juego de David G. Royffe.",
@@ -477,38 +471,33 @@ const PY_I18N={fr:{
  d_place:"colocar en {a}",d_lift:"subir {a} a {b}",d_rem:", recuperar {r}",d_and:" y ",
  l_rem:"recupera {r}",
  res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
- rep_ask:"Has repetido la misma posición tres veces. ¿Quieres proponer tablas?",rep_no:"Continuar",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
- lv_n0:"0: una jugada de antelación, al azar entre las buenas",lv_n1:"1: una jugada de antelación",lv_n2:"2: dos jugadas de antelación",lv_n3:"3: tres jugadas de antelación",lv_n4:"4: cuatro jugadas de antelación",lv_n5:"5: seis jugadas de antelación, el más fuerte",
- m_aiTxt:"Seis niveles, de 0 a 5: de una a seis jugadas de antelación.",
+ 
+ lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_g1:"una jugada de antelación",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
  boardLbl:"Tablero de Pylos",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Material</b>: una base de 4 × 4 huecos; encima se levanta una pirámide de 3 × 3, luego 2 × 2 y una bola en la cima. Cada jugador tiene 15 bolas. Claro empieza.</li>
  <li><b>Hueco disponible</b>: en la base, cualquier hueco vacío; en los niveles superiores, un hueco vacío apoyado en cuatro bolas, de cualquier color.</li>
- <li><b>Jugada</b>, a elegir: <i>colocar</i> una bola de la reserva en un hueco disponible, en cualquier nivel; o <i>subir</i> una de tus bolas libres (nada se apoya en ella) a un hueco disponible de un nivel más alto, que no se apoye en ella. Subir ahorra una bola de la reserva.</li>
- <li><b>Cuadrado de tu color</b>: si la bola colocada o subida completa un cuadrado de cuatro bolas de tu color en su nivel, recuperas enseguida una o dos de tus bolas libres, incluida la que acabas de jugar, y vuelven a tu reserva. La segunda se elige después de la primera.</li>
- <li><b>Final</b>: quien coloca la bola de la cima gana. Un jugador que no puede jugar (reserva vacía, ninguna bola que subir) pierde. Sin empate, sin pasar. Cuando un jugador no puede jugar, la página coloca por sí sola las bolas que le quedan al otro, sin recuperación ni subida, hasta la cima: la partida no podía terminar de otra manera.</li>
- <li><b>Línea</b>: por defecto, la recuperación vale también por una línea completa de tu color, fila o columna (cuatro bolas en la base, tres en el segundo nivel), nunca en diagonal. Como opción, solo el cuadrado.</li>
- <li><b>Repetición</b>: cuando la misma posición vuelve por tercera vez, la página propone al jugador ofrecer tablas; si el adversario acepta, la partida termina en tablas, si no continúa.</li>
- <li><b>Tarjetas de los jugadores</b>: las bolas que le quedan a cada uno, dibujadas también a ambos lados del tablero. <b>Bola oculta</b>: una bola del tercer nivel oculta por completo la bola de la base que tiene debajo; al pasar el ratón por encima, o al tocarla en el móvil, se vuelve transparente; tocarla de nuevo, o tocar en otro sitio, la vuelve opaca.</li>
- <li><b>Jugar</b>: pulsa un hueco para colocar una bola; pulsa una de tus bolas libres y luego un hueco más alto para subirla. Al pasar el ratón, la bola que se colocaría se muestra en transparencia; la bola provisional lleva un anillo discontinuo. Cuando se completa un cuadrado, pulsa la bola o las bolas que recuperas (en fantasma) y luego Confirmar. Los mandos de la jugada están en la barra bajo el tablero: Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Última jugada</b>: halo lleno en la llegada; en una subida, la salida en discontinuo y una traza; una bola recuperada queda un instante en fantasma.</li>
- <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li></ul>
+ <li><b>Jugada</b>, a elegir: <i>colocar</i> una bola de su reserva en un hueco disponible, en cualquier nivel; o <i>subir</i> una de sus bolas libres (nada se apoya en ella) a un hueco disponible de un nivel más alto, que no se apoye en ella. Subir ahorra una bola de la reserva. No se pasa.</li>
+ <li><b>Cuadrado de su color</b>: si la bola colocada o subida completa un cuadrado de cuatro bolas de su color en su nivel, se recuperan enseguida una o dos bolas libres propias, incluida la que se acaba de jugar, y vuelven a la reserva. La segunda se elige después de la primera. Varios cuadrados completados en una misma jugada siguen dando solo una o dos recuperaciones.</li>
+ <li><b>Línea</b> (regla por defecto): la recuperación vale también por una fila completa de su color, horizontal o vertical (cuatro bolas en la base, tres en el segundo nivel), nunca en diagonal. Un cuadrado y una línea completados en una misma jugada cuentan una sola vez. Como opción, solo el cuadrado.</li>
+ <li><b>Final</b>: quien coloca la bola de la cima gana. Un jugador que debe jugar y ya no puede (reserva vacía, ninguna bola que subir) pierde: el otro completa la pirámide con sus bolas.</li>
+ <li><b>Repetición</b>: cuando la misma posición vuelve por tercera vez, los jugadores pueden acordar tablas; si vuelve una cuarta vez, la partida termina en tablas.</li></ul>
  <p class="hint" style="margin-top:.6em">Pylos — David G. Royffe (1993).</p>`
 }};
 const CN=p=>t(p?'cDark':'cLight'),CNL=p=>t(p?'cDarkL':'cLightL');
 // a code taken apart: {from (-1 for a placement), to, rem:[…]}
 function parseCode(code){const parts=String(code).split('/'),mv=parts[0].split('>');
   return {from:mv.length>1?IDX(mv[0]):-1,to:IDX(mv[mv.length-1]),rem:parts.slice(1).map(IDX)};}
-const remTxt=rem=>rem.map(NAME).join(t('d_and'));
+const remTxt=rem=>rem.map(SHOW).join(t('d_and'));
 // a move (code) said in words (hints, the move awaiting confirmation)
-function describe(mv){const m=parseCode(mv);let s=m.from>=0?t('d_lift',{a:NAME(m.from),b:NAME(m.to)}):t('d_place',{a:NAME(m.to)});
+function describe(mv){const m=parseCode(mv);let s=m.from>=0?t('d_lift',{a:SHOW(m.from),b:SHOW(m.to)}):t('d_place',{a:SHOW(m.to)});
   if(m.rem.length)s+=t('d_rem',{r:remTxt(m.rem)});return s;}
 // the move list: a small ball, the code, the removals
 function logNode(e){const s=document.createElement('span');s.className='pym';const m=parseCode(e.code);
-  s.innerHTML=`<span class="mini c${e.p}"></span>`+(m.from>=0?NAME(m.from)+' › '+NAME(m.to):NAME(m.to))+(m.rem.length?' <span class="tag">'+t('l_rem',{r:m.rem.map(NAME).join(', ')})+'</span>':'');
+  s.innerHTML=`<span class="mini c${e.p}"></span>`+(m.from>=0?SHOW(m.from)+' › '+SHOW(m.to):SHOW(m.to))+(m.rem.length?' <span class="tag">'+t('l_rem',{r:m.rem.map(SHOW).join(', ')})+'</span>':'');
   return s;}
-const logText=e=>e.code;
+const logText=e=>SHOWC(e.code);
 // the legal moves of a position, memoised on the position
 let lmKey=null,lmVal=null;
 function legalsOf(st){const k=st.variant+'|'+st.turn+'|'+Array.from(st.b).join('');if(k!==lmKey){lmKey=k;lmVal=PY.legalMoves(st);}return lmVal;}
@@ -516,9 +505,8 @@ const isFreeBall=(b,i)=>b[i]!==-1&&PG.above[i].every(j=>b[j]===-1);
 
 // ---------- game view ----------
 // ui: sel (my free ball chosen to move up, -1), main ({from,to} of the action made, null), bonus (the action completes a
-// square: removals to choose), rem (balls taken back so far), pending (the complete code awaiting confirmation), hover,
-// repSeen (the third repetition already answered at this move)
-const newUi=()=>({sel:-1,main:null,bonus:false,rem:[],pending:null,hover:-1,repSeen:-1});
+// square: removals to choose), rem (balls taken back so far), pending (the complete code awaiting confirmation), hover
+const newUi=()=>({sel:-1,main:null,bonus:false,rem:[],pending:null,hover:-1});
 const prepared=()=>ui.sel>=0||!!ui.main||!!ui.pending;
 function clearPrep(){ui.sel=-1;ui.main=null;ui.bonus=false;ui.rem=[];ui.pending=null;}
 function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
@@ -534,21 +522,10 @@ function pyBoard({r,d,mine,ms}){const live=navAt===null;
     else if(ui.main&&ui.rem.length&&PY.legal(ms,fullCode(ui.main,ui.rem))===null)clearPrep();}
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function pyTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),me=seatName(st.turn),c=CNL(st.turn);
-  // the same position for the third time (decision of 09.11.2026): the player may offer a draw (core's draw offer)
-  if(!prep&&drawOK()&&ui.repSeen!==view.moves.length&&repeated(view)>=3){
-    status(t('rep_ask'),'turn',[{label:t('rep_no'),on:()=>{ui.repSeen=view.moves.length;renderGame();}},{label:t('drawOffer'),primary:true,on:()=>{ui.repSeen=view.moves.length;drawSend('ask');}}]);return;}
-  if(ui.main&&ui.bonus&&!ui.rem.length){status(t(st.variant==='lines'?'st_bonusL':'st_bonus'),'turn',[RST]);return;}
-  if(ui.sel>=0){status(t('st_sel',{a:NAME(ui.sel)}),'turn',[RST]);return;}
-  status(S?t('st_turnC',{name:me,c}):t('st_play',{c}),'turn',prep?[RST]:idle);}
-// how many times the position shown (balls and side to move) has occurred along the game, this time included
-let repKey=null,repVal=0;
-function repeated(v){const key=v.moves.join(',');if(key===repKey)return repVal;
-  const st=PY.init(PY.rules(v)),seen={},sig=s=>Array.from(s.b).join('')+s.turn;seen[sig(st)]=1;
-  for(const m of v.moves){const code=PY.legal(st,m);if(code===null)break;PY.apply(st,code);const k=sig(st);seen[k]=(seen[k]||0)+1;}
-  repKey=key;return repVal=seen[sig(st)]||0;}
-// a draw can be offered now (core: against the computer, face to face, by link)
-const drawOK=()=>!!view&&!view.draw&&(role==='ai'||role==='local'||role==='host'||role==='guest');
-function pyWaitStatus({r}){const st=r.st;status(t('st_turnC',{name:seatName(st.turn),c:CNL(st.turn)}));return true;}
+  if(ui.main&&ui.bonus&&!ui.rem.length){status(soloWho(st.turn,t(st.variant==='lines'?'st_bonusL':'st_bonus')),'turn',[RST]);return;}
+  if(ui.sel>=0){status(soloWho(st.turn,t('st_sel',{a:SHOW(ui.sel)})),'turn',[RST]);return;}
+  status(S?tN('st_turnC',{name:me,c}):t('st_play',{c}),'turn',prep?[RST]:idle);}
+function pyWaitStatus({r}){const st=r.st;status(tN('st_turnC',{name:seatName(st.turn),c:CNL(st.turn)}));return true;}
 function pendText(mv,st){const m=parseCode(mv);
   // one removal made and a second one possible: say so
   if(ui.main&&ui.bonus&&m.rem.length===1){const L=legalsOf(st),more=L.some(x=>x.from===m.from&&x.to===m.to&&x.rem.length===2&&x.rem.includes(m.rem[0]));
@@ -568,9 +545,9 @@ function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)r
 function setMain(st,from,to){const L=legalsOf(st),bonus=L.some(m=>m.from===from&&m.to===to&&m.rem.length);
   ui.sel=-1;ui.main={from,to};ui.bonus=bonus;ui.rem=[];ui.pending=null;
   if(!bonus){const code=baseCode(ui.main);if(!confirmOn()||winsNow(st,code)){clearPrep();send(code);return;}ui.pending=code;}
-  tone(880,.05,.03);renderGame();}
+  renderGame();}
 function winsNow(st,code){const w=deepCopy(st),c=PY.legal(w,code);if(c===null)return false;PY.apply(w,c);const f=PY.finished(w);return !!f&&f.w===st.turn;}
-function setRem(st){ui.pending=ui.rem.length?PY.legal(st,fullCode(ui.main,ui.rem)):null;tone(880,.05,.03);renderGame();}
+function setRem(st){ui.pending=ui.rem.length?PY.legal(st,fullCode(ui.main,ui.rem)):null;renderGame();}
 // A click on a spot i. A free ball of mine: chosen to move up (again: released). An available spot: the ball placed there,
 // or the chosen ball moved up. After an action completing a square: a free ball of mine is taken back (again: kept).
 function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
@@ -586,7 +563,7 @@ function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(a
   if(ui.sel>=0){
     if(i===ui.sel){ui.sel=-1;renderGame();return;}
     if(L.some(m=>m.from===ui.sel&&m.to===i)){setMain(st,ui.sel,i);return;}}
-  if(st.b[i]===p&&L.some(m=>m.from===i)){ui.sel=i;tone(880,.05,.03);renderGame();return;}
+  if(st.b[i]===p&&L.some(m=>m.from===i)){ui.sel=i;renderGame();return;}
   if(st.b[i]===-1&&L.some(m=>m.from===-1&&m.to===i)){setMain(st,-1,i);return;}
   renderGame();}
 $('needConfirm').checked=LS.get('pylos-confirm',true)!==false;
@@ -697,8 +674,9 @@ function drawBoard(fillTick){const svg=$('svg');svg.textContent='';svg.setAttrib
   for(let i=0;i<16;i++){const [x,y]=XY(i),g=el('g',{'data-i':i,class:act.has(i)?'pt':''},hol);
     el('circle',{cx:f1(x),cy:f1(y),r:f1(.4*U),fill:'var(--dimple)',opacity:.35},g);el('circle',{cx:f1(x),cy:f1(y),r:f1(.4*U),fill:'none',stroke:'var(--wood-edge)','stroke-width':1,opacity:.5},g);}
   // coordinates (core: coordsOn): the column letters under the base, the row numbers on its left
-  if(coordsOn){for(let x=0;x<4;x++){const e=el('text',{x:f1((x+.5)*U),y:f1(4.5*U+14),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String.fromCharCode(97+x);}
-    for(let y=0;y<4;y++){const e=el('text',{x:f1(-.5*U-10),y:f1((y+.5)*U+4),'text-anchor':'middle','font-family':'var(--f-mono)','font-size':13,fill:'var(--lab)','pointer-events':'none'},svg);e.textContent=String(y+1);}}
+  // (1 at the bottom, as the move list reads: SHOW)
+  if(coordsOn){for(let x=0;x<4;x++){const e=el('text',{class:'coord',x:f1((x+.5)*U),y:f1(4.5*U+14),'text-anchor':'middle','font-size':13},svg);e.textContent=String.fromCharCode(97+x);}
+    for(let y=0;y<4;y++){const e=el('text',{class:'coord',x:f1(-.5*U-10),y:f1((y+.5)*U+4),'text-anchor':'middle','font-size':13},svg);e.textContent=String(4-y);}}
   // the balls, level by level; the empty spots that can be clicked get a target; the transparent ball (hidden ball) has
   // no outline (decision of 13.11.2026)
   const layers=[0,1,2,3].map(()=>el('g',{},svg));
@@ -762,8 +740,16 @@ function PylosAI(M){
 const g=M.geo(),N=g.N;
 const fromPos=P=>({variant:P.variant,b:Int8Array.from(P.b),res:P.res.slice(),turn:P.turn});
 const clone=S=>({variant:S.variant,b:S.b.slice(),res:S.res.slice(),turn:S.turn});
-function play(S,m){const T=clone(S);M.apply(T,m.code);return T;}
-const done=S=>!!M.finished(S);
+// Repetition (decision of Thibault, 15.11.2026): opt.hist = {sig: occurrences} of the positions of the game so far, the one
+// to move from included (sig: the page's, balls and side to move; the fourth occurrence is a draw). In the tree, a position
+// already seen, in the game or higher on the line searched, is a finished game worth a draw (0): a side that judges itself
+// ahead turns away from it, a side behind looks for it. Without opt.hist (REP null) the search is unchanged.
+let REP=null;
+const repKey=S=>String.fromCharCode(...S.b)+'|'+S.turn;
+function play(S,m){const T=clone(S);M.apply(T,m.code);
+  if(REP){const k=repKey(T);T.k=k;T.up=S;let r=REP.has(k);for(let A=S;!r&&A;A=A.up)r=A.k===k;T.rp=r;}
+  return T;}
+const done=S=>!!S.rp||!!M.finished(S);
 function result(S,p){const f=M.finished(S);if(!f)return 0;const q=1-p;return f.w===p?1000+S.res[p]-S.res[q]:-(1000+S.res[q]-S.res[p]);}
 const supported=(b,i)=>g.below[i].every(k=>b[k]!==-1);
 const LINES=[...new Set(g.lines.flat())];   // each row and column once (the variant 'lines')
@@ -781,21 +767,33 @@ function evalS(S,p){const b=S.b,q=1-p;let v=10*(S.res[p]-S.res[q]),fp=0,fq=0;
   return v;}
 // every legal move, best first by the evaluation after it
 function gen(S){const me=S.turn,out=[];
-  for(const m of M.legalMoves(S)){const T=play(S,m);out.push({m,s:M.finished(T)?result(T,me):evalS(T,me)});}
+  for(const m of M.legalMoves(S)){const T=play(S,m);out.push({m,s:M.finished(T)?result(T,me):T.rp?0:evalS(T,me)});}
   out.sort((a,b)=>b.s-a.s);return out;}
-const KS=AISearch({moves:gen,play,turn:S=>S.turn,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
-function search(P,opt){const S=fromPos(P);KS.start(opt.time);const C=gen(S);
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
+const KS=AISearch({moves:gen,play,turn:S=>S.turn,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
+  best:r=>{if(TELL)aiBest({move:r.m.code,score:r.s,depth:r.depth});}});
+function search(P,opt){const S=fromPos(P);REP=null;
+  if(opt.hist){REP=new Map();for(const k in opt.hist){const i=k.lastIndexOf('|');REP.set(String.fromCharCode(...k.slice(0,i).split(',').map(Number))+k.slice(i),opt.hist[k]);}S.k=repKey(S);}
+  KS.start(opt.nodes);const C=gen(S);
   if(!C.length)return {move:null};
   if(C.length===1)return {move:C[0].m.code,score:C[0].s,depth:0,forced:true};
-  const r=KS[opt.algo](S,C,opt);return {move:r.m.code,score:r.s,depth:r.depth,nodes:KS.nodes()};}
+  TELL=typeof aiBest==='function';const r=KS[opt.algo](S,C,opt);TELL=false;return {move:r.m.code,score:r.s,depth:r.depth,nodes:KS.nodes()};}
 return {search,fromPos,gen,play,evalS};
 }
 /*AIEND*/
 // Levels 0 to 5: 0 and 1 read one move ahead (0 draws at random among the best, within 4 points); 2 to 5 read two, three,
-// four and six moves ahead on the best candidates (beam, common/ai.js), within 1.5, 3, 5 and 9 seconds. Hints use level 4.
-const LEVELS={n0:{algo:'greedy',pick:8,temp:4},n1:{algo:'greedy'},n2:{algo:'beam',depth:2,widths:[20,12],time:1500},
-  n3:{algo:'beam',depth:3,widths:[24,14,8],time:3000},n4:{algo:'beam',depth:4,widths:[28,16,10,6],time:5000},n5:{algo:'beam',depth:6,widths:[32,18,12,8,6,6],time:9000}};
-const HINT={...LEVELS.n4};
+// four and six moves ahead on the best candidates (beam, common/ai.js). A level is its depth, never a time (16.11.2026;
+// the former caps of 1.5 to 9 s were never reached on the reference Mac: at most 0.35 s a move at level 5,
+// outils/aitools/res/budgets-2026-11-16.md). Hints use level 5, the highest (well under 5 s).
+const LEVELS={n0:{algo:'greedy',pick:8,temp:4},n1:{algo:'greedy'},n2:{algo:'beam',depth:2,widths:[20,12]},
+  n3:{algo:'beam',depth:3,widths:[24,14,8]},n4:{algo:'beam',depth:4,widths:[28,16,10,6]},n5:{algo:'beam',depth:6,widths:[32,18,12,8,6,6]}};
+const HINT={...LEVELS.n5};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const levelDesc=o=>o.algo==='greedy'?[o.pick>1?'lvd_g1r':'lvd_g1']:['lvd_beam',o.depth];
 const aiPos=st=>({variant:st.variant,b:Array.from(st.b),res:st.res.slice(),turn:st.turn});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 const aiSrc=()=>AISearch.toString()+'\n'+PY_SRC+'\n'+PylosAI.toString()+'\nconst PA=PylosAI(MOTEUR);function aiSearch(pos,opt){return PA.search(pos,opt);}';
@@ -804,22 +802,30 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
   return {k:Math.abs(s)<=5?'ai_eq':s>0?(s>20?'ai_much':'ai_better'):(s<-20?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
+// the positions of the game so far with their occurrences (core's replayKept keeps their sig): the computer and the hints
+// know the repetition (decision of Thibault, 15.11.2026)
+function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 const homeVariant=()=>PY.rules({variant:LS.get('pylos-variant','lines')}).variant;
-// the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'pylos',size:4,codeTag:'PYLOS1',i18n:PY_I18N,
+// the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy;
+// sig: the position for the repetition, balls and side to move (core: a frame the third time, a draw the fourth, 15.11.2026)
+const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Foncé
+  size:4,codeTag:'PYLOS1',i18n:PY_I18N,
   rules:g=>PY.rules(g),
   form:p=>{const v=PY.rules({variant:$(p+'Variant').value}).variant;LS.set('pylos-variant',v);return {variant:v};},
   replay:(r,m)=>replayKept(r,m,{init:g=>PY.init(PY.rules(g)),
     play(prev,mv){const st=deepCopy(prev),code=PY.legal(st,mv);if(code===null)return null;   // as PY.replay, move by move
-      const p=st.turn,res=PY.apply(st,code);return {st,e:{p,txt:res.txt,code},last:{code,cells:res.cells},over:PY.finished(st)};}}),
+      const p=st.turn,res=PY.apply(st,code);return {st,e:{p,txt:res.txt,code},last:{code,cells:res.cells},over:PY.finished(st)};},
+    sig:st=>Array.from(st.b).join(',')+'|'+st.turn}),
   legal:(st,code)=>PY.legal(st,code),
   enc:mv=>PY.enc(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:pyBoard,turnStatus:pyTurnStatus,waitStatus:pyWaitStatus,pendText,again:()=>!!(ui.main&&!ui.bonus),
   playerCard,logNode,logText,drawOffer:true,
+  // SGF: the move as read (rows from the bottom, « a4>2b3/c3 »); a file of the site written before XV holds the codes (core)
+  sgf:{val:c=>SHOWC(c),code:v=>SHOWC(String(v).trim().toLowerCase())},
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Variant');if(s&&!s.value)s.value=homeVariant();}},
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'n2',hintLevel:HINT,
-  aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PylosAI(PY)).search(aiPos(st),opt),
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  aiOpt:v=>({hist:histOf(v)}),aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PylosAI(PY)).search(aiPos(st),opt),
   evalInfo};
 for(const p of ['c','a','f','t'])if($(p+'Variant')){$(p+'Variant').value=homeVariant();$(p+'Variant').addEventListener('change',e=>LS.set('pylos-variant',e.target.value));}
 coreStart();

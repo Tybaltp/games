@@ -7,24 +7,24 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Ayu palette (light, dark), board and stones; the shared layout is in common/games.css */
 :root{
   --bg:#e9e3e5;--panel:#f4eff1;--ink:#2a1d23;--muted:#6e5f66;--line:#d6c9ce;
   --accent:#b8195c;--accent-ink:#ffffff;--danger:#b3261e;
-  --sboard:#e2cf9f;--sgrid:rgba(60,42,18,.7);--slab:rgba(60,42,18,.75);
+  --sboard:#e2cf9f;--sgrid:rgba(60,42,18,.7);--lab:rgba(60,42,18,.75);
   --sb:#1c1f1e;--sbe:#000;--sw:#f7f6f1;--swe:rgba(0,0,0,.85);--sstar:rgba(60,42,18,.85);--mk:#b8195c;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1a1518;--panel:#251d21;--ink:#ede4e8;--muted:#a8989f;--line:#3a2e34;
   --accent:#e0558e;--accent-ink:#2a0a17;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}}
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--lab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#1a1518;--panel:#251d21;--ink:#ede4e8;--muted:#a8989f;--line:#3a2e34;
   --accent:#e0558e;--accent-ink:#2a0a17;--danger:#ef8579;
-  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--slab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}
+  --sboard:#b8945a;--sgrid:rgba(40,26,10,.8);--lab:rgba(40,26,10,.85);--sw:#f3f1ea;--swe:rgba(0,0,0,.8);--sstar:rgba(40,26,10,.9);--mk:#b8195c;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--sboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
 .board .pt{cursor:pointer}
 /* players' cards: the seat's colour (it changes with the swap) and its units */
@@ -79,7 +79,6 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cSize"><span data-i18n="sizeOpt">Board</span><select id="cSize"></select></label>
         <label class="toggle" for="cSwap"><input type="checkbox" id="cSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="cFirst"><span data-i18n="firstIs">Who places the opening</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
@@ -89,20 +88,20 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
       <form class="form" id="aiForm" hidden>
         <label for="aSize"><span data-i18n="sizeOpt">Board</span><select id="aSize"></select></label>
         <label class="toggle" for="aSwap"><input type="checkbox" id="aSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fSize"><span data-i18n="sizeOpt">Board</span><select id="fSize"></select></label>
         <label class="toggle" for="fSwap"><input type="checkbox" id="fSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
         <label for="tSize"><span data-i18n="sizeOpt">Board</span><select id="tSize"></select></label>
         <label class="toggle" for="tSwap"><input type="checkbox" id="tSwap"> <span data-i18n="swapOpt">Swap rule</span></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -169,9 +168,9 @@ ol.log .aym .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Ayu (Luis Bolaños Mures, 2011) =====
 // Rules kept: an odd square board (11 × 11 by default; 9, 11 or 13), on the points; « neighbour » = orthogonal. Start (to
@@ -253,11 +252,11 @@ const AY=AyuEngine();
 
 // ===== Ayu: the page's side of common/core.js =====
 const AY_I18N={fr:{
- lv_l0:"0 : glouton au hasard",lv_l1:"1 : glouton",lv_l2:"2 : réseau de neurones, intuition seule",lv_l3:"3 : réseau de neurones, 6 simulations",lv_l4:"4 : réseau de neurones, 10 simulations",lv_l5:"5 : réseau de neurones, 22 simulations",lv_l6:"6 : réseau de neurones, 50 simulations",lv_l7:"7 : réseau de neurones, 130 simulations",lv_l8:"8 : réseau de neurones, 300 simulations",lv_l9:"9 : réseau de neurones, 700 simulations",lv_l10:"10 : le plus fort (réseau de neurones, 3000 simulations)",m_aiTxt:"Onze niveaux, de 0 à 10. Les niveaux 0 et 1 jouent au coup par coup (glouton), les suivants avec le réseau de neurones et de plus en plus de simulations ; le 10 est le plus fort.",
+ lvd_g1:"un coup d'avance",lvd_gr:"un coup d'avance, avec une part de hasard",lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",
  title:"Ayu",lede:"Des pierres éparpillées partout : rassemblez les vôtres.",by:"Un jeu de Luis Bolaños Mures.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
- firstIs:"Qui commence (Noir)",needConfirm:"Confirmer chaque coup",
- cB:"noir",cW:"blanc",units:"{n} unités",unit1:"1 unité",unitsT:"Unités : pierres seules ou groupes. Une seule unité, le plus souvent : plus de coup, c'est gagné.",
+ needConfirm:"Confirmer chaque coup",
+ cB:"noir",sB:"Noir",sW:"Blanc",cW:"blanc",units:"{n} unités",unit1:"1 unité",unitsT:"Unités : pierres seules ou groupes. Une seule unité, le plus souvent : plus de coup, c'est gagné.",
  swap:"Échanger",swapT:"Échanger : vous prenez le camp noir et le coup joué ; votre adversaire joue Blanc.",
  st_play:"À vous ({c}) : choisissez une pierre à déplacer.",st_playN:"{name} ({c}) : choisissez une pierre à déplacer.",st_swapQ:" Ou échangez.",
  st_sel:"Choisissez où elle va (points marqués).",st_selNone:"Cette pierre ne peut pas bouger : choisissez-en une autre.",
@@ -268,23 +267,19 @@ const AY_I18N={fr:{
  ai_swapped:"Ordinateur : échange.",
  boardLbl:"Plateau d'Ayu",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : un plateau de 11 × 11 intersections (9 × 9 ou 13 × 13 au choix). Au départ, les pierres noires et blanches alternent en quinconce : 30 de chaque couleur en 11 × 11. Noir commence.</li>
- <li><b>Unités</b> : une pierre seule, ou un groupe de pierres de même couleur reliées orthogonalement.</li>
- <li><b>Coup</b> : une pierre seule va sur un point vide voisin. Une pierre d'un groupe va sur un point vide voisin du groupe, et le groupe doit rester d'un seul tenant.</li>
- <li><b>Distance</b> : le coup doit rapprocher l'unité déplacée de l'unité amie la plus proche (en nombre de points vides à traverser). Joindre une autre unité est toujours permis.</li>
- <li><b>Victoire</b> : le joueur qui n'a plus de coup à son tour gagne, en général parce que toutes ses pierres forment un seul groupe. Une position répétée avec le même joueur au trait : partie nulle.</li>
- <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, Blanc peut changer de camp ; le premier joueur, devenu Blanc, joue.</li>
- <li><b>Cartes joueurs</b> : la couleur de chacun et son nombre d'unités.</li>
- <li><b>Jouer</b> : cliquez une de vos pierres ; les points où elle peut aller sont marqués d'un point. Cliquez l'un d'eux (au survol, la pierre s'y affiche en transparence). Cliquer de nouveau la pierre la désélectionne. Avec « Confirmer chaque coup », le coup attend Confirmer. Les commandes sont dans la barre sous le plateau : Échanger, Réinitialiser, Confirmer ; selon la partie, Annuler le dernier coup et Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <li><b>Matériel</b> : un plateau de 11 × 11 points (9 × 9 ou 13 × 13 au choix), des pierres noires et blanches. Au départ, le plateau en est couvert en quinconce, toutes isolées. Noir commence.</li>
+ <li><b>Unités</b> : une pierre seule est une unité, un groupe de pierres de même couleur reliées orthogonalement est une unité.</li>
+ <li><b>Coup</b> : une pierre seule se déplace sur un point vide voisin orthogonalement. Une pierre d'un groupe peut se déplacer sur un point vide voisin du groupe si le groupe reste connecté.</li>
+ <li><b>Distance</b> : un coup est valide s'il diminue strictement la distance de l'unité déplacée à l'unité amie - ou l'une des unités amies - la plus proche. La distance se compte en points vides sur le plus court chemin orthogonal.</li>
+ <li><b>Fin</b> : le joueur qui n'a plus de coup à son tour gagne, en général parce que toutes ses pierres forment un seul groupe. Si une position revient avec le même joueur au trait, la partie est nulle.</li>
+ <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, le second joueur peut prendre les noires ; le premier joueur, devenu Blanc, joue alors.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Règles : <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 },en:{
- lv_l0:"0: greedy, at random",lv_l1:"1: greedy",lv_l2:"2: neural network, intuition only",lv_l3:"3: neural network, 6 simulations",lv_l4:"4: neural network, 10 simulations",lv_l5:"5: neural network, 22 simulations",lv_l6:"6: neural network, 50 simulations",lv_l7:"7: neural network, 130 simulations",lv_l8:"8: neural network, 300 simulations",lv_l9:"9: neural network, 700 simulations",lv_l10:"10: the strongest (neural network, 3000 simulations)",m_aiTxt:"Eleven levels, from 0 to 10. Levels 0 and 1 play one move ahead (greedy), the others with the neural network and more and more simulations; 10 is the strongest.",
+ lvd_g1:"one move ahead",lvd_gr:"one move ahead, with some randomness",lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",
  title:"Ayu",lede:"Stones scattered everywhere: gather yours.",by:"A game by Luis Bolaños Mures.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
- firstIs:"Who starts (Black)",needConfirm:"Confirm each move",
- cB:"black",cW:"white",units:"{n} units",unit1:"1 unit",unitsT:"Units: lone stones or groups. A single unit usually means no more moves: a win.",
+ needConfirm:"Confirm each move",
+ cB:"black",sB:"Black",sW:"White",cW:"white",units:"{n} units",unit1:"1 unit",unitsT:"Units: lone stones or groups. A single unit usually means no more moves: a win.",
  swap:"Swap",swapT:"Swap: you take the black side and the move played; your opponent plays White.",
  st_play:"Your move ({c}): choose a stone to move.",st_playN:"{name} ({c}): choose a stone to move.",st_swapQ:" Or swap.",
  st_sel:"Choose where it goes (marked points).",st_selNone:"This stone cannot move: choose another one.",
@@ -295,23 +290,19 @@ const AY_I18N={fr:{
  ai_swapped:"Computer: swaps.",
  boardLbl:"Ayu board",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: a board of 11 × 11 points (9 × 9 or 13 × 13 as you choose). At the start, black and white stones alternate in a staggered pattern: 30 of each colour on 11 × 11. Black moves first.</li>
- <li><b>Units</b>: a lone stone, or a group of stones of one colour joined orthogonally.</li>
- <li><b>Move</b>: a lone stone goes to an empty neighbouring point. A stone of a group goes to an empty point next to the group, and the group must stay in one piece.</li>
- <li><b>Distance</b>: the move must bring the unit moved closer to the nearest friendly unit (in empty points to cross). Joining another unit is always allowed.</li>
- <li><b>Winning</b>: the player with no move on their turn wins, usually because all their stones form a single group. A position repeated with the same player to move: a draw.</li>
- <li><b>Swap</b> (option, off by default): after Black's first move, White may change sides; the first player, now White, moves.</li>
- <li><b>Player cards</b>: each player's colour and number of units.</li>
- <li><b>Playing</b>: click one of your stones; the points it can go to are marked with a dot. Click one of them (hovering shows the stone there in transparency). Clicking the stone again deselects it. With “Confirm each move”, the move waits for Confirm. The commands are in the bar under the board: Swap, Reset, Confirm; depending on the game, Undo last move and Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <li><b>Material</b>: a board of 11 × 11 points (9 × 9 or 13 × 13 as you choose), black and white stones. At the start, they cover the board in a staggered pattern, all isolated. Black moves first.</li>
+ <li><b>Units</b>: a lone stone is a unit; a group of stones of one colour joined orthogonally is a unit.</li>
+ <li><b>Move</b>: a lone stone moves to an orthogonally neighbouring empty point. A stone of a group may move to an empty point next to the group if the group stays connected.</li>
+ <li><b>Distance</b>: a move is legal if it strictly reduces the distance from the unit moved to the nearest friendly unit (or to one of the nearest). The distance is counted in empty points along the shortest orthogonal path.</li>
+ <li><b>End</b>: the player with no move on their turn wins, usually because all their stones form a single group. If a position comes back with the same player to move, the game is a draw.</li>
+ <li><b>Swap</b> (option, off by default): after Black's first move, the second player may take Black; the first player, now White, then moves.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Rules: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 },es:{
- lv_l0:"0: voraz al azar",lv_l1:"1: voraz",lv_l2:"2: red neuronal, solo intuición",lv_l3:"3: red neuronal, 6 simulaciones",lv_l4:"4: red neuronal, 10 simulaciones",lv_l5:"5: red neuronal, 22 simulaciones",lv_l6:"6: red neuronal, 50 simulaciones",lv_l7:"7: red neuronal, 130 simulaciones",lv_l8:"8: red neuronal, 300 simulaciones",lv_l9:"9: red neuronal, 700 simulaciones",lv_l10:"10: el más fuerte (red neuronal, 3000 simulaciones)",m_aiTxt:"Once niveles, de 0 a 10. Los niveles 0 y 1 juegan jugada a jugada (voraz), los demás con la red neuronal y cada vez más simulaciones; el 10 es el más fuerte.",
+ lvd_g1:"una jugada de antelación",lvd_gr:"una jugada de antelación, con algo de azar",lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",
  title:"Ayu",lede:"Piedras dispersas por todas partes: reúne las tuyas.",by:"Un juego de Luis Bolaños Mures.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
- firstIs:"Quién empieza (Negras)",needConfirm:"Confirmar cada jugada",
- cB:"negras",cW:"blancas",units:"{n} unidades",unit1:"1 unidad",unitsT:"Unidades: piedras sueltas o grupos. Una sola unidad, casi siempre: no hay más jugadas, has ganado.",
+ needConfirm:"Confirmar cada jugada",
+ cB:"negras",sB:"Negras",sW:"Blancas",cW:"blancas",units:"{n} unidades",unit1:"1 unidad",unitsT:"Unidades: piedras sueltas o grupos. Una sola unidad, casi siempre: no hay más jugadas, has ganado.",
  swap:"Intercambiar",swapT:"Intercambiar: tomas el bando negro y la jugada hecha; tu adversario juega con Blancas.",
  st_play:"Te toca ({c}): elige una piedra para mover.",st_playN:"{name} ({c}): elige una piedra para mover.",st_swapQ:" O intercambia.",
  st_sel:"Elige adónde va (puntos marcados).",st_selNone:"Esta piedra no puede moverse: elige otra.",
@@ -322,16 +313,12 @@ const AY_I18N={fr:{
  ai_swapped:"Ordenador: intercambia.",
  boardLbl:"Tablero de Ayu",
  rules:`<summary>Reglas en breve</summary><ul>
- <li><b>Material</b>: un tablero de 11 × 11 intersecciones (9 × 9 o 13 × 13 a elegir). Al principio, las piedras negras y blancas se alternan al tresbolillo: 30 de cada color en 11 × 11. Empiezan las Negras.</li>
- <li><b>Unidades</b>: una piedra suelta, o un grupo de piedras del mismo color unidas ortogonalmente.</li>
- <li><b>Jugada</b>: una piedra suelta va a un punto vacío vecino. Una piedra de un grupo va a un punto vacío vecino del grupo, y el grupo debe seguir siendo de una sola pieza.</li>
- <li><b>Distancia</b>: la jugada debe acercar la unidad movida a la unidad amiga más cercana (en número de puntos vacíos que cruzar). Unirse a otra unidad siempre está permitido.</li>
- <li><b>Victoria</b>: el jugador que no tiene jugada en su turno gana, por lo general porque todas sus piedras forman un solo grupo. Una posición repetida con el mismo jugador al turno: tablas.</li>
- <li><b>Intercambio</b> (opción, desactivada por defecto): tras la primera jugada de las Negras, las Blancas pueden cambiar de bando; el primer jugador, ahora con Blancas, juega.</li>
- <li><b>Tarjetas de jugador</b>: el color de cada uno y su número de unidades.</li>
- <li><b>Jugar</b>: haz clic en una de tus piedras; los puntos adonde puede ir se marcan con un punto. Haz clic en uno de ellos (al pasar el ratón, la piedra se muestra allí en transparencia). Volver a hacer clic en la piedra la deselecciona. Con «Confirmar cada jugada», la jugada espera a Confirmar. Los controles están en la barra bajo el tablero: Intercambiar, Reiniciar, Confirmar; según la partida, Deshacer la última jugada y Sugerencia.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>
+ <li><b>Material</b>: un tablero de 11 × 11 puntos (9 × 9 o 13 × 13 a elegir), piedras negras y blancas. Al principio, cubren el tablero al tresbolillo, todas aisladas. Empiezan las Negras.</li>
+ <li><b>Unidades</b>: una piedra suelta es una unidad; un grupo de piedras del mismo color unidas ortogonalmente es una unidad.</li>
+ <li><b>Jugada</b>: una piedra suelta se desplaza a un punto vacío vecino ortogonalmente. Una piedra de un grupo puede desplazarse a un punto vacío vecino del grupo si el grupo sigue unido.</li>
+ <li><b>Distancia</b>: una jugada es válida si disminuye estrictamente la distancia de la unidad movida a la unidad amiga más cercana (o a una de las más cercanas). La distancia se cuenta en puntos vacíos por el camino ortogonal más corto.</li>
+ <li><b>Final</b>: el jugador que no tiene jugada en su turno gana, por lo general porque todas sus piedras forman un solo grupo. Si una posición vuelve con el mismo jugador al turno, la partida termina en tablas.</li>
+ <li><b>Intercambio</b> (opción, desactivada por defecto): tras la primera jugada de las Negras, el segundo jugador puede quedarse con las negras; el primer jugador, ahora con Blancas, juega entonces.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Reglas: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 }};
 const CN=c=>t(c===AY.BLACK?'cB':'cW'),CK=c=>c===AY.BLACK?'b':'w';
@@ -358,11 +345,11 @@ function targets(st,f){const k=st.b.join('')+'|'+f;if(tgCache.key!==k){const out
 function ayBoard({r,d,mine,ms}){const live=navAt===null;if(mine&&live&&ui.f>=0&&ms.b[ui.f]!==AY.toMove(ms))clearPrep();
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function ayTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=AY.toMove(st),me=seatName(st.turn);
-  if(ui.f>=0){status(targets(st,ui.f).length?t('st_sel'):t('st_selNone'),'turn',[RST]);return;}
+  if(ui.f>=0){status(soloWho(st.turn,targets(st,ui.f).length?t('st_sel'):t('st_selNone')),'turn',[RST]);return;}
   const sw=st.swap&&st.ply===1;
-  status((S?t('st_playN',{name:me,c:CN(c)}):t('st_play',{c:CN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
+  status((S?tN('st_playN',{name:me,c:CN(c)}):t('st_play',{c:CN(c)}))+(sw?t('st_swapQ'):''),'turn',[sw?{id:'bSwap',label:t('swap'),on:()=>{dropHint();clearPrep();send('swap');}}:null,...idle]);
   if(sw&&$('bSwap'))$('bSwap').title=t('swapT');}
-function ayWaitStatus({r}){status(t('st_turnC',{name:seatName(r.st.turn),c:CN(AY.toMove(r.st))}));return true;}
+function ayWaitStatus({r}){status(tN('st_turnC',{name:seatName(r.st.turn),c:CN(AY.toMove(r.st))}));return true;}
 function pendText(mv,st){const [f,tt]=String(mv).split('-');return [t('pend',{f,t:tt}),t('confirm1')];}
 function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
   if(dot){dot.className='dot sst '+CK(col);dot.title=CN(col);}
@@ -377,7 +364,7 @@ function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i
   const st=meSt(r),c=AY.toMove(st);
   if(i===ui.t){if(ui.pending&&GAME.again(ui.pending)){pendAgain();return;}ui.t=-1;ui.pending=null;renderGame();return;}   // the provisional stone clicked again: played (C14)
   if(i===ui.f){clearPrep();renderGame();return;}
-  if(st.b[i]===c){clearPrep();ui.f=i;tone(880,.05,.03);renderGame();return;}
+  if(st.b[i]===c){clearPrep();ui.f=i;renderGame();return;}
   if(ui.f>=0&&targets(st,ui.f).includes(i)){const code=nm(st,ui.f)+'-'+nm(st,i);
     if(!confirmOn()&&!touch){clearPrep();send(code);return;}ui.t=i;ui.pending=code;renderGame();return;}}
 $('needConfirm').checked=LS.get('ayu-confirm',true)!==false;
@@ -411,7 +398,7 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   const a=G.pad,b=G.pad+(n-1)*CELL;let d='';for(let k=0;k<n;k++){const v=G.pad+k*CELL;d+=`M${a} ${v}H${b}M${v} ${a}V${b}`;}
   el('path',{d,stroke:'var(--sgrid)','stroke-width':1,fill:'none','vector-effect':'non-scaling-stroke'},svg);
   {const e=n>11?3:2,h=[e,(n-1)/2,n-1-e];for(const x of h)for(const y of h)if(x===y||x+y===n-1)el('circle',{cx:G.pad+x*CELL,cy:G.pad+y*CELL,r:CELL*.11,fill:'var(--sstar)'},svg);}
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'var(--f-mono)','font-weight':600,'font-size':CELL*.3,fill:'var(--slab)'},svg);e.textContent=s;};
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':CELL*.3},svg);e.textContent=s;};
     for(let k=0;k<n;k++){lab(G.pad+k*CELL,W-CELL*.3,String.fromCharCode(97+k));lab(CELL*.3,G.pad+(n-1-k)*CELL,String(k+1));}}
   const g=el('g',{'pointer-events':'none'},svg),mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?AY.toMove(ms):-1;
   let F=-1,T=-1;if(mine&&hintOn()){const m=/^([a-z]\d+)-([a-z]\d+)$/.exec(String(hintMv));if(m){F=AY.parse(n,m[1]);T=AY.parse(n,m[2]);}}else if(mine){F=ui.f;T=ui.t;}
@@ -449,11 +436,15 @@ function gen(S){const st=shim(S),out=[];for(const [f,t] of AY.legalMoves(st)){co
 const done=S=>{if(S.over===undefined)S.over=!AY.legalMoves(shim(S)).length;return S.over;};
 const result=(S,p)=>S.c===p?1000:-1000;
 function play(S,m){return {n:S.n,b:AY.after(shim(S),m[0],m[1]),c:1-S.c};}
-const KS=AISearch({moves:gen,play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S});
-function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]};KS.start(opt.time);
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=0;   // the board's size while it is on
+const KS=AISearch({moves:gen,play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
+  best:r=>{if(TELL)aiBest({move:AY.name(TELL,r.m[0])+'-'+AY.name(TELL,r.m[1]),score:r.s,depth:r.depth});}});
+function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]};KS.start(opt.nodes);
   if(P.swap&&P.ply===1){const v=evalS(S,1-S.c);if(v>0)return {move:'swap',score:v,depth:0,kind:'swap'};}
   const C=gen(S);if(!C.length)return null;
-  const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);
+  TELL=typeof aiBest==='function'?n:0;const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=0;
   return {move:AY.name(n,r.m[0])+'-'+AY.name(n,r.m[1]),score:r.s,depth:r.depth,forced:C.length===1};}
 return {search,need,gen};
 }
@@ -461,7 +452,7 @@ return {search,need,gen};
 /*NN*/
 // GENERATED by ~/Jeux/ia/games/ayu/site/build.js from games/ayu/fast.js, games/ayu/encode.js and lib/mcts.js — do not edit here.
 // The neural network computer (AlphaZero-style PUCT): AyuNN(AyuEngine(), page URL).search(pos, opt) is async; pos: the
-// aiPos() form; opt: {algo:'nn', sims (1: the network's intuition, no search), temp (choice temperature), time (ms, a cap),
+// aiPos() form; opt: {algo:'nn', sims (1: the network's intuition, no search), temp (choice temperature),
 // net (weights URL, relative to the page), cpuct, fpu; from the page (GAME.aiOpt): codes, the game's moves, for the
 // repetition rule}. onnxruntime-web (onnxruntime-web@1.20.1, WASM, one thread) and the weights are loaded on the first search.
 function AyuNN(AY, base) {
@@ -918,44 +909,52 @@ async function evalNet(leaf) {
 }
 const logit = v => { v = Math.max(-.999, Math.min(.999, v)); return Math.log((1 + v) / (1 - v)); };
 // the search on a fast position S (hist: the keys of the game's positions, S included); the move as a fast move
-async function searchS(S, hist, opt) {
+// the most visited root move so far (index), for « Play now »
+const topOf = r => { let b = 0; for (let k = 1; k < r.N.length; k++) if (r.N[k] > r.N[b]) b = k; return b; };
+// No clock stops the search (16.11.2026): it ends on its sims. tell (optional): given the most visited move so far (a
+// fast move) and the value, every 16 evaluations.
+async function searchS(S, hist, opt, tell) {
   const s = new Search(game, S, hist, cache); s.begin({sims: opt.sims, cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null, forced: 0});
-  const t0 = Date.now();   // opt.time (ms): a cap for slow machines, the search stops there even short of its sims
-  while (!s.done() && !(opt.time && s.root.P && Date.now() - t0 > opt.time)) { const leaf = s.step(); if (leaf) s.deliver(await evalNet(leaf)); }
+  let k = 0;
+  while (!s.done()) { const leaf = s.step(); if (leaf) { s.deliver(await evalNet(leaf)); if (tell && (++k & 15) === 0 && s.root.N) tell(s.root.moves[topOf(s.root)], s.value()); } }
   const a = s.pick(opt.temp || 0); let d = 0, n = s.root;
   while (n && n.N) { let b = 0; for (let k = 1; k < n.N.length; k++) if (n.N[k] > n.N[b]) b = k; if (!n.N[b]) break; d++; n = n.ch[b]; }
   return {m: s.root.moves[a], value: s.value(), depth: d, nodes: s.sims};
 }
 // the answer in the page's form (as AyuAI.search): the score a logit of the winning chances, nn: true (evalInfo)
-async function search(P, opt) {
+async function search(P, opt, tell) {
   const {S, hist} = state(P, opt.codes), L = []; F.gen(S, L); if (!L.length) return null;
   if (L.length === 1) return {move: code(S.n, L[0]), score: 0, depth: 0, forced: true, nn: true};
   await load(opt);
-  const r = await searchS(S, hist, opt);
+  const r = await searchS(S, hist, opt, tell && ((m, v) => tell({move: code(S.n, m), score: logit(v), depth: 0})));
   return {move: code(S.n, r.m), score: logit(r.value), depth: r.depth, forced: false, nn: true, nodes: r.nodes};
 }
 return {search, searchS, state, load, code, X, F, Search};
 }
 /*NNEND*/
 // The neural network levels (2 to 10, algo 'nn', AyuNN, the NN block above): the network of ~/Jeux/ia (n° 112, 14.11.2026) with a PUCT
-// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · time, a cap in ms for slower devices,
-// which stop short of `sims` · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
+// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · no time cap (16.11.2026): a slower
+// device takes longer and plays the same · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
 // BEAM, the former Fort level (two plies): what answers when the network cannot load.
 const NN_NET='ayu-net.onnx?v=112';
-const BEAM={algo:'beam',depth:2,widths:[10,8],time:5000};
+const BEAM={algo:'beam',depth:2,widths:[10,8]};
 const LEVELS={
   l0:{algo:'greedy',pick:5,temp:1},
   l1:{algo:'greedy',pick:1},
-  l2:{algo:'nn',sims:1,time:10000,net:NN_NET},
-  l3:{algo:'nn',sims:6,time:10000,net:NN_NET},
-  l4:{algo:'nn',sims:10,time:10000,net:NN_NET},
-  l5:{algo:'nn',sims:22,time:10000,net:NN_NET},
-  l6:{algo:'nn',sims:50,time:10000,net:NN_NET},
-  l7:{algo:'nn',sims:130,time:10000,net:NN_NET},
-  l8:{algo:'nn',sims:300,time:10000,net:NN_NET},
-  l9:{algo:'nn',sims:700,time:10000,net:NN_NET},
-  l10:{algo:'nn',sims:3000,time:10000,net:NN_NET}};
-const HINT={algo:'nn',sims:400,time:3000,net:NN_NET};
+  l2:{algo:'nn',sims:1,net:NN_NET},
+  l3:{algo:'nn',sims:6,net:NN_NET},
+  l4:{algo:'nn',sims:10,net:NN_NET},
+  l5:{algo:'nn',sims:22,net:NN_NET},
+  l6:{algo:'nn',sims:50,net:NN_NET},
+  l7:{algo:'nn',sims:130,net:NN_NET},
+  l8:{algo:'nn',sims:300,net:NN_NET},
+  l9:{algo:'nn',sims:700,net:NN_NET},
+  l10:{algo:'nn',sims:3000,net:NN_NET}};
+const HINT={algo:'nn',sims:1200,net:NN_NET};   // the simulations of 5 s at most on the reference Mac
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const levelDesc=o=>o.algo==='nn'?(o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims]):[o.pick>1||o.temp?'lvd_gr':'lvd_g1'];
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+AyuEngine.toString()+'\n'+AyuAI.toString()+'\n'+AyuNN.toString()+'\nconst AA=AyuAI(AyuEngine());function aiSearch(pos,opt){return AA.search(pos,opt);}'+
@@ -963,7 +962,7 @@ const aiSrc=()=>AISearch.toString()+'\n'+AyuEngine.toString()+'\n'+AyuAI.toStrin
   // if the network cannot load (offline, old browser), the BEAM level answers instead
   '\nconst NV=AyuNN(AyuEngine(),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(BEAM)+';'+
   '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
-  'NV.search(m.st,m.opt).catch(()=>AA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
+  'NV.search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>AA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
 // the network levels (r.nn): a logit of the winning chances, as Volo
 function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;if(r.forced)return {k:'ai_forced'};
   if(r.nn){if(s>4)return {k:'ai_win'};if(s<-4)return {k:'ai_lost'};return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
@@ -973,9 +972,11 @@ function evalInfo(r){if(r.move==='swap')return {k:'ai_swapped'};const s=r.score;
 // ---------- the interface with common/core.js ----------
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
 const ayKey=st=>st.turn+':'+st.col[st.turn]+':'+st.b.join('');   // the engine's key of a position (repetitions)
-const GAME={id:'ayu',size:'square',codeTag:'AYU1',i18n:AY_I18N,
+const GAME={id:'ayu',seatCol:s=>(s===0)!==(!!view&&view.moves[1]==='swap')?'sB':'sW',   // seat 0 Black, White once the swap is taken
+  size:'square',codeTag:'AYU1',i18n:AY_I18N,
   again:mv=>/^[a-z]\d+-[a-z]\d+$/.test(String(mv)),
   rules:g=>AY.rules(g),
+  sgf:{sz:v=>AY.rules(v).size},   // the moves' codes are the notation (« c3-c4 », « swap »); B and W: seat 0 and seat 1 (games/ayu in ~/Jeux/ia reads them)
   form:p=>{const r=AY.rules({size:$(p+'Size').value,swap:$(p+'Swap').checked});LS.set('ayu-size',r.size);LS.set('ayu-swap',r.swap);return r;},
   replay:(r,m)=>!m.length?AY.replay(r,m):replayKept(r,m,{init:g=>{const st=AY.init(AY.rules(g));st.seen[ayKey(st)]=1;return st;},
     play(prev,mv){const st=deepCopy(prev),code=AY.legal(st,mv);if(code===null)return null;   // as AY.replay, move by move
@@ -990,7 +991,7 @@ const GAME={id:'ayu',size:'square',codeTag:'AYU1',i18n:AY_I18N,
   playerCard,logNode,logText,
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Size');if(!s)continue;const v=s.value||homeSize();s.innerHTML=AY.SIZES.map(n=>`<option value="${n}">${t('size_fmt',{n})}</option>`).join('');s.value=v;}},
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'l2',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc,aiPos,aiOpt:v=>({codes:v.moves}),   // the game's moves: the network reads the repetitions in them
   aiSearch:(st,opt)=>(pageAI=pageAI||AyuAI(AY)).search(aiPos(st),opt.algo==='nn'?BEAM:opt),   // no worker: no network either
   evalInfo};

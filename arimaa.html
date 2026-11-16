@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Arimaa</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
   --bg:#c9d6cf;--panel:#e4ece8;--ink:#1a2622;--muted:#4f625b;--line:#a3b8ad;   /* page: velvet green, the board's own tone lightened */
   /* the board: a dark green velvet in both themes, like a jeweller's tray; --hl is the highlight on it */
-  --wood:#203530;--wood-edge:#182a25;--sq:#2d4a43;--gridl:rgba(255,255,255,.10);--trap:#223b35;--trapk:rgba(255,255,255,.26);--coord:#8ea8a1;
+  --wood:#203530;--wood-edge:#182a25;--sq:#2d4a43;--gridl:rgba(255,255,255,.10);--trap:#223b35;--trapk:rgba(255,255,255,.26);--lab:#8ea8a1;
   /* the pieces: highlight, body, shade, rim (g = gold, s = silver), and the ink of the animal */
   --ghi:#f8e4a4;--g1:#d9ab3a;--gsh:#a67a1e;--g3:#6b4b10;--gk:#3a2908;--shi:#fbfdfe;--s1:#b7c1c9;--ssh:#7f8b94;--s3:#3d474f;--sk:#1b2228;
   --s0:var(--g1);--s0e:var(--g3);--s1e:var(--s3);   /* seat colours of the shared players' cards: Gold, Silver */
@@ -23,12 +23,12 @@
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#111a17;--panel:#1a2521;--ink:#ece6d6;--muted:#a39a80;--line:#4a4128;
-  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
+  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--lab:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
   --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#111a17;--panel:#1a2521;--ink:#ece6d6;--muted:#a39a80;--line:#4a4128;
-  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--coord:#7f9892;
+  --wood:#15241f;--wood-edge:#0f1b17;--sq:#213832;--gridl:rgba(255,255,255,.08);--trap:#172a25;--trapk:rgba(255,255,255,.20);--lab:#7f9892;
   --ghi:#fbe9ad;--g1:#e8bc45;--gsh:#b0841f;--g3:#6e4e0e;--shi:#fbfdfe;--s1:#bcc6ce;--ssh:#808c95;
   --accent:#5fd0c9;--accent-ink:#06211f;--hl:#5fd0c9;--danger:#ef7b65;--ice:rgba(190,225,255,.30);--ice2:rgba(215,236,255,.54);color-scheme:dark;}
 /* the board sits on its wood frame, on phones too (thinner there) */
@@ -87,22 +87,21 @@ html:root{--accRight:0px}
       
       
       <form class="form" id="createForm" hidden>
-        
-        <label for="cFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="goldIs">Gold (plays first)</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -169,7 +168,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -247,9 +246,9 @@ function ArimaaEngine(){
 // Arimaa strings, merged over the shared ones (core.js)
 const AR_I18N={fr:{
  mq_q:"Voulez-vous jouer Or (premier) ou Argent ?",mq_1:"Or",mq_p1:"Or",mq_p2:"Argent",mq_2:"Argent",
- title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",goldIs:"Or (commence)",
- m_aiTxt:"Sharp, le meilleur programme d'Arimaa de 2015 : trois niveaux, avec annulation.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
- setupGo:"Valider la disposition",setupGoS:"Valider",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
+ title:"Arimaa",lede:"Menez votre pièce la plus faible au bout du plateau : pousser, tirer, piéger.",by:"Un jeu d'Omar Syed.",p1:"Or",p2:"Argent",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",draw:"Partie interrompue : {why}.",
+ lvd_steps:"{n} pas de profondeur",m_aiMore:"Sharp, le meilleur programme d'Arimaa de 2015. Quatre pas font un tour. Annulation possible.",sharpBy:"L'ordinateur est Sharp, de David Wu (2015).",sharpLic:"Licence",
+ setupGo:"Confirmer la disposition",setupGoS:"Confirmer",undoStep:"Annuler le pas",undoStepS:"−1 pas",endTurn:"Terminer le tour",endTurnS:"Terminer",gold:"Or",silver:"Argent",t_caps:"Pièces prises : {l}",
  st_setup:"Disposez vos pièces : cliquez deux cases pour les échanger, puis validez.",st_oppSetup:"{n} dispose ses pièces.",st_soloTurn:"Au tour d'{n}.",
  st_steps:"Pas {k}/4 : continuez, ou terminez le tour.",st_steps4:"Pas 4/4 : terminez le tour.",
  st_same:"Le tour doit changer la position.",st_rep3:"Ce tour répéterait la position une troisième fois : il est interdit.",
@@ -259,22 +258,22 @@ const AR_I18N={fr:{
  st_pullBy:"Tirer : choisissez la pièce qui tire (cerclée).",st_pullTo:"Choisissez où va la pièce qui tire : la pièce tirée prend la case qu'elle quitte.",backTo:"Revenir avant le pas {n}",
  ht_1:"<b>Déplacer</b> Sélectionner la pièce puis cliquer sur sa destination.",ht_2:"<b>Pousser</b> Sélectionner la pièce qui pousse puis la pièce poussée. Choisir la case d'arrivée.",ht_3:"<b>Tirer</b> Sélectionner la pièce tirée puis la pièce qui tire. Choisir la case d'arrivée.",ht_4:"<b>Fin du tour</b> Après 4 pas ou moins, <span class='bt'>Terminer le tour</span>. Sinon, <span class='bt'>Annuler le pas</span> ou <span class='bt'>Réinitialiser</span>.",frozenT:"Pièce gelée : elle touche une pièce adverse plus forte et aucune pièce amie.",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>But</b> : amener un de vos lapins sur la dernière rangée, celle du camp adverse (rangée 8 pour Or, rangée 1 pour Argent).</li>
- <li><b>Pièces</b>, de la plus forte à la plus faible : <b>E</b> éléphant, <b>M</b> chameau, <b>H</b> cheval (×2), <b>D</b> chien (×2), <b>C</b> chat (×2), <b>R</b> lapin (×8). Lettres d'après la notation anglaise.</li>
- <li><b>Mise en place</b> : Or dispose ses 16 pièces sur les rangées 1 et 2 comme il veut, puis Argent sur les rangées 7 et 8. Chaque disposition compte comme un coup ; l'adversaire ne la voit qu'une fois validée.</li>
- <li><b>Tour</b> : Or commence. De 1 à 4 pas, répartis entre vos pièces comme vous voulez. Un pas : une case vers l'avant, l'arrière ou le côté, sur une case vide. Un lapin ne recule jamais. On ne peut pas passer, et le tour doit changer la position.</li>
- <li><b>Pousser et tirer</b> (2 pas) : une pièce peut déplacer une pièce adverse voisine strictement plus faible. Pousser : la pièce adverse va sur une case vide voisine, la vôtre prend sa place. Tirer : votre pièce va sur une case vide, la pièce adverse prend la case libérée. Pour pousser, cliquez votre pièce, la pièce adverse, puis la case où va la pièce adverse. Pour tirer, cliquez la pièce adverse, puis la vôtre qui la tire, puis la case où va la vôtre. L'aperçu montre le résultat.</li>
- <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte ne peut plus bouger d'elle-même, sauf si une de ses pièces amies la touche. Elle peut toujours être poussée ou tirée.</li>
- <li><b>Pièges</b> (c3, f3, c6, f6) : après chaque pas, une pièce sur un piège sans pièce amie voisine est retirée.</li>
- <li><b>Fin</b> : à la fin d'un tour, gagne d'abord le joueur qui a un lapin sur sa dernière rangée (celui qui vient de jouer passe avant l'autre) ; sinon perd celui qui n'a plus de lapin ; sinon perd celui qui doit jouer et n'a aucun coup permis. Un tour qui produirait une troisième fois la même position, même joueur au trait, est interdit.</li>
- <li><b>Jouer</b> : cliquez une de vos pièces, puis sa case d'arrivée ; au survol d'une case, l'aperçu montre le résultat ; sur écran tactile, un toucher joue le pas. Les cases possibles s'allument dès qu'une pièce est choisie. Une pièce déjà déplacée dans le tour peut repartir : il suffit de la recliquer. Chaque pas préparé est numéroté sur le plateau ; cliquer un numéro revient juste avant ce pas. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Annuler le pas, Terminer le tour ; contre l'ordinateur, Annuler le dernier coup. Mise en place : cliquez deux de vos cases pour échanger leurs pièces, puis Valider la disposition.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i> (Sharp), trois niveaux, avec annulation ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière et variantes.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <li><b>But</b> : amener un de ses lapins sur la dernière rangée, la première du camp adverse.</li>
+ <li><b>Pièces</b> : 16 par camp, de la plus forte à la plus faible : un éléphant, un chameau, deux chevaux, deux chiens, deux chats et huit lapins.</li>
+ <li><b>Mise en place</b> : Or choisit la disposition de ses pièces sur les rangées 1 et 2, puis Argent sur les rangées 7 et 8.</li>
+ <li><b>Tour</b> : Or joue le premier. Chaque tour compte de 1 à 4 pas, répartis comme on veut entre ses pièces. Un coup doit modifier la position du plateau.</li>
+ <li><b>Déplacer</b> (1 pas) : une pièce se déplace orthogonalement, chaque déplacement compte pour un pas. Un lapin ne peut pas reculer.</li>
+ <li><b>Pousser</b> (2 pas) : une pièce peut pousser une pièce adverse voisine strictement plus faible. La pièce adverse va sur une case vide voisine, la pièce qui pousse prend sa place.</li>
+ <li><b>Tirer</b> (2 pas) : une pièce peut tirer une pièce adverse voisine strictement plus faible. La pièce qui tire va sur une case vide voisine, la pièce tirée prend sa place.</li>
+ <li><b>Gel</b> : une pièce voisine d'une pièce adverse plus forte est gelée, sauf si elle est aussi voisine d'une pièce amie : elle ne peut ni bouger, ni pousser, ni tirer. Elle peut toujours être poussée ou tirée.</li>
+ <li><b>Pièges</b> : les cases mises en évidence sont des pièges. Une pièce qui y entre sans avoir de pièce amie voisine est retirée du jeu, même au milieu d'un mouvement.</li>
+ <li><b>Fin</b> : celui qui amène un lapin sur sa dernière rangée gagne. Gagne aussi un joueur dont l'adversaire n'a plus de lapin ; dans le cas (rare) où les deux joueurs n'ont plus de lapin à la fin d'un tour c'est le joueur dont c'était le tour qui gagne. Si un joueur n'a aucun coup valide, il perd.</li>
+ <li><b>Répétition</b> : un tour qui ferait revenir une troisième fois la même position, même joueur au trait, est interdit.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa est un jeu d'Omar Syed (2002). Règles : <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },en:{
  mq_q:"Do you want to play Gold (first) or Silver?",mq_1:"Gold",mq_p1:"Gold",mq_p2:"Silver",mq_2:"Silver",
- title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",goldIs:"Gold (plays first)",
- m_aiTxt:"Sharp, the strongest Arimaa program of 2015: three levels, with undo.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
+ title:"Arimaa",lede:"Get your weakest piece to the far side: push, pull, trap.",by:"A game by Omar Syed.",p1:"Gold",p2:"Silver",rm_ask:"{n} offers a new game, colours swapped.",draw:"Game stopped: {why}.",
+ lvd_steps:"{n} steps deep",m_aiMore:"Sharp, the strongest Arimaa program of 2015. Four steps make a turn. Undo allowed.",sharpBy:"The computer is Sharp, by David Wu (2015).",sharpLic:"Licence",
  setupGo:"Confirm the setup",setupGoS:"Confirm",undoStep:"Undo step",undoStepS:"−1 step",endTurn:"End turn",endTurnS:"End",gold:"Gold",silver:"Silver",t_caps:"Captured pieces: {l}",
  st_setup:"Arrange your pieces: click two squares to swap them, then confirm.",st_oppSetup:"{n} is arranging their pieces.",st_soloTurn:"{n} to move.",
  st_steps:"Step {k}/4: go on, or end the turn.",st_steps4:"Step 4/4: end the turn.",
@@ -285,23 +284,23 @@ const AR_I18N={fr:{
  st_pullBy:"Pull: choose the piece that pulls (ringed).",st_pullTo:"Choose where the pulling piece goes: the pulled piece takes the square it leaves.",backTo:"Go back to before step {n}",
  ht_1:"<b>Move</b> Select the piece, then click its destination.",ht_2:"<b>Push</b> Select the pushing piece, then the pushed piece. Choose the arrival square.",ht_3:"<b>Pull</b> Select the pulled piece, then the pulling piece. Choose the arrival square.",ht_4:"<b>End of turn</b> After 4 steps or fewer, <span class='bt'>End turn</span>. Otherwise, <span class='bt'>Undo step</span> or <span class='bt'>Reset</span>.",frozenT:"Frozen piece: next to a stronger enemy piece and no friendly piece.",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Goal</b>: bring one of your rabbits to the far row, on the opponent's side (rank 8 for Gold, rank 1 for Silver).</li>
- <li><b>Pieces</b>, strongest first: <b>E</b> elephant, <b>M</b> camel, <b>H</b> horse (×2), <b>D</b> dog (×2), <b>C</b> cat (×2), <b>R</b> rabbit (×8).</li>
- <li><b>Setup</b>: Gold arranges its 16 pieces freely on ranks 1 and 2, then Silver on ranks 7 and 8. Each setup counts as a move; the opponent only sees it once confirmed.</li>
- <li><b>Turn</b>: Gold starts. 1 to 4 steps, shared among your pieces as you like. A step: one square forward, backward or sideways onto an empty square. Rabbits never step back. You cannot pass, and the turn must change the position.</li>
- <li><b>Push and pull</b> (2 steps): a piece can move an adjacent, strictly weaker opposing piece. Push: the opposing piece goes to an empty neighbouring square and yours takes its place. Pull: your piece steps to an empty square and the opposing piece takes the square it left. To push, click your piece, the opposing piece, then the square the opposing piece goes to. To pull, click the opposing piece, then your piece that pulls it, then the square your piece goes to. The preview shows the result.</li>
- <li><b>Frozen</b>: a piece next to a stronger opposing piece cannot move by itself, unless a friendly piece touches it. It can still be pushed or pulled.</li>
- <li><b>Traps</b> (c3, f3, c6, f6): after each step, a piece on a trap with no friendly neighbour is removed.</li>
- <li><b>End</b>: at the end of a turn, first a player with a rabbit on their far row wins (the player who just moved comes first); otherwise a player with no rabbit left loses; otherwise the player to move loses if they have no allowed move. A turn that would produce the same position, same player to move, for the third time is not allowed.</li>
- <li><b>Playing</b>: click one of your pieces, then its arrival square; hovering a square previews the result; on a touch screen, a tap plays the step. The possible squares light up as soon as a piece is chosen. A piece already moved in this turn can move on: just click it again. Each prepared step is numbered on the board; clicking a number goes back to just before that step. The turn's commands are in the bar under the board: Reset, Undo step, End turn; against the computer, Undo last move. Setup: click two of your squares to swap their pieces, then Confirm the setup.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i> (Sharp), three levels, with undo; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back and variations.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <li><b>Goal</b>: bring one of your rabbits to the far row, the first row of the opponent's side.</li>
+ <li><b>Pieces</b>: 16 per side, strongest to weakest: one elephant, one camel, two horses, two dogs, two cats and eight rabbits.</li>
+ <li><b>Setup</b>: Gold chooses the arrangement of its pieces on ranks 1 and 2, then Silver on ranks 7 and 8.</li>
+ <li><b>Turn</b>: Gold plays first. Each turn has 1 to 4 steps, shared as you like among your pieces. A move must change the position on the board.</li>
+ <li><b>Move</b> (1 step): a piece moves orthogonally; each move counts as one step. A rabbit cannot step back.</li>
+ <li><b>Push</b> (2 steps): a piece can push an adjacent, strictly weaker opposing piece. The opposing piece goes to an empty neighbouring square, and the pushing piece takes its place.</li>
+ <li><b>Pull</b> (2 steps): a piece can pull an adjacent, strictly weaker opposing piece. The pulling piece goes to an empty neighbouring square, and the pulled piece takes its place.</li>
+ <li><b>Frozen</b>: a piece next to a stronger opposing piece is frozen, unless it is also next to a friendly piece: it can neither move, nor push, nor pull. It can still be pushed or pulled.</li>
+ <li><b>Traps</b>: the highlighted squares are traps. A piece that enters one with no friendly piece next to it is removed from the game, even in the middle of a move.</li>
+ <li><b>End</b>: whoever brings a rabbit to their far row wins. A player whose opponent has no rabbit left also wins; in the (rare) case where neither player has a rabbit left at the end of a turn, the player whose turn it was wins. A player with no legal move loses.</li>
+ <li><b>Repetition</b>: a turn that would bring the same position back for the third time, with the same player to move, is not allowed.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa was designed by Omar Syed (2002). Rules: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 },es:{
  mq_q:"¿Quieres jugar con Oro (primero) o con Plata?",mq_1:"Oro",mq_p1:"con Oro",mq_p2:"con Plata",mq_2:"Plata",
- title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",goldIs:"Oro (empieza)",
- m_aiTxt:"Sharp, el mejor programa de Arimaa de 2015: tres niveles, con deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
- setupGo:"Validar la colocación",setupGoS:"Validar",undoStep:"Deshacer el paso",undoStepS:"−1 paso",endTurn:"Terminar el turno",endTurnS:"Terminar",gold:"Oro",silver:"Plata",t_caps:"Piezas capturadas: {l}",
+ title:"Arimaa",lede:"Lleva tu pieza más débil al otro extremo: empujar, tirar, atrapar.",by:"Un juego de Omar Syed.",p1:"Oro",p2:"Plata",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",draw:"Partida interrumpida: {why}.",
+ lvd_steps:"{n} pasos de profundidad",m_aiMore:"Sharp, el mejor programa de Arimaa de 2015. Cuatro pasos hacen un turno. Se puede deshacer.",sharpBy:"El ordenador es Sharp, de David Wu (2015).",sharpLic:"Licencia",
+ setupGo:"Confirmar la colocación",setupGoS:"Confirmar",undoStep:"Deshacer el paso",undoStepS:"−1 paso",endTurn:"Terminar el turno",endTurnS:"Terminar",gold:"Oro",silver:"Plata",t_caps:"Piezas capturadas: {l}",
  st_setup:"Coloca tus piezas: haz clic en dos casillas para intercambiarlas y luego valida.",st_oppSetup:"{n} coloca sus piezas.",st_soloTurn:"Le toca a {n}.",
  st_steps:"Paso {k}/4: continúa o termina el turno.",st_steps4:"Paso 4/4: termina el turno.",
  st_same:"El turno debe cambiar la posición.",st_rep3:"Este turno repetiría la posición por tercera vez: está prohibido.",
@@ -311,17 +310,17 @@ const AR_I18N={fr:{
  st_pullBy:"Tirar: elige la pieza que tira (rodeada).",st_pullTo:"Elige adónde va la pieza que tira: la pieza tirada ocupa la casilla que deja.",backTo:"Volver antes del paso {n}",
  ht_1:"<b>Mover</b> Selecciona la pieza y haz clic en su destino.",ht_2:"<b>Empujar</b> Selecciona la pieza que empuja y luego la pieza empujada. Elige la casilla de llegada.",ht_3:"<b>Tirar</b> Selecciona la pieza tirada y luego la pieza que tira. Elige la casilla de llegada.",ht_4:"<b>Fin del turno</b> Tras 4 pasos o menos, <span class='bt'>Terminar el turno</span>. Si no, <span class='bt'>Deshacer el paso</span> o <span class='bt'>Reiniciar</span>.",frozenT:"Pieza congelada: toca una pieza adversaria más fuerte y ninguna pieza amiga.",
  rules:`<summary>Reglas en breve</summary><ul>
- <li><b>Objetivo</b>: llevar uno de tus conejos a la última fila, la del bando adversario (fila 8 para Oro, fila 1 para Plata).</li>
- <li><b>Piezas</b>, de la más fuerte a la más débil: <b>E</b> elefante, <b>M</b> camello, <b>H</b> caballo (×2), <b>D</b> perro (×2), <b>C</b> gato (×2), <b>R</b> conejo (×8). Letras según la notación inglesa.</li>
- <li><b>Colocación</b>: Oro coloca sus 16 piezas en las filas 1 y 2 como quiera, y luego Plata en las filas 7 y 8. Cada colocación cuenta como una jugada; el adversario solo la ve una vez validada.</li>
- <li><b>Turno</b>: Oro empieza. De 1 a 4 pasos, repartidos entre tus piezas como quieras. Un paso: una casilla hacia delante, hacia atrás o hacia un lado, a una casilla vacía. Un conejo nunca retrocede. No se puede pasar, y el turno debe cambiar la posición.</li>
- <li><b>Empujar y tirar</b> (2 pasos): una pieza puede desplazar una pieza adversaria vecina estrictamente más débil. Empujar: la pieza adversaria va a una casilla vacía vecina y la tuya ocupa su lugar. Tirar: tu pieza va a una casilla vacía y la pieza adversaria ocupa la casilla liberada. Para empujar, haz clic en tu pieza, en la pieza adversaria y luego en la casilla adonde va la pieza adversaria. Para tirar, haz clic en la pieza adversaria, luego en la tuya que tira de ella y luego en la casilla adonde va la tuya. La vista previa muestra el resultado.</li>
- <li><b>Congelación</b>: una pieza vecina de una pieza adversaria más fuerte ya no puede moverse por sí misma, salvo si una de sus piezas amigas la toca. Aun así, se la puede empujar o tirar de ella.</li>
- <li><b>Trampas</b> (c3, f3, c6, f6): tras cada paso, una pieza situada en una trampa sin ninguna pieza amiga vecina se retira.</li>
- <li><b>Final</b>: al final de un turno, gana primero el jugador que tiene un conejo en su última fila (el que acaba de jugar pasa antes que el otro); si no, pierde el que ya no tiene conejos; si no, pierde el que debe jugar y no tiene ninguna jugada permitida. Un turno que produjera por tercera vez la misma posición, con el mismo jugador al turno, está prohibido.</li>
- <li><b>Jugar</b>: haz clic en una de tus piezas y luego en su casilla de llegada; al pasar el ratón por una casilla, la vista previa muestra el resultado; en pantalla táctil, un toque juega el paso. Las casillas posibles se iluminan en cuanto se elige una pieza. Una pieza ya movida en el turno puede seguir: basta con volver a hacer clic en ella. Cada paso preparado lleva un número en el tablero; hacer clic en un número vuelve justo antes de ese paso. Los mandos del turno están en la barra bajo el tablero: Reiniciar, Deshacer el paso, Terminar el turno; contra el ordenador, Deshacer la última jugada. Colocación: haz clic en dos de tus casillas para intercambiar sus piezas y luego en Validar la colocación.</li>
- <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i> (Sharp), tres niveles, con deshacer; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás y variantes.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
+ <li><b>Objetivo</b>: llevar uno de sus conejos a la última fila, la primera del bando adversario.</li>
+ <li><b>Piezas</b>: 16 por bando, de la más fuerte a la más débil: un elefante, un camello, dos caballos, dos perros, dos gatos y ocho conejos.</li>
+ <li><b>Colocación</b>: Oro elige la disposición de sus piezas en las filas 1 y 2, y luego Plata en las filas 7 y 8.</li>
+ <li><b>Turno</b>: Oro juega primero. Cada turno consta de 1 a 4 pasos, repartidos como se quiera entre sus piezas. Una jugada debe modificar la posición del tablero.</li>
+ <li><b>Mover</b> (1 paso): una pieza se desplaza ortogonalmente; cada desplazamiento cuenta como un paso. Un conejo no puede retroceder.</li>
+ <li><b>Empujar</b> (2 pasos): una pieza puede empujar una pieza adversaria vecina estrictamente más débil. La pieza adversaria va a una casilla vacía vecina y la pieza que empuja ocupa su lugar.</li>
+ <li><b>Tirar</b> (2 pasos): una pieza puede tirar de una pieza adversaria vecina estrictamente más débil. La pieza que tira va a una casilla vacía vecina y la pieza de la que tira ocupa su lugar.</li>
+ <li><b>Congelación</b>: una pieza vecina de una pieza adversaria más fuerte está congelada, salvo si también es vecina de una pieza amiga: no puede ni moverse, ni empujar, ni tirar. Aun así, se la puede empujar o tirar de ella.</li>
+ <li><b>Trampas</b>: las casillas resaltadas son trampas. Una pieza que entra en una sin tener ninguna pieza amiga vecina se retira del juego, incluso en medio de un movimiento.</li>
+ <li><b>Final</b>: quien lleva un conejo a su última fila gana. También gana un jugador cuyo adversario ya no tiene conejos; en el caso (raro) de que ninguno de los dos tenga conejos al final de un turno, gana el jugador al que le tocaba jugar. Si un jugador no tiene ninguna jugada válida, pierde.</li>
+ <li><b>Repetición</b>: un turno que hiciera volver por tercera vez la misma posición, con el mismo jugador al turno, está prohibido.</li></ul>
  <p class="hint" style="margin-top:.6em">Arimaa es un juego de Omar Syed (2002). Reglas: <a href="http://arimaa.com/arimaa/learn/rulesIntro.html">arimaa.com</a>.</p>`
 }};
 // Piece drawings: Thibault's set (Dropbox « SVG Arimaa/Retouchés »): each drawing is the whole piece, in a 4358×4358
@@ -458,7 +457,7 @@ function hoverPreview(pv){const i=ui.hover,acts=hoverActs(pv.b,pv.used,i);if(!ac
   return {b,caps,n,to:i,walk:acts[0].k==='m'?[acts[0].f].concat(acts.map(a=>a.t)):null};}
 function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
-    if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;tone(520,.06,.03);}
+    if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;}
     renderGame();return;}
   const pv=preview(r),g=E.sgn(mySeat),b=pv.b,acts=E.actions(b,mySeat,4-pv.used);
   const mineSq=x=>b[x]&&Math.sign(b[x])===g,enemySq=x=>b[x]&&Math.sign(b[x])===-g;
@@ -472,7 +471,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
   else if(ui.enemy>=0&&ui.via>=0){const a=acts.find(x=>x.k==='P'&&x.a===ui.via&&x.e===ui.enemy&&x.to===i);if(a){doAct(a);return;}
     const was=ui.enemy,via=ui.via;clearSel();if(i===was){ui.sel=via;renderGame();return;}if(i===via){renderGame();return;}}
   else if(ui.sel>=0){const m=acts.find(a=>a.k==='m'&&a.f===ui.sel&&a.t===i);if(m){doAct(m);return;}
-    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();tone(520,.06,.03);renderGame();winNow();return;}
+    const far=reach(b,mySeat,ui.sel,4-pv.used).get(i);if(far){ui.acts.push(...far.path);clearSel();renderGame();winNow();return;}
     if(enemySq(i)&&acts.some(a=>a.k==='P'&&a.e===i&&a.a===ui.sel)){   // an enemy it can push (to pull, the enemy comes first)
       ui.enemy=i;ui.via=ui.sel;renderGame();return;}
     // a second click on the selection deselects it (and nothing else: going back is done with the numbered steps)
@@ -481,7 +480,7 @@ function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,v
   if(enemySq(i)&&pulls(i).length){ui.enemy=i;ui.pullOnly=true;renderGame();return;}   // an enemy piece that can be pulled: pull it, enemy first
   if(canAct){ui.sel=i;renderGame();return;}
   renderGame();}
-function doAct(a){ui.acts.push(a);clearSel();tone(520,.06,.03);renderGame();winNow();}
+function doAct(a){ui.acts.push(a);clearSel();renderGame();winNow();}
 // C14: a step that wins the game at once (a rabbit on the far row, the last opposing rabbit taken, the opponent left
 // without a move) ends the turn by itself, with no confirmation
 function winNow(){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r)||r.st.n<2)return;
@@ -568,8 +567,8 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
   // coordinates (core: coordsOn): a–h under the board, 1–8 on its left; without them, a tighter viewBox (--board-ar too)
   svg.setAttribute('viewBox',coordsOn?'-22 -4 506 508':'-4 -4 488 488');
   if(coordsOn){
-    for(let c=0;c<8;c++){const tx=el('text',{x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=(flip?'hgfedcba':'abcdefgh')[c];}
-    for(let r=0;r<8;r++){const tx=el('text',{x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':15,fill:'var(--coord)'},svg);tx.textContent=String(flip?8-r:r+1);}}
+    for(let c=0;c<8;c++){const tx=el('text',{class:'coord',x:c*S+S/2,y:8*S+16,'text-anchor':'middle','font-size':15},svg);tx.textContent=(flip?'hgfedcba':'abcdefgh')[c];}
+    for(let r=0;r<8;r++){const tx=el('text',{class:'coord',x:-11,y:(7-r)*S+S/2+5,'text-anchor':'middle','font-size':15},svg);tx.textContent=String(flip?8-r:r+1);}}
   const lay=el('g',{'pointer-events':'none'},svg);trapLinks(lay,shown);
   if(o.pv){ // turn being prepared: real position in transparency, moved pieces with a dotted ring
     for(let i=0;i<64;i++){const v=shown[i],rv=real[i];
@@ -605,10 +604,18 @@ function drawBoard(o){const svg=$('svg');svg.textContent='';const real=o.real,sh
 // compiled to WebAssembly without threads (build: ~/Jeux/outils/sharp_wasm). It runs in the worker of common/core.js:
 // the worker source loads sharp/sharp.wasm synchronously, writes the game so far in Sharp's move-list notation
 // (« 1g Ra1 … », one line per turn, the last line only the turn to play) to Sharp's virtual file system, runs Sharp
-// for a set time, and turns the steps Sharp prints back into this page's codes (setup S…, actions m/P/L).
-// Levels: thinking time in seconds; the first level also caps the search at 4 steps (one turn, no look-ahead).
-const SHARP_V=1;
-const LEVELS={debutant:{t:1,d:4},moyen:{t:3},fort:{t:10}};
+// to a set depth, and turns the steps Sharp prints back into this page's codes (setup S…, actions m/P/L).
+// Levels: d, the depth of Sharp's search in steps (4 = one turn, no look-ahead); never a time (16.11.2026): Sharp's
+// own clock (-t) is set out of reach, so a level plays the same on every device. One more step of depth takes about
+// 3.5 times longer, so the former 3 and 10 s cannot be matched closely: 10 and 11 steps are what Sharp completed in
+// those times on the reference Mac (M3 Pro; medians 2 and 7 s a move, up to 4 and 20 s;
+// outils/aitools/res/budgets-2026-11-16.md).
+const SHARP_V=1,SHARP_T=86400;
+const LEVELS={debutant:{d:4},moyen:{d:10},fort:{d:11}};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"Sharp, de David Wu",en:"Sharp, by David Wu",es:"Sharp, de David Wu"};
+const levelDesc=o=>['lvd_steps',o.d];
 // Sharp's setup tokens (« Ra1 … ») -> 'S' + the 16 letters in E.SETUP_SQ order
 function sharpSetup(E,toks,s){const at={};for(const t of toks){const m=/^([RCDHME])([a-h][1-8])$/i.exec(t);if(m)at[m[2]]=m[1].toUpperCase();}
   const L=E.SETUP_SQ[s].map(i=>at[E.sq(i)]);return L.every(Boolean)?'S'+L.join(''):null;}
@@ -621,7 +628,7 @@ function sharpTurn(E,b,s,steps){const out=[];
     return false;};
   return rec(b,0,4)?out.join(','):null;}
 function sharpSearch(pos,opt){OUT=[];Module.FS.writeFile('/g.txt',opt.hist+'\n');
-  const a=['-movefile','/g.txt','-t',String(opt.t),'-hashmem','64MB','-no-output-files'];if(opt.d)a.push('-d',String(opt.d));
+  const a=['-movefile','/g.txt','-t',String(SHARP_T),'-d',String(opt.d||4),'-hashmem','64MB','-no-output-files'];if(opt.seed)a.push('-seed',String(opt.seed));
   try{Module.callMain(a);}catch(e){}
   const line=OUT.filter(l=>l&&/^[RCDHMErcdhme][a-h][1-8]/.test(l.trim())).pop()||'',toks=line.trim().split(/\s+/),b=Int8Array.from(pos.b);
   const move=pos.n<2?sharpSetup(E,toks,pos.turn):sharpTurn(E,b,pos.turn,toks.filter(x=>!/x$/.test(x)));
@@ -630,7 +637,7 @@ function aiSrc(){const u=f=>JSON.stringify(new URL('sharp/'+f+'?v='+SHARP_V,loca
   return `const E=(${ArimaaEngine})();
 ${sharpSetup}
 ${sharpTurn}
-let OUT=[];
+let OUT=[];const SHARP_T=${SHARP_T};
 var Module={print:s=>OUT.push(s),printErr:()=>{},noInitialRun:true};
 {const x=new XMLHttpRequest();x.open('GET',${u('sharp.wasm')},false);x.responseType='arraybuffer';x.send();Module.wasmBinary=x.response;}
 importScripts(${u('sharp.js')});
@@ -707,11 +714,16 @@ const GAME={id:'arimaa',howto:{n:4,scene:arHowto,titled:true},size:'arimaa',code
   enc:c=>c,describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:arBoard,turnStatus:arTurnStatus,waitStatus:arWaitStatus,
   hintable:()=>false,   // no Hint button (core offers it otherwise, now that there is a computer)
-  levels:LEVELS,levelDefault:'moyen',hintLevel:LEVELS.moyen,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:LEVELS.moyen,
   aiSrc,aiPos:st=>({b:Array.from(st.b),turn:st.turn,n:st.n}),aiOpt:v=>({hist:sharpHist(v)}),
   aiSearch:()=>null,    // no worker (some file:// setups): no computer move
   evalInfo:()=>null,
   playerCard:arPlayerCard,logDesc:e=>turnPhrase(e.det),
+  logNum:j=>(Math.floor(j/2)+1)+(j%2?'s':'g'),   // the official turn numbers: 1g, 1s (the setups), 2g, 2s…
+  // SGF: one node per turn, its value the turn in the official notation (« Ed2n Ed3n rc3x », the setup « Ra1 Rb1 … »),
+  // read back step by step (Sharp's reader); a file of the site written before XV holds the page's codes (core)
+  sgf:{val:(code,st)=>describe(code,st),
+    code:(v,st)=>{const toks=String(v).trim().split(/\s+/);return st.n<2?sharpSetup(E,toks,st.turn):sharpTurn(E,st.b,st.turn,toks.filter(x=>!/x$/.test(x)));}},
   home:()=>drawBoard({real:new Int8Array(64),shown:new Int8Array(64)})};
 coreStart();
 </script>

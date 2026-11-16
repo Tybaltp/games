@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -19,18 +19,18 @@
   --f-mono:ui-monospace,Menlo,Consolas,monospace;
   /* the board is square, with or without the coordinates (without them the margins are tighter and the board grows) */
   --board-ar:1/1;color-scheme:light;
-  --pboard:#c49a5e;--pgrid:rgba(58,40,20,.75);--pstar:rgba(58,40,20,.85);   /* board: wood, lines, star points */
+  --pboard:#c49a5e;--lab:rgba(58,40,20,.75);--pgrid:rgba(58,40,20,.75);--pstar:rgba(58,40,20,.85);   /* board: wood, lines, star points */
   --pb:#1c1f1e;--pbe:#000;--pw:#f7f6f1;--pwe:rgba(0,0,0,.85);--mk:#C42B3A;   /* stones (fill, rim), marks */
 }
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1a1313;--panel:#251b1b;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
-  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}}
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--lab:rgba(40,26,10,.85);--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}}
 :root[data-theme="dark"]{
   --bg:#1a1313;--panel:#251b1b;--ink:#E5EAE6;--muted:#98A39D;--line:#2D3632;
   --accent:#E1737D;--accent-ink:#1A0C0E;--danger:#F2867D;
-  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}
+  --ring-b:rgba(255,255,255,.6);--ring-w:transparent;color-scheme:dark;--pboard:#b48d57;--lab:rgba(40,26,10,.85);--pgrid:rgba(40,26,10,.8);--pstar:rgba(40,26,10,.9);--pw:#f3f1ea;--pwe:rgba(0,0,0,.8);}
 h1{font-weight:400;letter-spacing:0}
 /* the wooden board, edge to edge in its frame, on every screen */
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:var(--pboard);border:0;border-radius:6px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.08),0 14px 34px -18px rgba(40,25,10,.55)}
@@ -98,22 +98,21 @@ html .accZone{background-position:var(--peX,var(--accX)) var(--peY,var(--accTop)
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">First player (places the Swap2 opening)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
+        <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
-        <label for="aFirst"><span data-i18n="opener">Who places the Swap2 opening?</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -287,11 +286,11 @@ function evaluate(c){const o=3-c;
  e+=thr[o]*capGainE(caps[c])*0.55-thr[c]*capGainE(caps[o])*0.3;
  return e;}
 
-let tt=new Map(),nodes=0,deadline=0,EXT=true,KCAP=99,MAXD=30,NOISE=0;const ABORT={abort:1};
+let tt=new Map(),nodes=0,maxN=Infinity,EXT=true,KCAP=99,MAXD=30,NOISE=0,TELL=null;const ABORT={abort:1};
 function uniqPush(arr,src){for(const j of src)if(arr.indexOf(j)<0)arr.push(j);}
 
 function search(c,depth,alpha,beta,ply){
- if(((++nodes)&511)===0&&performance.now()>deadline)throw ABORT;
+ if(((++nodes)&511)===0&&nodes>maxN)throw ABORT;
  const o=3-c;
  if(hasFour(c))return WIN-ply;
  if(caps[c]>=4&&thr[o]>0)return WIN-ply;
@@ -317,8 +316,10 @@ function search(c,depth,alpha,beta,ply){
  tt.set(key,{d:depth,v:best,f:best<=a0?2:best>=beta?1:0,m:bm});
  return best;}
 
-function think(c,ms,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||30;NOISE=P.noise||0;
- const t0=performance.now();deadline=t0+ms;nodes=0;tt=new Map();
+// budget: the positions searched at most (none: the depth is completed); no clock is read (16.11.2026), so a level
+// plays the same on every device. TELL (the main search only): the best move so far, for core's « Play now ».
+function think(c,budget,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||30;NOISE=P.noise||0;
+ maxN=budget||Infinity;nodes=0;tt=new Map();
  const o=3-c;
  const myF=foursOf(c);if(myF.length)return {move:myF[0],score:WIN,depth:1};
  if(caps[c]>=4){const cp=capPts(c);if(cp.length)return {move:cp[0],score:WIN,depth:1};}
@@ -329,7 +330,7 @@ function think(c,ms,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||3
  if(!rootMoves.length){if(!board[112])return {move:112,score:0,depth:0};for(let i=0;i<NN;i++)if(!board[i])return {move:i,score:0,depth:0};return {move:-1,score:0,depth:0};}
  if(rootMoves.length===1)return {move:rootMoves[0],score:0,depth:0};
  let best=rootMoves[0],bestScore=0,depthDone=0;
- const scores=new Map();
+ const scores=new Map();if(TELL)TELL(best,0,0);
  const base=mst.length;
  for(let d=1;d<=MAXD;d++){
   let alpha=-INF,curBest=-1,curScore=-INF;
@@ -341,10 +342,10 @@ function think(c,ms,P){P=P||{};EXT=P.ext!==false;KCAP=P.k||99;MAXD=P.maxDepth||3
   }catch(e){if(e!==ABORT)throw e;while(mst.length>base)undoMove();
    if(curBest>=0&&curBest!==best&&curScore>bestScore+50&&d>1){best=curBest;bestScore=curScore;}
    break;}
-  best=curBest;bestScore=curScore;depthDone=d;
+  best=curBest;bestScore=curScore;depthDone=d;if(TELL)TELL(best,bestScore,d);
   rootMoves.sort((p,q)=>(scores.get(q)??-INF)-(scores.get(p)??-INF));
   if(Math.abs(curScore)>WIN-1000)break;
-  if(performance.now()-t0>ms*0.45)break;
+  if(nodes>maxN*0.45)break;
  }
  if(NOISE&&depthDone>0){let bv=-INF;for(const m of rootMoves){const v=scores.get(m);if(v===undefined)continue;const nv=Math.abs(v)>WIN-1000?v:v+Math.random()*NOISE;if(nv>bv){bv=nv;best=m;bestScore=v;}}}
  return {move:best,score:Math.round(bestScore),depth:depthDone,nodes};}
@@ -359,35 +360,39 @@ function randomOpening(){const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
  do{const dx=ri(-2,2),dy=ri(-2,2);w=(by+dy)*N+bx+dx;}while(w===b1);
  do{const dx=ri(-3,3),dy=ri(-3,3);b2=(by+dy)*N+bx+dx;}while(b2===b1||b2===w);
  return [{i:b1,c:1},{i:w,c:2},{i:b2,c:1}];}
-function propose(ms){const tries=16,per=Math.max(40,(ms/tries)|0);let best=null,bs=INF;
+function propose(n){const tries=16,per=Math.max(OPEN_MIN,(n/tries)|0);let best=null,bs=INF;
  for(let t=0;t<tries;t++){const s=randomOpening();const arr=new Int8Array(NN);for(const p of s)arr[p.i]=p.c;
   loadBoard(arr,[0,0,0]);const r=think(2,per);const v=Math.abs(r.score)+Math.random()*60;
   if(v<bs){bs=v;best={stones:s,score:r.score};}}
  return best;}
 
-function suggestPlace(arr,c,ms){loadBoard(arr,[0,0,0]);let any=false;for(let i=0;i<NN;i++)if(board[i]){any=true;break;}
+function suggestPlace(arr,c,n){loadBoard(arr,[0,0,0]);let any=false;for(let i=0;i<NN;i++)if(board[i]){any=true;break;}
  const ctr=(N>>1)*N+(N>>1);if(!any)return {move:ctr,score:0};
  const cx=N>>1;let cand=gen(c,30).filter(j=>Math.abs(j%N-cx)<=4&&Math.abs(((j/N)|0)-cx)<=4).slice(0,12);
  if(!cand.length)cand=gen(c,12);
- const per=Math.max(60,(ms/cand.length)|0);let best=cand[0],bs=INF,bsc=0;
+ const per=Math.max(PLACE_MIN,(n/cand.length)|0);let best=cand[0],bs=INF,bsc=0;
  for(const j of cand){setCell(j,c);const r=think(2,per);setCell(j,0);const v=Math.abs(r.score);if(v<bs){bs=v;best=j;bsc=r.score;}}
  return {move:best,score:bsc};}
 // ===== the interface with common/core.js: one answer per phase =====
-// pos = {phase, B (225 cells: 0 empty, 1 black, 2 white), caps [0,black pairs,white pairs], toMove}; opt = a level (ms, maxDepth,
-// noise, ext, k), plus hint:true for a suggestion. The move is in the page's move form (see the page's enc()).
-function aiSearch(p,o){o=o||{};const ms=o.ms||700;
+// pos = {phase, B (225 cells: 0 empty, 1 black, 2 white), caps [0,black pairs,white pairs], toMove}; opt = a level (nodes,
+// maxDepth, noise, ext, k), plus hint:true for a suggestion. The move is in the page's move form (see the page's enc()).
+// Budgets in positions searched (what the reference Mac did in the former times, 16.11.2026): OPEN, the opening (1.5 s);
+// OPEN_MIN, PLACE_MIN: the least for one opening tried, one stone tried (40 and 60 ms).
+const OPEN=315000,OPEN_MIN=8500,PLACE_MIN=12500;
+function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  // the Swap2 opening: the most balanced of a few random openings
- if(p.phase==='open'){const r=propose(o.hint?Math.max(1500,ms):1500);return {move:{t:'o',s:r.stones.map(x=>x.i)},score:r.score,depth:1};}
+ if(p.phase==='open'){const r=propose(o.hint?Math.max(OPEN,n||0):OPEN);return {move:{t:'o',s:r.stones.map(x=>x.i)},score:r.score,depth:1};}
  loadBoard(p.B,p.caps);
  // the colour choice, judged with White to move: White if White is not worse, Black otherwise; a suggestion close to
  // the balance adds 2 stones (each placed to keep the balance) and leaves the hard choice to the opponent
- if(p.phase==='choose'||p.phase==='choose1'){const r=think(2,ms,Object.assign({},o,{noise:0})),s=r.score;
-  if(o.hint&&p.phase==='choose'&&Math.abs(s)<=250){const b=suggestPlace(p.B,1,ms/2).move,B2=Array.from(p.B);B2[b]=1;const w=suggestPlace(B2,2,ms/2).move;
+ if(p.phase==='choose'||p.phase==='choose1'){const r=think(2,n,Object.assign({},o,{noise:0})),s=r.score;
+  if(o.hint&&p.phase==='choose'&&Math.abs(s)<=250){const b=suggestPlace(p.B,1,(n||OPEN)/2).move,B2=Array.from(p.B);B2[b]=1;const w=suggestPlace(B2,2,(n||OPEN)/2).move;
    return {move:{t:'a',s:[b,w]},score:s,depth:r.depth};}
   return {move:s>=0?{t:'W',next:r.move}:{t:'B'},score:s,depth:r.depth};}
- const r=think(p.toMove,ms,o);return {move:{t:'m',i:r.move},score:r.score,depth:r.depth};}
+ if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
+ const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -402,28 +407,34 @@ const N=15,NN=N*N,LET="ABCDEFGHJKLMNOP",DIRS=[[1,0],[0,1],[1,1],[1,-1]],PWIN=100
 const coord=i=>LET[i%N]+(N-((i/N)|0));
 // The ladder (10.11.2026, outils/aitools/res/pente/niveaux.md, 300 games a pair): each level beats the one below by
 // 74-76 % (level 10, the strongest, beats 9 by 62 %). maxDepth = depth, noise = randomness added to the move scores,
-// ext:false = no forced-line extension, k = moves read per node, ms = time (levels 0 to 8 stop on depth, ms is a guard).
+// ext:false = no forced-line extension, k = moves read per node, nodes = positions searched at most. A level is an amount
+// of work, never a time (16.11.2026): levels 0 to 8 stop on their depth, 9 and 10 on their nodes, what the reference Mac
+// (M3 Pro) searched in their former 0.7 and 2.5 s (outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={
- l0:{maxDepth:1,noise:2500,ext:false,k:6,ms:3000},
- l1:{maxDepth:1,noise:750,ext:false,k:6,ms:3000},
- l2:{maxDepth:2,noise:1500,ext:false,k:6,ms:3000},
- l3:{maxDepth:2,noise:500,ext:false,k:8,ms:3000},
- l4:{maxDepth:3,noise:700,ext:false,k:9,ms:3000},
- l5:{maxDepth:4,noise:700,ext:false,k:10,ms:3000},
- l6:{maxDepth:4,noise:500,k:10,ms:3000},
- l7:{maxDepth:5,k:10,ms:3000},
- l8:{maxDepth:7,k:10,ms:6000},
- l9:{ms:700},
- l10:{ms:2500}};
+ l0:{maxDepth:1,noise:2500,ext:false,k:6},
+ l1:{maxDepth:1,noise:750,ext:false,k:6},
+ l2:{maxDepth:2,noise:1500,ext:false,k:6},
+ l3:{maxDepth:2,noise:500,ext:false,k:8},
+ l4:{maxDepth:3,noise:700,ext:false,k:9},
+ l5:{maxDepth:4,noise:700,ext:false,k:10},
+ l6:{maxDepth:4,noise:500,k:10},
+ l7:{maxDepth:5,k:10},
+ l8:{maxDepth:7,k:10},
+ l9:{nodes:150000},
+ l10:{nodes:520000}};
 const HINT={...LEVELS.l10,hint:true};
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.nodes?['lvd_nodes',o.nodes]:[o.noise?'lvd_dn':'lvd_d_ab',o.maxDepth];
 
 
 // Pente strings, merged over the shared ones (core.js)
 const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n,es:'una línea de '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Cinq alignés, ou dix pierres capturées.",by:"Un jeu de Gary Gabrel.",
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10, le plus fort",m_aiTxt:"Onze niveaux, de 0 à 10 : chacun bat le précédent environ trois parties sur quatre.",
- firstIs:"Premier joueur (pose l'ouverture Swap2)",opener:"Qui pose l'ouverture Swap2 ?",needConfirm:"Confirmer chaque coup",
+ lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_nodes:"{n} positions lues",
+ needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
  n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
  n_add2:"Ajoutez 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_openN:"{name} pose l'ouverture : 2 noires et 1 blanche ({n}/3).",n_add2N:"{who} ajoute 1 noire et 1 blanche ({n}/2) ; {name} choisira sa couleur.",n_choose1:"{name} a ajouté une noire et une blanche : choisissez votre couleur.",
@@ -437,18 +448,16 @@ const PE_I18N={fr:{
  w_five:"cinq alignées",w_caps:"cinq paires capturées",w_full:"plateau plein",
  ai_tookWhite:"L'ordinateur prend Blanc.",ai_tookBlack:"L'ordinateur prend Noir.",boardLbl:"Plateau de Pente 15 par 15",
  rules:`<summary>Règles en bref</summary><ul>
- <li>Aligner 5 pierres ou plus gagne.</li>
- <li>Encadrer exactement deux pierres adverses (X O O X) les capture. Se poser entre deux pierres adverses est sans risque.</li>
- <li>Cinq paires capturées gagnent.</li>
- <li>Swap2 : le premier joueur pose 2 noires et 1 blanche. Le second prend Noir, prend Blanc, ou ajoute 1 noire et 1 blanche et laisse choisir le premier. Blanc joue ensuite.</li>
- <li>Pendule Fischer : temps de base pour chacun, incrément ajouté après chaque action. Temps écoulé : partie perdue.</li>
- <li><b>Jouer</b> : cliquez une intersection pour y poser une pierre (au survol, elle s'affiche en transparence ; un coup gagnant est joué aussitôt). Cliquer une pierre provisoire la retire ; dans l'ouverture et les 2 pierres de plus, l'ordre n'importe pas : la pierre suivante prend la couleur de celle retirée. L'ouverture et les 2 pierres de plus attendent toujours Confirmer, même si « Confirmer chaque coup » est décoché ; le choix Noir, Blanc ou +2 pierres se fait d'un clic, sans confirmation. Les commandes du coup sont dans la barre d'actions : Noir, Blanc ou +2 pierres pour le choix de Swap2, Réinitialiser, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, onze niveaux, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>But</b> : aligner 5 pierres ou plus de sa couleur, en ligne, en colonne ou en diagonale, ou capturer 5 paires.</li>
+ <li><b>Matériel</b> : un plateau de 15 × 15 intersections, vide au départ ; des pierres noires et blanches à volonté.</li>
+ <li><b>Ouverture (Swap2)</b> : le premier joueur pose 2 noires et 1 blanche, où il veut. Le second choisit : prendre Noir, prendre Blanc, ou poser encore 1 noire et 1 blanche et laisser le premier choisir sa couleur. Blanc joue ensuite ; on alterne.</li>
+ <li><b>Tour</b> : on pose une pierre sur une intersection libre. On ne passe pas.</li>
+ <li><b>Capture</b> : une pierre posée qui encadre exactement deux pierres adverses (<svg class="capt" viewBox="0 0 66 18" width="66" height="18" role="img" aria-label="une pierre, deux pierres adverses, une pierre" style="vertical-align:-4px"><rect width="66" height="18" rx="3" fill="#c49a5e"/><path d="M0 9H66M9 0V18M25 0V18M41 0V18M57 0V18" stroke="rgba(58,40,20,.75)" stroke-width=".8"/><circle cx="9" cy="9" r="6.3" fill="#1c1f1e" stroke="#000" stroke-width=".8"/><circle cx="25" cy="9" r="6.3" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width=".8"/><circle cx="41" cy="9" r="6.3" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width=".8"/><circle cx="57" cy="9" r="6.3" fill="#1c1f1e" stroke="#000" stroke-width=".8"/></svg> : la pierre posée à un bout prend les deux pierres adverses du milieu), dans l'une des huit directions, les retire ; plusieurs paires peuvent tomber d'un même coup. Les intersections libérées redeviennent jouables. Se poser entre deux pierres adverses est sans risque.</li>
+ <li><b>Fin</b> : gagne celui qui aligne 5 pierres ou plus, ou qui a capturé 5 paires. Plateau plein sans vainqueur : nulle.</li></ul>`
 },en:{
  title:"Pente",lede:"Five in a row, or capture ten.",by:"A game by Gary Gabrel.",
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10, the strongest",m_aiTxt:"Eleven levels, from 0 to 10: each one beats the one below about three games in four.",
- firstIs:"First player (places the Swap2 opening)",opener:"Who places the Swap2 opening?",needConfirm:"Confirm each move",
+ lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_nodes:"{n} positions read",
+ needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
  n_open:"Place the opening: 2 black and 1 white ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",
  n_add2:"Add 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_openN:"{name} places the opening: 2 black and 1 white ({n}/3).",n_add2N:"{who} adds 1 black and 1 white ({n}/2); {name} then chooses a colour.",n_choose1:"{name} added a black and a white stone: choose your colour.",
@@ -462,18 +471,16 @@ const PE_I18N={fr:{
  w_five:"five in a row",w_caps:"five captured pairs",w_full:"board full",
  ai_tookWhite:"The computer takes White.",ai_tookBlack:"The computer takes Black.",boardLbl:"15 by 15 Pente board",
  rules:`<summary>Rules in brief</summary><ul>
- <li>Five or more stones in a row wins.</li>
- <li>Bracketing exactly two opposing stones (X O O X) captures them. Playing into a bracketed position is safe.</li>
- <li>Capturing five pairs wins.</li>
- <li>Swap2: the first player places 2 black stones and 1 white. The second player takes Black, takes White, or adds 1 black and 1 white and lets the first player choose. White moves next.</li>
- <li>Fischer clock: base time for each player, increment added after every action. Running out of time loses the game.</li>
- <li><b>Play</b>: click an intersection to place a stone (hovering shows it in transparency; a winning move is played at once). Clicking a provisional stone removes it; in the opening and the 2 more stones the order does not matter: the next stone takes the colour of the one removed. The opening and the 2 more stones always wait for Confirm, even with “Confirm each move” off; the Black, White or +2 stones choice is made with one click, without confirmation. The move commands are in the action bar: Black, White or +2 stones for the Swap2 choice, Reset, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, eleven levels, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+ <li><b>Goal</b>: line up 5 or more stones of your colour, in a row, a column or a diagonal, or capture 5 pairs.</li>
+ <li><b>Material</b>: a board of 15 × 15 intersections, empty at the start; black and white stones without limit.</li>
+ <li><b>Opening (Swap2)</b>: the first player places 2 black stones and 1 white, anywhere. The second player chooses: take Black, take White, or place 1 more black and 1 more white and let the first player choose a colour. White then moves; play alternates.</li>
+ <li><b>Turn</b>: place a stone on a free intersection. There is no passing.</li>
+ <li><b>Capture</b>: a stone placed that brackets exactly two opposing stones (<svg class="capt" viewBox="0 0 66 18" width="66" height="18" role="img" aria-label="a stone, two opposing stones, a stone" style="vertical-align:-4px"><rect width="66" height="18" rx="3" fill="#c49a5e"/><path d="M0 9H66M9 0V18M25 0V18M41 0V18M57 0V18" stroke="rgba(58,40,20,.75)" stroke-width=".8"/><circle cx="9" cy="9" r="6.3" fill="#1c1f1e" stroke="#000" stroke-width=".8"/><circle cx="25" cy="9" r="6.3" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width=".8"/><circle cx="41" cy="9" r="6.3" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width=".8"/><circle cx="57" cy="9" r="6.3" fill="#1c1f1e" stroke="#000" stroke-width=".8"/></svg>: the stone placed at one end takes the two opposing stones in the middle), in any of the eight directions, removes them; several pairs can fall in one move. The freed intersections can be played again. Playing between two opposing stones is safe.</li>
+ <li><b>End</b>: whoever lines up 5 or more stones, or has captured 5 pairs, wins. Board full with no winner: a draw.</li></ul>`
 },es:{
  title:"Pente",lede:"Cinco en línea, o diez piedras capturadas.",by:"Un juego de Gary Gabrel.",
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10, el más fuerte",m_aiTxt:"Once niveles, de 0 a 10: cada uno gana al anterior unas tres partidas de cada cuatro.",
- firstIs:"Primer jugador (coloca la apertura Swap2)",opener:"¿Quién coloca la apertura Swap2?",needConfirm:"Confirmar cada jugada",
+ lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_nodes:"{n} posiciones leídas",
+ needConfirm:"Confirmar cada jugada",
  black:"Negras",white:"Blancas",colw_1:"negra",colw_2:"blanca",captured:"{n} pares capturados de 5",
  n_open:"Coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_choose:"Te toca elegir: Negras, Blancas o 2 piedras más.",
  n_add2:"Añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_openN:"{name} coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_add2N:"{who} añade 1 negra y 1 blanca ({n}/2); {name} elegirá su color.",n_choose1:"{name} ha añadido una negra y una blanca: elige tu color.",
@@ -487,14 +494,12 @@ const PE_I18N={fr:{
  w_five:"cinco en línea",w_caps:"cinco pares capturados",w_full:"tablero lleno",
  ai_tookWhite:"El ordenador toma Blancas.",ai_tookBlack:"El ordenador toma Negras.",boardLbl:"Tablero de Pente de 15 por 15",
  rules:`<summary>Reglas en breve</summary><ul>
- <li>Alinear 5 piedras o más gana.</li>
- <li>Flanquear exactamente dos piedras adversarias (X O O X) las captura. Colocarse entre dos piedras adversarias no supone ningún riesgo.</li>
- <li>Cinco pares capturados ganan.</li>
- <li>Swap2: el primer jugador coloca 2 negras y 1 blanca. El segundo toma Negras, toma Blancas, o añade 1 negra y 1 blanca y deja elegir al primero. Después juegan Blancas.</li>
- <li>Reloj Fischer: tiempo base para cada uno, incremento añadido tras cada acción. Tiempo agotado: partida perdida.</li>
- <li><b>Jugar</b>: haz clic en una intersección para colocar una piedra (al pasar el ratón, se muestra en transparencia; una jugada ganadora se juega enseguida). Hacer clic en una piedra provisional la retira; en la apertura y en las 2 piedras más, el orden no importa: la piedra siguiente toma el color de la retirada. La apertura y las 2 piedras más esperan siempre Confirmar, aunque «Confirmar cada jugada» esté desmarcado; la elección Negras, Blancas o +2 piedras se hace con un clic, sin confirmación. Los mandos de la jugada están en la barra de acciones: Negras, Blancas o +2 piedras para la elección de Swap2, Reiniciar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>por enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, once niveles, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por enlace o cara a cara. Por enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>`
+ <li><b>Objetivo</b>: alinear 5 piedras o más de su color, en fila, en columna o en diagonal, o capturar 5 pares.</li>
+ <li><b>Material</b>: un tablero de 15 × 15 intersecciones, vacío al principio; piedras negras y blancas sin límite.</li>
+ <li><b>Apertura (Swap2)</b>: el primer jugador coloca 2 negras y 1 blanca, donde quiera. El segundo elige: tomar Negras, tomar Blancas, o colocar 1 negra y 1 blanca más y dejar que el primero elija su color. Después juegan Blancas; se alterna.</li>
+ <li><b>Turno</b>: se coloca una piedra en una intersección libre. No se pasa.</li>
+ <li><b>Captura</b>: una piedra colocada que flanquea exactamente dos piedras adversarias (<svg class="capt" viewBox="0 0 66 18" width="66" height="18" role="img" aria-label="una piedra, dos piedras adversarias, una piedra" style="vertical-align:-4px"><rect width="66" height="18" rx="3" fill="#c49a5e"/><path d="M0 9H66M9 0V18M25 0V18M41 0V18M57 0V18" stroke="rgba(58,40,20,.75)" stroke-width=".8"/><circle cx="9" cy="9" r="6.3" fill="#1c1f1e" stroke="#000" stroke-width=".8"/><circle cx="25" cy="9" r="6.3" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width=".8"/><circle cx="41" cy="9" r="6.3" fill="#f7f6f1" stroke="rgba(0,0,0,.85)" stroke-width=".8"/><circle cx="57" cy="9" r="6.3" fill="#1c1f1e" stroke="#000" stroke-width=".8"/></svg>: la piedra colocada en un extremo toma las dos piedras adversarias del medio), en cualquiera de las ocho direcciones, las retira; varios pares pueden caer en una misma jugada. Las intersecciones liberadas vuelven a poder jugarse. Colocarse entre dos piedras adversarias no supone ningún riesgo.</li>
+ <li><b>Final</b>: gana quien alinea 5 piedras o más, o quien ha capturado 5 pares. Tablero lleno sin vencedor: tablas.</li></ul>`
 }};
 for(let n=6;n<=9;n++){const l=LINES(n);PE_I18N.fr['w_line'+n]=l.fr;PE_I18N.en['w_line'+n]=l.en;PE_I18N.es['w_line'+n]=l.es;}
 const CN=c=>c===1?t('black'):c===2?t('white'):'';
@@ -693,7 +698,7 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   el('rect',{x:P(0),y:P(0),width:P(N-1)-P(0),height:P(N-1)-P(0),fill:'none',stroke:'var(--pgrid)','stroke-width':1.6,'vector-effect':'non-scaling-stroke'},svg);
   for(const a of [3,7,11])for(const b of [3,7,11])el('circle',{cx:P(a),cy:P(b),r:CELL*.11,fill:'var(--pstar)'},svg);
   // coordinates (core: coordsOn): letters under the board, numbers on its left
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-family':'Figtree, system-ui, sans-serif','font-weight':600,'font-size':CELL*.36,fill:'rgba(58,40,20,.7)'},svg);e.textContent=s;};
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':CELL*.32},svg);e.textContent=s;};
     for(let k=0;k<N;k++){lab(P(k),SZ-PAD*.45,LET[k]);lab(PAD*.45,P(k),String(N-k));}}
   const sh=shown;
   if(sh&&view){const st=sh.d.st,g=el('g',{},svg);
@@ -746,7 +751,9 @@ function fromOld(S){try{const f=S.first,o=f==='H'?'G':'H',L=S.log||[],op=L.filte
   return {moves:mv,result:rs,first:f,names:S.names?[S.names[f]||'',S.names[o]||'']:['',''],clock:S.clocks?[S.clocks[f]||0,S.clocks[o]||0]:[0,0],tc:S.tc||null,started:S.phase!=='wait'};}catch(e){return null;}}
 
 // ---------- the interface with common/core.js ----------
-const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
+const GAME={id:'pente',seatCol:s=>{const m=view?view.moves:[],c1=m[1]==='B'||m[1]==='W'?m[1]:/^a/.test(m[1]||'')&&(m[2]==='B'||m[2]==='W')?(m[2]==='B'?'W':'B'):null;   // Swap2: Noir / Blanc once chosen
+    return c1?((s===1)===(c1==='B')?'black':'white'):null;},
+  size:N,codeTag:'PENTE1',i18n:PE_I18N,
   rules:()=>({}),form:()=>({}),
   replay:peReplay,
   legal:(st,code)=>legalCode(st,code),
@@ -758,7 +765,7 @@ const GAME={id:'pente',size:N,codeTag:'PENTE1',i18n:PE_I18N,
   playerCard,
   logText:e=>logTxt(e),
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,levelDefault:'l4',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc,aiPos,aiSearch:aiSearchPage,
   evalInfo:res=>evalInfo(res)};
 coreStart();

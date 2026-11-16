@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Jeux</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,7 @@
 :root[data-theme="dark"]{--bg:#0e1a24;--ink:#e4eef5;--muted:#93a8b9;--line:#24384a;--panel:#15232f;--accent:#5cb6e6;--warn:#2a2116;--warn-line:#6b5530;--err:#f08a80}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
-main{max-width:64rem;margin:0 auto;padding:8vh 16px 48px}
+main{max-width:64rem;margin:0 auto;padding:8vh max(16px,env(safe-area-inset-right,0px)) max(48px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 h1{font-size:1.8rem;margin:0 0 4px}
 .lede{color:var(--muted);margin:0 0 20px;max-width:42rem}
@@ -44,6 +44,9 @@ details.how li{margin:.35em 0}
 .code input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:9.5em;min-width:0;letter-spacing:.04em}
 .code button{font:inherit;font-size:.9rem;font-weight:600;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:8px;padding:7px 14px;cursor:pointer}
 .code .err{flex-basis:100%;margin:0;font-size:.88rem;color:var(--err)}
+/* Mochalunt: one line, one link, under the games (decision of 15.11.2026); the foot: « Signaler un défaut » */
+.mline{margin:18px 0 0;color:var(--muted)}.mline a{color:var(--ink);font-weight:650}.mline a:hover{color:var(--accent)}
+footer{margin-top:32px;font-size:.85rem}footer a{color:var(--muted)}footer a:hover{color:var(--accent)}
 details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
 </style>
 </head>
@@ -62,25 +65,28 @@ details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--war
   <p class="warn" data-i18n-html="warn"></p>
 </details>
 <ul class="cards">
+<li><a class="gc c-arimaa" href="arimaa.html"><span class="ct">Arimaa</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-ayu" href="ayu.html"><span class="ct">Ayu</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-dblocks" href="diagonalblocks.html"><span class="ct">Diagonal Blocks</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-gyges" href="gyges.html"><span class="ct">Gygès</span><span class="bar"></span><span class="art"></span></a></li>
 <li><a class="gc c-pente" href="pente.html"><span class="ct">Pente</span><span class="bar"></span><span class="art"></span></a></li>
 <li><a class="gc c-ponte" href="pontedeldiavolo.html"><span class="ct">Ponte <em>del</em> Diavolo</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-zertz" href="zertz.html"><span class="ct">Zèrtz</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-volo" href="volo.html"><span class="ct">Volo</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-arimaa" href="arimaa.html"><span class="ct">Arimaa</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-gyges" href="gyges.html"><span class="ct">Gygès</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-tintas" href="tintas.html"><span class="ct">Tintas</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-dblocks" href="diagonalblocks.html"><span class="ct">Diagonal Blocks</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-quarto" href="quarto.html"><span class="ct">Quarto</span><span class="bar"></span><span class="art"></span></a></li>
 <li><a class="gc c-pylos" href="pylos.html"><span class="ct">Pylos</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-ayu" href="ayu.html"><span class="ct">Ayu</span><span class="bar"></span><span class="art"></span></a></li>
-<li><a class="gc c-slither" href="slither.html"><span class="ct">Slither</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-quarto" href="quarto.html"><span class="ct">Quarto</span><span class="bar"></span><span class="art"></span></a></li>
 <li><a class="gc c-siam" href="siam.html"><span class="ct">Siam</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-slither" href="slither.html"><span class="ct">Slither</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-tintas" href="tintas.html"><span class="ct">Tintas</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-volo" href="volo.html"><span class="ct">Volo</span><span class="bar"></span><span class="art"></span></a></li>
+<li><a class="gc c-zertz" href="zertz.html"><span class="ct">Zèrtz</span><span class="bar"></span><span class="art"></span></a></li>
 </ul>
+<p class="mline"><a href="mochalunt.html">Mochalunt</a><span data-i18n="mochaT"></span></p>
+<footer><a href="#" id="reportLink" data-i18n="report"></a></footer>
 </main>
 <script src="common/codes.js?v=8"></script>
 <script>
 const I18N={
  fr:{title:"Jeux",lede:"Jeux de plateau à deux, de navigateur à navigateur. Créez une partie, envoyez le code, jouez.",
+     mochaT:" : un match en plusieurs jeux, entre deux joueurs.",report:"Signaler un défaut",rp_subj:"Jeux (accueil) : défaut",rp_body:"Décrivez le défaut ici :",rp_info:"Renseignements ajoutés par la page",
      codeL:"Vous avez reçu un code ?",codeGo:"Rejoindre",codeEmpty:"Tapez ou collez d'abord le code reçu.",codeShort:"Ce code est trop court : vérifiez qu'il est complet.",codeLong:"Ce code est trop long : vérifiez-le.",codeBad:"Ce code ne correspond à aucun jeu du site.",
      howT:"Comment ça marche ?",
      how0:"<b>Quatre façons de jouer.</b> Inviter quelqu'un par un lien, affronter l'ordinateur, jouer face à face sur le même appareil, ou analyser : revenir en arrière, essayer des variantes, demander des suggestions.",
@@ -89,6 +95,7 @@ const I18N={
      how3:"<b>Robuste aux déconnexions.</b> Les deux joueurs détiennent toute la partie. Si celui qui tient la table s'en va, l'autre la reprend sous le même code : dans la seconde s'il a fermé sa page, en quelques secondes si sa connexion a coupé. Les pendules s'arrêtent quand c'est au tour du joueur absent, et reprennent à son retour.",
      warn:"<b>Important :</b> ne fermez pas l'onglet et ne quittez pas le navigateur pendant une partie. C'est votre navigateur qui la fait vivre. Sur téléphone, évitez de rester longtemps dans une autre application."},
  en:{title:"Games",lede:"Two-player board games, straight from browser to browser. Create a game, send the code, play.",
+     mochaT:": a match over several games, between two players.",report:"Report a problem",rp_subj:"Games (home page): problem",rp_body:"Describe the problem here:",rp_info:"Details added by the page",
      codeL:"Received a code?",codeGo:"Join",codeEmpty:"Type or paste the code you received first.",codeShort:"This code is too short: check that it is complete.",codeLong:"This code is too long: check it.",codeBad:"This code matches none of the site's games.",
      howT:"How does it work?",
      how0:"<b>Four ways to play.</b> Invite someone with a link, play the computer, play face to face on the same device, or analyse: go back, try variations, ask for hints.",
@@ -97,6 +104,7 @@ const I18N={
      how3:"<b>Robust to disconnections.</b> Both players hold the whole game. If the one holding the table leaves, the other takes it over under the same code: within a second if they closed their page, within a few seconds if their connection dropped. The clocks stop when it is the absent player's turn, and resume when they are back.",
      warn:"<b>Important:</b> do not close the tab or quit the browser during a game. Your browser is what keeps it alive. On a phone, avoid staying in another app for long."},
  es:{title:"Juegos",lede:"Juegos de tablero para dos, de navegador a navegador. Crea una partida, envía el código, juega.",
+     mochaT:": un match en varios juegos, entre dos jugadores.",report:"Informar de un fallo",rp_subj:"Juegos (inicio): fallo",rp_body:"Describe el fallo aquí:",rp_info:"Datos añadidos por la página",
      codeL:"¿Has recibido un código?",codeGo:"Unirse",codeEmpty:"Escribe o pega primero el código recibido.",codeShort:"Este código es demasiado corto: comprueba que esté completo.",codeLong:"Este código es demasiado largo: compruébalo.",codeBad:"Este código no corresponde a ningún juego del sitio.",
      howT:"¿Cómo funciona?",
      how0:"<b>Cuatro maneras de jugar.</b> Invitar a alguien con un enlace, enfrentarte al ordenador, jugar cara a cara en el mismo dispositivo, o analizar: volver atrás, probar variantes, pedir sugerencias.",
@@ -117,6 +125,10 @@ apply();
   document.getElementById('codeForm').onsubmit=e=>{e.preventDefault();const r=codeRead(ci.value);
     if(r.e){er.dataset.i18n=r.e;er.textContent=I18N[lang][r.e];er.hidden=false;return;}location.href=codeHref(r);};
   ci.oninput=()=>{er.hidden=true;};}
+// « Signaler un défaut »: an email filled in with the page, its version and the device; the address is put together at the click
+document.getElementById('reportLink').onclick=e=>{e.preventDefault();const T=I18N[lang],v=(document.querySelector('link[href*="cards.css"]').getAttribute('href').match(/v=(\d+)/)||[])[1]||'?';
+  const b=[T.rp_body,'','','— '+T.rp_info+' —','index.html · cards.css v'+v,navigator.userAgent,innerWidth+'×'+innerHeight+' @'+(devicePixelRatio||1)+' · '+lang+' · '+(document.documentElement.dataset.theme||'auto')];
+  location.href='mailto:'+['tybaltp','games'].join('.')+String.fromCharCode(64)+['gmail','com'].join('.')+'?subject='+encodeURIComponent(T.rp_subj)+'&body='+encodeURIComponent(b.join('\n'));};
 </script>
 </body>
 </html>

@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tintas</title>
 <script src="common/theme.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Tintas palette (light, dark), board and colour counters; the shared layout is in common/games.css */
 :root{
@@ -20,7 +20,8 @@
   --k5:#2f58b8;--k5s:#172c66;--k5i:#ffffff;
   --k6:#9b5bb8;--k6s:#4e2563;--k6i:#ffffff;
   --accent:#e3a12f;--accent-ink:#5a3a00;--danger:#d9583f;
-  --board-ar:432/435.73;         /* viewBox of the board (no coordinates in Tintas, so no html.nocoords variant) */
+  --lab:var(--muted);
+  --board-ar:432/467.73;         /* viewBox of the board (432 × 467.73; 432 × 435.73 without the coordinates) */
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#161419;--panel:#201c24;--ink:#e2e9eb;--muted:#8d9fa5;--line:#2a383d;
@@ -32,6 +33,7 @@
   --board:#393440;--board-edge:#2f2a36;--hex:#1f1d23;--hex-edge:#3d4c53;--hl:#f4f7f8;--pawn:#f2f5f6;--pawn-ink:#0b1012;
   --k0s:#f08a90;--k1s:#f7c08a;--k2s:#fbe89a;--k3s:#8fd6a6;--k4s:#b4e2f6;--k5s:#a6bdf0;--k6s:#d9b6ea;--k5:#4a78e0;
   --accent:#efb04a;--accent-ink:#3d2700;--danger:#e26a52;color-scheme:dark;--k1:#f08a24;--k2:#f4d03f;--k3:#2f9e55;--k4:#5bbbe8;}
+html.nocoords{--board-ar:432/435.73}
 /* the board: a soft gradient behind the hexagons, on every layout */
 .board{background:radial-gradient(120% 90% at 50% 30%,var(--board),var(--board-edge));border-color:transparent}
 html.ingame:not(.wide) .board{background:radial-gradient(120% 90% at 50% 30%,var(--board),var(--board-edge));border-radius:14px}
@@ -50,7 +52,8 @@ html.band #playersTop > .player.fit1 .tk,html.band #playersTop > .player.fit2 .t
 .tk.full{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 ol.log svg{width:15px;height:15px;display:block;flex:none}
 ol.log li{align-items:center}
-ol.log .cap{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-width:0}
+ol.log .cap{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:center;min-width:0}
+ol.log .cap .tk1{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
 ol.log .tag{color:var(--muted);font-size:.72rem;margin-right:3px}
 </style>
 <style>
@@ -97,7 +100,6 @@ html:root{--accRight:0px}
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">Who plays first</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
@@ -109,10 +111,10 @@ html:root{--accRight:0px}
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -170,6 +172,7 @@ html:root{--accRight:0px}
       <label class="toggle" for="needConfirm" id="needConfirmWrap"><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="cbOn"><input type="checkbox" id="cbOn"> <span data-i18n="cb">Colorblind</span></label>
+      <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
     <details id="movesBox"><summary data-i18n="moves">Moves</summary><ol class="log" id="log"></ol></details>
     <details id="rules"></details>
@@ -179,9 +182,9 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 function TintasEngine(){
   // 49 flat-top hexagons in 9 columns, doubled coordinates (col, r): vertical neighbour at r±2, diagonals at (col±1, r±1).
@@ -240,7 +243,7 @@ function TintasEngine(){
 const E=TintasEngine(),{N}=E;
 // Tintas strings, merged over the shared ones (core.js)
 const TI_I18N={fr:{
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9",lv_l10:"Niveau 10",lv_l11:"Niveau 11, le plus fort",m_aiTxt:"Douze niveaux, de 0 à 11 : chacun bat le précédent environ trois parties sur quatre.",
+ lvd_ab:"alpha-bêta, profondeur {n}",lvd_mc:"recherche Monte-Carlo, {n} simulations par coup",
  title:"Tintas",lede:"Un pion commun, sept couleurs : collectez-les.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie (nouveau plateau, l'autre joueur commence).",
  endTurn:"Terminer le tour",endTurnS:"Terminer",confirmTurn:"Confirmer le tour",
  t_cont:"Vous pouvez continuer avec une pièce {c}, ou terminer le tour.",t_pending:"Tour terminé : confirmez-le, ou réinitialisez.",
@@ -255,20 +258,16 @@ const TI_I18N={fr:{
  st_first:"Premier coup : posez le pion sur la pièce de votre choix et prenez-la.",st_jump:"Aucune pièce en ligne avec le pion : sautez-le sur la pièce de votre choix et prenez-la.",
  w_seven:"les sept pièces d'une couleur",w_major:"au moins 4 pièces dans au moins 4 couleurs",
  rules:`<summary>Règles en bref</summary><ul>
- <li><b>Matériel</b> : 49 pièces, 7 de chacune des 7 couleurs, réparties au hasard (on retire si les 7 pièces d'une couleur forment un seul groupe), et un pion neutre commun aux deux joueurs.</li>
- <li><b>Premier coup</b> : posez le pion sur n'importe quelle pièce et prenez-la. Le tour s'arrête là.</li>
- <li><b>Règle du gâteau</b> : après le premier coup, le second joueur choisit : jouer le coup suivant, ou prendre le premier tour (bouton Prendre le premier tour). La pièce prise devient alors la sienne, et l'autre joueur rejoue, avec le pion là où il est.</li>
- <li><b>Tour normal</b> : poussez le pion en ligne droite dans l'une des 6 directions, par-dessus les cases vides, jusqu'à la première pièce ; prenez-la, le pion reste sur sa case. Vous pouvez enchaîner, dans n'importe quelle direction, tant que vous prenez des pièces de la même couleur que la première de ce tour ; arrêtez-vous quand vous voulez. Au moins une prise par tour.</li>
- <li><b>Saut</b> : si aucune pièce n'est en ligne avec le pion, posez-le sur la pièce de votre choix et prenez-la ; le tour s'arrête.</li>
- <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Sinon, gagne celui qui a au moins 4 pièces dans au moins 4 couleurs, dès que l'adversaire ne peut plus compléter de couleur (il en a pris au moins une de chacune) : l'issue est alors certaine. Sans cela, on continue.</li>
- <li><b>Cartes joueurs</b> : pièces prises par couleur ; encadré = 4 ou plus (majorité), plein = 7.</li>
- <li><b>Jouer</b> : cliquez une pièce que le pion peut atteindre (au survol, elle s'affiche en transparence) : le pion s'y pousse et la prend. Tant qu'une pièce de la même couleur est atteignable, continuez, ou cliquez Terminer le tour ; un tour qui s'arrête de lui-même après plusieurs prises attend Confirmer. Cliquer la dernière pièce prise la rend. Les commandes du tour sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>
+ <li><b>Matériel</b> : un plateau de 49 cases hexagonales, couvert au départ de 49 pièces, 7 de chacune des 7 couleurs, réparties au hasard (on tire à nouveau si les 7 pièces d'une couleur forment un seul groupe), et un pion neutre commun aux deux joueurs.</li>
+ <li><b>Premier coup</b> : on pose le pion sur n'importe quelle pièce et on la prend. Le tour s'arrête là.</li>
+ <li><b>Règle du gâteau</b> : après le premier coup, le second joueur choisit : jouer le coup suivant, ou prendre le premier tour. S'il le prend, la pièce prise devient la sienne, et l'autre joueur rejoue, avec le pion là où il est.</li>
+ <li><b>Tour</b> : on pousse le pion en ligne droite dans l'une des 6 directions, par-dessus les cases vides, jusqu'à la première pièce ; on la prend, le pion reste sur sa case. On peut enchaîner, dans n'importe quelle direction, tant qu'on prend des pièces de la même couleur que la première du tour ; on s'arrête quand on veut. Au moins une prise par tour.</li>
+ <li><b>Saut</b> : si, au début du tour, aucune pièce n'est en ligne avec le pion, on le pose sur la pièce de son choix et on la prend ; le tour s'arrête.</li>
+ <li><b>Victoire</b> : réunir les 7 pièces d'une couleur gagne aussitôt. Gagne aussi celui qui a au moins une pièce de chaque couleur et au moins 4 pièces dans au moins 4 couleurs.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Règles originales : <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licence Creative Commons BY-NC 4.0.</p>`
 },en:{
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9",lv_l10:"Level 10",lv_l11:"Level 11, the strongest",m_aiTxt:"Twelve levels, from 0 to 11: each one beats the one below about three games in four.",
- title:"Tintas",lede:"One shared pawn, seven colours: race to collect a set.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game (new board, the other player starts).",firstIs:"Who plays first",
+ lvd_ab:"alpha-beta, depth {n}",lvd_mc:"Monte Carlo search, {n} simulations a move",
+ title:"Tintas",lede:"One shared pawn, seven colours: race to collect a set.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game (new board, the other player starts).",
  endTurn:"End turn",endTurnS:"End",confirmTurn:"Confirm turn",
  t_cont:"You may go on with a {c} piece, or end your turn.",t_pending:"Turn complete: confirm it, or reset.",
  cb:"Colorblind",needConfirm:"Confirm each move",
@@ -282,20 +281,16 @@ const TI_I18N={fr:{
  st_first:"First move: put the pawn on any piece you like and take it.",st_jump:"No piece in line with the pawn: jump it onto any piece you like and take it.",
  w_seven:"all seven pieces of one colour",w_major:"at least 4 pieces in at least 4 colours",
  rules:`<summary>Rules in brief</summary><ul>
- <li><b>Material</b>: 49 pieces, 7 in each of 7 colours, scattered at random (drawn again if the 7 pieces of a colour form a single group), and one neutral pawn shared by both players.</li>
- <li><b>First move</b>: put the pawn on any piece and take that piece. Your turn ends.</li>
- <li><b>Pie rule</b>: after the first move, the second player chooses: play the next move, or take the first turn (button Take the first turn). The piece taken then becomes theirs, and the other player moves again, with the pawn where it stands.</li>
- <li><b>Normal turn</b>: push the pawn in a straight line in one of the 6 directions, over empty cells, up to the first piece; take it, the pawn stays on its cell. You may go on, in any direction, as long as you take pieces of the same colour as the first one of this turn; stop whenever you like. At least one capture per turn.</li>
- <li><b>Jump</b>: if no piece is in line with the pawn, put it on any piece you like and take it; your turn ends.</li>
- <li><b>Winning</b>: all 7 pieces of one colour win at once. Otherwise, a player with at least 4 pieces in at least 4 colours wins as soon as the opponent can no longer complete a colour (the player has taken at least one of each): the result is then certain. Until then, play goes on.</li>
- <li><b>Player cards</b>: pieces taken per colour; outlined = 4 or more (majority), filled = 7.</li>
- <li><b>Playing</b>: click a piece the pawn can reach (hovering shows it in transparency): the pawn is pushed onto it and takes it. As long as a piece of the same colour can be reached, go on, or click End turn; a turn that ends by itself after several captures waits for Confirm. Clicking the last piece taken puts it back. The turn's commands are in the bar under the board: Reset, End turn, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>
+ <li><b>Material</b>: a board of 49 hexagonal cells, covered at the start with 49 pieces, 7 in each of 7 colours, scattered at random (drawn again if the 7 pieces of a colour form a single group), and one neutral pawn shared by both players.</li>
+ <li><b>First move</b>: put the pawn on any piece and take that piece. The turn ends there.</li>
+ <li><b>Pie rule</b>: after the first move, the second player chooses: play the next move, or take the first turn. If they take it, the piece taken becomes theirs, and the other player moves again, with the pawn where it stands.</li>
+ <li><b>Turn</b>: push the pawn in a straight line in one of the 6 directions, over empty cells, up to the first piece; take it, the pawn stays on its cell. You may go on, in any direction, as long as you take pieces of the same colour as the first one of the turn; stop whenever you like. At least one capture per turn.</li>
+ <li><b>Jump</b>: if, at the start of the turn, no piece is in line with the pawn, put it on any piece you like and take it; the turn ends.</li>
+ <li><b>Winning</b>: all 7 pieces of one colour win at once. A player also wins with at least one piece of each colour and at least 4 pieces in at least 4 colours.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Original rules: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, Creative Commons BY-NC 4.0 licence.</p>`
 },es:{
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9",lv_l10:"Nivel 10",lv_l11:"Nivel 11, el más fuerte",m_aiTxt:"Doce niveles, de 0 a 11: cada uno gana al anterior unas tres partidas de cada cuatro.",
- title:"Tintas",lede:"Un peón común, siete colores: colecciónalos.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",firstIs:"Quién empieza",
+ lvd_ab:"alfa-beta, profundidad {n}",lvd_mc:"búsqueda Monte Carlo, {n} simulaciones por jugada",
+ title:"Tintas",lede:"Un peón común, siete colores: colecciónalos.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida (nuevo tablero, empieza el otro jugador).",
  endTurn:"Terminar el turno",endTurnS:"Terminar",confirmTurn:"Confirmar el turno",
  t_cont:"Puedes continuar con una pieza {c}, o terminar el turno.",t_pending:"Turno terminado: confírmalo, o reinicia.",
  cb:"Daltónico",needConfirm:"Confirmar cada jugada",
@@ -309,22 +304,25 @@ const TI_I18N={fr:{
  st_first:"Primera jugada: pon el peón sobre la pieza que quieras y tómala.",st_jump:"Ninguna pieza en línea con el peón: sáltalo a la pieza que quieras y tómala.",
  w_seven:"las siete piezas de un color",w_major:"al menos 4 piezas en al menos 4 colores",
  rules:`<summary>Reglas en breve</summary><ul>
- <li><b>Material</b>: 49 piezas, 7 de cada uno de los 7 colores, repartidas al azar (se vuelve a repartir si las 7 piezas de un color forman un solo grupo), y un peón neutro común a los dos jugadores.</li>
- <li><b>Primera jugada</b>: pon el peón sobre cualquier pieza y tómala. El turno termina ahí.</li>
- <li><b>Regla del pastel</b>: tras la primera jugada, el segundo jugador elige: jugar la siguiente jugada, o tomar el primer turno (botón Tomar el primer turno). La pieza tomada pasa entonces a ser suya, y el otro jugador vuelve a jugar, con el peón donde está.</li>
- <li><b>Turno normal</b>: empuja el peón en línea recta en una de las 6 direcciones, por encima de las casillas vacías, hasta la primera pieza; tómala, el peón se queda en su casilla. Puedes encadenar, en cualquier dirección, mientras tomes piezas del mismo color que la primera de ese turno; para cuando quieras. Al menos una captura por turno.</li>
- <li><b>Salto</b>: si ninguna pieza está en línea con el peón, ponlo sobre la pieza que quieras y tómala; el turno termina.</li>
- <li><b>Victoria</b>: reunir las 7 piezas de un color gana de inmediato. Si no, gana quien tiene al menos 4 piezas en al menos 4 colores, en cuanto el adversario ya no puede completar ningún color (ha tomado al menos una de cada): el resultado es entonces seguro. Mientras tanto, se sigue jugando.</li>
- <li><b>Tarjetas de los jugadores</b>: piezas tomadas por color; enmarcado = 4 o más (mayoría), relleno = 7.</li>
- <li><b>Jugar</b>: haz clic en una pieza que el peón pueda alcanzar (al pasar el ratón, se muestra en transparencia): el peón se empuja hasta ella y la toma. Mientras una pieza del mismo color sea alcanzable, continúa, o haz clic en Terminar el turno; un turno que se detiene por sí solo tras varias capturas espera a Confirmar. Hacer clic en la última pieza tomada la devuelve. Los mandos del turno están en la barra bajo el tablero: Reiniciar, Terminar el turno, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>por un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, por un enlace o cara a cara. Por un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca enseguida.</li></ul>
+ <li><b>Material</b>: un tablero de 49 casillas hexagonales, cubierto al principio por 49 piezas, 7 de cada uno de los 7 colores, repartidas al azar (se vuelve a repartir si las 7 piezas de un color forman un solo grupo), y un peón neutro común a los dos jugadores.</li>
+ <li><b>Primera jugada</b>: se pone el peón sobre cualquier pieza y se toma esa pieza. El turno termina ahí.</li>
+ <li><b>Regla del pastel</b>: tras la primera jugada, el segundo jugador elige: jugar la siguiente jugada, o tomar el primer turno. Si lo toma, la pieza tomada pasa a ser suya, y el otro jugador vuelve a jugar, con el peón donde está.</li>
+ <li><b>Turno</b>: se empuja el peón en línea recta en una de las 6 direcciones, por encima de las casillas vacías, hasta la primera pieza; se toma, y el peón se queda en su casilla. Se puede encadenar, en cualquier dirección, mientras se tomen piezas del mismo color que la primera del turno; se para cuando se quiera. Al menos una captura por turno.</li>
+ <li><b>Salto</b>: si, al principio del turno, ninguna pieza está en línea con el peón, se pone sobre la pieza que se quiera y se toma; el turno termina.</li>
+ <li><b>Victoria</b>: reunir las 7 piezas de un color gana de inmediato. También gana quien tiene al menos una pieza de cada color y al menos 4 piezas en al menos 4 colores.</li></ul>
  <p class="hint" style="margin-top:.6em">Tintas — Dieter Stein (2016). Reglas originales: <a href="https://spielstein.com/games/tintas/rules">spielstein.com</a>, licencia Creative Commons BY-NC 4.0.</p>`
 }};
 // ---------- board geometry ----------
-const HR=30,X=i=>E.C[i]*HR*1.5,Y=i=>E.R[i]*HR*0.8660254;
+let VBT=null;const HR=30,X=i=>E.C[i]*HR*1.5,Y=i=>E.R[i]*HR*0.8660254;
 (()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
-  const m=HR+6;$('svg').setAttribute('viewBox',`${x0-m} ${y0-m} ${x1-x0+2*m} ${y1-y0+2*m}`);})();   // 432 × 435.73: --board-ar
+  const m=HR+6;VBT=[x0-m,y0-m,x1-x0+2*m,y1-y0+2*m];$('svg').setAttribute('viewBox',VBT.join(' '));})();   // 432 × 435.73: --board-ar
+// Coordinates, the author's (spielstein.com, where the board is turned a quarter turn): a letter per column, a to i from the
+// left, and a number in the column, 1 at its bottom (a1 a2, b1–b5, c1–c7 … i1 i2); the board shows the first and last name
+// of each column at its two ends. The way the quarter turn goes is this site's choice (not checked against spielstein).
+const TN=[],TI={};
+E.C.forEach((c,i)=>{const rows=COLS_OF(c),k=rows.length-rows.indexOf(E.R[i]);TN[i]='abcdefghi'[c]+k;TI[TN[i]]=i;});
+function COLS_OF(c){const out=[];for(let i=0;i<N;i++)if(E.C[i]===c)out.push(E.R[i]);return out.sort((a,b)=>a-b);}
+const seqTxt=seq=>seq.map(i=>TN[i]).join('-');
 // Colour glyphs: a symbol per colour, so that colours can be told apart without relying on hue
 const PLUS='M-1.5-4.8h3v3.3h3.3v3h-3.3v3.3h-3v-3.3h-3.3v-3h3.3z';
 const SYM=['<path d="M0-4.9L4.4 3H-4.4Z"/>','<rect x="-3.5" y="-3.5" width="7" height="7"/>','<circle r="3.7"/>',`<path d="${PLUS}"/>`,
@@ -340,13 +338,13 @@ const decT=code=>code==='s'?'s':/^\d{1,2}(\.\d{1,2}){0,48}$/.test(String(code))?
 let fbSetup=null;
 const setupOf=g=>g&&E.validSetup(g.setup)?g.setup:(fbSetup=fbSetup||E.genSetup());
 const colsTxt=cols=>cols.map(c=>t('cols')[c]).join(', ');
-const txtOf=(seq,st)=>seq==='s'?t('swapLog'):colsTxt(seq.map(i=>st.b[i]));
+const txtOf=(seq,st)=>seq==='s'?t('swapLog'):seqTxt(seq)+' ('+colsTxt(seq.map(i=>st.b[i]))+')';
 // replay() in core memoises and adds the result, replayKept keeps the positions replayed
 function tiReplay(rules,moves){const setup=setupOf(rules);
   return replayKept(rules,moves,{init:()=>E.init(setup),
     play(st,code){const p=st.turn,seq=decT(code),r=seq&&E.play(st,seq);if(!r)return null;
       if(seq==='s')return {st:r.st,e:{p,cols:[],kind:'swap',txt:t('swapLog')},last:undefined,over:null};   // the swap: last stays the first move
-      const cols=seq.map(i=>st.b[i]);return {st:r.st,e:{p,cols,kind:r.ctx.kind,txt:colsTxt(cols)},last:{seq,from:st.pawn},over:E.outcome(r.st)||null};}});}
+      const cols=seq.map(i=>st.b[i]);return {st:r.st,e:{p,cols,seq,kind:r.ctx.kind,txt:seqTxt(seq)+' ('+colsTxt(cols)+')'},last:{seq,from:st.pawn},over:E.outcome(r.st)||null};}});}
 
 // ---------- the turn being prepared ----------
 // ui.seq: the pieces taken so far this turn; ui.pending: the whole turn awaiting confirmation; ui.hover: the piece previewed
@@ -371,10 +369,10 @@ function tiBoard({r,d,mine,ms}){
 // the first player is then told so once.
 const swapped=r=>!r.over&&r.log.length===2&&r.log[1].kind==='swap';
 function tiTurnStatus({r,o,idle,RST}){const x=o.x;
-  if(!ui.seq.length){const base=x.kind==='first'?t('st_first'):x.kind==='jump'?t('st_jump'):solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn');
-    if(E.canSwap(r.st)){status(t('st_swap'),'turn',idle.concat([{label:t('swapBtn'),short:t('swapBtnS'),on:doSwap}]));return;}
+  if(!ui.seq.length){const base=x.kind==='first'?soloWho(r.st.turn,t('st_first')):x.kind==='jump'?soloWho(r.st.turn,t('st_jump')):solo()?t('st_turn',{n:seatName(r.st.turn)}):t('st_yourTurn');
+    if(E.canSwap(r.st)){status(soloWho(r.st.turn,t('st_swap')),'turn',idle.concat([{label:t('swapBtn'),short:t('swapBtnS'),on:doSwap}]));return;}
     status(swapped(r)?t('st_swapped',{n:seatName(1-r.st.turn)})+' '+base:base,'turn',idle);return;}
-  status(t('t_cont',{c:t('colsF')[x.first]}),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:()=>endTurn(false)}]);}
+  status(soloWho(r.st.turn,t('t_cont',{c:t('colsF')[x.first]})),'turn',[RST,{label:t('endTurn'),short:t('endTurnS'),primary:true,on:()=>endTurn(false)}]);}
 function tiWaitStatus({r}){if(r.over)return false;
   if(E.canSwap(r.st)){status(t('st_swapWait',{n:seatName(r.st.turn)}));return true;}
   if(swapped(r)){status(t('st_swappedW',{n:seatName(1-r.st.turn),m:seatName(r.st.turn)}));return true;}
@@ -402,7 +400,7 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
   if(k>=0){ui.seq=ui.seq.slice(0,k===ui.seq.length-1?k:k+1);ui.pending=null;ui.hover=-1;renderGame();return;}
   if(ui.pending)return;
   const ct=curTurn(r.st);if(!ct||!ct.opts.includes(i))return;
-  ui.seq.push(i);ui.hover=-1;tone(880,.06,.03);
+  ui.seq.push(i);ui.hover=-1;
   const nx=curTurn(r.st);if(!nx||!nx.opts.length){endTurn(true);return;}
   renderGame();}
 const HOVER=!!(window.matchMedia&&window.matchMedia('(hover:hover)').matches);
@@ -429,7 +427,7 @@ function tiExtras(){const r=replay(view,view.moves,view.result),d=navAt===null?r
     el.appendChild(ty);}
   const lis=$('log').children;r.log.forEach((e,j)=>{const li=lis[j],c=li&&li.children[li.children.length-1];if(!c)return;c.className='cap';
     if(e.kind==='swap'){c.textContent=t('swapLog');c.title=t('swapTip');return;}
-    c.innerHTML=(e.kind==='jump'?`<span class="tag">${t('tag_jump')}</span>`:'')+e.cols.map(glyph).join('');c.title=colsTxt(e.cols);});
+    c.innerHTML=(e.kind==='jump'?`<span class="tag">${t('tag_jump')}</span>`:'')+e.cols.map((x,k)=>`<span class="tk1">${glyph(x)}${TN[e.seq[k]]}</span>`).join('');c.title=colsTxt(e.cols);});
   $('needConfirmWrap').hidden=!(mySeat>=0&&!r.over);}
 // Rematch over the network: a new random board (core keeps the rules of the finished game)
 const coreRematch=rematchOp;
@@ -456,7 +454,12 @@ function drawBoard(st,o){const svg=$('svg');svg.textContent='';o=o||{};
   const pend=o.pend||[],targets=new Set(o.many?[]:o.targets||[]),last=pend.length?null:o.last,hv=o.hover>=0?o.hover:-1;
   const hexes=el('g',{},svg);
   for(let i=0;i<N;i++){const g=el('g',{class:'cell','data-i':i,transform:`translate(${X(i)} ${Y(i)})`},hexes);
-    el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.4},g);}
+    el('polygon',{points:HEXPTS,fill:'var(--hex)',stroke:'var(--hex-edge)','stroke-width':1.4},g);el('title',{},g).textContent=TN[i];}
+  // coordinates (core: coordsOn): each column's first and last name under and over it; the viewBox grows by 16 above and below
+  svg.setAttribute('viewBox',coordsOn?[VBT[0],VBT[1]-16,VBT[2],VBT[3]+32].join(' '):VBT.join(' '));
+  if(coordsOn)for(let c=0;c<9;c++){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.C[i]===c){if(lo<0||E.R[i]>E.R[lo])lo=i;if(hi<0||E.R[i]<E.R[hi])hi=i;}
+    el('text',{class:'coord',x:X(lo),y:Y(lo)+HR+13,'text-anchor':'middle','font-size':12},svg).textContent=TN[lo];
+    el('text',{class:'coord',x:X(hi),y:Y(hi)-HR-5,'text-anchor':'middle','font-size':12},svg).textContent=TN[hi];}
   const pcs=el('g',{'pointer-events':'none'},svg);
   // path of the pawn: last turn (accent) or the turn being prepared (dashed)
   const path=(from,seq,col,a)=>{const pts=(from>=0?[from]:[]).concat(seq);if(pts.length<2)return;
@@ -589,18 +592,22 @@ function even(P){const p=P[TM];let best=-1e9;
 function firstMove(S,C,opt){const R=C.map(x=>({m:x.m,e:Math.abs(even(play(S,x.m)))})).sort((a,b)=>a.e-b.e);
   if(opt.algo!=='mcts'){const x=R[(Math.random()*Math.min(3,R.length))|0];return {m:x.m,s:0,depth:2,nodes:R.length};}
   const k=Math.min(6,R.length),o={...opt,sims:Math.max(50,Math.round((opt.sims||1000)/k))};let best=null,nodes=0;
-  for(let i=0;i<k;i++){const P=play(S,R[i].m);KS.start((opt.time||1000)/k);const D=gen(P).filter(y=>y.m>=0);if(!D.length)continue;
+  for(let i=0;i<k;i++){const P=play(S,R[i].m);KS.start();const D=gen(P).filter(y=>y.m>=0);if(!D.length)continue;
     const v=D.length===1?D[0].s:KS.mcts(P,D,o).s;nodes+=KS.nodes();if(!best||Math.abs(v)<best.e)best={m:R[i].m,e:Math.abs(v)};}
   return {m:best?best.m:R[0].m,s:0,depth:2,nodes};}
 // ----- the searches, on Tintas' interface -----
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
 const PS=new Int8Array(LEN);
 const KS=AISearch({moves:gen,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,
-  playout,scratch:S=>{PS.set(S);return PS;}});
+  playout,scratch:S=>{PS.set(S);return PS;},best:r=>{if(TELL)aiBest({move:dec(r.m),score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
-  KS.start(opt.time);const C=gen(S);if(!C.length)return null;let r;
+  KS.start(opt.nodes);const C=gen(S);if(!C.length)return null;let r;
   if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
   else if(S[PW]<0&&left(S)===N&&opt.algo!=='random')r=firstMove(S,C,opt);
-  else r=opt.algo==='ab'?ab(S,C,opt):opt.algo==='random'?rnd(S,C):KS[opt.algo](S,C,opt);
+  else if(opt.algo==='ab')r=ab(S,C,opt);else if(opt.algo==='random')r=rnd(S,C);
+  else{TELL=typeof aiBest==='function';r=KS[opt.algo](S,C,opt);TELL=false;}
   return {move:dec(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.nodes!==undefined?r.nodes:KS.nodes()};}
 return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dist,K:KS,LEN,
   setEV:o=>{EV={...EV,...o};mkV();},EV:()=>EV};
@@ -609,13 +616,14 @@ return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dis
 // The ladder (10.11.2026, outils/aitools/res/tintas/niveaux.md, 300 games a pair): each level beats the one below by
 // 74-78 % (no draws in Tintas; level 11, the strongest, beats 10 by 78 %). algo: 'random' · 'ab' alpha-beta on the
 // distance to a win (depth in turns; temp, a softmax over the root turns, fills the gaps between depths) · 'mcts' UCT
-// with short playouts (see common/ai.js): sims (time is only a cap, so the strength does not depend on the machine) ·
-// time, the cap (ms) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration ·
+// with short playouts (see common/ai.js): sims, the only thing that stops it, never a time (16.11.2026; level 11 took its
+// 300000 simulations or 5 s, whichever came first: on the reference Mac, the simulations more often than not,
+// outils/aitools/res/budgets-2026-11-16.md) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration ·
 // scale, evaluation points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout
 // turns whose colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening.
-const MC={algo:'mcts',time:1000,cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
+const MC={algo:'mcts',cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
 const LEVELS={
-  l0:{algo:'random'},
+  l0:{algo:'random',random:true},
   l1:{algo:'ab',depth:1,temp:2},
   l2:{algo:'ab',depth:1},
   l3:{algo:'ab',depth:2,temp:.85},
@@ -626,8 +634,12 @@ const LEVELS={
   l8:{...MC,sims:1800},
   l9:{...MC,sims:6000},
   l10:{...MC,sims:30000},
-  l11:{...MC,sims:300000,time:5000}};
-const HINT=LEVELS.l11;
+  l11:{...MC,sims:300000}};
+const HINT={...MC,sims:240000};   // level 11's search with the simulations of 5 s at most on the reference Mac
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const levelDesc=o=>o.algo==='mcts'?['lvd_mc',o.sims]:['lvd_ab',o.depth];
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: its score is a logit (×scale) of its winning chances, or a sure result
@@ -643,11 +655,14 @@ const GAME={id:'tintas',size:49,codeTag:'TINTAS1',i18n:TI_I18N,
   enc:encT,describe:txtOf,newUi,preparing,cancel:cancelPrep,
   board:tiBoard,turnStatus:tiTurnStatus,waitStatus:tiWaitStatus,
   pendText:p=>p==='s'?[t('t_swapPend'),t('confirmSwap')]:[t('t_pending'),t('confirmTurn')],
-  levels:LEVELS,levelDefault:'l4',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+TintasEngine.toString()+'\n'+TintasAI.toString()+'\nconst TA=TintasAI(TintasEngine());function aiSearch(pos,opt){return TA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||TintasAI(E)).search(aiPos(st),opt),
   evalInfo:tiEvalInfo,
-  logText:e=>e.kind==='swap'?t('swapLog'):(e.kind==='jump'?t('tag_jump')+' ':'')+colsTxt(e.cols),
+  logText:e=>e.kind==='swap'?t('swapLog'):(e.kind==='jump'?t('tag_jump')+' ':'')+e.txt,
+  // SGF: the cells taken, in order, by their names (« c3-c4-c5 »), the swap « swap »; the board drawn is in XR
+  sgf:{val:code=>{const q=decT(code);return q==='s'?'swap':q?seqTxt(q):code;},
+    code:v=>{v=String(v).trim().toLowerCase();if(v==='swap')return 's';const q=v.split(/\s*-\s*/).map(x=>TI[x]);return q.length&&q.every(i=>i>=0)?encT(q):null;}},
   home:()=>drawBoard(E.init(setupOf(null)),{})};
 coreStart();
 // New game on this device or against the computer: a new random board (core would keep the finished game's)

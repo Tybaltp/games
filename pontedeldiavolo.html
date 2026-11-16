@@ -6,12 +6,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Karla:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=51">
+<link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Ponte del Diavolo palette (light, dark), fonts and board; the shared layout is in common/games.css */
 :root{
   --bg:#ece4d9;--panel:#f8f4ed;--ink:#1d2729;--muted:#5a6869;--line:rgba(29,39,41,.14);
-  --water:#7da19e;--water-deep:#6a908d;--grid:rgba(255,255,255,.22);--coord:#4d6362;
+  --water:#7da19e;--water-deep:#6a908d;--grid:rgba(255,255,255,.22);--lab:#243634;
   --stone:#f1ebde;--stone-edge:#9c8f74;
   --trach:#454b52;--trach-edge:#1c1f23;
   --oak:#c89c5f;--oak-edge:#8a6532;--walnut:#5e3b22;--walnut-edge:#2e1c10;
@@ -25,14 +25,14 @@
 html.nocoords{--board-ar:1/1}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1e1a15;--panel:#29241c;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
-  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--coord:#8fa9a8;
+  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--lab:#c6d8d6;
   --stone:#f0e3c8;--stone-edge:#a8916b;--trach:#2e2723;--trach-edge:#110c09;
   --oak:#d2a463;--oak-edge:#86622f;--walnut:#5a3720;--walnut-edge:#1f130a;
   --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
   --danger:#ef7b65;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1e1a15;--panel:#29241c;--ink:#e3e8e6;--muted:#97a6a6;--line:rgba(227,232,230,.13);
-  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--coord:#8fa9a8;
+  --water:#4c7a77;--water-deep:#3f6865;--grid:rgba(255,255,255,.10);--lab:#c6d8d6;
   --stone:#f0e3c8;--stone-edge:#a8916b;--trach:#2e2723;--trach-edge:#110c09;
   --oak:#d2a463;--oak-edge:#86622f;--walnut:#5a3720;--walnut-edge:#1f130a;
   --accent:#e0a94a;--accent-soft:rgba(224,169,74,.2);--accent-ink:#2a1c00;
@@ -110,7 +110,6 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
       
       
       <form class="form" id="createForm" hidden>
-        
         <label for="cFirst"><span data-i18n="firstIs">First player (places the two opening light tiles)</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
@@ -122,10 +121,10 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
       </form>
       <form class="form" id="faceForm" hidden>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
-        <button class="primary" type="submit" data-i18n="localBtn">Start the game</button>
+        <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
         <label for="sgfFile"><span data-i18n="sgfFile">SGF file</span><input type="file" id="sgfFile" accept=".sgf,application/x-go-sgf,text/plain" class="txt"></label>
@@ -192,9 +191,9 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=85"></script>
+<script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
-<script src="common/ai.js?v=2"></script>
+<script src="common/ai.js?v=3"></script>
 <script>
 // ===== Ponte del Diavolo rules engine (10×10 lagoon; RW/CL: row and column of a square) =====
 /*ENGINE*/
@@ -353,8 +352,8 @@ function scoreFixed(st){
 /*END*/
 // Ponte strings, merged over the shared ones (core.js)
 const PD_I18N={fr:{
- lv_l0:"Niveau 0",lv_l1:"Niveau 1",lv_l2:"Niveau 2",lv_l3:"Niveau 3",lv_l4:"Niveau 4",lv_l5:"Niveau 5",lv_l6:"Niveau 6",lv_l7:"Niveau 7",lv_l8:"Niveau 8",lv_l9:"Niveau 9, le plus fort",m_aiTxt:"Dix niveaux, de 0 à 9 : jusqu'au 8, chacun bat le précédent environ trois parties sur quatre ; le 9 réfléchit 10 s par coup.",
- title:"Ponte del Diavolo",lede:"Bâtissez des îles et reliez-les par des ponts.",by:"Un jeu de Martin Ebel.",firstIs:"Premier joueur (pose les deux tuiles claires d'ouverture)",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
+ lvd_gr:"un coup d'avance, avec une part de hasard",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",lvd_mc:"recherche Monte-Carlo, {n} simulations par coup",lvd_mcE:"recherche Monte-Carlo, {n} simulations par coup, fin de partie calculée exactement",
+ title:"Ponte del Diavolo",lede:"Bâtissez des îles et reliez-les par des ponts.",by:"Un jeu de Martin Ebel.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",
  needConfirm:"Confirmer chaque coup",takeLight:"Prendre les clairs",playDark:"Jouer les foncés",endTurn:"Terminer le tour",passEnd:"Passer et terminer",takeLightS:"Clairs",playDarkS:"Foncés",endTurnS:"Terminer",passEndS:"Passer",
  pts:"pts",isl:"îles",brg:"ponts",ptsL:"points",islL:"îles",brgL:"ponts",light:"Clair",dark:"Foncé",mv_bridge:"pont",lg_pass:"passe",lg_takeL:"prend les clairs",lg_dark:"joue les foncés",
  lg_forced:"{c} : aucun coup possible, passe.",lg_lastTurn:"Les clairs ont passé : les foncés jouent un dernier tour.",lg_fixed:"Plus aucun coup ne peut changer le score : fin de la partie.",w_fixed:", plus aucun coup ne peut changer le score",
@@ -362,22 +361,19 @@ const PD_I18N={fr:{
  pend_pass:"Passer : les foncés joueront un dernier tour.",pend_passEnd:"Passer et finir la partie.",pend_pie:"{c} : confirmez votre choix.",
  w_score:"{w} à {l}{tb}",w_tie:"égalité parfaite, {w} à {l}{tb}",tb_isl:" (départagé aux îles)",tb_brg:" (départagé aux ponts)",
  ht_1:"<b>Poser</b> Cliquer sur deux cases d'eau. Cliquer sur une tuile posée ce tour la retire.",ht_2:"<b>Où poser</b> Au survol, la tuile n'apparaît que là où elle peut aller.",ht_3:"<b>Pont</b> Sélectionner une de vos tuiles, puis cliquer sur l'autre extrémité.",rules:`<summary>Règles en bref</summary><ul>
- <li>À votre tour, posez <b>deux tuiles</b> de votre couleur, ou <b>un pont</b>.</li>
- <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
- <li>Une île ne peut toucher aucune autre tuile de sa couleur, même en diagonale. Les couleurs différentes ne se gênent jamais.</li>
- <li>Pont : entre deux de vos tuiles, à deux cases d'écart (en ligne droite ou en diagonale) ou à un saut de cavalier. Les cases qu'il enjambe doivent être de l'eau.</li>
- <li>Une tuile porte au plus un pont. Les ponts ne se croisent jamais. Rien ne se pose sous un pont.</li>
- <li>Ouverture : le premier joueur pose deux tuiles claires ; le second choisit sa couleur. Les foncés jouent ensuite.</li>
- <li>Fin : si les foncés passent, la partie s'arrête aussitôt. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. On ne peut passer que si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément. La partie s'arrête aussi d'elle-même dès que plus aucun coup, de l'un ou de l'autre, ne peut changer le score.</li>
- <li>Chaque groupe d'îles reliées par des ponts (les bancs de sable servent de relais) rapporte :
- <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Départage : le plus d'îles, puis le plus de ponts.</li>
- <li><b>Jouer</b> : cliquez deux cases d'eau pour y poser vos deux tuiles (une seule s'il ne reste pas de place pour la seconde : Terminer le tour) ; pour un pont, cliquez une de vos tuiles, puis l'autre extrémité parmi celles proposées. Au survol, la tuile ou le pont s'affiche en transparence ; cliquer une tuile posée ce tour la retire. Au choix de couleur, Prendre les clairs ou Jouer les foncés, puis Confirmer. Les commandes du coup sont dans la barre sous le plateau : Réinitialiser, Terminer le tour, Passer, Confirmer ; contre l'ordinateur, Annuler le dernier coup et Suggestion ; en analyse, Suggestion.</li>
- <li><b>Parties</b> : <i>par un lien</i>, contre un adversaire sur un autre appareil ; contre l'<i>ordinateur</i>, avec annulation et suggestions ; <i>face à face</i>, deux joueurs sur le même écran, avec pendule au choix ; <i>en analyse</i>, les deux camps sur cet écran, sans pendule, avec retour en arrière, variantes et suggestions.</li>
- <li><b>Pendule</b> : au choix à la création, par un lien ou face à face. Par un lien, elle démarre quand les deux joueurs ont cliqué Démarrer la partie, et s'arrête pendant une déconnexion ; face à face, elle démarre aussitôt.</li></ul>`
+ <li><b>Matériel</b> : un plateau de 10 × 10 cases d'eau, vide au départ ; des tuiles claires et foncées à volonté, et des ponts.</li>
+ <li><b>Ouverture</b> : le premier joueur pose deux tuiles claires. Le second choisit sa couleur : prendre les clairs (et ces deux tuiles), ou jouer les foncés. Les foncés jouent ensuite ; on alterne.</li>
+ <li><b>Tour</b> : on pose <b>deux tuiles</b> de sa couleur, où l'on veut, ou <b>un pont</b>. Une seule tuile est permise s'il ne reste plus de place pour la seconde.</li>
+ <li><b>Île</b> : exactement 4 tuiles reliées orthogonalement. Moins de 4 : un <b>banc de sable</b>. Jamais plus de 4.</li>
+ <li><b>Contact</b> : une île ne touche aucune autre tuile de sa couleur, même par un coin. Entre couleurs différentes, tout contact est permis.</li>
+ <li><b>Pont</b> : entre deux de ses tuiles (île ou banc de sable) séparées par une case, en ligne droite ou en diagonale, ou à un saut de cavalier. Les cases enjambées doivent être de l'eau libre, sans tuile ni pont. Une tuile porte au plus un pont ; les ponts ne se croisent jamais, quelle que soit leur couleur ; rien ne se pose sous un pont.</li>
+ <li><b>Passe</b> : seulement si aucune tuile ne peut être posée ; un joueur sans aucun coup passe forcément. Si les foncés passent, la partie s'arrête. Si les clairs passent, les foncés jouent un dernier tour, puis la partie s'arrête. Elle s'arrête aussi d'elle-même dès que plus aucun coup, de l'un ou de l'autre, ne peut changer le résultat.</li>
+ <li><b>Score</b> : chaque groupe d'îles reliées par ses ponts (les bancs de sable servent de relais, mais ne rapportent rien) rapporte :
+ <div class="scale"><span>1 île : 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
+ <li><b>Départage</b> : le plus d'îles, puis le plus de ponts. Égalité parfaite : partie nulle.</li></ul>`
 },en:{
- lv_l0:"Level 0",lv_l1:"Level 1",lv_l2:"Level 2",lv_l3:"Level 3",lv_l4:"Level 4",lv_l5:"Level 5",lv_l6:"Level 6",lv_l7:"Level 7",lv_l8:"Level 8",lv_l9:"Level 9, the strongest",m_aiTxt:"Ten levels, from 0 to 9: up to 8, each one beats the one below about three games in four; level 9 thinks 10 s per move.",
- title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",firstIs:"First player (places the two opening light tiles)",rm_ask:"{n} offers a new game, colours swapped.",
+ lvd_gr:"one move ahead, with some randomness",lvd_beam:"{n} moves ahead, on the best candidates",lvd_mc:"Monte Carlo search, {n} simulations a move",lvd_mcE:"Monte Carlo search, {n} simulations a move, exact endgame",
+ title:"Ponte del Diavolo",lede:"Build islands and link them with bridges.",by:"A game by Martin Ebel.",rm_ask:"{n} offers a new game, colours swapped.",
  needConfirm:"Confirm each move",takeLight:"Take Light",playDark:"Play Dark",endTurn:"End turn",passEnd:"Pass and end",takeLightS:"Light",playDarkS:"Dark",endTurnS:"End",passEndS:"Pass",
  pts:"pts",isl:"isl.",brg:"br.",ptsL:"points",islL:"islands",brgL:"bridges",light:"Light",dark:"Dark",mv_bridge:"bridge",lg_pass:"pass",lg_takeL:"takes Light",lg_dark:"plays Dark",
  lg_forced:"{c}: no legal move, pass.",lg_lastTurn:"Light passed: Dark plays one last turn.",lg_fixed:"No move can change the score any more: the game is over.",w_fixed:", no move can change the score any more",
@@ -385,22 +381,19 @@ const PD_I18N={fr:{
  pend_pass:"Pass: Dark will play one last turn.",pend_passEnd:"Pass and end the game.",pend_pie:"{c}: confirm your choice.",
  w_score:"{w} to {l}{tb}",w_tie:"a perfect tie, {w} to {l}{tb}",tb_isl:" (decided on islands)",tb_brg:" (decided on bridges)",
  ht_1:"<b>Place</b> Click two water squares. Clicking a tile placed this turn takes it back.",ht_2:"<b>Where to place</b> On hover, the tile only shows where it may go.",ht_3:"<b>Bridge</b> Select one of your tiles, then click the other end.",rules:`<summary>Rules in brief</summary><ul>
- <li>On your turn, place <b>two tiles</b> of your colour, or <b>one bridge</b>.</li>
+ <li><b>Material</b>: a board of 10 × 10 water squares, empty at the start; light and dark tiles without limit, and bridges.</li>
+ <li><b>Opening</b>: the first player places two light tiles. The second player chooses a colour: take Light (and these two tiles), or play Dark. Dark then moves; play alternates.</li>
+ <li><b>Turn</b>: place <b>two tiles</b> of your colour, anywhere, or <b>one bridge</b>. A single tile is allowed if there is no room left for the second.</li>
  <li><b>Island</b>: exactly 4 orthogonally connected tiles. Fewer than 4: a <b>sandbank</b>. Never more than 4.</li>
- <li>An island may not touch any other tile of its colour, not even diagonally. Different colours never block each other.</li>
- <li>Bridge: between two of your tiles, two squares apart (straight or diagonal) or a knight's move apart. The squares it spans must be water.</li>
- <li>A tile carries at most one bridge. Bridges never cross. Nothing may be placed under a bridge.</li>
- <li>Opening: the first player places two light tiles; the second player chooses a colour. Dark then moves.</li>
- <li>End: if Dark passes, the game ends at once. If Light passes, Dark plays one last turn, then the game ends. You may only pass when no tile can be placed; a player with no move at all must pass. The game also ends by itself as soon as no move, by either side, can change the score any more.</li>
- <li>Each group of islands linked by bridges (sandbanks included as links) scores:
+ <li><b>Contact</b>: an island touches no other tile of its colour, not even at a corner. Between different colours, any contact is allowed.</li>
+ <li><b>Bridge</b>: between two of your tiles (island or sandbank) with one square between them, in a straight line or diagonally, or a knight's move apart. The squares spanned must be open water, with no tile and no bridge. A tile carries at most one bridge; bridges never cross, whatever their colour; nothing may be placed under a bridge.</li>
+ <li><b>Pass</b>: only if no tile can be placed; a player with no move at all must pass. If Dark passes, the game ends. If Light passes, Dark plays one last turn, then the game ends. It also ends by itself as soon as no move, by either side, can change the result any more.</li>
+ <li><b>Score</b>: each group of islands linked by its bridges (sandbanks serve as links, but score nothing) scores:
  <div class="scale"><span>1 island: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Tie-break: most islands, then most bridges.</li>
- <li><b>Playing</b>: click two water squares to place your two tiles (a single one when no square is left for the second: End turn); for a bridge, click one of your tiles, then the other end among those offered. Hovering shows the tile or the bridge in transparency; clicking a tile placed this turn takes it back. At the colour choice, Take Light or Play Dark, then Confirm. The move commands are in the bar under the board: Reset, End turn, Pass, Confirm; against the computer, Undo last move and Hint; in analysis, Hint.</li>
- <li><b>Games</b>: <i>with a link</i>, against an opponent on another device; against the <i>computer</i>, with undo and hints; <i>face to face</i>, two players on the same screen, with an optional clock; <i>in analysis</i>, both sides on this screen, no clock, with stepping back, variations and hints.</li>
- <li><b>Clock</b>: chosen when the game is created, with a link or face to face. With a link, it starts when both players have clicked Start the game, and stops while a player is disconnected; face to face, it starts at once.</li></ul>`
+ <li><b>Tie-break</b>: most islands, then most bridges. A perfect tie: a draw.</li></ul>`
 },es:{
- lv_l0:"Nivel 0",lv_l1:"Nivel 1",lv_l2:"Nivel 2",lv_l3:"Nivel 3",lv_l4:"Nivel 4",lv_l5:"Nivel 5",lv_l6:"Nivel 6",lv_l7:"Nivel 7",lv_l8:"Nivel 8",lv_l9:"Nivel 9, el más fuerte",m_aiTxt:"Diez niveles, de 0 a 9: hasta el 8, cada uno gana al anterior unas tres partidas de cada cuatro; el 9 piensa 10 s por jugada.",
- title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",firstIs:"Primer jugador (coloca las dos losetas claras de apertura)",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
+ lvd_gr:"una jugada de antelación, con algo de azar",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",lvd_mc:"búsqueda Monte Carlo, {n} simulaciones por jugada",lvd_mcE:"búsqueda Monte Carlo, {n} simulaciones por jugada, final calculado con exactitud",
+ title:"Ponte del Diavolo",lede:"Construye islas y únelas con puentes.",by:"Un juego de Martin Ebel.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",
  needConfirm:"Confirmar cada jugada",takeLight:"Tomar las claras",playDark:"Jugar las oscuras",endTurn:"Terminar el turno",passEnd:"Pasar y terminar",takeLightS:"Claras",playDarkS:"Oscuras",endTurnS:"Terminar",passEndS:"Pasar",
  pts:"pts",isl:"isl.",brg:"pte.",ptsL:"puntos",islL:"islas",brgL:"puentes",light:"Claras",dark:"Oscuras",mv_bridge:"puente",lg_pass:"pasa",lg_takeL:"toma las claras",lg_dark:"juega las oscuras",
  lg_forced:"{c}: ninguna jugada posible, pasa.",lg_lastTurn:"Las claras han pasado: las oscuras juegan un último turno.",lg_fixed:"Ninguna jugada puede ya cambiar el marcador: fin de la partida.",w_fixed:", ninguna jugada puede ya cambiar el marcador",
@@ -408,19 +401,16 @@ const PD_I18N={fr:{
  pend_pass:"Pasar: las oscuras jugarán un último turno.",pend_passEnd:"Pasar y terminar la partida.",pend_pie:"{c}: confirma tu elección.",
  w_score:"{w} a {l}{tb}",w_tie:"empate perfecto, {w} a {l}{tb}",tb_isl:" (decidido por las islas)",tb_brg:" (decidido por los puentes)",
  ht_1:"<b>Colocar</b> Haz clic en dos casillas de agua. Un clic en una loseta puesta este turno la retira.",ht_2:"<b>Dónde colocar</b> Al pasar el ratón, la loseta solo aparece donde puede ir.",ht_3:"<b>Puente</b> Selecciona una de tus losetas y luego haz clic en el otro extremo.",rules:`<summary>Reglas en breve</summary><ul>
- <li>En tu turno, coloca <b>dos losetas</b> de tu color, o <b>un puente</b>.</li>
+ <li><b>Material</b>: un tablero de 10 × 10 casillas de agua, vacío al principio; losetas claras y oscuras sin límite, y puentes.</li>
+ <li><b>Apertura</b>: el primer jugador coloca dos losetas claras. El segundo elige su color: tomar las claras (y esas dos losetas), o jugar con las oscuras. Después juegan las oscuras; se alterna.</li>
+ <li><b>Turno</b>: se colocan <b>dos losetas</b> de su color, donde se quiera, o <b>un puente</b>. Se permite una sola loseta si ya no queda sitio para la segunda.</li>
  <li><b>Isla</b>: exactamente 4 losetas unidas ortogonalmente. Menos de 4: un <b>banco de arena</b>. Nunca más de 4.</li>
- <li>Una isla no puede tocar ninguna otra loseta de su color, ni siquiera en diagonal. Los colores distintos nunca se estorban.</li>
- <li>Puente: entre dos de tus losetas, a dos casillas de distancia (en línea recta o en diagonal) o a un salto de caballo. Las casillas que salva deben ser agua.</li>
- <li>Una loseta lleva como máximo un puente. Los puentes nunca se cruzan. Nada se coloca bajo un puente.</li>
- <li>Apertura: el primer jugador coloca dos losetas claras; el segundo elige su color. Luego juegan las oscuras.</li>
- <li>Final: si las oscuras pasan, la partida se detiene de inmediato. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. Solo se puede pasar si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente. La partida también se detiene por sí sola en cuanto ninguna jugada, de uno u otro, puede ya cambiar el marcador.</li>
- <li>Cada grupo de islas unidas por puentes (los bancos de arena sirven de enlace) vale:
+ <li><b>Contacto</b>: una isla no toca ninguna otra loseta de su color, ni siquiera por una esquina. Entre colores distintos se permite cualquier contacto.</li>
+ <li><b>Puente</b>: entre dos losetas propias (isla o banco de arena) separadas por una casilla, en línea recta o en diagonal, o a un salto de caballo. Las casillas que salva deben ser agua libre, sin loseta ni puente. Una loseta lleva como máximo un puente; los puentes nunca se cruzan, sea cual sea su color; nada se coloca bajo un puente.</li>
+ <li><b>Pasar</b>: solo si no se puede colocar ninguna loseta; un jugador sin ninguna jugada pasa forzosamente. Si las oscuras pasan, la partida se detiene. Si las claras pasan, las oscuras juegan un último turno y luego la partida se detiene. También se detiene por sí sola en cuanto ninguna jugada, de uno u otro, puede ya cambiar el resultado.</li>
+ <li><b>Puntuación</b>: cada grupo de islas unidas por sus puentes (los bancos de arena sirven de enlace, pero no valen nada) vale:
  <div class="scale"><span>1 isla: 1</span><span>2 : 3</span><span>3 : 6</span><span>4 : 10</span><span>5 : 15</span><span>6 : 21</span></div></li>
- <li>Desempate: más islas, luego más puentes.</li>
- <li><b>Jugar</b>: haz clic en dos casillas de agua para colocar tus dos losetas (una sola si no queda sitio para la segunda: Terminar el turno); para un puente, haz clic en una de tus losetas y luego en el otro extremo, entre los propuestos. Al pasar el ratón, la loseta o el puente se muestran en transparencia; hacer clic en una loseta colocada este turno la retira. Al elegir color, Tomar las claras o Jugar las oscuras, y luego Confirmar. Los controles de la jugada están en la barra bajo el tablero: Reiniciar, Terminar el turno, Pasar, Confirmar; contra el ordenador, Deshacer la última jugada y Sugerencia; en análisis, Sugerencia.</li>
- <li><b>Partidas</b>: <i>con un enlace</i>, contra un adversario en otro dispositivo; contra el <i>ordenador</i>, con deshacer y sugerencias; <i>cara a cara</i>, dos jugadores en la misma pantalla, con reloj opcional; <i>en análisis</i>, los dos bandos en esta pantalla, sin reloj, con vuelta atrás, variantes y sugerencias.</li>
- <li><b>Reloj</b>: a elegir al crear la partida, con un enlace o cara a cara. Con un enlace, arranca cuando los dos jugadores han hecho clic en Empezar la partida, y se detiene durante una desconexión; cara a cara, arranca de inmediato.</li></ul>`
+ <li><b>Desempate</b>: más islas, luego más puentes. Empate perfecto: tablas.</li></ul>`
 }};
 
 // ---------- game state and moves ----------
@@ -431,7 +421,7 @@ const PD_I18N={fr:{
 // Move codes: 't12.34' two tiles (placement order; 't12' a single tile when no square is left for a second one),
 // 'b12-34' a bridge (smaller square first), 'x' pass, 'L' / 'D' the colour choice (seat 1 takes Light / plays Dark).
 // A player with no move at all passes automatically: replay applies it after the move before (noted in its log entry).
-const LET='ABCDEFGHIJ',lab=i=>LET[CL(i)]+(N-RW(i));
+const LET='abcdefghij',lab=i=>LET[CL(i)]+(N-RW(i)),sqi=n=>{const m=/^([a-j])(\d+)$/.exec(n);return m&&+m[2]>=1&&+m[2]<=N?(N-m[2])*N+LET.indexOf(m[1]):-1;};
 const CS=80,M=36,SZ=CS*N+2*M;
 const findEdge=(a,b)=>BR[a].find(e=>e.b===b);
 const NAME=c=>t(c===1?'light':'dark');
@@ -539,8 +529,9 @@ function drawBoard(real,last,a){
   out.push(`<rect x="${M}" y="${M}" width="${CS*N}" height="${CS*N}" fill="var(--water)"/>`);
   for(let k=1;k<N;k++){out.push(`<line x1="${X(k)}" y1="${M}" x2="${X(k)}" y2="${M+CS*N}" stroke="var(--grid)" stroke-width="1.5"/>`);
     out.push(`<line x1="${M}" y1="${Y(k)}" x2="${M+CS*N}" y2="${Y(k)}" stroke="var(--grid)" stroke-width="1.5"/>`);}
-  const tx=(x,y,s)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="15" fill="var(--coord)" font-family="Karla,sans-serif">${s}</text>`;
-  if(coordsOn)for(let k=0;k<N;k++)out.push(tx(X(k)+CS/2,24,LET[k]),tx(X(k)+CS/2,M+CS*N+25,LET[k]),tx(18,Y(k)+CS/2+5,N-k),tx(M+CS*N+18,Y(k)+CS/2+5,N-k));
+  // coordinates (core: coordsOn): a–j under the board, 1–10 on its left (a1 bottom left)
+  const tx=(x,y,s)=>`<text class="coord" x="${x}" y="${y}" text-anchor="middle" font-size="21">${s}</text>`;
+  if(coordsOn)for(let k=0;k<N;k++)out.push(tx(X(k)+CS/2,M+CS*N+25,LET[k]),tx(18,Y(k)+CS/2+6,N-k));
   const g=5;
   // flat tiles: a thin outline (the same shape, slightly larger) under a plain fill
   const shapes=(p,inf,fill)=>{
@@ -616,9 +607,9 @@ function pdBoard({r,d,mine}){const live=navAt===null&&mine&&(r.st.phase==='openi
   drawBoard(d.st,d.last,live?{w:work(r.st),p:mover(r.st),opening:r.st.phase==='opening'}:null);return {};}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
 function pdTurnStatus({r,idle,RST}){const st=r.st,p=mover(st);
-  if(st.phase==='pie'){status(t('st_pie'),'turn',[...idle,{label:t('takeLight'),short:t('takeLightS'),primary:true,on:()=>pie('L')},{label:t('playDark'),short:t('playDarkS'),on:()=>pie('D')}]);return;}
-  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?t('st_oneLeft'):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endOne}:null]);return;}
-  const msg=forced(r)+(st.phase==='opening'?t('st_opening'):st.finalTurn?t(solo()?'lg_lastTurn':'st_lastTurn'):solo()?t('st_turn',{n:seatName(st.turn)}):t('st_yourTurn'));
+  if(st.phase==='pie'){status(soloWho(st.turn,t('st_pie')),'turn',[...idle,{label:t('takeLight'),short:t('takeLightS'),primary:true,on:()=>pie('L')},{label:t('playDark'),short:t('playDarkS'),on:()=>pie('D')}]);return;}
+  if(ui.draft.length||ui.sel!==null){status(ui.oneLeft?soloWho(st.turn,t('st_oneLeft')):'','turn',[RST,ui.oneLeft?{label:t('endTurn'),short:t('endTurnS'),primary:true,on:endOne}:null]);return;}
+  const msg=forced(r)+(st.phase==='opening'?soloWho(st.turn,t('st_opening')):st.finalTurn?(solo()?t('lg_lastTurn')+' '+t('st_turn',{n:seatName(st.turn)}):t('st_lastTurn')):solo()?t('st_turn',{n:seatName(st.turn)}):t('st_yourTurn'));
   const canP=st.phase==='play'&&canPass(st,p);
   status(msg,'turn',[...idle,canP?{label:t(p===2||st.finalTurn?'passEnd':'pass'),short:p===2||st.finalTurn?t('passEndS'):undefined,on:doPass}:null]);}
 // The colour choice (seat 1, after the opening) always waits for Confirm, whatever the option (C14)
@@ -802,14 +793,17 @@ function fromPos(P){const S=blank();for(let i=0;i<NN;i++)S.c[i]=P.cells[i];for(c
 function toMove(m){return m.k===0?{t:'t',cells:m.b>=0?[m.a,m.b]:[m.a]}:m.k===1?{t:'b',a:EA[m.e],b:EB[m.e]}:m.k===2?{t:'x'}:{t:m.L?'L':'D'};}
 // the searches, on Ponte's interface
 const PS=blank();
+// TELL: the search in flight is the move's own (not a sub-search): its best move so far goes to aiBest (core's worker,
+// « Play now »)
+let TELL=false;
 const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>S.tm,done:S=>S.ph===3,result:final,eval:evalS,
-  playout:(S,o)=>playout(S,o,o.cut||0),scratch:S=>copyInto(PS,S)});
+  playout:(S,o)=>playout(S,o,o.cut||0),scratch:S=>copyInto(PS,S),best:r=>{if(TELL)aiBest({move:toMove(r.m),score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);let r;
   if(S.ph===3)return null;
   if(S.ph===0)r=opening(S,opt);else if(S.ph===1)r=pie(S,opt);
-  else{K.start(opt.time);const C=gen(S,opt.cells||20);if(!C.length)return {move:{t:'x'},score:0,depth:0,forced:true};
+  else{K.start(opt.nodes);const C=gen(S,opt.cells||20);if(!C.length)return {move:{t:'x'},score:0,depth:0,forced:true};
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
-    else r=K[opt.algo](S,C,opt);}
+    else{TELL=typeof aiBest==='function';r=K[opt.algo](S,C,opt);TELL=false;}}
   return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:K.nodes()};}
 // ----- MCTS: UCT over the candidate moves (progressive widening in their order), fast guided playouts -----
 // A playout turn: a bridge between two different groups when one touches an island (share opt.brP of the turns that have
@@ -840,15 +834,17 @@ return {search,fromPos,gen,play,copy,evalS,final,score,canP,canB,cellsOf,bridges
 /*AIEND*/
 // Levels: plain parameters for PonteAI().search (tune or add levels here). algo: 'greedy' one ply, a softmax over the best
 // moves · 'beam' iterative-deepening alpha-beta on the best candidates · 'mcts' (see common/ai.js). Common: cells, the single
-// squares paired into two-tile candidates; time, the budget (ms). greedy: pick, moves drawn from · temp, softmax
+// squares paired into two-tile candidates. greedy: pick, moves drawn from · temp, softmax
 // temperature (points of evaluation). beam: depth, plies read at most · widths, candidates kept at each ply ·
 // cellsIn, squares paired below the root (mcts too) · noise, a move within this many points of the best, at random. mcts: sims,
-// playouts (time is only a cap) · rand, share of random tiles in playouts (others: the best of a few) · brP, share of
+// playouts: the only thing that stops it · rand, share of random tiles in playouts (others: the best of a few) · brP, share of
 // playout turns that build a bridge when one is useful · temp, final choice by visits^(1/temp) (0: most visited) ·
 // pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · c, UCT exploration · cut, playout turns before
 // evaluating (0: to the end) · scale, evaluation points per logit.
 // The ladder (10.11.2026, outils/aitools/res/pontedeldiavolo/niveaux.md, 300 games a pair): each level beats the one
-// below by 74-78 % (draws count half). mcts levels stop on sims (time is a cap).
+// below by 74-78 % (draws count half). A level is an amount of work, never a time (16.11.2026): the former caps (1 to 8 s)
+// were never reached on the reference Mac (M3 Pro) below level 9, whose simulations are what that Mac did in its former
+// 10 s (outils/aitools/res/budgets-2026-11-16.md).
 const MC={algo:'mcts',cells:20,cellsIn:10,pwC:2,pwA:.45,cut:4,rand:.3,brP:.5,scale:2,temp:0};
 const LEVELS={
   l0:{algo:'greedy',cells:20,temp:1000},
@@ -856,12 +852,16 @@ const LEVELS={
   l2:{algo:'greedy',cells:20,temp:.8},
   l3:{algo:'greedy',cells:20,temp:.45},
   l4:{algo:'greedy',cells:20,temp:.21},
-  l5:{algo:'beam',depth:2,cells:16,widths:[10,10],noise:.5,time:1000},
-  l6:{algo:'beam',depth:3,cells:16,widths:[8,6,6],time:3000},
-  l7:{...MC,sims:2000,c:.35,time:5000},
-  l8:{...MC,sims:5000,c:.2,time:8000},
-  l9:{...MC,sims:1e9,c:.2,time:10000}};   // l8 on its full 10 s (12.11.2026, Thibault; not measured against l8)
-const HINT=LEVELS.l8;
+  l5:{algo:'beam',depth:2,cells:16,widths:[10,10],noise:.5},
+  l6:{algo:'beam',depth:3,cells:16,widths:[8,6,6]},
+  l7:{...MC,sims:2000,c:.35},
+  l8:{...MC,sims:5000,c:.2},
+  l9:{...MC,sims:42000,c:.2}};   // l8 with the simulations of the former 10 s (12.11.2026, Thibault; not measured against l8)
+const HINT={...LEVELS.l8,sims:9500};   // level 8's search with the simulations of 5 s at most on the reference Mac
+// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
+const ENGINE={v:1,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const levelDesc=o=>o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
 const aiPos=st=>({cells:Array.from(st.cells),bridges:st.bridges.map(B=>[Math.min(B.a,B.b),Math.max(B.a,B.b),B.o]),phase:st.phase,toMove:st.toMove,finalTurn:st.finalTurn,colorA:st.colorA});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: none for the opening and the colour choice; the score is in points of evaluation
@@ -920,14 +920,20 @@ function pdHowto(k,A){const {svg,wait,cursor,click}=A,NSv='http://www.w3.org/200
 // ---------- the interface with common/core.js ----------
 $('needConfirm').checked=LS.get('pdd-confirmEach',true)!==false;
 $('needConfirm').onchange=e=>LS.set('pdd-confirmEach',e.target.checked);
-const GAME={howto:{off:true,titled:true,n:3,scene:pdHowto},id:'pdd',size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
+const GAME={howto:{off:true,titled:true,n:3,scene:pdHowto},id:'pdd',seatCol:s=>{const c=view&&view.moves[1];return c==='L'||c==='D'?((s===1)===(c==='L')?'light':'dark'):null;},   // Clair / Foncé once chosen (seat 1: L takes Light)
+  size:'pdd',codeTag:'PONTE2',i18n:PD_I18N,
   rules:()=>({}),form:()=>({}),
   replay:pdReplay,
   legal:(st,code)=>{const m=parse(code);return m&&step(st,m)?enc(m):null;},
   enc:m=>{resetUi();return enc(m);},   // called by the shared send(): the move leaves, the preparation is dropped
   describe,newUi,preparing,cancel:cancelPrep,
+  // SGF: two tiles « a1,b2 » (in the order placed), a bridge « c3-c5 », « pass », the colour choice « light » or « dark »
+  sgf:{val:code=>{const m=parse(code);return !m?code:m.t==='t'?m.cells.map(lab).join(','):m.t==='b'?lab(m.a)+'-'+lab(m.b):m.t==='x'?'pass':m.t==='L'?'light':'dark';},
+    code:v=>{v=String(v).trim().toLowerCase();if(v==='pass')return 'x';if(v==='light')return 'L';if(v==='dark')return 'D';
+      let m=/^([a-j]\d+)(?:\s*,\s*([a-j]\d+))?$/.exec(v);if(m){const c=[m[1],m[2]].filter(Boolean).map(sqi);return c.some(x=>x<0)?null:'t'+c.join('.');}
+      m=/^([a-j]\d+)-([a-j]\d+)$/.exec(v);if(!m)return null;const a=sqi(m[1]),b=sqi(m[2]);return a<0||b<0?null:enc({t:'b',a:Math.min(a,b),b:Math.max(a,b)});}},
   board:pdBoard,turnStatus:pdTurnStatus,waitStatus:pdWaitStatus,pendText:pdPendText,
-  levels:LEVELS,levelDefault:'l5',hintLevel:HINT,
+  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>AISearch.toString()+'\n'+PonteAI.toString()+'\nconst PA=PonteAI();function aiSearch(pos,opt){return PA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PonteAI()).search(aiPos(st),opt),
   evalInfo:pdEvalInfo,

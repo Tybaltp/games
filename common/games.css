@@ -404,3 +404,14 @@ html.htshown header .seg{position:relative;z-index:61}
 .htdots{display:flex;gap:7px}.htdots i{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer}.htdots i.on{background:var(--accent)}
 .htfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.88rem}.htfoot label{display:flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer}
 .htopen{margin:.6em 0 0}
+/* « Signaler un défaut » (core.js, reportUi): a discreet link at the end of Options */
+.rpline{margin:4px 0 0;font-size:.82rem}.rpline a{color:var(--muted)}.rpline a:hover{color:var(--accent)}
+/* A phone held sideways during a game: one line asking to turn it, over everything (decision of 15.11.2026) */
+.rotatemsg{display:none}
+@media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
+  html.ingame .rotatemsg{display:flex;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);
+    padding:max(16px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(16px,var(--sab)) max(24px,env(safe-area-inset-left,0px));text-align:center}
+  html.ingame .rotatemsg p{margin:0;font-family:var(--f-display);font-weight:800;font-size:1.3rem;max-width:22em}
+  html.ingame .rotatemsg p::before{content:"⟳";display:block;font-size:2.4rem;margin-bottom:8px;color:var(--accent)}}
+/* board coordinates, the same drawing in every game: monospace, semi-bold, the page's --lab colour (set for both themes) */
+svg .coord{font-family:var(--f-mono);font-weight:600;fill:var(--lab);pointer-events:none;-webkit-user-select:none;user-select:none}
