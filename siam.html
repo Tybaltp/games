@@ -14,19 +14,19 @@
   --bg:#e6dccb;--panel:#f3eee4;--ink:#272219;--muted:#6b6152;--line:#d3c6b0;
   --accent:#a0522d;--accent-ink:#ffffff;--danger:#b3261e;
   --cell:#efe4cc;--cell2:#e6d8bb;--cell-e:#c9b48e;--lab:#8a7656;
-  --ele:#6f86a8;--ele-e:#34465f;--rhi:#c0703f;--rhi-e:#6a3416;--rock:#9b958c;--rock-e:#5c5852;--mk:#272219;--sel:#2f6fd6;
+  --ele:#d9ab3a;--ele-e:#6b4b10;--rhi:#b7c1c9;--rhi-e:#3d474f;--rock:#9b958c;--rock-e:#5c5852;--mk:#272219;--sel:#2f6fd6;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#191612;--panel:#231f19;--ink:#ece6da;--muted:#a39a8a;--line:#3a3329;
   --accent:#e0915f;--accent-ink:#1f120a;--danger:#ef8579;
   --cell:#3a3328;--cell2:#332d23;--cell-e:#574c3b;--lab:#a3937a;
-  --ele:#8aa3c6;--ele-e:#dbe6f5;--rhi:#d4814d;--rhi-e:#ffd2b5;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}}
+  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#191612;--panel:#231f19;--ink:#ece6da;--muted:#a39a8a;--line:#3a3329;
   --accent:#e0915f;--accent-ink:#1f120a;--danger:#ef8579;
   --cell:#3a3328;--cell2:#332d23;--cell-e:#574c3b;--lab:#a3937a;
-  --ele:#8aa3c6;--ele-e:#dbe6f5;--rhi:#d4814d;--rhi-e:#ffd2b5;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}
+  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:transparent;border:0;border-radius:8px;overflow:hidden}
 .board .pt{cursor:pointer}
 /* players' cards: the camp, its animals in reserve */
@@ -168,6 +168,7 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 <script src="common/core.js?v=91"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=3"></script>
+<script src="img/siam/siam-art.js?v=1"></script>
 <script>
 // ===== Siam (Didier Dhorbait, Ferti, 2005) =====
 // Rules kept (from memory and public summaries; to be checked against the publisher's rules): a 5 × 5 board; three rocks
@@ -195,15 +196,19 @@ function SiamEngine(){
  function rules(){return{};}
  // st: p (piece on each square: null, {t:ROCK}, {t:ELE|RHI,d}), res[seat] (animals in reserve), turn (seat), col[seat]
  function init(){const p=new Array(N*N).fill(null);[parse('b3'),parse('c3'),parse('d3')].forEach(i=>p[i]={t:ROCK});
-  return{p,res:[5,5],turn:0,col:[ELE,RHI]};}
+  return{p,res:[5,5],turn:0,col:[ELE,RHI],n:0};}
+ // c1 and c5 (the marked squares): no animal enters on them during each player's first two moves (Thibault, 15.11 and 16.11.2026)
+ const MARKED=[2,22],OPENING=4,marked=(st,i)=>(st.n||0)<OPENING&&MARKED.includes(i);
  const toMove=st=>st.col[st.turn];
  // the row of pieces from the square start in direction d
  function pushLine(st,start,d){const[dx,dy]=DIRS[d],line=[];let[x,y]=xy(start);
   while(true){const i=at(x,y);if(i<0||!st.p[i])break;line.push(i);x+=dx;y+=dy;}
   return line;}
- function strength(st,line,d,extra){let F=extra?1:0,B=0,R=0;
-  for(const i of line){const q=st.p[i];if(q.t===ROCK)R++;else if(q.d===d)F++;else if(q.d===OPP[d])B++;}
-  return F-B>=1&&F-B>=R;}
+ // the push (decision of Thibault, 15.11.2026): from the pusher along the row, each animal counts +1 facing the push, −1
+ // facing against it, 0 sideways, whatever its camp; a rock −0.99; every partial sum must stay above 0 (in hundredths)
+ function strength(st,line,d,extra){let s=extra?100:0;
+  for(const i of line){const q=st.p[i];s+=q.t===ROCK?-99:q.d===d?100:q.d===OPP[d]?-100:0;if(s<=0)return false;}
+  return true;}
  // plays the push (the pusher is already in line[0], or enters on line[0]); returns {out, winner}
  function doPush(st,line,d,entering){const[dx,dy]=DIRS[d];let out=null,winner=null;
   const last=line[line.length-1],[lx,ly]=xy(last);
@@ -218,7 +223,7 @@ function SiamEngine(){
  // a code read: a function playing the move on st, or null if it is illegal
  function plan(st,code){const c=toMove(st);let m;
   if((m=/^\+([a-e][1-5])([NESW])$/.exec(code))){const i=parse(m[1]),d=m[2];
-   if(!st.res[st.turn]||!onEdge(i))return null;
+   if(!st.res[st.turn]||!onEdge(i)||marked(st,i))return null;
    if(!st.p[i])return()=>{st.p[i]={t:c,d};st.res[st.turn]--;return{};};
    if(!inward(i).includes(d))return null;
    const line=pushLine(st,i,d);if(!strength(st,line,d,true))return null;
@@ -238,7 +243,7 @@ function SiamEngine(){
  function legal(st,code){if(typeof code!=='string')return null;code=code.trim();
   const k=code.replace(/^(\+?)([A-Ea-e])/,(s,a,b)=>a+b.toLowerCase()).replace(/[nesw]$/,s=>s.toUpperCase()).replace(/O$/,'W');
   return plan(st,k)?k:null;}
- function clone(st){return{p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col};}
+ function clone(st){return{p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col,n:st.n||0};}
  function legalMoves(st){const out=[],c=toMove(st),D='NESW';
   for(let i=0;i<N*N;i++){
    if(onEdge(i))for(const d of D)if(plan(st,'+'+name(i)+d))out.push('+'+name(i)+d);
@@ -261,9 +266,11 @@ function SiamEngine(){
    const s=st.turn,c=toMove(st),inf=info(code),occ=inf.t>=0&&!!st.p[inf.t]&&inf.kind!=='turn',res=plan(st,code)();
    const e={p:s,s,code,c,...inf,push:occ,out:res.out?res.out.t:-1};log.push(e);last=e;
    if(res.out&&res.out.t===ROCK)over={w:st.col.indexOf(res.winner),why:'w_rock'};
-   st.turn=1-st.turn;}
+   st.turn=1-st.turn;st.n=(st.n||0)+1;}
   return{st,log,last,over};}
- return{N,ELE,RHI,ROCK,DIRS,OPP,name,parse,xy,at,onEdge,inward,rules,init,toMove,plan,legal,legalMoves,info,pushLine,strength,replay,clone};
+ // sig: a position for the repetition (pieces with their direction, reserves, side to move)
+ const sig=st=>st.p.map(q=>!q?'.':q.t===ROCK?'r':(q.t===ELE?'e':'h')+q.d).join('')+'|'+st.res.join(',')+'|'+st.turn;
+ return{N,ELE,RHI,ROCK,DIRS,OPP,MARKED,marked,sig,name,parse,xy,at,onEdge,inward,rules,init,toMove,plan,legal,legalMoves,info,pushLine,strength,replay,clone};
 }
 const SM=SiamEngine();
 
@@ -284,9 +291,10 @@ const SM_I18N={fr:{
  boardLbl:"Plateau de Siam",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>Matériel</b> : un plateau de 5 × 5 cases, trois rochers au centre (b3, c3, d3), cinq éléphants et cinq rhinocéros hors du plateau. Chaque animal regarde dans une direction (sa pointe). Les éléphants commencent.</li>
- <li><b>Un tour</b>, une seule action avec un de ses animaux : <i>entrer</i> sur une case libre du bord, orientation au choix ; <i>avancer</i> d'une case vers une case libre, orientation au choix ; <i>tourner</i> sur place ; <i>sortir</i> du plateau depuis une case du bord (il revient en réserve) ; <i>pousser</i>.</li>
- <li><b>Pousser</b> : un animal avance dans la direction où il regarde sur une case occupée, ou entre sur une case du bord occupée en regardant vers l'intérieur, et pousse toute la file d'une case. Dans la file, comptez les animaux qui regardent dans le sens de la poussée (F), ceux qui regardent en sens contraire (B) et les rochers (R) ; ceux de côté ne comptent pas. La poussée passe si F − B ≥ 1 et F − B ≥ R. Un animal poussé hors du plateau retourne dans sa réserve.</li>
- <li><b>Victoire</b> : un rocher poussé hors du plateau termine la partie. Gagne le camp de l'animal le plus proche du rocher, derrière lui dans la file, qui regarde dans le sens de la poussée, même si ce n'est pas lui qui a poussé.</li></ul>
+ <li><b>Un tour</b>, une seule action avec un de ses animaux : <i>entrer</i> sur une case libre du bord, orientation au choix (pendant les deux premiers coups de chaque joueur, pas sur c1 ni c5) ; <i>avancer</i> d'une case vers une case libre, orientation au choix ; <i>tourner</i> sur place ; <i>sortir</i> du plateau depuis une case du bord (il revient en réserve) ; <i>pousser</i>.</li>
+ <li><b>Pousser</b> : un animal avance dans la direction où il regarde sur une case occupée, ou entre sur une case du bord occupée en regardant vers l'intérieur, et pousse toute la file d'une case. Le long de la file, en partant de l'animal qui pousse, chaque animal compte +1 s'il regarde dans le sens de la poussée, −1 s'il regarde en sens contraire, 0 de côté, quel que soit son camp ; un rocher compte −0,99. La poussée passe si chaque somme partielle reste au-dessus de 0. Un animal poussé hors du plateau retourne dans sa réserve.</li>
+ <li><b>Victoire</b> : un rocher poussé hors du plateau termine la partie. Gagne le camp de l'animal le plus proche du rocher, derrière lui dans la file, qui regarde dans le sens de la poussée, même si ce n'est pas lui qui a poussé.</li>
+ <li><b>Répétition</b> : la troisième fois qu'une même position revient (pièces, réserves et trait), chaque joueur peut proposer la nulle ; la quatrième fois, la partie est nulle.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 },en:{
  title:"Siam",lede:"Elephants against rhinos: push a rock off the board.",by:"A game by Didier Dhorbait.",
@@ -304,9 +312,10 @@ const SM_I18N={fr:{
  boardLbl:"Siam board",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a board of 5 × 5 squares, three rocks in the middle (b3, c3, d3), five elephants and five rhinoceroses off the board. Each animal faces a direction (its point). The elephants start.</li>
- <li><b>A turn</b>, a single action with one of your animals: <i>enter</i> on a free edge square, facing any way; <i>move</i> one square to a free square, facing any way; <i>turn</i> on the spot; <i>leave</i> the board from an edge square (back to the reserve); <i>push</i>.</li>
- <li><b>Pushing</b>: an animal moves the way it faces onto an occupied square, or enters on an occupied edge square facing inwards, and pushes the whole row one square. In the row, count the animals facing the push (F), those facing the other way (B) and the rocks (R); those facing sideways do not count. The push goes through if F − B ≥ 1 and F − B ≥ R. An animal pushed off the board goes back to its reserve.</li>
- <li><b>Winning</b>: a rock pushed off the board ends the game. The camp of the animal nearest the rock, behind it in the row, facing the push wins, even if it is not the one that pushed.</li></ul>
+ <li><b>A turn</b>, a single action with one of your animals: <i>enter</i> on a free edge square, facing any way (not on c1 or c5 during each player's first two moves); <i>move</i> one square to a free square, facing any way; <i>turn</i> on the spot; <i>leave</i> the board from an edge square (back to the reserve); <i>push</i>.</li>
+ <li><b>Pushing</b>: an animal moves the way it faces onto an occupied square, or enters on an occupied edge square facing inwards, and pushes the whole row one square. Along the row, starting from the pusher, each animal counts +1 if it faces the push, −1 if it faces the other way, 0 sideways, whatever its camp; a rock counts −0.99. The push goes through if every partial sum stays above 0. An animal pushed off the board goes back to its reserve.</li>
+ <li><b>Winning</b>: a rock pushed off the board ends the game. The camp of the animal nearest the rock, behind it in the row, facing the push wins, even if it is not the one that pushed.</li>
+ <li><b>Repetition</b>: the third time the same position comes back (pieces, reserves and side to move), each player may offer a draw; the fourth time, the game is drawn.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 },es:{
  title:"Siam",lede:"Elefantes contra rinocerontes: empuja una roca fuera del tablero.",by:"Un juego de Didier Dhorbait.",
@@ -324,9 +333,10 @@ const SM_I18N={fr:{
  boardLbl:"Tablero de Siam",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Material</b>: un tablero de 5 × 5 casillas, tres rocas en el centro (b3, c3, d3), cinco elefantes y cinco rinocerontes fuera del tablero. Cada animal mira en una dirección (su punta). Empiezan los elefantes.</li>
- <li><b>Un turno</b>, una sola acción con uno de tus animales: <i>entrar</i> en una casilla libre del borde, con la orientación que quieras; <i>avanzar</i> una casilla hasta una casilla libre, con la orientación que quieras; <i>girar</i> en el sitio; <i>salir</i> del tablero desde una casilla del borde (vuelve a la reserva); <i>empujar</i>.</li>
- <li><b>Empujar</b>: un animal avanza en la dirección en que mira hacia una casilla ocupada, o entra en una casilla ocupada del borde mirando hacia el interior, y empuja toda la fila una casilla. En la fila, cuenta los animales que miran en el sentido del empuje (F), los que miran en sentido contrario (B) y las rocas (R); los que miran de lado no cuentan. El empuje pasa si F − B ≥ 1 y F − B ≥ R. Un animal empujado fuera del tablero vuelve a su reserva.</li>
- <li><b>Victoria</b>: una roca empujada fuera del tablero termina la partida. Gana el bando del animal más cercano a la roca, detrás de ella en la fila, que mira en el sentido del empuje, aunque no sea él quien ha empujado.</li></ul>
+ <li><b>Un turno</b>, una sola acción con uno de tus animales: <i>entrar</i> en una casilla libre del borde, con la orientación que quieras (durante las dos primeras jugadas de cada jugador, ni en c1 ni en c5); <i>avanzar</i> una casilla hasta una casilla libre, con la orientación que quieras; <i>girar</i> en el sitio; <i>salir</i> del tablero desde una casilla del borde (vuelve a la reserva); <i>empujar</i>.</li>
+ <li><b>Empujar</b>: un animal avanza en la dirección en que mira hacia una casilla ocupada, o entra en una casilla ocupada del borde mirando hacia el interior, y empuja toda la fila una casilla. A lo largo de la fila, empezando por el animal que empuja, cada animal cuenta +1 si mira en el sentido del empuje, −1 si mira en sentido contrario, 0 de lado, sea cual sea su bando; una roca cuenta −0,99. El empuje pasa si cada suma parcial se mantiene por encima de 0. Un animal empujado fuera del tablero vuelve a su reserva.</li>
+ <li><b>Victoria</b>: una roca empujada fuera del tablero termina la partida. Gana el bando del animal más cercano a la roca, detrás de ella en la fila, que mira en el sentido del empuje, aunque no sea él quien ha empujado.</li>
+ <li><b>Repetición</b>: la tercera vez que vuelve la misma posición (piezas, reservas y turno), cada jugador puede proponer tablas; la cuarta vez, la partida es tablas.</li></ul>
  <p class="hint" style="margin-top:.6em">Siam — Didier Dhorbait (Ferti, 2005).</p>`
 }};
 const CAMP=c=>t('camp'+c),CK=c=>c===SM.ELE?'e':'r',DL=d=>t('d'+d+'l').toLowerCase(),NM=SM.name;
@@ -415,17 +425,17 @@ function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)r
   for(const c of anaAlts()){const e=SM.info(c);const i=e.t>=0?e.t:e.f;if(i>=0)out.set(i,c);}return out;}
 
 // ---------- drawing ----------
-const NS='http://www.w3.org/2000/svg',CS=100,AR={N:[0,-1],E:[1,0],S:[0,1],W:[-1,0]};
+const NS='http://www.w3.org/2000/svg',CS=100;
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 let PAD=0;
 const PX=i=>PAD+(i%5)*CS+CS/2,PY=i=>(4-Math.floor(i/5))*CS+CS/2;
 // an animal: a disc in its camp's colour, its point showing where it faces, its emblem on it
-function animal(g,x,y,t0,d,op){const p=el('g',{transform:`translate(${x} ${y})`},g);if(op!==undefined)p.setAttribute('opacity',op);
-  const f=t0===SM.ELE?'var(--ele)':'var(--rhi)',s=t0===SM.ELE?'var(--ele-e)':'var(--rhi-e)',[ax,ay]=AR[d];
-  el('polygon',{points:`${ax*44},${ay*44} ${ax*22-ay*20},${ay*22+ax*20} ${ax*22+ay*20},${ay*22-ax*20}`,fill:f,stroke:s,'stroke-width':2.5,'stroke-linejoin':'round'},p);
-  el('circle',{r:31,fill:f,stroke:s,'stroke-width':2.5},p);
-  const tx=el('text',{y:2,'text-anchor':'middle','dominant-baseline':'central','font-size':34},p);tx.textContent=t0===SM.ELE?'🐘':'🦏';return p;}
-function rock(g,x,y){el('polygon',{points:`${x-32},${y+26} ${x-20},${y-14} ${x-6},${y-30} ${x+12},${y-20} ${x+30},${y-2} ${x+33},${y+26}`,fill:'var(--rock)',stroke:'var(--rock-e)','stroke-width':2.5,'stroke-linejoin':'round'},g);}
+// the pieces drawn (img/siam/siam-art.js, 15.11.2026): an animal engraved in its disc, its point showing where it faces
+// (ART false: the drawing file is not loaded, as in the regression's page, which keeps only common/ scripts)
+const DIRN={N:'haut',E:'droite',S:'bas',W:'gauche'},ART=typeof siamPiece==='function';
+function animal(g,x,y,t0,d,op){const p=el('g',{},g);if(op!==undefined)p.setAttribute('opacity',op);
+  if(ART)siamPiece(p,t0===SM.ELE?'elephant':'rhino',DIRN[d],x,y,36);return p;}
+function rock(g,x,y){if(ART)siamPiece(g,'rocher',null,x,y,38);}
 const frame=(g,i,dash,col)=>el('rect',{x:PX(i)-CS/2+6,y:PY(i)-CS/2+6,width:CS-12,height:CS-12,rx:8,fill:'none',stroke:col||'var(--mk)','stroke-width':3,...(dash?{'stroke-dasharray':'7 5'}:{})},g);
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
   const sh=shown,st=sh&&view?sh.d.st:SM.init();PAD=coordsOn?34:0;const W=5*CS+PAD+(coordsOn?6:0),H=5*CS+PAD;
@@ -480,15 +490,21 @@ function evalS(S,p){const st=S.st,me=st.col[p],op=st.col[1-p];let v=0;
       const w=(go?1:.35)/(dist+1-ahead.length>0?dist+1-ahead.length:1);v+=who===me?w:-w;}}
   return v;}
 function result(S,p){return S.win===p?1000:-1000;}
+// Repetition (decision of Thibault, 15.11.2026): opt.hist = {sig: occurrences} of the positions of the game so far; in the
+// tree, a position already seen, in the game or higher on the line searched, is a finished game worth a draw (0)
+let REP=null;
 function play(S,m){const st=SM.clone(S.st),r=SM.plan(st,m)();let win=-1;
-  if(r.out&&r.out.t===SM.ROCK)win=st.col.indexOf(r.winner);st.turn=1-st.turn;return {st,win};}
-function gen(S){const out=[];for(const m of SM.legalMoves(S.st)){const T=play(S,m),p=S.st.turn;out.push({m,s:T.win>=0?(T.win===p?2000:-2000):evalS(T,p)});}
+  if(r.out&&r.out.t===SM.ROCK)win=st.col.indexOf(r.winner);st.turn=1-st.turn;st.n++;const T={st,win};
+  if(REP&&win<0){const k=SM.sig(st);T.k=k;T.up=S;let rp=REP.has(k);for(let A=S;!rp&&A;A=A.up)rp=A.k===k;T.rp=rp;}
+  return T;}
+function gen(S){const out=[];for(const m of SM.legalMoves(S.st)){const T=play(S,m),p=S.st.turn;out.push({m,s:T.win>=0?(T.win===p?2000:-2000):T.rp?0:evalS(T,p)});}
   out.sort((a,b)=>b.s-a.s);return out;}
 // TELL: the search in flight is the move's own: its best move so far goes to aiBest (core's worker, « Jouer maintenant »)
 let TELL=false;
-const KS=AISearch({moves:gen,play,turn:S=>S.st.turn,done:S=>S.win>=0,result,eval:evalS,playout:()=>{},scratch:S=>S,
+const KS=AISearch({moves:gen,play,turn:S=>S.st.turn,done:S=>S.win>=0||!!S.rp,result:(S,p)=>S.win<0?0:result(S,p),eval:evalS,playout:()=>{},scratch:S=>S,
   best:r=>{if(TELL)aiBest({move:r.m,score:r.s,depth:r.depth});}});
-function search(P,opt){const st={p:P.p.map(q=>q&&{...q}),res:P.res.slice(),turn:P.turn,col:P.col.slice()},S={st,win:-1};KS.start(opt.nodes);
+function search(P,opt){const st={p:P.p.map(q=>q&&{...q}),res:P.res.slice(),turn:P.turn,col:P.col.slice(),n:P.n||0},S={st,win:-1};
+  REP=opt.hist?new Map(Object.entries(opt.hist)):null;if(REP)S.k=SM.sig(st);KS.start(opt.nodes);
   const C=gen(S);if(!C.length)return null;if(C[0].s>=2000)return {move:C[0].m,score:1000,depth:1};
   TELL=typeof aiBest==='function';const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=false;
   return {move:r.m,score:r.s,depth:r.depth,forced:C.length===1};}
@@ -505,13 +521,16 @@ const HINT={...LEVELS.fort};
 // levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
 const ENGINE={v:1,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
 const levelDesc=o=>o.algo==='greedy'?['lvd_g1r']:['lvd_beam',o.depth];
-const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice()});
+const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice(),n:st.n||0});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+SiamEngine.toString()+'\n'+SiamAI.toString()+'\nconst XA=SiamAI(SiamEngine());function aiSearch(pos,opt){return XA.search(pos,opt);}';
 function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
   return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
+// the positions of the game so far with their occurrences (core's replayKept keeps their sig): the computer and the hints
+// know the repetition (decision of Thibault, 15.11.2026)
+function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
 const GAME={id:'siam',seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
   size:5,codeTag:'SIAM1',i18n:SM_I18N,
@@ -520,15 +539,16 @@ const GAME={id:'siam',seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / 
     play(prev,mv){const st=deepCopy(prev),code=SM.legal(st,mv);if(code===null)return null;   // as SM.replay, move by move
       const s=st.turn,c=SM.toMove(st),inf=SM.info(code),occ=inf.t>=0&&!!st.p[inf.t]&&inf.kind!=='turn',res=SM.plan(st,code)();
       const e={p:s,s,code,c,...inf,push:occ,out:res.out?res.out.t:-1};
-      const over=res.out&&res.out.t===SM.ROCK?{w:st.col.indexOf(res.winner),why:'w_rock'}:null;st.turn=1-st.turn;
-      return {st,e,last:e,over};}}),
+      const over=res.out&&res.out.t===SM.ROCK?{w:st.col.indexOf(res.winner),why:'w_rock'}:null;st.turn=1-st.turn;st.n=(st.n||0)+1;
+      return {st,e,last:e,over};},
+    sig:st=>SM.sig(st)}),
   legal:(st,code)=>SM.legal(st,code),
   enc:mv=>String(mv),describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:smBoard,turnStatus:smTurnStatus,waitStatus:smWaitStatus,pendText,pendBtns,
   playerCard,logNode,logText,
   home:()=>{shown=null;drawBoard();},
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||SiamAI(SM)).search(aiPos(st),opt),
+  aiOpt:v=>({hist:histOf(v)}),aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||SiamAI(SM)).search(aiPos(st),opt),
   evalInfo};
 coreStart();
 </script>
