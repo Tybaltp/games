@@ -10,44 +10,52 @@
 <link rel="stylesheet" href="common/games.css?v=53">
 <style>
 /* Siam: palette « Savane » (light, dark), board, markers, players' cards; the shared layout is in common/games.css.
-   --act: the one colour of everything that is touched (chevrons, tinted squares, entry bars, exit slot, frame of the
-   animal in hand); --rim: the border round the board. The pieces keep their own colours (img/siam/gen.py). */
+   --act: the one colour of everything that is touched (chevrons, rings of the squares to move to, entry bars, exit slot,
+   ring of the animal in hand), --act-on under the finger, --halo round the chevrons (half-way between the two squares); --rim: the border round the board. The pieces keep their own colours (img/siam/gen.py). */
 :root{
   --bg:#e6dccb;--panel:#f3eee4;--ink:#272219;--muted:#6b6152;--line:#d3c6b0;
   --accent:#a0522d;--accent-ink:#ffffff;--danger:#b3261e;
   --cell:#efe4cc;--cell2:#e7d9bc;--cell-e:#cbb892;--rim:#dccdb2;--rim-e:#c4b08a;--lab:#8a7656;
-  --ele:#d9ab3a;--ele-e:#6b4b10;--rhi:#b7c1c9;--rhi-e:#3d474f;--mk:#272219;--act:#17727c;--tint:.2;
+  --ele:#d9ab3a;--ele-e:#6b4b10;--rhi:#b7c1c9;--rhi-e:#3d474f;--mk:#272219;--act:#0f5a63;--act-on:#083b42;--halo:#ebdfc4;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#191612;--panel:#231f19;--ink:#ece6da;--muted:#a39a8a;--line:#3a3329;
   --accent:#e0915f;--accent-ink:#1f120a;--danger:#ef8579;
   --cell:#3a3328;--cell2:#342d23;--cell-e:#574c3b;--rim:#26211a;--rim-e:#453c2e;--lab:#a3937a;
-  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--mk:#f3ede0;--act:#74cdd0;color-scheme:dark;}}
+  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--mk:#f3ede0;--act:#74cdd0;--act-on:#b9eeee;--halo:#373026;color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#191612;--panel:#231f19;--ink:#ece6da;--muted:#a39a8a;--line:#3a3329;
   --accent:#e0915f;--accent-ink:#1f120a;--danger:#ef8579;
   --cell:#3a3328;--cell2:#342d23;--cell-e:#574c3b;--rim:#26211a;--rim-e:#453c2e;--lab:#a3937a;
-  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--mk:#f3ede0;--act:#74cdd0;color-scheme:dark;}
+  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--mk:#f3ede0;--act:#74cdd0;--act-on:#b9eeee;--halo:#373026;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:transparent;border:0;border-radius:8px;overflow:hidden}
 .board .pt{cursor:pointer}
-/* the markers: chevrons (> turns, >> pushes), tinted squares (moving), bars (entering), dotted slot (leaving), frame of
-   the animal in hand, brackets of the last move */
-.chev,.trail{fill:none;stroke:var(--act);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}.trail{opacity:.55}
-.chevh{fill:none;stroke:var(--cell);stroke-width:14;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
-@media (hover:hover){.arrow:hover .chev{stroke-width:9.5}}
-.tint,.selF,.slotF{fill:var(--act);opacity:var(--tint)}.tdot{fill:var(--act);opacity:.75}
-.selS{fill:none;stroke:var(--act);stroke-width:3.5}.pendS{fill:none;stroke:var(--act);stroke-width:4.5}
-.bar{fill:var(--act);opacity:.5}
-.slotS{fill:none;stroke:var(--act);stroke-width:3;stroke-dasharray:6 5;stroke-linecap:round}
-.lastB{fill:none;stroke:var(--mk);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}.lastD{fill:var(--mk);opacity:.5}
-.altC{fill:none;stroke:var(--mk);stroke-width:3}
-.nope{fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;opacity:.65}
+/* the markers (family « Filet », maquettes/siam-marqueurs): thin strokes in the one action colour. Chevrons (> turns,
+   >> pushes), a ring on a square to move to, bars (entering), dotted slot (leaving), an open ring round the animal in
+   hand (its square tinted once a move is prepared), brackets of the last move (the ink of the page) */
+.chev,.trail{fill:none;stroke:var(--act);stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .12s,stroke .12s}.trail{opacity:.45}
+.chevh{fill:none;stroke:var(--halo);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+@media (hover:hover){.arrow:hover .chev{stroke-width:4.8}}
+.arrow:active .chev{stroke:var(--act-on)}
+.tdot{fill:none;stroke:var(--act);stroke-width:3.2}
+.selS,.pendS{fill:none;stroke:var(--act);stroke-width:3.2;stroke-linecap:round}
+.pendF{fill:var(--act);opacity:.13}.trF{fill:var(--act);opacity:.09}.hovW{fill:var(--act);opacity:.08}
+.bar{fill:var(--act);opacity:.45;transition:opacity .12s}.bar.on{opacity:1}
+.slotF{fill:var(--act);opacity:0;transition:opacity .12s}.slotF.on{opacity:.14}
+.slotS{fill:none;stroke:var(--act);stroke-width:3.2;stroke-dasharray:.1 6.707;stroke-linecap:round}
+.lastB{fill:none;stroke:var(--mk);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.5}.lastD{fill:var(--mk);opacity:.4}
+.altC{fill:none;stroke:var(--mk);stroke-width:2.6;opacity:.55}
+.nope{fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;opacity:.6}
+svg .coord{font-weight:500;opacity:.75}
+/* a marker that was not there at the last drawing fades in */
+@keyframes siamIn{from{opacity:0}}.mkin{animation:siamIn .16s ease-out}
+@media (prefers-reduced-motion:reduce){.mkin{animation:none}.chev,.bar,.slotF{transition:none}}
 /* players' cards: the camp, its animals in reserve as small pieces (dots when the drawings are not loaded) */
 .player .dot.art{width:auto;height:auto;border:0;border-radius:0;background:none;display:inline-flex;vertical-align:middle;margin-right:5px}
 .player svg.pm{display:block;flex:none;overflow:visible}
 .player .resv{display:flex;align-items:center;gap:1px;font-size:.74rem;color:var(--muted)}
-.player .resv .vide{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:2.4 2.4;opacity:.75}
+.player .resv .vide{fill:none;stroke:var(--muted);stroke-width:1;opacity:.4}
 .dot.cmp{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
 .cmp.e{background:var(--ele);border:1.5px solid var(--ele-e)}.cmp.r{background:var(--rhi);border:1.5px solid var(--rhi-e)}
 .player .resv i{display:inline-block;width:10px;height:10px;margin-right:2px;border-radius:50%;box-sizing:border-box;border:1px dashed var(--muted)}
@@ -300,7 +308,7 @@ const SM_I18N={fr:{
  enterAt:"Entrer en {t}",exitT:"Sortir cet animal du plateau (il retourne en réserve)",turnT:"Tourner vers le {d}",pushT:"Pousser vers le {d}",
  st_play:"À vous ({camp}) : choisissez un animal, ou une case du bord pour entrer.",st_playN:"{name} ({c}) : choisissez un animal, ou une case du bord pour entrer.",
  st_play0:"À vous ({camp}) : choisissez un animal.",st_playN0:"{name} ({c}) : choisissez un animal.",
- st_sel:"Avancez (cases teintées), tournez (>) ou poussez (>>).",st_selX:" Ou sortez (pointillé).",
+ st_sel:"Avancez (anneaux), tournez (>) ou poussez (>>).",st_selX:" Ou sortez (pointillé).",
  st_turnC:"Au trait : {name} ({c}).",
  lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
  p_dir:"{m} ; choisissez l'orientation (chevrons), puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
@@ -323,7 +331,7 @@ const SM_I18N={fr:{
  enterAt:"Enter on {t}",exitT:"Take this animal off the board (back to the reserve)",turnT:"Turn {d}",pushT:"Push {d}",
  st_play:"Your move ({camp}): choose an animal, or an edge square to enter.",st_playN:"{name} ({c}): choose an animal, or an edge square to enter.",
  st_play0:"Your move ({camp}): choose an animal.",st_playN0:"{name} ({c}): choose an animal.",
- st_sel:"Move (tinted squares), turn (>) or push (>>).",st_selX:" Or leave (dotted slot).",
+ st_sel:"Move (rings), turn (>) or push (>>).",st_selX:" Or leave (dotted slot).",
  st_turnC:"To move: {name} ({c}).",
  lvd_g1r:"one move ahead, at random among the best",lvd_beam:"{n} moves ahead, on the best candidates",
  p_dir:"{m}; choose the direction (chevrons), then confirm.",p_mv:"{m}.",confirm1:"Confirm",
@@ -346,7 +354,7 @@ const SM_I18N={fr:{
  enterAt:"Entrar en {t}",exitT:"Sacar este animal del tablero (vuelve a la reserva)",turnT:"Girar hacia el {d}",pushT:"Empujar hacia el {d}",
  st_play:"Te toca ({camp}): elige un animal, o una casilla del borde para entrar.",st_playN:"{name} ({c}): elige un animal, o una casilla del borde para entrar.",
  st_play0:"Te toca ({camp}): elige un animal.",st_playN0:"{name} ({c}): elige un animal.",
- st_sel:"Avanza (casillas teñidas), gira (>) o empuja (>>).",st_selX:" O sal (hueco punteado).",
+ st_sel:"Avanza (anillos), gira (>) o empuja (>>).",st_selX:" O sal (hueco punteado).",
  st_turnC:"Turno: {name} ({c}).",
  lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
  p_dir:"{m}; elige la orientación (cheurones) y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
@@ -452,7 +460,7 @@ function onExit(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){dropPus
 function onEntry(i,d){const st=myTurnSt();if(!st)return;if(lockedOn(st)){dropPush();return;}const code='+'+NM(i)+d;if(!moves(st).includes(code))return;
   if(ui.pending===code){again();return;}dropHint();ui.f=-1;ui.pending=code;renderGame();}
 // Nothing in hand: one of my animals takes it in hand; a free edge square (with animals in reserve) brings one in there.
-// In hand: a tinted square moves it there provisionally, facing the way it moved. The provisional animal touched again:
+// In hand: a ringed square moves it there provisionally, facing the way it moved. The provisional animal touched again:
 // played. Another animal, another square, another chevron: free, except after a push tried.
 function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const st=myTurnSt();if(!st)return;const c=SM.toMove(st),L=moves(st),p=ui.pending&&SM.legal(st,ui.pending)?ui.pending:null,inf=p?SM.info(p):null,q=st.p[i];
@@ -471,10 +479,12 @@ $('svg').addEventListener('click',e=>{const f=s=>e.target.closest&&e.target.clos
   else if((g=f('[data-e]'))){const[i,d]=g.dataset.e.split(':');onEntry(+i,d);}
   else if((g=f('[data-i]')))onCell(+g.dataset.i);
   else if(shown&&shown.mine&&lockedOn(shown.ms))dropPush();});
-function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
+// under the mouse: a square (or the strip of border by it: d, the way in from there), or the slot to leave (x)
+function hoverAt(i,d,x){if(i===ui.hover&&d===ui.hovD&&x===ui.hovX)return;ui.hover=i;ui.hovD=d;ui.hovX=x;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
-  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
-  $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
+  $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i],[data-e],[data-x]'),a=g&&g.dataset.e!==undefined?g.dataset.e.split(':'):null;
+    hoverAt(!g?-1:a?+a[0]:g.dataset.i!==undefined?+g.dataset.i:-1,a?a[1]:null,!!(g&&g.dataset.x));});
+  $('svg').addEventListener('pointerleave',()=>hoverAt(-1,null,false));}
 function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;
   for(const c of anaAlts()){const e=SM.info(c);const i=e.t>=0?e.t:e.f;if(i>=0)out.set(i,c);}return out;}
 // stepping through a game (the bar under the board, the list of moves, the arrow keys) never animates: the next drawing
@@ -548,9 +558,9 @@ function drawSquares(){const g=gB,x0=MG,W=5*CS+2*MG;g.textContent='';
   for(let i=0;i<25;i++)el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,fill:(i%5+Math.floor(i/5))%2?'var(--cell2)':'var(--cell)'},c);
   for(let k=1;k<5;k++)el('path',{d:`M ${x0+k*CS} ${x0} V ${x0+5*CS} M ${x0} ${x0+k*CS} H ${x0+5*CS}`,fill:'none',stroke:'var(--cell-e)','stroke-width':1.2},g);
   el('rect',{x:x0,y:x0,width:5*CS,height:5*CS,rx:9,fill:'none',stroke:'var(--cell-e)','stroke-width':2},g);
-  // the coordinates: in the squares (the border is kept for the entries and the way out)
-  if(coordsOn)for(let k=0;k<5;k++){el('text',{class:'coord',x:MG+k*CS+CS-12,y:MG+5*CS-9,'text-anchor':'middle','font-size':16},g).textContent=String.fromCharCode(97+k);
-    el('text',{class:'coord',x:MG+12,y:MG+(4-k)*CS+21,'text-anchor':'middle','font-size':16},g).textContent=String(k+1);}}
+  // the coordinates: in the squares (the border is kept for the entries and the way out), clear of the brackets of the last move
+  if(coordsOn)for(let k=0;k<5;k++){el('text',{class:'coord',x:MG+k*CS+CS-13,y:MG+5*CS-10.5,'text-anchor':'middle','font-size':14},g).textContent=String.fromCharCode(97+k);
+    el('text',{class:'coord',x:MG+13,y:MG+(4-k)*CS+21,'text-anchor':'middle','font-size':14},g).textContent=String(k+1);}}
 function drawBoard(){const svg=$('svg');layers(svg);svg.setAttribute('aria-label',t('boardLbl'));
   const sh=shown,on=!!(sh&&view),live=on&&navAt===null,st=on?sh.d.st:SM.init(),W=5*CS+2*MG;
   svg.setAttribute('viewBox',`0 0 ${W} ${W}`);document.documentElement.style.setProperty('--board-ar',`${W}/${W}`);
@@ -560,72 +570,95 @@ function drawBoard(){const svg=$('svg');layers(svg);svg.setAttribute('aria-label
   let code=hint?String(hintMv):mine&&ui.pending?ui.pending:null;if(code&&!SM.legal(ms,code))code=null;
   if(ART)syncSprites(st,live,code,code?ms:st);
   drawMarks(st,ms,mine,hint,code);drawHover();}
-// --- the markers ---
-// > turns the animal that way, >> pushes (an open angle of 113°, a rounded stroke, no disc behind)
-const CH1='M -6.5 -18 L 5.5 0 L -6.5 18',CH2='M -14 -18 L -2 0 L -14 18 M 2 -18 L 14 0 L 2 18';
-function chevron(x,y,d,two,code,title,x0,x1,hh){const g=el('g',{class:'arrow pt','data-a':code,transform:`translate(${x} ${y}) rotate(${ANG[d]})`},gO);
+// --- the markers (family « Filet », maquettes/siam-marqueurs) ---
+// > turns the animal that way, >> pushes (an open angle of 113°, a thin rounded stroke, no disc behind); CD: how far from
+// the centre of the square they stand, in the free space between two pieces
+const CH1='M -4.35 -13 L 4.35 0 L -4.35 13',CH2='M -9.6 -13 L -0.9 0 L -9.6 13 M 0.9 -13 L 9.6 0 L 0.9 13',CD=54;
+// a marker that was not there at the last drawing fades in (class mkin); one already there does not blink
+let mkPrev=new Set(),mkCur=new Set();
+const fr=k=>{mkCur.add(k);return mkPrev.has(k)?'':' mkin';};
+// zs: what the finger reaches, whatever the drawing: rectangles [from, to, half width] along the chevron's axis
+function chevron(x,y,d,two,code,title,zs){const g=el('g',{class:'arrow pt'+fr('c'+code+d+(two?2:1)),'data-a':code,transform:`translate(${x} ${y}) rotate(${ANG[d]})`},gO);
   el('path',{d:two?CH2:CH1,class:'chevh'},g);el('path',{d:two?CH2:CH1,class:'chev'},g);
-  el('rect',{x:x0,y:-hh,width:x1-x0,height:2*hh,fill:'transparent'},g);el('title',{},g).textContent=title;}
-const sq=(i,cls)=>el('rect',{x:PX(i)-CS/2+5,y:PY(i)-CS/2+5,width:CS-10,height:CS-10,rx:9,class:cls},gU);
-function brackets(i){const a=PX(i)-43,b=PY(i)-43,c=PX(i)+43,d=PY(i)+43,l=16;
+  for(const z of zs)el('rect',{x:z[0],y:-z[2],width:z[1]-z[0],height:2*z[2],fill:'transparent'},g);el('title',{},g).textContent=title;}
+// the animal in hand: an open ring round its disc (the piece stands back by 5 in its square), open where it faces (d).
+// A move prepared or suggested: the same ring, and its square tinted (bare: the ring alone)
+function hand(i,d,pend,bare){const k=fr((pend?'p':'s')+i),R=39.5,cx=PX(i)-DV[d][0]*5,cy=PY(i)-DV[d][1]*5,A=ANG[d]*Math.PI/180,o=28*Math.PI/180;
+  const P=a=>`${(cx+R*Math.cos(a)).toFixed(2)} ${(cy+R*Math.sin(a)).toFixed(2)}`;
+  if(pend&&!bare)el('rect',{x:PX(i)-CS/2+4,y:PY(i)-CS/2+4,width:CS-8,height:CS-8,rx:12,class:'pendF'+k},gU);
+  el('path',{d:`M ${P(A+o)} A ${R} ${R} 0 1 1 ${P(A-o)}`,class:(pend?'pendS':'selS')+k},gU);}
+function brackets(i){const a=PX(i)-44,b=PY(i)-44,c=PX(i)+44,d=PY(i)+44,l=12;
   el('path',{class:'lastB',d:`M ${a} ${b+l} V ${b} H ${a+l} M ${c-l} ${b} H ${c} V ${b+l} M ${c} ${d-l} V ${d} H ${c-l} M ${a+l} ${d} H ${a} V ${d-l}`},gU);}
-// a push shown (tried, or suggested): its row tinted, the pusher framed, a pale double chevron behind it
-function pushTrace(st,code){const inf=SM.info(code),cells=new Set();for(const e of effects(st,code)){if(e.from>=0)cells.add(e.from);if(e.to>=0)cells.add(e.to);}
-  for(const i of cells)sq(i,'tint');sq(inf.t,'pendS');const back=inf.kind==='enter'?CS/2+MG/2:CS;
+// a push shown (tried, or suggested): its row tinted in one piece, the pusher ringed, a pale double chevron behind it
+function pushTrace(st,code){const inf=SM.info(code),xs=[],ys=[];for(const e of effects(st,code))for(const i of [e.from,e.to])if(i>=0){xs.push(PX(i));ys.push(PY(i));}
+  const x0=Math.min(...xs)-CS/2+6,y0=Math.min(...ys)-CS/2+6;
+  el('rect',{x:x0,y:y0,width:Math.max(...xs)+CS/2-6-x0,height:Math.max(...ys)+CS/2-6-y0,rx:12,class:'trF'},gU);
+  hand(inf.t,inf.d,true,true);const back=inf.kind==='enter'?CS/2+MG/2:CS;
   el('path',{d:CH2,class:'trail',transform:`translate(${PX(inf.t)-DV[inf.d][0]*back} ${PY(inf.t)-DV[inf.d][1]*back}) rotate(${ANG[inf.d]})`},gU);}
-function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.textContent='';
+function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.textContent='';mkPrev=mkCur;mkCur=new Set();
   const my=mine&&!hint,c=my?SM.toMove(ms):-1,L=my?moves(ms):[],pend=my?code:null,inf=pend?SM.info(pend):null,lock=!!pend&&isPush(ms,pend),sel=my?ui.f:-1;
   const ptr=new Set(),h=o=>o==='N'||o==='S';   // ptr: the squares where a click does something
+  // the zone of a chevron round the square i, towards d: 40 × 72 (from 36 to 76 of the centre of the square); the whole
+  // next square too if it holds a rock or an animal of the other camp (touching the piece pushed pushes it), the whole
+  // border if the chevron points off the board, unless the slot to leave is there
+  const zone=(i,d)=>{const z=[[36-CD,76-CD,36]],[x,y]=SM.xy(i),j=SM.at(x+SM.DIRS[d][0],y+SM.DIRS[d][1]);
+    if(j>=0){if(ms.p[j]&&ms.p[j].t!==c)z.push([50-CD,150-CD,50]);}
+    else if(!(i===sel&&outward(i)[0]===d&&L.includes(NM(i)+'-x')))z.push([50-CD,50+MG-CD,50]);return z;};
   // the last move: four brackets on the square where the animal ended (left the board: the square it left), a dot where it came from
   const last=shown?shown.d.last:null;
-  if(view&&last&&!code&&!(mine&&prepared())){brackets(last.t>=0?last.t:last.f);if(last.f>=0&&last.t>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:6,class:'lastD'},gU);}
+  if(view&&last&&!code&&!(mine&&prepared())){brackets(last.t>=0?last.t:last.f);if(last.f>=0&&last.t>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:4.5,class:'lastD'},gU);}
   const alts=shown?altCells():new Map();for(const [i] of alts){el('circle',{cx:PX(i),cy:PY(i),r:12,class:'altC'},gU);if(!prepared())ptr.add(i);}
-  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')sq(e.kind==='turn'?e.f:e.t,'pendS');}
+  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')hand(e.kind==='turn'?e.f:e.t,e.d,true);}
   if(my){for(let i=0;i<25;i++)if(ms.p[i]&&ms.p[i].t===c&&!lock)ptr.add(i);
     // the entries: a bar in the border by each free edge square; a double chevron where an animal enters pushing
     if(!lock&&sel<0&&(!pend||inf.kind==='enter')&&ms.res[ms.turn]){const free=new Set();
       for(const m of L){const e=SM.info(m);if(e.kind!=='enter')continue;
         if(!ms.p[e.t])free.add(e.t);
-        else{const o=SM.OPP[e.d];chevron(PX(e.t)+DV[o][0]*(CS/2+MG/2),PY(e.t)+DV[o][1]*(CS/2+MG/2),e.d,true,m,t('pushT',{d:DL(e.d)}),-MG/2,MG/2,46);}}
+        else{const o=SM.OPP[e.d];chevron(PX(e.t)+DV[o][0]*(CS/2+MG/2),PY(e.t)+DV[o][1]*(CS/2+MG/2),e.d,true,m,t('pushT',{d:DL(e.d)}),[[-MG/2,MG/2,CS/2]]);}}
       for(const i of free){ptr.add(i);if(pend&&inf.t===i)continue;
-        for(const o of outward(i)){const cx=PX(i)+DV[o][0]*(CS/2+10),cy=PY(i)+DV[o][1]*(CS/2+10);
-          el('rect',{x:cx-(h(o)?32:3.5),y:cy-(h(o)?3.5:32),width:h(o)?64:7,height:h(o)?7:64,rx:3.5,class:'bar'},gU);
+        for(const o of outward(i)){const cx=PX(i)+DV[o][0]*(CS/2+11),cy=PY(i)+DV[o][1]*(CS/2+11);
+          el('rect',{x:cx-(h(o)?17:1.6),y:cy-(h(o)?1.6:17),width:h(o)?34:3.2,height:h(o)?3.2:34,rx:1.6,class:'bar'+fr('e'+i+o),'data-b':i},gU);
           const z=el('rect',{x:PX(i)+DV[o][0]*(CS/2+MG/2)-(h(o)?CS/2:MG/2),y:PY(i)+DV[o][1]*(CS/2+MG/2)-(h(o)?MG/2:CS/2),width:h(o)?CS:MG,height:h(o)?MG:CS,class:'pt','data-e':i+':'+SM.OPP[o]},gH);
           el('title',{},z).textContent=t('enterAt',{t:NM(i)});}}
       // c1 and c5 during the first four moves: a cross where the bar would be
-      for(let i=0;i<25;i++)if(SM.marked(ms,i))for(const o of outward(i)){const cx=PX(i)+DV[o][0]*(CS/2+10),cy=PY(i)+DV[o][1]*(CS/2+10);
-        el('path',{d:`M ${cx-4.5} ${cy-4.5} L ${cx+4.5} ${cy+4.5} M ${cx+4.5} ${cy-4.5} L ${cx-4.5} ${cy+4.5}`,class:'nope'},gU);}}
+      for(let i=0;i<25;i++)if(SM.marked(ms,i))for(const o of outward(i)){const cx=PX(i)+DV[o][0]*(CS/2+11),cy=PY(i)+DV[o][1]*(CS/2+11);
+        el('path',{d:`M ${cx-4} ${cy-4} L ${cx+4} ${cy+4} M ${cx+4} ${cy-4} L ${cx-4} ${cy+4}`,class:'nope'},gU);}}
     if(lock){pushTrace(ms,pend);ptr.add(inf.t);}   // a push tried: nothing else to touch
     else{const kind=inf?inf.kind:'',pc=!inf?sel:kind==='turn'?inf.f:kind==='exit'?-1:inf.t;   // the square where the animal in hand is shown
-      if(pc>=0){sq(pc,'selF');sq(pc,pend?'pendS':'selS');if(pend)ptr.add(pc);}
+      if(pc>=0){hand(pc,pend?inf.d:ms.p[sel].d,!!pend);if(pend)ptr.add(pc);}
       if(sel>=0){const f=NM(sel),q=ms.p[sel],[x,y]=SM.xy(sel);
-        if(pend&&kind!=='turn')el('circle',{cx:PX(sel),cy:PY(sel),r:6,class:'lastD'},gU);
-        // moving: the free squares next to it, tinted
+        if(pend&&kind!=='turn')el('circle',{cx:PX(sel),cy:PY(sel),r:4.5,class:'lastD'},gU);
+        // moving: a ring on the free squares next to it
         for(const d of DK){const j=SM.at(x+SM.DIRS[d][0],y+SM.DIRS[d][1]);if(j<0||ms.p[j]||!L.includes(f+'-'+NM(j)+d)||j===pc)continue;
-          sq(j,'tint');el('circle',{cx:PX(j),cy:PY(j),r:6.5,class:'tdot'},gU);ptr.add(j);}
+          el('circle',{cx:PX(j),cy:PY(j),r:8.5,class:'tdot'+fr('m'+j)},gU);ptr.add(j);}
         // leaving: a dotted slot in the border
         if(L.includes(f+'-x')){const o=outward(sel)[0],cx=PX(sel)+DV[o][0]*(CS/2+XD),cy=PY(sel)+DV[o][1]*(CS/2+XD);
-          el('circle',{cx,cy,r:14.5,class:'slotF'},gU);el('circle',{cx,cy,r:14.5,class:'slotS'},gU);
+          const k=fr('x'+sel);el('circle',{cx,cy,r:13,class:'slotF'+k},gU);el('circle',{cx,cy,r:13,class:'slotS'+k},gU);
           const z=el('rect',{x:PX(sel)+DV[o][0]*(CS/2+MG/2)-(h(o)?CS/2:MG/2),y:PY(sel)+DV[o][1]*(CS/2+MG/2)-(h(o)?MG/2:CS/2),width:h(o)?CS:MG,height:h(o)?MG:CS,class:'pt','data-x':f+'-x'},gH);
           el('title',{},z).textContent=t('exitT');}
         // turning (>) and pushing (>>): round the animal, never towards the way it faces as shown; round a turn prepared,
         // the chevron of its former direction takes the turn back (or pushes, if it can)
         if(!pend||kind==='turn'){const disp=pend?inf.d:q.d,j=SM.at(x+SM.DIRS[q.d][0],y+SM.DIRS[q.d][1]),push=j>=0&&ms.p[j]&&L.includes(f+'-'+NM(j)+q.d)?f+'-'+NM(j)+q.d:null;
-          for(const d of DK){const cx=PX(sel)+DV[d][0]*60,cy=PY(sel)+DV[d][1]*60;
-            if(d===q.d&&push)chevron(cx,cy,d,true,push,t('pushT',{d:DL(d)}),-22,22,34);
-            else if(d===q.d&&pend)chevron(cx,cy,d,false,'back',t('turnT',{d:DL(d)}),-20,12,34);
-            else if(d!==disp&&d!==q.d&&L.includes(f+'='+d))chevron(cx,cy,d,false,f+'='+d,t('turnT',{d:DL(d)}),-20,12,34);}}}
+          for(const d of DK){const cx=PX(sel)+DV[d][0]*CD,cy=PY(sel)+DV[d][1]*CD;
+            if(d===q.d&&push)chevron(cx,cy,d,true,push,t('pushT',{d:DL(d)}),zone(sel,d));
+            else if(d===q.d&&pend)chevron(cx,cy,d,false,'back',t('turnT',{d:DL(d)}),zone(sel,d));
+            else if(d!==disp&&d!==q.d&&L.includes(f+'='+d))chevron(cx,cy,d,false,f+'='+d,t('turnT',{d:DL(d)}),zone(sel,d));}}}
       // an animal put on a free square (moved or brought in): its other directions
       if(pend&&(kind==='move'||kind==='enter')){const pre=pend.slice(0,-1);
-        for(const d of DK)if(d!==inf.d&&L.includes(pre+d))chevron(PX(inf.t)+DV[d][0]*60,PY(inf.t)+DV[d][1]*60,d,false,pre+d,t('turnT',{d:DL(d)}),-20,12,34);}}}
+        for(const d of DK)if(d!==inf.d&&L.includes(pre+d))chevron(PX(inf.t)+DV[d][0]*CD,PY(inf.t)+DV[d][1]*CD,d,false,pre+d,t('turnT',{d:DL(d)}),zone(inf.t,d));}}}
   for(let i=0;i<25;i++){const r=el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,'data-i':i},gH);if(ptr.has(i))r.setAttribute('class','pt');}}
-// under the mouse: the animal, in transparency, on a square where it can go or come in
-function drawHover(){const g=gHv;if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
-  if(!ART||!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending)return;const ms=sh.ms,L=moves(ms),p=ui.pending&&SM.legal(ms,ui.pending)?ui.pending:null,inf=p?SM.info(p):null;
+// under the mouse: the animal, in transparency, on a square where it can go or come in, the square washed, its entry bar
+// in full; the slot to leave filled
+function drawHover(){const g=gHv;if(!g)return;g.textContent='';gU.querySelectorAll('.on').forEach(b=>b.classList.remove('on'));const sh=shown,i=ui.hover;
+  if(!sh||!sh.mine||hintOn()||busy==='hint'||sending)return;
+  if(ui.hovX){gU.querySelectorAll('.slotF').forEach(b=>b.classList.add('on'));return;}
+  if(i<0)return;const ms=sh.ms,L=moves(ms),p=ui.pending&&SM.legal(ms,ui.pending)?ui.pending:null,inf=p?SM.info(p):null;
   if(ms.p[i]||(p&&isPush(ms,p))||(inf&&inf.t===i))return;let d;
   if(ui.f>=0){const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);d=DK.find(k=>SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b);if(!d||!L.includes(NM(ui.f)+'-'+NM(i)+d))return;}
-  else{if(!SM.onEdge(i))return;d=SM.inward(i).find(k=>L.includes('+'+NM(i)+k));if(!d)return;}
-  const k=KN(SM.toMove(ms));siamSprite(g,k,RA).set({...spot(i,d,k),op:.42});}
+  else{if(!SM.onEdge(i))return;d=ui.hovD&&L.includes('+'+NM(i)+ui.hovD)?ui.hovD:SM.inward(i).find(k=>L.includes('+'+NM(i)+k));if(!d)return;
+    gU.querySelectorAll(`.bar[data-b="${i}"]`).forEach(b=>b.classList.add('on'));}
+  el('rect',{x:PX(i)-CS/2+4,y:PY(i)-CS/2+4,width:CS-8,height:CS-8,rx:12,class:'hovW'},g);
+  if(ART){const k=KN(SM.toMove(ms));siamSprite(g,k,RA).set({...spot(i,d,k),op:.4});}}
 
 // ---------- computer opponent ----------
 // Evaluation, for each rock and each direction it could leave by: the camp that would win that exit (the nearest animal
