@@ -613,14 +613,14 @@ return {search,fromPos,gen,play,enc,dec,evalS,result,playout,outcome,targets,dis
   setEV:o=>{EV={...EV,...o};mkV();},EV:()=>EV};
 }
 /*AIEND*/
-// The ladder (10.11.2026, outils/aitools/res/tintas/niveaux.md, 300 games a pair): each level beats the one below by
-// 74-78 % (no draws in Tintas; level 11, the strongest, beats 10 by 78 %). algo: 'random' · 'ab' alpha-beta on the
-// distance to a win (depth in turns; temp, a softmax over the root turns, fills the gaps between depths) · 'mcts' UCT
-// with short playouts (see common/ai.js): sims, the only thing that stops it, never a time (16.11.2026; level 11 took its
-// 300000 simulations or 5 s, whichever came first: on the reference Mac, the simulations more often than not,
-// outils/aitools/res/budgets-2026-11-16.md) · cellsIn, turns kept (the best by evaluation) at each node below the root · c, UCT exploration ·
-// scale, evaluation points per logit · cut, playout turns before evaluating (0: to the end) · rand, share of playout
-// turns whose colour is a random one in line (others: the best gain) · pwC, pwA (defaults 2, .5), progressive widening.
+// The ladder (v1, 16.11.2026, outils/aitools/res/tintas/niveaux.md, 300 games a pair): each level beats the one below
+// by 71-80 % (no draws in Tintas), level 1 beats random play by 79 %. algo: 'random' · 'ab' alpha-beta on the distance
+// to the win (depth in turns, temp: draw among the root's turns, 0 = one of the best) · MC = MCTS (see common/ai.js),
+// sims simulations, the only thing that stops it, never a time (16.11.2026) · cellsIn, turns kept (the best by
+// evaluation) at each node below the root · c, UCT exploration · scale, evaluation points per logit · cut, playout
+// turns before evaluating (0: to the end) · rand, share of playout turns whose colour is a random one in line (others:
+// the best gain) · pwC, pwA (defaults 2, .5), progressive widening. Hints: the strongest level (median 4.6 s on the
+// reference Mac, outils/aitools/res/budgets-2026-11-16.md).
 const MC={algo:'mcts',cellsIn:16,c:.4,scale:.7,cut:4,rand:1};
 const LEVELS={
   l0:{algo:'random',random:true},
@@ -634,11 +634,12 @@ const LEVELS={
   l8:{...MC,sims:1800},
   l9:{...MC,sims:6000},
   l10:{...MC,sims:30000},
-  l11:{...MC,sims:300000}};
-const HINT={...MC,sims:240000};   // level 11's search with the simulations of 5 s at most on the reference Mac
+  l11:{...MC,sims:100000},
+  l12:{...MC,sims:300000}};
+const HINT={...LEVELS.l12};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const ENGINE={v:2,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
 const levelDesc=o=>o.algo==='mcts'?['lvd_mc',o.sims]:['lvd_ab',o.depth];
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made
