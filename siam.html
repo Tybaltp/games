@@ -431,13 +431,17 @@ function miniPiece(par,t0,full,ang,R){const p=SIAM_ART.pointe,l=R*(1+p)+5,w=2*R+
   else{const a=ang*Math.PI/180,u=Math.acos(1/p),q=(v,k)=>`${(k*Math.cos(a+v)).toFixed(2)} ${(k*Math.sin(a+v)).toFixed(2)}`;
     el('path',{class:'vide',d:`M ${q(-u,R)} L ${q(0,R*p)} L ${q(u,R)} A ${R} ${R} 0 1 1 ${q(-u,R)} z`},s);}
   return s;}
+// the camp beside a player's name: its medal without the point (not to be taken for the animals in reserve), a little larger
+function campMark(par,t0,R){const w=2*R+4,pc=SIAM_ART.pieces[KN(t0)],k=pc[2];
+  const s=el('svg',{class:'pm',viewBox:`${-w/2} ${-w/2} ${w} ${w}`,width:w,height:w,'aria-hidden':'true'},par);
+  pc[2]='rond';try{siamSprite(s,KN(t0),R,null,true).set({x:0,y:0,ang:0,flip:1});}finally{pc[2]=k;}return s;}
 // the reserve follows the move prepared (an entry tried takes a small piece away)
 function playerCard(elx,p,d){let st=d.st;const col=st.col[p],dot=elx.querySelector&&elx.querySelector('.dot');
   if(shown&&shown.mine&&d===shown.d){const code=hintOn()?String(hintMv):ui.pending;if(code&&SM.legal(shown.ms,code)){st=SM.clone(shown.ms);SM.plan(st,code)();}}
   const x=document.createElement('div');x.className='resv';x.title=t('resv',{n:st.res[p]});
   if(!ART){if(dot){dot.className='dot cmp '+CK(col);dot.title=CAMP(col);}
     x.innerHTML=[0,1,2,3,4].map(k=>`<i class="${k<st.res[p]?'on '+CK(col):''}"></i>`).join('');elx.appendChild(x);return;}
-  if(dot){dot.className='dot art';dot.title=CAMP(col);miniPiece(dot,col,true,0,9.5);}
+  if(dot){dot.className='dot art';dot.title=CAMP(col);campMark(dot,col,11.5);}
   for(let k=0;k<5;k++)miniPiece(x,col,k<st.res[p],270,9);elx.appendChild(x);}
 function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
 
@@ -584,7 +588,7 @@ function chevron(x,y,d,two,code,title,zs){const g=el('g',{class:'arrow pt'+fr('c
   for(const z of zs)el('rect',{x:z[0],y:-z[2],width:z[1]-z[0],height:2*z[2],fill:'transparent'},g);el('title',{},g).textContent=title;}
 // the animal in hand: an open ring round its disc (the piece stands back by 5 in its square), open where it faces (d).
 // A move prepared or suggested: the same ring, and its square tinted (bare: the ring alone)
-// An animal turned without moving (from: the way it faced): instead of the ring, a circular arrow on the same circle, from
+// The last move, an animal turned without moving (from: the way it faced; the last move only, Thibault 17.11.2026): instead of the ring, a circular arrow on the same circle, from
 // its former direction to the new one (a quarter turn the short way, a half turn clockwise), its head short of the point
 function hand(i,d,pend,bare,from){const k=fr((pend?'p':'s')+i+(from||'')),R=39.5,cx=PX(i)-DV[d][0]*5,cy=PY(i)-DV[d][1]*5,A=ANG[d]*Math.PI/180,o=28*Math.PI/180;
   const P=a=>`${(cx+R*Math.cos(a)).toFixed(2)} ${(cy+R*Math.sin(a)).toFixed(2)}`;
@@ -624,7 +628,7 @@ function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.
       if(last.f>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:4.5,class:'lastD'},gU);}
     mkQuiet=false;}
   const alts=shown?altCells():new Map();for(const [i] of alts){el('circle',{cx:PX(i),cy:PY(i),r:12,class:'altC'},gU);if(!prepared())ptr.add(i);}
-  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')hand(e.kind==='turn'?e.f:e.t,e.d,true,false,e.kind==='turn'?ms.p[e.f].d:null);}
+  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')hand(e.kind==='turn'?e.f:e.t,e.d,true);}
   if(my){for(let i=0;i<25;i++)if(ms.p[i]&&ms.p[i].t===c&&!lock)ptr.add(i);
     // the entries: a bar in the border by each free edge square; a double chevron where an animal enters pushing
     if(!lock&&sel<0&&(!pend||inf.kind==='enter')&&ms.res[ms.turn]){const free=new Set();
@@ -641,7 +645,7 @@ function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.
         el('path',{d:`M ${cx-4} ${cy-4} L ${cx+4} ${cy+4} M ${cx+4} ${cy-4} L ${cx-4} ${cy+4}`,class:'nope'},gU);}}
     if(lock){pushTrace(ms,pend);ptr.add(inf.t);}   // a push tried: nothing else to touch
     else{const kind=inf?inf.kind:'',pc=!inf?sel:kind==='turn'?inf.f:kind==='exit'?-1:inf.t;   // the square where the animal in hand is shown
-      if(pc>=0){hand(pc,pend?inf.d:ms.p[sel].d,!!pend,false,pend&&kind==='turn'?ms.p[inf.f].d:null);if(pend)ptr.add(pc);}
+      if(pc>=0){hand(pc,pend?inf.d:ms.p[sel].d,!!pend);if(pend)ptr.add(pc);}
       if(sel>=0){const f=NM(sel),q=ms.p[sel],[x,y]=SM.xy(sel);
         if(pend&&kind!=='turn')el('circle',{cx:PX(sel),cy:PY(sel),r:4.5,class:'lastD'},gU);
         // moving: a ring on the free squares next to it
