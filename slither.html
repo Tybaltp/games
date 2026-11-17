@@ -1054,11 +1054,11 @@ return {search, searchS, state, turnCode, load, X, F, Search};
 /*NNEND*/
 // Former levels: Débutant (now 0), the best moves with some randomness; Moyen (now 1), the best move one turn ahead; Fort (now BEAM), two plies. Deeper
 // searches did not play better with this evaluation (depth 3 and 4 against 2: 8 and 4 wins out of 16).
-// The neural network levels (2 to 10, algo 'nn', SlitherNN, the NN block above): the network of ~/Jeux/ia (n° 112, 14.11.2026) with a PUCT
+// The neural network levels (2 to 10, algo 'nn', SlitherNN, the NN block above): the network of ~/Jeux/ia (n° 212, stopped at its plateau, 18.11.2026) with a PUCT
 // search of `sims` simulations, Volo's ladder as it is (not measured for this game) · no time cap (16.11.2026): a slower
 // device takes longer and plays the same · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
 // BEAM, the former Fort level (two plies): what answers when the network cannot load.
-const NN_NET='slither-net.onnx?v=112';
+const NN_NET='slither-net.onnx?v=212';
 const BEAM={algo:'beam',depth:2,widths:[12,10]};
 const LEVELS={
   l0:{algo:'greedy',pick:5,temp:.8},
@@ -1075,7 +1075,7 @@ const LEVELS={
 const HINT={algo:'nn',sims:700,net:NN_NET};   // level 9, the highest that answers within 5 s on the reference Mac
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
 const levelDesc=o=>o.algo==='nn'?(o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims]):[o.pick>1||o.temp?'lvd_gr':'lvd_g1'];
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;
