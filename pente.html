@@ -379,7 +379,14 @@ function suggestPlace(arr,c,n){loadBoard(arr,[0,0,0]);let any=false;for(let i=0;
 // Budgets in positions searched (what the reference Mac did in the former times, 16.11.2026): OPEN, the opening (1.5 s);
 // OPEN_MIN, PLACE_MIN: the least for one opening tried, one stone tried (40 and 60 ms).
 const OPEN=315000,OPEN_MIN=8500,PLACE_MIN=12500;
+// random:true (level 0): a move at random (any empty cell; the opening: randomOpening; the colour choice: one of the
+// two); mix:p, in play, a move at random with probability p, else the level's own (outils/aitools/budget/ladder.js)
+function aiRandom(p){const R=a=>a[(Math.random()*a.length)|0];
+ if(p.phase==='open')return {move:{t:'o',s:randomOpening().map(x=>x.i)},score:0,depth:0,random:true};
+ if(p.phase==='choose'||p.phase==='choose1')return {move:{t:R(['B','W'])},score:0,depth:0,random:true};
+ const E=[];for(let i=0;i<p.B.length;i++)if(!p.B[i])E.push(i);return E.length?{move:{t:'m',i:R(E)},score:0,depth:0,random:true}:null;}
 function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
+ if(o.random||o.mix&&p.phase==='play'&&Math.random()<o.mix)return aiRandom(p);
  // the Swap2 opening: the most balanced of a few random openings
  if(p.phase==='open'){const r=propose(o.hint?Math.max(OPEN,n||0):OPEN);return {move:{t:'o',s:r.stones.map(x=>x.i)},score:r.score,depth:1};}
  loadBoard(p.B,p.caps);
@@ -405,35 +412,40 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
 //   'm<i>'          a stone of the colour to move, once the colours are chosen
 const N=15,NN=N*N,LET="ABCDEFGHJKLMNOP",DIRS=[[1,0],[0,1],[1,1],[1,-1]],PWIN=10000000;
 const coord=i=>LET[i%N]+(N-((i/N)|0));
-// The ladder (10.11.2026, outils/aitools/res/pente/niveaux.md, 300 games a pair): each level beats the one below by
-// 74-76 % (level 10, the strongest, beats 9 by 62 %). maxDepth = depth, noise = randomness added to the move scores,
-// ext:false = no forced-line extension, k = moves read per node, nodes = positions searched at most. A level is an amount
-// of work, never a time (16.11.2026): levels 0 to 8 stop on their depth, 9 and 10 on their nodes, what the reference Mac
-// (M3 Pro) searched in their former 0.7 and 2.5 s (outils/aitools/res/budgets-2026-11-16.md).
+// The ladder (v1, 16.11.2026, outils/aitools/res/pente/niveaux.md): from level 5 up each level beats the one below
+// by 70-76 %; levels 1 to 4 are wide steps (85-97 %) between random play and the first level that reads a move.
+// random = a random legal move; mix = share of random moves, the rest played as level 5 (its settings); maxDepth = depth, noise =
+// randomness added to the move scores, ext:false = no forced-line extension, k = moves read per node, nodes = positions.
+// A level is an amount of work, never a time (16.11.2026). Hints: the strongest level (median 1.0 s on the reference
+// Mac, outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={
- l0:{maxDepth:1,noise:2500,ext:false,k:6},
- l1:{maxDepth:1,noise:750,ext:false,k:6},
- l2:{maxDepth:2,noise:1500,ext:false,k:6},
- l3:{maxDepth:2,noise:500,ext:false,k:8},
- l4:{maxDepth:3,noise:700,ext:false,k:9},
- l5:{maxDepth:4,noise:700,ext:false,k:10},
- l6:{maxDepth:4,noise:500,k:10},
- l7:{maxDepth:5,k:10},
- l8:{maxDepth:7,k:10},
- l9:{nodes:150000},
- l10:{nodes:520000}};
-const HINT={...LEVELS.l10,hint:true};
+ l0:{random:true},
+ l1:{maxDepth:1,noise:2500,ext:false,k:6,mix:.9},
+ l2:{maxDepth:1,noise:2500,ext:false,k:6,mix:.75},
+ l3:{maxDepth:1,noise:2500,ext:false,k:6,mix:.5},
+ l4:{maxDepth:1,noise:2500,ext:false,k:6,mix:.25},
+ l5:{maxDepth:1,noise:2500,ext:false,k:6},
+ l6:{maxDepth:1,noise:750,ext:false,k:6},
+ l7:{maxDepth:2,noise:1500,ext:false,k:6},
+ l8:{maxDepth:2,noise:500,ext:false,k:8},
+ l9:{maxDepth:3,noise:700,ext:false,k:9},
+ l10:{maxDepth:4,noise:700,ext:false,k:10},
+ l11:{maxDepth:4,noise:500,k:10},
+ l12:{maxDepth:5,k:10},
+ l13:{maxDepth:7,k:10},
+ l14:{nodes:520000}};
+const HINT={...LEVELS.l14,hint:true};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
-const levelDesc=o=>o.nodes?['lvd_nodes',o.nodes]:[o.noise?'lvd_dn':'lvd_d_ab',o.maxDepth];
+const ENGINE={v:2,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const levelDesc=o=>o.mix?['lvd_mix',Math.round(o.mix*100)]:o.nodes?['lvd_nodes',o.nodes]:[o.noise?'lvd_dn':'lvd_d_ab',o.maxDepth];
 
 
 // Pente strings, merged over the shared ones (core.js)
 const LINES=n=>({fr:'une ligne de '+n,en:'a line of '+n,es:'una línea de '+n});
 const PE_I18N={fr:{
  title:"Pente",lede:"Cinq alignés, ou dix pierres capturées.",by:"Un jeu de Gary Gabrel.",
- lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_nodes:"{n} positions lues",
+ lvd_d_ab:"profondeur {n}",lvd_dn:"profondeur {n}, avec une part de hasard",lvd_nodes:"{n} positions lues",lvd_mix:"{n} % de coups joués au hasard, les autres comme au niveau 5",
  needConfirm:"Confirmer chaque coup",
  black:"Noir",white:"Blanc",colw_1:"noire",colw_2:"blanche",captured:"{n} paires capturées sur 5",
  n_open:"Posez l'ouverture : 2 noires et 1 blanche ({n}/3).",n_choose:"À vous de choisir : Noir, Blanc, ou 2 pierres de plus.",
@@ -456,7 +468,7 @@ const PE_I18N={fr:{
  <li><b>Fin</b> : gagne celui qui aligne 5 pierres ou plus, ou qui a capturé 5 paires. Plateau plein sans vainqueur : nulle.</li></ul>`
 },en:{
  title:"Pente",lede:"Five in a row, or capture ten.",by:"A game by Gary Gabrel.",
- lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_nodes:"{n} positions read",
+ lvd_d_ab:"depth {n}",lvd_dn:"depth {n}, with some randomness",lvd_nodes:"{n} positions read",lvd_mix:"{n} % of moves played at random, the others as at level 5",
  needConfirm:"Confirm each move",
  black:"Black",white:"White",colw_1:"black",colw_2:"white",captured:"{n} of 5 pairs captured",
  n_open:"Place the opening: 2 black and 1 white ({n}/3).",n_choose:"Your choice: Black, White, or 2 more stones.",
@@ -479,7 +491,7 @@ const PE_I18N={fr:{
  <li><b>End</b>: whoever lines up 5 or more stones, or has captured 5 pairs, wins. Board full with no winner: a draw.</li></ul>`
 },es:{
  title:"Pente",lede:"Cinco en línea, o diez piedras capturadas.",by:"Un juego de Gary Gabrel.",
- lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_nodes:"{n} posiciones leídas",
+ lvd_d_ab:"profundidad {n}",lvd_dn:"profundidad {n}, con algo de azar",lvd_nodes:"{n} posiciones leídas",lvd_mix:"{n} % de jugadas al azar, las demás como en el nivel 5",
  needConfirm:"Confirmar cada jugada",
  black:"Negras",white:"Blancas",colw_1:"negra",colw_2:"blanca",captured:"{n} pares capturados de 5",
  n_open:"Coloca la apertura: 2 negras y 1 blanca ({n}/3).",n_choose:"Te toca elegir: Negras, Blancas o 2 piedras más.",
@@ -669,7 +681,7 @@ let pageAI=null;
 const aiSrc=()=>$('engine-src').textContent;
 const aiPos=st=>({phase:st.phase,B:st.B.slice(),caps:st.caps.slice(),toMove:st.toMove});
 function aiSearchPage(st,opt){if(!pageAI)pageAI=new Function(aiSrc()+'\nreturn aiSearch;')();return pageAI(aiPos(st),opt);}
-function evalInfo(r){const m=r.move;if(m.t==='o'||m.t==='a')return null;if(m.t==='W')return {k:'ai_tookWhite'};if(m.t==='B')return {k:'ai_tookBlack'};
+function evalInfo(r){const m=r.move;if(r.random||m.t==='o'||m.t==='a')return null;if(m.t==='W')return {k:'ai_tookWhite'};if(m.t==='B')return {k:'ai_tookBlack'};
   const s=r.score;if(!r.depth)return {k:'ai_forced'};
   if(s>PWIN-1000)return {k:'ai_win'};if(s<-(PWIN-1000))return {k:'ai_lost'};
   return {k:Math.abs(s)<250?'ai_eq':s>0?(s>2500?'ai_much':'ai_better'):(s<-2500?'ai_muchWorse':'ai_worse'),d:r.depth};}
