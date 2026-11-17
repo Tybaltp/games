@@ -183,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=91"></script>
+<script src="common/core.js?v=92"></script>
 <script src="common/codes.js?v=8"></script>
 <script>
 function ZertzEngine(size){
@@ -274,7 +274,8 @@ function ZertzEngine(size){
   // Iterative deepening on two axes: depth of quiet moves and number of forcing moves read beyond it.
   function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,K0=o.rootBeam||30,tell=typeof aiBest==='function'?aiBest:null;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
     maxN=o.nodes||Infinity;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;
-    if(o.random||o.algo==='random')return {move:moves[(Math.random()*moves.length)|0],score:0,depth:0,fb:0,random:true};   // level 0: a legal move at randomif(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
+    if(o.random||o.algo==='random')return {move:moves[(Math.random()*moves.length)|0],score:0,depth:0,fb:0,random:true};   // level 0: a legal move at random
+    if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
     const fk=new Set(moves[0].t===0?forcing(s).map(key):[]);
     let list=[];for(const mv of moves){const c=apply(s,mv);const sc=won(c,p)?WIN:-neg(c,0,-INF,INF,1,0);list.push({mv,c,sc,f:mv.t===0&&fk.has(key(mv))});}
     maxN=Math.max(maxN,nodes+MORE);stop=false;
