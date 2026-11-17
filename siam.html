@@ -29,6 +29,9 @@
   --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:transparent;border:0;border-radius:8px;overflow:hidden}
 .board .pt{cursor:pointer}
+.arrow .ahit{fill:var(--cell);stroke:var(--sel);stroke-width:2;opacity:.9}.arrow .ashape{fill:var(--sel);stroke:none}
+.arrow.on .ahit{fill:var(--sel);opacity:1}.arrow.on .ashape{fill:var(--cell)}
+@media (hover:hover){.arrow:hover .ahit{stroke-width:3.5}}
 /* players' cards: the camp, its animals in reserve */
 .dot.cmp{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
 .cmp.e{background:var(--ele);border:1.5px solid var(--ele-e)}.cmp.r{background:var(--rhi);border:1.5px solid var(--rhi-e)}
@@ -282,10 +285,10 @@ const SM_I18N={fr:{
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"Nord",dEl:"Est",dSl:"Sud",dWl:"Ouest",
  enter:"Faire entrer",enterT:"Faire entrer un animal de la réserve sur une case du bord",exit:"Sortir",exitT:"Sortir cet animal du plateau (il retourne en réserve)",
  st_play:"À vous ({camp}) : choisissez un animal, ou faites-en entrer un.",st_playN:"{name} ({c}) : choisissez un animal, ou faites-en entrer un.",
- st_enter:"Choisissez une case du bord (points marqués).",st_sel:"Avancez ou poussez (points marqués), tournez-le, ou sortez-le s'il est au bord.",
+ st_enter:"Choisissez une case du bord (points marqués).",st_sel:"Avancez-le (points marqués), tournez-le ou poussez (flèches, double pour pousser), ou sortez-le s'il est au bord.",pushT:"Pousser vers le {d}",
  st_turnC:"Au trait : {name} ({c}).",
  lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
- p_dir:"{m} ; changez l'orientation si vous voulez, puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
+ p_dir:"{m} ; choisissez l'orientation (flèches), puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
  d_enter:"entre en {t}, {d}",d_enterP:"entre en {t} en poussant, {d}",d_turn:"{f} tourne : {d}",d_exit:"{f} sort",d_move:"{f} → {t}, {d}",d_push:"{f} pousse vers {t}",
  l_out:"sort {x}",w_rock:"un rocher est sorti",
  boardLbl:"Plateau de Siam",
@@ -303,10 +306,10 @@ const SM_I18N={fr:{
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"North",dEl:"East",dSl:"South",dWl:"West",
  enter:"Bring in",enterT:"Bring an animal from the reserve onto an edge square",exit:"Leave",exitT:"Take this animal off the board (back to the reserve)",
  st_play:"Your move ({camp}): choose an animal, or bring one in.",st_playN:"{name} ({c}): choose an animal, or bring one in.",
- st_enter:"Choose an edge square (marked points).",st_sel:"Move or push (marked points), turn it, or take it off from the edge.",
+ st_enter:"Choose an edge square (marked points).",st_sel:"Move it (marked points), turn it or push (arrows, double to push), or take it off from the edge.",pushT:"Push {d}",
  st_turnC:"To move: {name} ({c}).",
  lvd_g1r:"one move ahead, at random among the best",lvd_beam:"{n} moves ahead, on the best candidates",
- p_dir:"{m}; change the direction if you like, then confirm.",p_mv:"{m}.",confirm1:"Confirm",
+ p_dir:"{m}; choose the direction (arrows), then confirm.",p_mv:"{m}.",confirm1:"Confirm",
  d_enter:"enters on {t}, {d}",d_enterP:"enters on {t} pushing, {d}",d_turn:"{f} turns: {d}",d_exit:"{f} leaves",d_move:"{f} → {t}, {d}",d_push:"{f} pushes towards {t}",
  l_out:"{x} off",w_rock:"a rock was pushed off",
  boardLbl:"Siam board",
@@ -324,10 +327,10 @@ const SM_I18N={fr:{
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"Norte",dEl:"Este",dSl:"Sur",dWl:"Oeste",
  enter:"Hacer entrar",enterT:"Hacer entrar un animal de la reserva en una casilla del borde",exit:"Sacar",exitT:"Sacar este animal del tablero (vuelve a la reserva)",
  st_play:"Te toca ({camp}): elige un animal, o haz entrar uno.",st_playN:"{name} ({c}): elige un animal, o haz entrar uno.",
- st_enter:"Elige una casilla del borde (puntos marcados).",st_sel:"Avanza o empuja (puntos marcados), gíralo, o sácalo si está en el borde.",
+ st_enter:"Elige una casilla del borde (puntos marcados).",st_sel:"Avánzalo (puntos marcados), gíralo o empuja (flechas, doble para empujar), o sácalo si está en el borde.",pushT:"Empujar hacia el {d}",
  st_turnC:"Turno: {name} ({c}).",
  lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
- p_dir:"{m}; cambia la orientación si quieres y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
+ p_dir:"{m}; elige la orientación (flechas) y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
  d_enter:"entra en {t}, {d}",d_enterP:"entra en {t} empujando, {d}",d_turn:"{f} gira: {d}",d_exit:"{f} sale",d_move:"{f} → {t}, {d}",d_push:"{f} empuja hacia {t}",
  l_out:"sale {x}",w_rock:"ha salido una roca",
  boardLbl:"Tablero de Siam",
@@ -375,18 +378,16 @@ function smBoard({r,d,mine,ms}){const live=navAt===null;
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
 function smTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=SM.toMove(st),me=seatName(st.turn);
   if(ui.enter){status(soloWho(st.turn,t('st_enter')),'turn',[RST]);return;}
-  if(ui.f>=0){const f=NM(ui.f),q=st.p[ui.f],rot='NESW'.split('').filter(d=>d!==q.d).map(d=>({label:t('d'+d),on:()=>pickRot(d)}));
-    const ex=moves(st).includes(f+'-x')?{label:t('exit'),on:()=>pickCode(f+'-x',true)}:null;
-    status(soloWho(st.turn,t('st_sel')),'turn dirs',[RST,...rot,ex]);
-    document.querySelectorAll('#notice .btns button').forEach(b=>{const k=Object.keys({N:1,E:1,S:1,W:1}).find(d=>t('d'+d)===b.textContent);if(k)b.title=t('d'+k+'l');else if(b.textContent===t('exit'))b.title=t('exitT');});return;}
+  if(ui.f>=0){const f=NM(ui.f),ex=moves(st).includes(f+'-x')?{label:t('exit'),on:()=>pickCode(f+'-x',true)}:null;
+    status(soloWho(st.turn,t('st_sel')),'turn',[RST,ex]);
+    document.querySelectorAll('#notice .btns button').forEach(b=>{if(b.textContent===t('exit'))b.title=t('exitT');});return;}
   const ent=st.res[st.turn]&&moves(st).some(m=>m[0]==='+')?{id:'bEnter',label:t('enter')+' ('+st.res[st.turn]+')',on:()=>{dropHint();clearPrep();ui.enter=true;renderGame();}}:null;
   status(S?tN('st_playN',{name:me,c:CAMP(c)}):t('st_play',{camp:CAMP(c)}),'turn',[ent,...idle]);if($('bEnter'))$('bEnter').title=t('enterT');}
 function smWaitStatus({r}){status(tN('st_turnC',{name:seatName(r.st.turn),c:CAMP(SM.toMove(r.st))}));return true;}
 // a move with a free direction: the direction buttons beside Confirm
 function pendText(mv,st){const e=SM.info(String(mv)),free=(e.kind==='enter'||e.kind==='move')&&!st.p[e.t];
   return [free?t('p_dir',{m:describe(mv,st),d:DL(e.d)}):t('p_mv',{m:describe(mv,st)}),t('confirm1')];}
-function pendBtns(mv,ms){const e=SM.info(String(mv));if(!((e.kind==='enter'||e.kind==='move')&&!ms.p[e.t]))return [];
-  return dirsFor(ms).filter(d=>d!==ui.d).map(d=>({label:t('d'+d),on:()=>{ui.d=d;ui.pending=prefix()+d;renderGame();}}));}
+function pendBtns(){return [];}   // the directions: the arrows on the board
 function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
   if(dot){dot.className='dot cmp '+CK(col);dot.title=CAMP(col);}
   const x=document.createElement('div');x.className='resv';x.title=t('resv',{n:st.res[p]});
@@ -394,16 +395,21 @@ function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el
 function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
 function pickCode(code,plain){dropHint();const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(plain&&!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
-function pickRot(d){pickCode(NM(ui.f)+'='+d,true);}
 
 // ---------- input ----------
+// An arrow: the move it stands for, prepared (« Confirm each move ») or played; the arrow chosen clicked again: played
+function onArrow(code){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  if(ui.pending===code){pendAgain();return;}dropHint();const st=meSt(r),e=SM.info(code);
+  if(e.kind==='turn'){if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();return;}
+  if(e.kind==='enter'&&st.p[e.t]){ui.f=-1;ui.enter=true;}
+  ui.t=e.t;ui.d=e.d;if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
 // Nothing selected: one of my animals selects it; a free edge square (with animals in reserve) starts an entry there.
 // Selected (or entering): a marked square places it there provisionally, facing the way it moved (an entry: inwards);
 // a push keeps its direction (and goes at once without « Confirm each move »). The animal or the provisional square
 // clicked again takes one step back.
 function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();const st=meSt(r),c=SM.toMove(st);
-  if(ui.t>=0&&i===ui.t){ui.t=-1;ui.d='';ui.pending=null;renderGame();return;}
+  if(ui.t>=0&&i===ui.t&&ui.pending){pendAgain();return;}   // the provisional animal clicked again: played
   if(ui.f===i&&ui.t<0){clearPrep();renderGame();return;}
   if((ui.f>=0||ui.enter)&&ui.t<0&&targets(st).includes(i)){ui.t=i;const ds=dirsFor(st);
     const prefer=ui.enter?SM.inward(i):[Object.keys(SM.DIRS).find(k=>{const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);return SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b;})];
@@ -416,7 +422,8 @@ $('needConfirm').checked=LS.get('siam-confirm',true)!==false;
 $('needConfirm').onchange=e=>LS.set('siam-confirm',e.target.checked);
 let lastPT='mouse';
 $('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
-$('svg').addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');lastPT='mouse';});
+$('svg').addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-a]');if(a)onArrow(a.dataset.a);
+  else{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');}lastPT='mouse';});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
@@ -427,8 +434,9 @@ function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)r
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg',CS=100;
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
-let PAD=0;
-const PX=i=>PAD+(i%5)*CS+CS/2,PY=i=>(4-Math.floor(i/5))*CS+CS/2;
+// MG: the margin all round the board (the arrows of a push from outside; the coordinates, left and bottom, next to the board)
+const MG=62;
+const PX=i=>MG+(i%5)*CS+CS/2,PY=i=>MG+(4-Math.floor(i/5))*CS+CS/2,DV={N:[0,-1],E:[1,0],S:[0,1],W:[-1,0]},ROT={E:0,S:90,W:180,N:270};
 // an animal: a disc in its camp's colour, its point showing where it faces, its emblem on it
 // the pieces drawn (img/siam/siam-art.js, 15.11.2026): an animal engraved in its disc, its point showing where it faces
 // (ART false: the drawing file is not loaded, as in the regression's page, which keeps only common/ scripts)
@@ -438,13 +446,13 @@ function animal(g,x,y,t0,d,op){const p=el('g',{},g);if(op!==undefined)p.setAttri
 function rock(g,x,y){if(ART)siamPiece(g,'rocher',null,x,y,38);}
 const frame=(g,i,dash,col)=>el('rect',{x:PX(i)-CS/2+6,y:PY(i)-CS/2+6,width:CS-12,height:CS-12,rx:8,fill:'none',stroke:col||'var(--mk)','stroke-width':3,...(dash?{'stroke-dasharray':'7 5'}:{})},g);
 function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
-  const sh=shown,st=sh&&view?sh.d.st:SM.init();PAD=coordsOn?34:0;const W=5*CS+PAD+(coordsOn?6:0),H=5*CS+PAD;
+  const sh=shown,st=sh&&view?sh.d.st:SM.init();const W=5*CS+2*MG,H=W;
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);document.documentElement.style.setProperty('--board-ar',`${W}/${H}`);
   // the squares (the board is drawn from y = 0; the coordinates in the left and bottom margins)
   for(let i=0;i<25;i++){const x=PX(i)-CS/2,y=PY(i)-CS/2;el('rect',{x,y,width:CS,height:CS,fill:(i%5+Math.floor(i/5))%2?'var(--cell2)':'var(--cell)',stroke:'var(--cell-e)','stroke-width':1.5},svg);}
   const g=el('g',{'pointer-events':'none'},svg);
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':20},svg);e.textContent=s;};
-    for(let k=0;k<5;k++){lab(PAD+k*CS+CS/2,5*CS+PAD/2,String.fromCharCode(97+k));lab(PAD/2,(4-k)*CS+CS/2,String(k+1));}}
+  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':17},svg);e.textContent=s;};
+    for(let k=0;k<5;k++){lab(MG+k*CS+CS/2,MG+5*CS+11,String.fromCharCode(97+k));lab(MG-11,MG+(4-k)*CS+CS/2,String(k+1));}}
   const mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?SM.toMove(ms):-1;
   // the position shown: with the move prepared (or the suggestion) played on a copy
   let show=st,code=null;if(mine&&hintOn())code=String(hintMv);else if(mine&&ui.pending)code=ui.pending;
@@ -461,7 +469,28 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   const hit=el('g',{fill:'transparent'},svg),tg=mine&&!code?targets(ms):[];
   for(let i=0;i<25;i++){const r=el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,'data-i':i},hit);
     if(mine&&(ms.p[i]&&ms.p[i].t===c||tg.includes(i)||!ms.p[i]&&SM.onEdge(i)&&ms.res[ms.turn]&&!prepared()))r.setAttribute('class','pt');}
+  if(mine&&!hintOn())drawArrows(svg,ms);
   drawHover();}
+// The arrows (Thibault, 17.11.2026). Around the animal selected: a single arrow turns it that way, a double arrow in front of
+// it pushes. Around an animal moved or brought onto a free square: its direction. Outside the board, by an edge square: a
+// double arrow brings an animal in pushing the row. The arrow chosen stays among the others until the move is confirmed
+// (a second click on it plays it).
+function arrowList(st){const L=moves(st),out=[],has=m=>L.includes(m);
+  if(ui.t>=0&&!st.p[ui.t]){for(const d of dirsFor(st))out.push({at:ui.t,d,code:prefix()+d,two:false,out:false});return out;}
+  if(ui.f>=0){const f=NM(ui.f),q=st.p[ui.f];
+    for(const d of 'NESW')if(d!==q.d&&has(f+'='+d))out.push({at:ui.f,d,code:f+'='+d,two:false,out:false});
+    const[x,y]=SM.xy(ui.f),j=SM.at(x+SM.DIRS[q.d][0],y+SM.DIRS[q.d][1]);
+    if(j>=0&&st.p[j]&&has(f+'-'+NM(j)+q.d))out.push({at:ui.f,d:q.d,code:f+'-'+NM(j)+q.d,two:true,out:false});
+    return out;}
+  for(const m of L){const e=SM.info(m);if(e.kind==='enter'&&st.p[e.t])out.push({at:e.t,d:e.d,code:m,two:true,out:true});}
+  return out;}
+function drawArrows(svg,st){const g=el('g',{},svg);
+  for(const a of arrowList(st)){const[dx,dy]=DV[a.d],k=a.out?-(CS/2+40):CS/2+11,cx=PX(a.at)+dx*k,cy=PY(a.at)+dy*k,on=ui.pending===a.code;
+    const h=el('g',{'data-a':a.code,class:'pt arrow'+(on?' on':''),transform:`translate(${cx} ${cy}) rotate(${ROT[a.d]})`},g);
+    el('circle',{r:17,class:'ahit'},h);
+    const head=x=>`M ${x-7} -10 L ${x+6} 0 L ${x-7} 10 z`;
+    el('path',{d:a.two?head(-4)+' '+head(5):`M -10 -3.5 L -1 -3.5 L -1 -10 L 10 0 L -1 10 L -1 3.5 L -10 3.5 z`,class:'ashape'},h);
+    el('title',{},h).textContent=a.two?t('pushT',{d:DL(a.d)}):t('d'+a.d+'l');}}
 // under the mouse: the animal on a marked square, in transparency
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
   if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||ui.pending||!(ui.f>=0||ui.enter))return;const ms=sh.ms;if(!targets(ms).includes(i)||ms.p[i])return;
@@ -532,7 +561,7 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 // know the repetition (decision of Thibault, 15.11.2026)
 function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'siam',seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
+const GAME={id:'siam',again:()=>true,seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
   size:5,codeTag:'SIAM1',i18n:SM_I18N,
   rules:()=>({}),form:()=>({}),
   replay:(r,m)=>replayKept(r,m,{init:()=>SM.init(),
