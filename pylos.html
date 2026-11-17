@@ -421,7 +421,7 @@ const PY_I18N={fr:{
  res0:"{n} bille en réserve",res1:"{n} bille en réserve",resN:"{n} billes en réserve",
  w_top:"la bille du sommet est posée",w_block:"l'adversaire ne peut plus jouer",
  
- lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_g1:"un coup d'avance",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
+ lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_g1:"un coup d'avance",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",lvd_beamN:"{n} coups d'avance, avec une part de hasard",
  boardLbl:"Plateau de Pylos",
  rules:`<summary>Règles en bref</summary><ul>
  <li><b>Matériel</b> : un socle de 4 × 4 creux ; au-dessus se bâtit une pyramide de 3 × 3, puis 2 × 2, puis une bille au sommet. Chaque joueur a 15 billes. Clair commence.</li>
@@ -447,7 +447,7 @@ const PY_I18N={fr:{
  res0:"{n} balls in reserve",res1:"{n} ball in reserve",resN:"{n} balls in reserve",
  w_top:"the top ball is placed",w_block:"the opponent cannot move",
  
- lvd_g1r:"one move ahead, at random among the best",lvd_g1:"one move ahead",lvd_beam:"{n} moves ahead, on the best candidates",
+ lvd_g1r:"one move ahead, at random among the best",lvd_g1:"one move ahead",lvd_beam:"{n} moves ahead, on the best candidates",lvd_beamN:"{n} moves ahead, with some randomness",
  boardLbl:"Pylos board",
  rules:`<summary>Rules in brief</summary><ul>
  <li><b>Material</b>: a base of 4 × 4 hollows; above it rises a pyramid of 3 × 3, then 2 × 2, then one ball on top. Each player has 15 balls. Light starts.</li>
@@ -473,7 +473,7 @@ const PY_I18N={fr:{
  res0:"{n} bolas en reserva",res1:"{n} bola en reserva",resN:"{n} bolas en reserva",
  w_top:"la bola de la cima está colocada",w_block:"el adversario no puede jugar",
  
- lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_g1:"una jugada de antelación",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
+ lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_g1:"una jugada de antelación",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",lvd_beamN:"{n} jugadas de antelación, con algo de azar",
  boardLbl:"Tablero de Pylos",
  rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Material</b>: una base de 4 × 4 huecos; encima se levanta una pirámide de 3 × 3, luego 2 × 2 y una bola en la cima. Cada jugador tiene 15 bolas. Claro empieza.</li>
@@ -775,6 +775,7 @@ let TELL=false;
 const KS=AISearch({moves:gen,play,turn:S=>S.turn,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
   best:r=>{if(TELL)aiBest({move:r.m.code,score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);REP=null;
+  if(opt.random||opt.algo==='random'){const L=M.legalMoves(S);return L.length?{move:L[(Math.random()*L.length)|0].code,score:0,depth:0,random:true}:{move:null};}   // level 0: a legal move at random
   if(opt.hist){REP=new Map();for(const k in opt.hist){const i=k.lastIndexOf('|');REP.set(String.fromCharCode(...k.slice(0,i).split(',').map(Number))+k.slice(i),opt.hist[k]);}S.k=repKey(S);}
   KS.start(opt.nodes);const C=gen(S);
   if(!C.length)return {move:null};
@@ -783,22 +784,26 @@ function search(P,opt){const S=fromPos(P);REP=null;
 return {search,fromPos,gen,play,evalS};
 }
 /*AIEND*/
-// Levels 0 to 5: 0 and 1 read one move ahead (0 draws at random among the best, within 4 points); 2 to 5 read two, three,
-// four and six moves ahead on the best candidates (beam, common/ai.js). A level is its depth, never a time (16.11.2026;
-// the former caps of 1.5 to 9 s were never reached on the reference Mac: at most 0.35 s a move at level 5,
-// outils/aitools/res/budgets-2026-11-16.md). Hints use level 5, the highest (well under 5 s).
-const LEVELS={n0:{algo:'greedy',pick:8,temp:4},n1:{algo:'greedy'},n2:{algo:'beam',depth:2,widths:[20,12]},
-  n3:{algo:'beam',depth:3,widths:[24,14,8]},n4:{algo:'beam',depth:4,widths:[28,16,10,6]},n5:{algo:'beam',depth:6,widths:[32,18,12,8,6,6]}};
-const HINT={...LEVELS.n5};
+// The ladder (v1, 16.11.2026, outils/aitools/res/pylos/niveaux.md, 300 games a pair, the search knowing the game's
+// positions): each level beats the one below by 66-82 % (level 1 beats random play by 97 %), and the one two below by
+// 87 % or more. random = a legal move at random; greedy = one move read (pick, temp: drawn among the best), beam =
+// depth with widths (common/ai.js), noise = one of the moves within noise points of the best (10 points = one ball).
+// A level is its depth, never a time (16.11.2026). Hints: the strongest level (median 0.08 s on the reference Mac,
+// outils/aitools/res/budgets-2026-11-16.md).
+const LEVELS={n0:{algo:'random',random:true},n1:{algo:'greedy',pick:8,temp:4},n2:{algo:'greedy'},
+  n3:{algo:'beam',depth:2,widths:[20,12],noise:5},n4:{algo:'beam',depth:2,widths:[20,12]},
+  n5:{algo:'beam',depth:3,widths:[24,14,8]},n6:{algo:'beam',depth:4,widths:[28,16,10,6]},
+  n7:{algo:'beam',depth:6,widths:[32,18,12,8,6,6]}};
+const HINT={...LEVELS.n7};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
-const levelDesc=o=>o.algo==='greedy'?[o.pick>1?'lvd_g1r':'lvd_g1']:['lvd_beam',o.depth];
+const ENGINE={v:2,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const levelDesc=o=>o.algo==='greedy'?[o.pick>1?'lvd_g1r':'lvd_g1']:[o.noise?'lvd_beamN':'lvd_beam',o.depth];
 const aiPos=st=>({variant:st.variant,b:Array.from(st.b),res:st.res.slice(),turn:st.turn});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 const aiSrc=()=>AISearch.toString()+'\n'+PY_SRC+'\n'+PylosAI.toString()+'\nconst PA=PylosAI(MOTEUR);function aiSearch(pos,opt){return PA.search(pos,opt);}';
 // The computer's opinion: its score in points (10 per ball of reserve)
-function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
+function evalInfo(r){const s=r.score;if(r.random)return null;if(r.forced)return {k:'ai_forced'};if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
   return {k:Math.abs(s)<=5?'ai_eq':s>0?(s>20?'ai_much':'ai_better'):(s<-20?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
