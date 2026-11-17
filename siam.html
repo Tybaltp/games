@@ -33,7 +33,7 @@
 .board .pt{cursor:pointer}
 /* the markers (family « Filet », maquettes/siam-marqueurs): thin strokes in the one action colour. Chevrons (> turns,
    >> pushes), a ring on a square to move to, bars (entering), dotted slot (leaving), an open ring round the animal in
-   hand (its square tinted once a move is prepared), brackets of the last move (the ink of the page) */
+   hand (its square tinted once a move is prepared); the last move drawn as a move prepared */
 .chev,.trail{fill:none;stroke:var(--act);stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .12s,stroke .12s}.trail{opacity:.45}
 .chevh{fill:none;stroke:var(--halo);stroke-width:9;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
 @media (hover:hover){.arrow:hover .chev{stroke-width:4.8}}
@@ -44,7 +44,7 @@
 .bar{fill:var(--act);opacity:.45;transition:opacity .12s}.bar.on{opacity:1}
 .slotF{fill:var(--act);opacity:0;transition:opacity .12s}.slotF.on{opacity:.14}
 .slotS{fill:none;stroke:var(--act);stroke-width:3.2;stroke-dasharray:.1 6.707;stroke-linecap:round}
-.lastB{fill:none;stroke:var(--mk);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.5}.lastD{fill:var(--mk);opacity:.4}
+.lastD{fill:var(--mk);opacity:.4}
 .altC{fill:none;stroke:var(--mk);stroke-width:2.6;opacity:.55}
 .nope{fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;opacity:.6}
 svg .coord{font-weight:500;opacity:.75}
@@ -576,7 +576,8 @@ function drawBoard(){const svg=$('svg');layers(svg);svg.setAttribute('aria-label
 const CH1='M -4.35 -13 L 4.35 0 L -4.35 13',CH2='M -9.6 -13 L -0.9 0 L -9.6 13 M 0.9 -13 L 9.6 0 L 0.9 13',CD=54;
 // a marker that was not there at the last drawing fades in (class mkin); one already there does not blink
 let mkPrev=new Set(),mkCur=new Set();
-const fr=k=>{mkCur.add(k);return mkPrev.has(k)?'':' mkin';};
+let mkQuiet=false;   // the last move's marks: no fade (they come with the move, and a redraw must not change them)
+const fr=k=>{mkCur.add(k);return mkQuiet||mkPrev.has(k)?'':' mkin';};
 // zs: what the finger reaches, whatever the drawing: rectangles [from, to, half width] along the chevron's axis
 function chevron(x,y,d,two,code,title,zs){const g=el('g',{class:'arrow pt'+fr('c'+code+d+(two?2:1)),'data-a':code,transform:`translate(${x} ${y}) rotate(${ANG[d]})`},gO);
   el('path',{d:two?CH2:CH1,class:'chevh'},g);el('path',{d:two?CH2:CH1,class:'chev'},g);
@@ -587,8 +588,8 @@ function hand(i,d,pend,bare){const k=fr((pend?'p':'s')+i),R=39.5,cx=PX(i)-DV[d][
   const P=a=>`${(cx+R*Math.cos(a)).toFixed(2)} ${(cy+R*Math.sin(a)).toFixed(2)}`;
   if(pend&&!bare)el('rect',{x:PX(i)-CS/2+4,y:PY(i)-CS/2+4,width:CS-8,height:CS-8,rx:12,class:'pendF'+k},gU);
   el('path',{d:`M ${P(A+o)} A ${R} ${R} 0 1 1 ${P(A-o)}`,class:(pend?'pendS':'selS')+k},gU);}
-function brackets(i){const a=PX(i)-44,b=PY(i)-44,c=PX(i)+44,d=PY(i)+44,l=12;
-  el('path',{class:'lastB',d:`M ${a} ${b+l} V ${b} H ${a+l} M ${c-l} ${b} H ${c} V ${b+l} M ${c} ${d-l} V ${d} H ${c-l} M ${a+l} ${d} H ${a} V ${d-l}`},gU);}
+// the position before the last move shown (its push is drawn on it)
+function lastPre(){const n=navAt===null?view.moves.length:navAt;return n>0?replay(view,view.moves.slice(0,n-1),null).st:null;}
 // a push shown (tried, or suggested): its row tinted in one piece, the pusher ringed, a pale double chevron behind it
 function pushTrace(st,code){const inf=SM.info(code),xs=[],ys=[];for(const e of effects(st,code))for(const i of [e.from,e.to])if(i>=0){xs.push(PX(i));ys.push(PY(i));}
   const x0=Math.min(...xs)-CS/2+6,y0=Math.min(...ys)-CS/2+6;
@@ -604,9 +605,15 @@ function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.
   const zone=(i,d)=>{const z=[[36-CD,76-CD,36]],[x,y]=SM.xy(i),j=SM.at(x+SM.DIRS[d][0],y+SM.DIRS[d][1]);
     if(j>=0){if(ms.p[j]&&ms.p[j].t!==c)z.push([50-CD,150-CD,50]);}
     else if(!(i===sel&&outward(i)[0]===d&&L.includes(NM(i)+'-x')))z.push([50-CD,50+MG-CD,50]);return z;};
-  // the last move: four brackets on the square where the animal ended (left the board: the square it left), a dot where it came from
+  // the last move, drawn as a move prepared (Thibault, 17.11.2026): a push, its row tinted, the pusher ringed and the pale
+  // double chevron behind it; another move, the animal ringed on its tinted square, a dot where it came from (left the
+  // board: the dot alone)
   const last=shown?shown.d.last:null;
-  if(view&&last&&!code&&!(mine&&prepared())){brackets(last.t>=0?last.t:last.f);if(last.f>=0&&last.t>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:4.5,class:'lastD'},gU);}
+  if(view&&last&&!code&&!(mine&&prepared())){const pre=lastPre();mkQuiet=true;
+    if(pre&&isPush(pre,last.code))pushTrace(pre,last.code);
+    else{if(last.kind!=='exit')hand(last.kind==='turn'?last.f:last.t,last.d,true);
+      if(last.f>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:4.5,class:'lastD'},gU);}
+    mkQuiet=false;}
   const alts=shown?altCells():new Map();for(const [i] of alts){el('circle',{cx:PX(i),cy:PY(i),r:12,class:'altC'},gU);if(!prepared())ptr.add(i);}
   if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')hand(e.kind==='turn'?e.f:e.t,e.d,true);}
   if(my){for(let i=0;i<25;i++)if(ms.p[i]&&ms.p[i].t===c&&!lock)ptr.add(i);
