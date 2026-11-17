@@ -43,10 +43,6 @@
 .lastB{fill:none;stroke:var(--mk);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}.lastD{fill:var(--mk);opacity:.5}
 .altC{fill:none;stroke:var(--mk);stroke-width:3}
 .nope{fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;opacity:.65}
-/* a push tried locks the board: a click elsewhere makes « Reset » tremble */
-@keyframes siamNudge{0%,100%{transform:none}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
-.notice button.nudge{animation:siamNudge .45s;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 40%,transparent)}
-@media (prefers-reduced-motion:reduce){.notice button.nudge{animation:none}}
 /* players' cards: the camp, its animals in reserve as small pieces (dots when the drawings are not loaded) */
 .player .dot.art{width:auto;height:auto;border:0;border-radius:0;background:none;display:inline-flex;vertical-align:middle;margin-right:5px}
 .player svg.pm{display:block;flex:none;overflow:visible}
@@ -383,7 +379,7 @@ function logText(e){return e.code;}
 // ---------- the move being prepared ----------
 // ui.f: the animal in hand (-1), ui.pending: the code of the move prepared (core's Confirm), shown played on the board.
 // Everything is done on the board (Thibault, 17.11.2026): no button to enter or to leave. Changes of mind are free, except
-// after a push tried: the board is locked then, only Confirm (or the pusher touched again) and Reset remain.
+// after a push tried: the board is locked then, the pusher touched again (or Confirm) plays it, any other click drops it.
 const newUi=()=>({f:-1,pending:null,hover:-1});
 const prepared=()=>ui.f>=0||!!ui.pending;
 function clearPrep(){ui.f=-1;ui.pending=null;}
@@ -438,31 +434,29 @@ function playerCard(elx,p,d){let st=d.st;const col=st.col[p],dot=elx.querySelect
 function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
 
 // ---------- input ----------
-// « Reset » trembles: a click that does nothing while a push tried locks the board
-function nudge(){PA.hit=true;const n=$('notice'),b=n&&[...n.querySelectorAll('button')].find(x=>x.title===t('reset'));if(!b)return;
-  b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}
-// the move prepared touched again: played. The core's second click for the moves it covers (GAME.again); a push tried is
-// not one of them (a click elsewhere must not drop it), so it goes from here, with the same guard against a double click
+// a click elsewhere while a push tried locks the board: the push is dropped, and nothing else is played (Thibault, 17.11.2026)
+function dropPush(){PA.hit=true;cancelPrep();}
+// the move prepared touched again: played (the core's second click, GAME.again; the fallback keeps the same guard)
 function again(){if(againOn()){pendAgain();return;}PA.hit=true;if(!ui.pending||sending||Date.now()-PA.t<PA_GAP)return;send(ui.pending);}
 const myTurnSt=()=>{if(!view||navAt!==null)return null;const r=replay(view,view.moves,view.result);return isMyTurn(r)?meSt(r):null;};
 // A chevron: the move it stands for, prepared (« Confirm each move ») or played at once
-function onArrow(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){nudge();return;}dropHint();
+function onArrow(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){dropPush();return;}dropHint();
   if(code==='back'){ui.pending=null;renderGame();return;}   // a turn prepared, taken back
   if(!SM.legal(st,code))return;if(SM.info(code).kind==='enter')ui.f=-1;
   if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
 // The dotted slot in the border: the animal in hand leaves the board
-function onExit(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){nudge();return;}if(ui.pending===code){again();return;}dropHint();
+function onExit(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){dropPush();return;}if(ui.pending===code){again();return;}dropHint();
   if(!SM.legal(st,code))return;if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
 // A bar in the border (or its free edge square, see onCell): an animal of the reserve is put there, facing inwards from
 // the side touched; its direction is free, so it waits there for its chevrons or a second click
-function onEntry(i,d){const st=myTurnSt();if(!st)return;if(lockedOn(st)){nudge();return;}const code='+'+NM(i)+d;if(!moves(st).includes(code))return;
+function onEntry(i,d){const st=myTurnSt();if(!st)return;if(lockedOn(st)){dropPush();return;}const code='+'+NM(i)+d;if(!moves(st).includes(code))return;
   if(ui.pending===code){again();return;}dropHint();ui.f=-1;ui.pending=code;renderGame();}
 // Nothing in hand: one of my animals takes it in hand; a free edge square (with animals in reserve) brings one in there.
 // In hand: a tinted square moves it there provisionally, facing the way it moved. The provisional animal touched again:
 // played. Another animal, another square, another chevron: free, except after a push tried.
 function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const st=myTurnSt();if(!st)return;const c=SM.toMove(st),L=moves(st),p=ui.pending&&SM.legal(st,ui.pending)?ui.pending:null,inf=p?SM.info(p):null,q=st.p[i];
-  if(p&&isPush(st,p)){if(i===inf.t)again();else nudge();return;}             // a push tried: confirm or reset
+  if(p&&isPush(st,p)){if(i===inf.t)again();else dropPush();return;}             // a push tried: played, or dropped
   if(p&&i===(inf.kind==='turn'?inf.f:inf.t)){again();return;}                  // the animal prepared, touched again: played
   dropHint();
   if(q&&q.t===c){if(i!==ui.f){ui.f=i;ui.pending=null;}else if(p)ui.pending=null;else ui.f=-1;renderGame();return;}
@@ -476,7 +470,7 @@ $('svg').addEventListener('click',e=>{const f=s=>e.target.closest&&e.target.clos
   if((g=f('[data-a]')))onArrow(g.dataset.a);else if((g=f('[data-x]')))onExit(g.dataset.x);
   else if((g=f('[data-e]'))){const[i,d]=g.dataset.e.split(':');onEntry(+i,d);}
   else if((g=f('[data-i]')))onCell(+g.dataset.i);
-  else if(shown&&shown.mine&&lockedOn(shown.ms))nudge();});
+  else if(shown&&shown.mine&&lockedOn(shown.ms))dropPush();});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
@@ -697,9 +691,9 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 // know the repetition (decision of Thibault, 15.11.2026)
 function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-// again: the core's second click (and its « a click elsewhere drops the move ») covers every move prepared but a push
-// tried, which locks the board (see onCell, again())
-const GAME={id:'siam',again:mv=>!(shown&&shown.ms&&SM.legal(shown.ms,String(mv))&&isPush(shown.ms,String(mv))),seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
+// again: the core's second click (and its « a click elsewhere drops the move ») covers every move prepared; on the board, a
+// push tried is dropped by any other click without starting another move (see dropPush)
+const GAME={id:'siam',again:()=>true,seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
   size:5,codeTag:'SIAM1',i18n:SM_I18N,
   rules:()=>({}),form:()=>({}),
   replay:(r,m)=>replayKept(r,m,{init:()=>SM.init(),
