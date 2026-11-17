@@ -1056,7 +1056,7 @@ function ask(st,opt,cb0){const xo=GAME.aiOpt?GAME.aiOpt(view):{};opt={...opt,...
   clearTimeout(slowT);aiSlow=false;slowT=setTimeout(()=>{if(over||!aiNow)return;aiSlow=true;if(view)renderGame();},AI_SLOW_MS);
   // « Play now »: the search is dropped; its best move so far, or the first level's answer
   aiNow=()=>{if(over)return;killAI();clearTimeout(slowT);aiSlow=false;aiNow=null;if(best){cb(best);return;}
-    const lo=GAME.levels&&Object.values(GAME.levels)[0];if(view)renderGame();
+    const lo=GAME.levels&&Object.values(GAME.levels).find(o=>!o.random);   // the lowest level that searches (not the random one)if(view)renderGame();
     try{worker=makeWorker();const id=++reqId;cbs[id]=cb;worker.postMessage({st:msg.st,opt:{...lo,...xo},id});}catch(e){worker=null;cb(null);}};
   const k=parN(opt);if(k>1&&typeof Worker!=='undefined'){try{askPar(msg,k,cb);return;}catch(e){for(const w of pool)w.terminate();pool=[];}}
   try{if(!worker)worker=makeWorker();msg.id=++reqId;cbs[msg.id]=cb;prog[msg.id]=p=>{best=p;};worker.postMessage(msg);}
