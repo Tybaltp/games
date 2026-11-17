@@ -257,7 +257,7 @@ function VoloEngine(){
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",mq_p1:"Orange",mq_p2:"Bleu",
- lvd_g1:"un coup d'avance",lvd_gr:"un coup d'avance, avec une part de hasard",lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",st_autoPass:"Aucun coup possible : vous passez.",
+ lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",l_pass:"passe",w_pass:"les deux joueurs ont passé",ht_1:"<b>Ajouter un oiseau</b> Cliquer un emplacement légal.",ht_2:"<b>Faire voler un oiseau</b> Sélectionner et cliquer sur la destination.",ht_3:"<b>Faire voler une ligne</b> Cliquer aux deux extrémités. Choisir la destination.",rules:`<summary>Règles en bref</summary><ul>
  <li><b>Plateau</b> : un hexagone de 7 points de côté, privé de ses 6 coins et de son centre (120 points).</li>
  <li><b>But</b> : réunir tous ses oiseaux en une seule nuée, des oiseaux qui se touchent de proche en proche. Les oiseaux sont illimités. Au départ, 3 oiseaux par camp sont dans les six nids, un point à l'intérieur de chaque coin retiré, en alternance. Orange commence.</li>
@@ -270,7 +270,7 @@ const VO_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",mq_p1:"Orange",mq_p2:"Blue",
- lvd_g1:"one move ahead",lvd_gr:"one move ahead, with some randomness",lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",st_autoPass:"No move available: you pass.",
+ lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game, colours swapped.",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",l_pass:"pass",w_pass:"both players passed",ht_1:"<b>Add a bird</b> Click a legal point.",ht_2:"<b>Fly a bird</b> Select it and click its destination.",ht_3:"<b>Fly a line</b> Click both ends. Choose the destination.",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Board</b>: a hexagon with 7 points per side, without its 6 corners and its centre (120 points).</li>
  <li><b>Goal</b>: bring all your birds together into a single flock, birds touching one another from neighbour to neighbour. Birds are unlimited. At the start, 3 birds per side are in the six nests, one point inside each removed corner, alternating. Orange plays first.</li>
@@ -283,7 +283,7 @@ const VO_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
 },es:{
  mq_q:"¿Quieres jugar con Naranja (primero) o con Azul?",mq_1:"Naranja",mq_2:"Azul",mq_p1:"con Naranja",mq_p2:"con Azul",
- lvd_g1:"una jugada de antelación",lvd_gr:"una jugada de antelación, con algo de azar",lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",st_autoPass:"Ninguna jugada posible: pasas.",
+ lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",st_autoPass:"Ninguna jugada posible: pasas.",
  needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",l_pass:"pasa",w_pass:"los dos jugadores han pasado",ht_1:"<b>Añadir un pájaro</b> Haz clic en un punto legal.",ht_2:"<b>Hacer volar un pájaro</b> Selecciónalo y haz clic en el destino.",ht_3:"<b>Hacer volar una línea</b> Haz clic en los dos extremos. Elige el destino.",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Tablero</b>: un hexágono de 7 puntos de lado, sin sus 6 esquinas ni su centro (120 puntos).</li>
  <li><b>Objetivo</b>: reunir todos sus pájaros en una sola bandada, pájaros que se tocan de vecino en vecino. Los pájaros son ilimitados. Al principio, 3 pájaros por bando están en los seis nidos, un punto hacia dentro de cada esquina retirada, alternándose. Naranja empieza.</li>
@@ -755,6 +755,8 @@ const KS=AISearch({moves,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,p
 // the root: every move, ordered by the evaluation after it (exact, unlike the policy below the root)
 function rootMoves(S){const p=S[TM];return moves(S,0).map(x=>{const T=play(S,x.m);return {m:x.m,s:T[WN]>=0?result(T,p):evalS(T,p)+x.s*.01};}).sort((a,b)=>b.s-a.s);}
 function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
+  if(opt.random){const L=gen(S);if(!L.length)return null;   // level 0: a legal move at random, as the network's search draws them
+    return {move:mvOf(L[(Math.random()*L.length)|0]),score:0,depth:0,forced:L.length===1,policy:true,nodes:0};}
   KS.start(opt.nodes);const C=opt.algo==='greedy'&&!opt.exact?moves(S,0):rootMoves(S);if(!C.length)return null;let r;
   if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
   else if(C[0].s>=1000)r={m:C[0].m,s:C[0].s,depth:1};   // a win now
@@ -1046,30 +1048,31 @@ return {search, load, X, Search};
 // 500 to 1000 network evaluations a second on a recent computer; no time cap, 16.11.2026: a slower device takes longer
 // and plays the same) · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
 const NN_NET='volo-net.onnx?v=130';
-// The ladder (10.11.2026, network n° 112, outils/aitools/nn/volo_niveaux.sh, 300 games a pair, res/volo112/niveaux.md):
-// each level beats the one below by 74-78 % (wins + half the draws, ±5); level 10, the strongest, beats 9 by 83 %.
-// Network n° 130 since 13.11.2026 (64 % against n° 112 over 200 games), the last one: same levels, not re-measured.
-// The network levels play without randomness (temp 0): with a little (.3), few simulations lose much of their strength.
+// The ladder (v1, network n° 130, 17.11.2026, outils/aitools/res/volo/niveaux.md, 100 to 300 games a pair): each level
+// beats the one below by 65-83 % (wins + half the draws), and the one two below by 85 % or more. Level 0: a legal move
+// at random. Levels 1 to 3: one simulation, the move drawn from the network's policy at temperature temp (Search.pick).
 // MCTS3, the former 3 s level: what answers when the network cannot load; its simulations are what the reference Mac
 // (M3 Pro) did in those 3 s (outils/aitools/res/budgets-2026-11-16.md).
 const MCTS3={algo:'mcts',sims:3000,cut:0,cellsIn:12,scale:1,c:.5};
 const LEVELS={
-  l0:{algo:'greedy',temp:.6},
-  l1:{algo:'greedy',exact:1,temp:.7},
-  l2:{algo:'nn',sims:1,net:NN_NET},
-  l3:{algo:'nn',sims:6,net:NN_NET},
-  l4:{algo:'nn',sims:10,net:NN_NET},
-  l5:{algo:'nn',sims:22,net:NN_NET},
-  l6:{algo:'nn',sims:50,net:NN_NET},
-  l7:{algo:'nn',sims:130,net:NN_NET},
-  l8:{algo:'nn',sims:300,net:NN_NET},
-  l9:{algo:'nn',sims:700,net:NN_NET},
-  l10:{algo:'nn',sims:3000,net:NN_NET}};
+  l0:{random:true},
+  l1:{algo:'nn',sims:1,temp:1.5,net:NN_NET},
+  l2:{algo:'nn',sims:1,temp:.9,net:NN_NET},
+  l3:{algo:'nn',sims:1,temp:.6,net:NN_NET},
+  l4:{algo:'nn',sims:1,net:NN_NET},
+  l5:{algo:'nn',sims:6,net:NN_NET},
+  l6:{algo:'nn',sims:10,net:NN_NET},
+  l7:{algo:'nn',sims:22,net:NN_NET},
+  l8:{algo:'nn',sims:50,net:NN_NET},
+  l9:{algo:'nn',sims:130,net:NN_NET},
+  l10:{algo:'nn',sims:300,net:NN_NET},
+  l11:{algo:'nn',sims:700,net:NN_NET},
+  l12:{algo:'nn',sims:3000,net:NN_NET}};
 const HINT={algo:'nn',sims:2000,net:NN_NET};   // the simulations of 5 s at most on the reference Mac
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
-const levelDesc=o=>o.algo==='nn'?(o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims]):[o.pick>1||o.temp?'lvd_gr':'lvd_g1'];
+const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
 function voEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(r.policy)return null;if(s>=1000||s>4)return {k:'ai_win'};if(s<=-1000||s<-4)return {k:'ai_lost'};
