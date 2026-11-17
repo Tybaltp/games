@@ -798,8 +798,17 @@ const PS=blank();
 let TELL=false;
 const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>S.tm,done:S=>S.ph===3,result:final,eval:evalS,
   playout:(S,o)=>playout(S,o,o.cut||0),scratch:S=>copyInto(PS,S),best:r=>{if(TELL)aiBest({move:toMove(r.m),score:r.s,depth:r.depth});}});
+// random (level 0), as outils/aitools/budget/ladder.js: the colour choice and the opening's two tiles at random; then a
+// move drawn uniformly among the legal squares and bridges (a square: the second tile at random among those then legal)
+function rnd(S){const R=a=>a[(Math.random()*a.length)|0],o=m=>({move:m,score:0,depth:0,random:true});
+  if(S.ph===1)return o({t:R(['L','D'])});
+  if(S.ph===0){const a=R(cellsOf(S,1));S.c[a]=1;return o({t:'t',cells:[a,R(cellsOf(S,1))]});}
+  const p=S.tm,C=cellsOf(S,p),B=bridgesOf(S,p),k=(Math.random()*(C.length+B.length))|0;if(!C.length&&!B.length)return o({t:'x'});
+  if(k>=C.length){const e=B[k-C.length];return o({t:'b',a:EA[e],b:EB[e]});}
+  S.c[C[k]]=p;const C2=cellsOf(S,p);return o({t:'t',cells:C2.length?[C[k],R(C2)]:[C[k]]});}
 function search(P,opt){const S=fromPos(P);let r;
   if(S.ph===3)return null;
+  if(opt.random)return rnd(S);
   if(S.ph===0)r=opening(S,opt);else if(S.ph===1)r=pie(S,opt);
   else{K.start(opt.nodes);const C=gen(S,opt.cells||20);if(!C.length)return {move:{t:'x'},score:0,depth:0,forced:true};
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
@@ -841,31 +850,32 @@ return {search,fromPos,gen,play,copy,evalS,final,score,canP,canB,cellsOf,bridges
 // playout turns that build a bridge when one is useful · temp, final choice by visits^(1/temp) (0: most visited) ·
 // pwC, pwA, progressive widening: pwC·(visits+1)^pwA children · c, UCT exploration · cut, playout turns before
 // evaluating (0: to the end) · scale, evaluation points per logit.
-// The ladder (10.11.2026, outils/aitools/res/pontedeldiavolo/niveaux.md, 300 games a pair): each level beats the one
-// below by 74-78 % (draws count half). A level is an amount of work, never a time (16.11.2026): the former caps (1 to 8 s)
-// were never reached on the reference Mac (M3 Pro) below level 9, whose simulations are what that Mac did in its former
-// 10 s (outils/aitools/res/budgets-2026-11-16.md).
+// The ladder (v1, 17.11.2026, outils/aitools/res/pontedeldiavolo/niveaux.md): each level beats the one below by
+// 74-82 % (draws count half; level 1 beats random play by 94 %), and the one two below by 90 % or more. random = a
+// random legal move. A level is an amount of work, never a time (16.11.2026). Hints: level 9, the highest whose median
+// move stays within 5 s on the reference Mac (1.2 s; level 10: 10 s, outils/aitools/res/budgets-2026-11-16.md).
 const MC={algo:'mcts',cells:20,cellsIn:10,pwC:2,pwA:.45,cut:4,rand:.3,brP:.5,scale:2,temp:0};
 const LEVELS={
-  l0:{algo:'greedy',cells:20,temp:1000},
-  l1:{algo:'greedy',cells:20,temp:1.7},
-  l2:{algo:'greedy',cells:20,temp:.8},
-  l3:{algo:'greedy',cells:20,temp:.45},
-  l4:{algo:'greedy',cells:20,temp:.21},
-  l5:{algo:'beam',depth:2,cells:16,widths:[10,10],noise:.5},
-  l6:{algo:'beam',depth:3,cells:16,widths:[8,6,6]},
-  l7:{...MC,sims:2000,c:.35},
-  l8:{...MC,sims:5000,c:.2},
-  l9:{...MC,sims:42000,c:.2}};   // l8 with the simulations of the former 10 s (12.11.2026, Thibault; not measured against l8)
-const HINT={...LEVELS.l8,sims:9500};   // level 8's search with the simulations of 5 s at most on the reference Mac
+  l0:{random:true},
+  l1:{algo:'greedy',cells:20,temp:1000},
+  l2:{algo:'greedy',cells:20,temp:1.7},
+  l3:{algo:'greedy',cells:20,temp:.8},
+  l4:{algo:'greedy',cells:20,temp:.45},
+  l5:{algo:'greedy',cells:20,temp:.21},
+  l6:{algo:'beam',depth:2,cells:16,widths:[10,10],noise:.5},
+  l7:{algo:'beam',depth:3,cells:16,widths:[8,6,6]},
+  l8:{...MC,sims:2000,c:.35},
+  l9:{...MC,sims:5000,c:.2},
+  l10:{...MC,sims:42000,c:.2}};
+const HINT={...LEVELS.l9};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const ENGINE={v:2,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
 const levelDesc=o=>o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
 const aiPos=st=>({cells:Array.from(st.cells),bridges:st.bridges.map(B=>[Math.min(B.a,B.b),Math.max(B.a,B.b),B.o]),phase:st.phase,toMove:st.toMove,finalTurn:st.finalTurn,colorA:st.colorA});
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: none for the opening and the colour choice; the score is in points of evaluation
-function pdEvalInfo(r,st){if(st.phase!=='play')return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
+function pdEvalInfo(r,st){if(st.phase!=='play'||r.random)return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
   return {k:Math.abs(s)<1?'ai_eq':s>0?(s>4?'ai_much':'ai_better'):(s<-4?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- « Comment jouer » (GAME.howto; the card itself: common/core.js) ----------
