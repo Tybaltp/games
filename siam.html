@@ -584,9 +584,15 @@ function chevron(x,y,d,two,code,title,zs){const g=el('g',{class:'arrow pt'+fr('c
   for(const z of zs)el('rect',{x:z[0],y:-z[2],width:z[1]-z[0],height:2*z[2],fill:'transparent'},g);el('title',{},g).textContent=title;}
 // the animal in hand: an open ring round its disc (the piece stands back by 5 in its square), open where it faces (d).
 // A move prepared or suggested: the same ring, and its square tinted (bare: the ring alone)
-function hand(i,d,pend,bare){const k=fr((pend?'p':'s')+i),R=39.5,cx=PX(i)-DV[d][0]*5,cy=PY(i)-DV[d][1]*5,A=ANG[d]*Math.PI/180,o=28*Math.PI/180;
+// An animal turned without moving (from: the way it faced): instead of the ring, a circular arrow on the same circle, from
+// its former direction to the new one (a quarter turn the short way, a half turn clockwise), its head short of the point
+function hand(i,d,pend,bare,from){const k=fr((pend?'p':'s')+i+(from||'')),R=39.5,cx=PX(i)-DV[d][0]*5,cy=PY(i)-DV[d][1]*5,A=ANG[d]*Math.PI/180,o=28*Math.PI/180;
   const P=a=>`${(cx+R*Math.cos(a)).toFixed(2)} ${(cy+R*Math.sin(a)).toFixed(2)}`;
   if(pend&&!bare)el('rect',{x:PX(i)-CS/2+4,y:PY(i)-CS/2+4,width:CS-8,height:CS-8,rx:12,class:'pendF'+k},gU);
+  if(from&&from!==d){const dl=((ANG[d]-ANG[from])%360+360)%360,sg=dl===270?-1:1,span=(dl===270?90:dl)*Math.PI/180,a0=ANG[from]*Math.PI/180,a1=a0+sg*(span-o);
+    const tx=cx+R*Math.cos(a1),ty=cy+R*Math.sin(a1),ux=-Math.sin(a1)*sg,uy=Math.cos(a1)*sg,nx=Math.cos(a1),ny=Math.sin(a1),f=v=>v.toFixed(2);   // u: the way the arrow runs, n: outwards
+    const head=`M ${f(tx-9*ux+6*nx)} ${f(ty-9*uy+6*ny)} L ${f(tx)} ${f(ty)} L ${f(tx-9*ux-6*nx)} ${f(ty-9*uy-6*ny)}`;
+    el('path',{d:`M ${P(a0)} A ${R} ${R} 0 ${span-o>Math.PI?1:0} ${sg>0?1:0} ${P(a1)} ${head}`,class:(pend?'pendS':'selS')+k,'stroke-linejoin':'round'},gU);return;}
   el('path',{d:`M ${P(A+o)} A ${R} ${R} 0 1 1 ${P(A-o)}`,class:(pend?'pendS':'selS')+k},gU);}
 // the position before the last move shown (its push is drawn on it)
 function lastPre(){const n=navAt===null?view.moves.length:navAt;return n>0?replay(view,view.moves.slice(0,n-1),null).st:null;}
@@ -611,11 +617,11 @@ function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.
   const last=shown?shown.d.last:null;
   if(view&&last&&!code&&!(mine&&prepared())){const pre=lastPre();mkQuiet=true;
     if(pre&&isPush(pre,last.code))pushTrace(pre,last.code);
-    else{if(last.kind!=='exit')hand(last.kind==='turn'?last.f:last.t,last.d,true);
+    else{if(last.kind!=='exit')hand(last.kind==='turn'?last.f:last.t,last.d,true,false,last.kind==='turn'&&pre&&pre.p[last.f]?pre.p[last.f].d:null);
       if(last.f>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:4.5,class:'lastD'},gU);}
     mkQuiet=false;}
   const alts=shown?altCells():new Map();for(const [i] of alts){el('circle',{cx:PX(i),cy:PY(i),r:12,class:'altC'},gU);if(!prepared())ptr.add(i);}
-  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')hand(e.kind==='turn'?e.f:e.t,e.d,true);}
+  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')hand(e.kind==='turn'?e.f:e.t,e.d,true,false,e.kind==='turn'?ms.p[e.f].d:null);}
   if(my){for(let i=0;i<25;i++)if(ms.p[i]&&ms.p[i].t===c&&!lock)ptr.add(i);
     // the entries: a bar in the border by each free edge square; a double chevron where an animal enters pushing
     if(!lock&&sel<0&&(!pend||inf.kind==='enter')&&ms.res[ms.turn]){const free=new Set();
@@ -632,7 +638,7 @@ function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.
         el('path',{d:`M ${cx-4} ${cy-4} L ${cx+4} ${cy+4} M ${cx+4} ${cy-4} L ${cx-4} ${cy+4}`,class:'nope'},gU);}}
     if(lock){pushTrace(ms,pend);ptr.add(inf.t);}   // a push tried: nothing else to touch
     else{const kind=inf?inf.kind:'',pc=!inf?sel:kind==='turn'?inf.f:kind==='exit'?-1:inf.t;   // the square where the animal in hand is shown
-      if(pc>=0){hand(pc,pend?inf.d:ms.p[sel].d,!!pend);if(pend)ptr.add(pc);}
+      if(pc>=0){hand(pc,pend?inf.d:ms.p[sel].d,!!pend,false,pend&&kind==='turn'?ms.p[inf.f].d:null);if(pend)ptr.add(pc);}
       if(sel>=0){const f=NM(sel),q=ms.p[sel],[x,y]=SM.xy(sel);
         if(pend&&kind!=='turn')el('circle',{cx:PX(sel),cy:PY(sel),r:4.5,class:'lastD'},gU);
         // moving: a ring on the free squares next to it
