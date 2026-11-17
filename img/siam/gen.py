@@ -7,11 +7,15 @@ anneau de 1550 à 1650, profil tourné vers la droite. La pièce est une pièce 
 claire décalée sous l'encre).
 - animal : la pièce a la forme d'un cercle prolongé par deux tangentes qui se rejoignent en pointe dans sa direction ;
   profil vers la droite pour une pièce tournée à droite ou en haut, en miroir sinon ; la lumière ne tourne pas.
+  Le « nez » (la part de la pointe hors du disque de la face) est peint dans la couleur sombre du bord, pour que la
+  direction se lise d'un coup d'œil (Thibault, 17.11.2026). Dans la page, la pièce recule un peu dans sa case
+  (recul), pour que disque et pointe y tiennent centrés.
 - rocher : pièce ronde, sans direction.
 
 Tous les réglages sont dans P ci-dessous. Lancer `python3 gen.py` régénère, à côté de ce fichier :
-- siam-art.js : les dessins et une fonction siamPiece(...) qui dessine une pièce dans un SVG de page, couleurs lues
-  dans les variables CSS de la page (thème clair et sombre, camps) ; c'est la sortie à utiliser dans siam.html ;
+- siam-art.js : les dessins et deux fonctions, siamSprite(...) (une pièce qui se déplace, tourne et s'efface : les
+  animations de la page) et siamPiece(...) (une pièce posée une fois), couleurs lues dans les variables CSS de la page
+  (thème clair et sombre, camps) ; c'est la sortie à utiliser dans siam.html ;
 - <pièce>-<direction>.svg et rocher.svg : les pièces en fichiers autonomes, couleurs par défaut ;
 - apercu.html : les pièces dessinées par siam-art.js (incrusté), à trois tailles ; s'ouvre dans un navigateur.
 Pour un nouveau dessin (autre rocher, autre animal) : le poser dans src/ au même format et l'ajouter à P['pieces'].
@@ -23,7 +27,9 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 P = {
     'face': 1790,             # rayon de la face, dans le cadre du dessin (l'anneau gravé finit à 1650)
     'bord': 23 / 20.8,        # rayon du bord / rayon de la face (proportion d'Arimaa)
-    'pointe': 1.2,            # distance de la pointe / rayon du bord : 1.414 = angle droit, plus petit = moins pointu
+    'pointe': 1.45,           # distance de la pointe / rayon du bord : 1.414 = angle droit, plus petit = moins pointu
+    'nez': True,              # la pointe de la face, hors du disque, peinte dans la couleur sombre du bord (c3)
+    'recul': 5 / 34,          # recul de la pièce dans sa case, en rayons du bord (siamSprite ; pas les fichiers SVG)
     'ombre': (0.6 / 23, 1.4 / 23, 0.28),   # décalage x, y (en rayons du bord) et opacité de l'ombre
     'gravure': (52, 70, 0.85),              # décalage x, y (unités du dessin) et opacité de la copie claire
     'lumiere': (0.38, 0.32, 0.78),          # face : centre x, y et rayon du dégradé, en fraction du carré de la face
@@ -74,6 +80,13 @@ def forme(r, angle, kind, dx=0.0, dy=0.0):
     return f'M {p(-t, r)} L {p(0, r*P["pointe"])} L {p(t, r)} A {r:.1f} {r:.1f} 0 1 1 {p(-t, r)} z'
 
 
+def nez(angle):
+    """Le nez : la pointe de la face, hors de son disque."""
+    r = P['face']; t = math.acos(1 / P['pointe']); a = math.radians(angle)
+    p = lambda u, q: f'{C+q*math.cos(a+u):.1f} {C+q*math.sin(a+u):.1f}'
+    return f'M {p(-t, r)} L {p(0, r*P["pointe"])} L {p(t, r)} A {r:.1f} {r:.1f} 0 0 0 {p(-t, r)} z'
+
+
 def piece_svg(nom, d):
     """Une pièce en SVG autonome, couleurs par défaut."""
     src, camp, kind = P['pieces'][nom]; c = P['couleurs'][camp]
@@ -90,6 +103,7 @@ def piece_svg(nom, d):
     a = DIRS.get(d, 0)
     corps = (f'<path fill="rgba(0,0,0,{oo})" d="{forme(RB, a, kind, RB*ox, RB*oy)}"/>'
              f'<path fill="url(#r)" d="{forme(RB, a, kind)}"/><path fill="url(#f)" d="{forme(RF, a, kind)}"/>'
+             + (f'<path fill="{c["c3"]}" d="{nez(a)}"/>' if kind == 'pointe' and P['nez'] else '') +
              f'<rect transform="translate({gx} {gy})" width="{TAILLE}" height="{TAILLE}" fill="{c["hi"]}" opacity="{go}" mask="url(#m)"/>'
              f'<rect width="{TAILLE}" height="{TAILLE}" fill="{c["k"]}" mask="url(#m)"/>')
     H = RB * (P['pointe'] if kind == 'pointe' else 1) + 140
@@ -97,12 +111,16 @@ def piece_svg(nom, d):
 
 
 JS = r'''// Pièces de Siam : généré par img/siam/gen.py, ne pas modifier à la main (changer les réglages de gen.py et relancer).
-// siamPiece(g, nom, dir, cx, cy, R, camp) dessine une pièce dans l'élément SVG g : nom 'elephant' | 'rhino' | 'rocher',
-// dir 'haut' | 'droite' | 'bas' | 'gauche' (ignorée pour le rocher), centre (cx, cy), R le rayon du bord (la pointe
-// dépasse de R × pointe), camp facultatif ('or', 'argent', 'roche' : sinon celui de la pièce). Couleurs : variables CSS
-// --siam-<camp>-hi | c1 | sh | c3 | k, valeurs par défaut sinon. En dessous de R = 16, ni ombre ni gravure (comme Arimaa).
+// siamSprite(g, nom, R, camp, centre) crée une pièce dans l'élément SVG g et rend {el, set} : nom 'elephant' | 'rhino' |
+// 'rocher', R le rayon du bord (la pointe dépasse de R × pointe), camp facultatif ('or', 'argent', 'roche' : sinon celui
+// de la pièce), centre vrai : sans recul (une miniature). set({x, y, ang, flip, op, sc}) la pose et la règle, autant de
+// fois qu'on veut (une animation) : centre (x, y), ang en degrés (0 = droite, 90 = bas, 180 = gauche, 270 = haut ; le
+// contour tourne, la lumière non), flip de 1 (profil à droite) à −1 (en miroir), op l'opacité, sc l'échelle.
+// siamPiece(g, nom, dir, cx, cy, R, camp) pose une pièce une fois : dir 'haut' | 'droite' | 'bas' | 'gauche' (ignorée
+// pour le rocher) ; rend son élément. Couleurs : variables CSS --siam-<camp>-hi | c1 | sh | c3 | k, valeurs par défaut
+// sinon ; le nez prend c3. En dessous de R = 16, ni ombre ni gravure (comme Arimaa).
 const SIAM_ART=__DATA__;
-function siamPiece(g,nom,dir,cx,cy,R,camp){
+function siamSprite(g,nom,R,camp,centre){
   const A=SIAM_ART,NS='http://www.w3.org/2000/svg',[,camp0,kind]=A.pieces[nom];camp=camp||camp0;
   if(!document.getElementById('siamDefs')){const v=c=>(k,o)=>`<stop offset="${o}" style="stop-color:var(--siam-${c}-${k},${A.couleurs[c][k]})"/>`;
     const C=A.C,RF=A.face,RB=RF*A.bord,[lx,ly,lr]=A.lumiere;
@@ -110,18 +128,30 @@ function siamPiece(g,nom,dir,cx,cy,R,camp){
       Object.keys(A.masques).map(n=>`<mask id="siamM-${n}" maskUnits="userSpaceOnUse" x="0" y="0" width="${A.T}" height="${A.T}"><rect width="${A.T}" height="${A.T}" fill="#000"/>${A.masques[n]}</mask>`).join('')+
       Object.keys(A.couleurs).map(c=>{const s=v(c);return `<radialGradient id="siamF-${c}" gradientUnits="userSpaceOnUse" cx="${C-RF+2*RF*lx}" cy="${C-RF+2*RF*ly}" r="${2*RF*lr}">${s('hi',0)}${s('c1',.5)}${s('sh',1)}</radialGradient>`+
         `<linearGradient id="siamR-${c}" gradientUnits="userSpaceOnUse" x1="${C-RB}" y1="${C-RB}" x2="${C+RB}" y2="${C+RB}">${s('hi',0)}${s('sh',.45)}${s('c3',1)}</linearGradient>`;}).join('')+'</defs></svg>');}
-  const C=A.C,RF=A.face,RB=RF*A.bord,k=R/RB,big=R>=16,ang=(A.dirs[dir]||0)*Math.PI/180;
-  const forme=(r,dx,dy)=>{dx=dx||0;dy=dy||0;if(kind==='rond')return `M ${C+dx-r} ${C+dy} a ${r} ${r} 0 1 0 ${2*r} 0 a ${r} ${r} 0 1 0 ${-2*r} 0 z`;
-    const t=Math.acos(1/A.pointe),p=(u,q)=>`${C+dx+q*Math.cos(ang+u)} ${C+dy+q*Math.sin(ang+u)}`;
-    return `M ${p(-t,r)} L ${p(0,r*A.pointe)} L ${p(t,r)} A ${r} ${r} 0 1 1 ${p(-t,r)} z`;};
+  const C=A.C,RF=A.face,RB=RF*A.bord,k=R/RB,big=R>=16,pt=kind==='rond'?0:A.pointe,rec=pt&&!centre?A.recul*RB:0;
+  const col=x=>`var(--siam-${camp}-${x},${A.couleurs[camp][x]})`,P=(a,dx,dy)=>(u,q)=>`${(C+dx+q*Math.cos(a+u)).toFixed(1)} ${(C+dy+q*Math.sin(a+u)).toFixed(1)}`;
+  // le contour : un cercle de rayon r prolongé par deux tangentes jusqu'à la pointe ; le nez : la pointe de la face, hors du disque
+  const forme=(r,a,dx,dy)=>{dx=dx||0;dy=dy||0;if(!pt)return `M ${C+dx-r} ${C+dy} a ${r} ${r} 0 1 0 ${2*r} 0 a ${r} ${r} 0 1 0 ${-2*r} 0 z`;
+    const t=Math.acos(1/pt),p=P(a,dx,dy);return `M ${p(-t,r)} L ${p(0,r*pt)} L ${p(t,r)} A ${r} ${r} 0 1 1 ${p(-t,r)} z`;};
+  const nez=a=>{const t=Math.acos(1/pt),p=P(a,0,0);return `M ${p(-t,RF)} L ${p(0,RF*pt)} L ${p(t,RF)} A ${RF} ${RF} 0 0 0 ${p(-t,RF)} z`;};
   const mk=(par,t,a)=>{const e=document.createElementNS(NS,t);for(const x in a)e.setAttribute(x,a[x]);par.appendChild(e);return e;};
-  const gr=mk(g,'g',{transform:`translate(${cx-C*k} ${cy-C*k}) scale(${k})`}),[ox,oy,oo]=A.ombre,[gx,gy,go]=A.gravure;
-  if(big)mk(gr,'path',{d:forme(RB,RB*ox,RB*oy),fill:`rgba(0,0,0,${oo})`});
-  mk(gr,'path',{d:forme(RB),fill:`url(#siamR-${camp})`});mk(gr,'path',{d:forme(RF),fill:`url(#siamF-${camp})`});
-  const art=kind!=='rond'&&A.miroir.includes(dir)?mk(gr,'g',{transform:`translate(${2*C} 0) scale(-1 1)`}):gr,col=x=>`var(--siam-${camp}-${x},${A.couleurs[camp][x]})`;
-  if(big)mk(art,'rect',{width:A.T,height:A.T,transform:`translate(${kind!=='rond'&&A.miroir.includes(dir)?-gx:gx} ${gy})`,mask:`url(#siamM-${nom})`,opacity:go,style:`fill:${col('hi')}`});
+  const el=mk(g,'g',{}),gr=mk(mk(el,'g',{transform:`scale(${k}) translate(${-C} ${-C})`}),'g',{}),[ox,oy,oo]=A.ombre,[gx,gy,go]=A.gravure;
+  const om=big?mk(gr,'path',{fill:`rgba(0,0,0,${oo})`}):null,rim=mk(gr,'path',{fill:`url(#siamR-${camp})`}),face=mk(gr,'path',{fill:`url(#siamF-${camp})`});
+  const nz=pt&&A.nez?mk(gr,'path',{style:`fill:${col('c3')}`}):null,art=mk(gr,'g',{});
+  const eng=big?mk(art,'rect',{width:A.T,height:A.T,mask:`url(#siamM-${nom})`,opacity:go,style:`fill:${col('hi')}`}):null;
   mk(art,'rect',{width:A.T,height:A.T,mask:`url(#siamM-${nom})`,style:`fill:${col('k')}`});
-  return gr;}
+  let la=null,lf=null;
+  function set(s){el.setAttribute('transform',`translate(${(+s.x).toFixed(2)} ${(+s.y).toFixed(2)})`+(s.sc!==undefined&&s.sc!==1?` scale(${(+s.sc).toFixed(3)})`:''));
+    if(s.op===undefined||s.op===1)el.removeAttribute('opacity');else el.setAttribute('opacity',(+s.op).toFixed(3));
+    const ang=pt?s.ang||0:0;if(ang!==la){la=ang;const a=ang*Math.PI/180;
+      if(om)om.setAttribute('d',forme(RB,a,RB*ox,RB*oy));rim.setAttribute('d',forme(RB,a));face.setAttribute('d',forme(RF,a));if(nz)nz.setAttribute('d',nez(a));
+      if(rec)gr.setAttribute('transform',`translate(${(-rec*Math.cos(a)).toFixed(1)} ${(-rec*Math.sin(a)).toFixed(1)})`);}
+    let f=!pt||s.flip===undefined?1:s.flip;if(Math.abs(f)<.03)f=f<0?-.03:.03;
+    if(f!==lf){lf=f;if(f===1)art.removeAttribute('transform');else art.setAttribute('transform',`translate(${(C*(1-f)).toFixed(1)} 0) scale(${f.toFixed(3)} 1)`);
+      if(eng)eng.setAttribute('transform',`translate(${f<0?-gx:gx} ${gy})`);}}
+  return {el,set};}
+function siamPiece(g,nom,dir,cx,cy,R,camp){const A=SIAM_ART,s=siamSprite(g,nom,R,camp);
+  s.set({x:cx,y:cy,ang:A.dirs[dir]||0,flip:A.miroir.includes(dir)?-1:1});return s.el;}
 '''
 
 APERCU = '''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -139,7 +169,8 @@ const g=document.getElementById('s'),D=['haut','droite','bas','gauche'];
 '''
 
 if __name__ == '__main__':
-    data = {'C': C, 'T': TAILLE, 'face': P['face'], 'bord': P['bord'], 'pointe': P['pointe'], 'ombre': P['ombre'],
+    data = {'C': C, 'T': TAILLE, 'face': P['face'], 'bord': P['bord'], 'pointe': P['pointe'], 'nez': P['nez'], 'recul': P['recul'],
+            'ombre': P['ombre'],
             'gravure': P['gravure'], 'lumiere': P['lumiere'], 'couleurs': P['couleurs'], 'dirs': DIRS,
             'miroir': list(MIROIR), 'pieces': P['pieces'],
             'masques': {n: uniques(masque(v[0]), '-siam-' + n) for n, v in P['pieces'].items()}}

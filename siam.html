@@ -9,34 +9,52 @@
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
 <link rel="stylesheet" href="common/games.css?v=53">
 <style>
-/* Siam palette (light, dark), board, animals and rocks; the shared layout is in common/games.css */
+/* Siam: palette « Savane » (light, dark), board, markers, players' cards; the shared layout is in common/games.css.
+   --act: the one colour of everything that is touched (chevrons, tinted squares, entry bars, exit slot, frame of the
+   animal in hand); --rim: the border round the board. The pieces keep their own colours (img/siam/gen.py). */
 :root{
   --bg:#e6dccb;--panel:#f3eee4;--ink:#272219;--muted:#6b6152;--line:#d3c6b0;
   --accent:#a0522d;--accent-ink:#ffffff;--danger:#b3261e;
-  --cell:#efe4cc;--cell2:#e6d8bb;--cell-e:#c9b48e;--lab:#8a7656;
-  --ele:#d9ab3a;--ele-e:#6b4b10;--rhi:#b7c1c9;--rhi-e:#3d474f;--rock:#9b958c;--rock-e:#5c5852;--mk:#272219;--sel:#2f6fd6;
+  --cell:#efe4cc;--cell2:#e7d9bc;--cell-e:#cbb892;--rim:#dccdb2;--rim-e:#c4b08a;--lab:#8a7656;
+  --ele:#d9ab3a;--ele-e:#6b4b10;--rhi:#b7c1c9;--rhi-e:#3d474f;--mk:#272219;--act:#17727c;--tint:.2;
   --board-ar:1/1;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#191612;--panel:#231f19;--ink:#ece6da;--muted:#a39a8a;--line:#3a3329;
   --accent:#e0915f;--accent-ink:#1f120a;--danger:#ef8579;
-  --cell:#3a3328;--cell2:#332d23;--cell-e:#574c3b;--lab:#a3937a;
-  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}}
+  --cell:#3a3328;--cell2:#342d23;--cell-e:#574c3b;--rim:#26211a;--rim-e:#453c2e;--lab:#a3937a;
+  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--mk:#f3ede0;--act:#74cdd0;color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#191612;--panel:#231f19;--ink:#ece6da;--muted:#a39a8a;--line:#3a3329;
   --accent:#e0915f;--accent-ink:#1f120a;--danger:#ef8579;
-  --cell:#3a3328;--cell2:#332d23;--cell-e:#574c3b;--lab:#a3937a;
-  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--rock:#8c867c;--rock-e:#d6d0c4;--mk:#f3ede0;--sel:#6aa2f5;color-scheme:dark;}
+  --cell:#3a3328;--cell2:#342d23;--cell-e:#574c3b;--rim:#26211a;--rim-e:#453c2e;--lab:#a3937a;
+  --ele:#d9ab3a;--ele-e:#f8e4a4;--rhi:#b7c1c9;--rhi-e:#fbfdfe;--mk:#f3ede0;--act:#74cdd0;color-scheme:dark;}
 .board,html.ingame:not(.wide) .board{--bp:0px;padding:0;background:transparent;border:0;border-radius:8px;overflow:hidden}
 .board .pt{cursor:pointer}
-.arrow .ahit{fill:var(--cell);stroke:var(--sel);stroke-width:2;opacity:.9}.arrow .ashape{fill:var(--sel);stroke:none}
-.arrow.on .ahit{fill:var(--sel);opacity:1}.arrow.on .ashape{fill:var(--cell)}
-@media (hover:hover){.arrow:hover .ahit{stroke-width:3.5}}
-/* players' cards: the camp, its animals in reserve */
+/* the markers: chevrons (> turns, >> pushes), tinted squares (moving), bars (entering), dotted slot (leaving), frame of
+   the animal in hand, brackets of the last move */
+.chev,.trail{fill:none;stroke:var(--act);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}.trail{opacity:.55}
+.chevh{fill:none;stroke:var(--cell);stroke-width:14;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
+@media (hover:hover){.arrow:hover .chev{stroke-width:9.5}}
+.tint,.selF,.slotF{fill:var(--act);opacity:var(--tint)}.tdot{fill:var(--act);opacity:.75}
+.selS{fill:none;stroke:var(--act);stroke-width:3.5}.pendS{fill:none;stroke:var(--act);stroke-width:4.5}
+.bar{fill:var(--act);opacity:.5}
+.slotS{fill:none;stroke:var(--act);stroke-width:3;stroke-dasharray:6 5;stroke-linecap:round}
+.lastB{fill:none;stroke:var(--mk);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}.lastD{fill:var(--mk);opacity:.5}
+.altC{fill:none;stroke:var(--mk);stroke-width:3}
+.nope{fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;opacity:.65}
+/* a push tried locks the board: a click elsewhere makes « Reset » tremble */
+@keyframes siamNudge{0%,100%{transform:none}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.notice button.nudge{animation:siamNudge .45s;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 40%,transparent)}
+@media (prefers-reduced-motion:reduce){.notice button.nudge{animation:none}}
+/* players' cards: the camp, its animals in reserve as small pieces (dots when the drawings are not loaded) */
+.player .dot.art{width:auto;height:auto;border:0;border-radius:0;background:none;display:inline-flex;vertical-align:middle;margin-right:5px}
+.player svg.pm{display:block;flex:none;overflow:visible}
+.player .resv{display:flex;align-items:center;gap:1px;font-size:.74rem;color:var(--muted)}
+.player .resv .vide{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:2.4 2.4;opacity:.75}
 .dot.cmp{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
 .cmp.e{background:var(--ele);border:1.5px solid var(--ele-e)}.cmp.r{background:var(--rhi);border:1.5px solid var(--rhi-e)}
-.player .resv{display:flex;align-items:center;gap:3px;font-size:.74rem;color:var(--muted)}
-.player .resv i{display:inline-block;width:10px;height:10px;border-radius:50%;box-sizing:border-box;border:1px dashed var(--muted)}
+.player .resv i{display:inline-block;width:10px;height:10px;margin-right:2px;border-radius:50%;box-sizing:border-box;border:1px dashed var(--muted)}
 .player .resv i.on.e{background:var(--ele);border:1px solid var(--ele-e)}.player .resv i.on.r{background:var(--rhi);border:1px solid var(--rhi-e)}
 ol.log li{align-items:center}
 ol.log .smm{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
@@ -171,7 +189,7 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 <script src="common/core.js?v=93"></script>
 <script src="common/codes.js?v=8"></script>
 <script src="common/ai.js?v=3"></script>
-<script src="img/siam/siam-art.js?v=1"></script>
+<script src="img/siam/siam-art.js?v=2"></script>
 <script>
 // ===== Siam (Didier Dhorbait, Ferti, 2005) =====
 // Rules kept (from memory and public summaries; to be checked against the publisher's rules): a 5 × 5 board; three rocks
@@ -283,12 +301,14 @@ const SM_I18N={fr:{
  needConfirm:"Confirmer chaque coup",
  camp0:"Éléphants",camp1:"Rhinocéros",an0:"éléphant",an1:"rhinocéros",resv:"{n} en réserve",
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"Nord",dEl:"Est",dSl:"Sud",dWl:"Ouest",
- enter:"Faire entrer",enterT:"Faire entrer un animal de la réserve sur une case du bord",exit:"Sortir",exitT:"Sortir cet animal du plateau (il retourne en réserve)",
- st_play:"À vous ({camp}) : choisissez un animal, ou faites-en entrer un.",st_playN:"{name} ({c}) : choisissez un animal, ou faites-en entrer un.",
- st_enter:"Choisissez une case du bord (points marqués).",st_sel:"Avancez-le (points marqués), tournez-le ou poussez (flèches, double pour pousser), ou sortez-le s'il est au bord.",pushT:"Pousser vers le {d}",
+ enterAt:"Entrer en {t}",exitT:"Sortir cet animal du plateau (il retourne en réserve)",turnT:"Tourner vers le {d}",pushT:"Pousser vers le {d}",
+ st_play:"À vous ({camp}) : choisissez un animal, ou une case du bord pour entrer.",st_playN:"{name} ({c}) : choisissez un animal, ou une case du bord pour entrer.",
+ st_play0:"À vous ({camp}) : choisissez un animal.",st_playN0:"{name} ({c}) : choisissez un animal.",
+ st_sel:"Avancez (cases teintées), tournez (>) ou poussez (>>).",st_selX:" Ou sortez (pointillé).",
  st_turnC:"Au trait : {name} ({c}).",
  lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
- p_dir:"{m} ; choisissez l'orientation (flèches), puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
+ p_dir:"{m} ; choisissez l'orientation (chevrons), puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
+ p_push:"Poussée essayée, {m} : confirmez ou réinitialisez.",
  d_enter:"entre en {t}, {d}",d_enterP:"entre en {t} en poussant, {d}",d_turn:"{f} tourne : {d}",d_exit:"{f} sort",d_move:"{f} → {t}, {d}",d_push:"{f} pousse vers {t}",
  l_out:"sort {x}",w_rock:"un rocher est sorti",
  boardLbl:"Plateau de Siam",
@@ -304,12 +324,14 @@ const SM_I18N={fr:{
  needConfirm:"Confirm each move",
  camp0:"Elephants",camp1:"Rhinoceroses",an0:"elephant",an1:"rhino",resv:"{n} in reserve",
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"North",dEl:"East",dSl:"South",dWl:"West",
- enter:"Bring in",enterT:"Bring an animal from the reserve onto an edge square",exit:"Leave",exitT:"Take this animal off the board (back to the reserve)",
- st_play:"Your move ({camp}): choose an animal, or bring one in.",st_playN:"{name} ({c}): choose an animal, or bring one in.",
- st_enter:"Choose an edge square (marked points).",st_sel:"Move it (marked points), turn it or push (arrows, double to push), or take it off from the edge.",pushT:"Push {d}",
+ enterAt:"Enter on {t}",exitT:"Take this animal off the board (back to the reserve)",turnT:"Turn {d}",pushT:"Push {d}",
+ st_play:"Your move ({camp}): choose an animal, or an edge square to enter.",st_playN:"{name} ({c}): choose an animal, or an edge square to enter.",
+ st_play0:"Your move ({camp}): choose an animal.",st_playN0:"{name} ({c}): choose an animal.",
+ st_sel:"Move (tinted squares), turn (>) or push (>>).",st_selX:" Or leave (dotted slot).",
  st_turnC:"To move: {name} ({c}).",
  lvd_g1r:"one move ahead, at random among the best",lvd_beam:"{n} moves ahead, on the best candidates",
- p_dir:"{m}; choose the direction (arrows), then confirm.",p_mv:"{m}.",confirm1:"Confirm",
+ p_dir:"{m}; choose the direction (chevrons), then confirm.",p_mv:"{m}.",confirm1:"Confirm",
+ p_push:"Push tried, {m}: confirm or reset.",
  d_enter:"enters on {t}, {d}",d_enterP:"enters on {t} pushing, {d}",d_turn:"{f} turns: {d}",d_exit:"{f} leaves",d_move:"{f} → {t}, {d}",d_push:"{f} pushes towards {t}",
  l_out:"{x} off",w_rock:"a rock was pushed off",
  boardLbl:"Siam board",
@@ -325,12 +347,14 @@ const SM_I18N={fr:{
  needConfirm:"Confirmar cada jugada",
  camp0:"Elefantes",camp1:"Rinocerontes",an0:"elefante",an1:"rinoceronte",resv:"{n} en reserva",
  dN:"↑",dE:"→",dS:"↓",dW:"←",dNl:"Norte",dEl:"Este",dSl:"Sur",dWl:"Oeste",
- enter:"Hacer entrar",enterT:"Hacer entrar un animal de la reserva en una casilla del borde",exit:"Sacar",exitT:"Sacar este animal del tablero (vuelve a la reserva)",
- st_play:"Te toca ({camp}): elige un animal, o haz entrar uno.",st_playN:"{name} ({c}): elige un animal, o haz entrar uno.",
- st_enter:"Elige una casilla del borde (puntos marcados).",st_sel:"Avánzalo (puntos marcados), gíralo o empuja (flechas, doble para empujar), o sácalo si está en el borde.",pushT:"Empujar hacia el {d}",
+ enterAt:"Entrar en {t}",exitT:"Sacar este animal del tablero (vuelve a la reserva)",turnT:"Girar hacia el {d}",pushT:"Empujar hacia el {d}",
+ st_play:"Te toca ({camp}): elige un animal, o una casilla del borde para entrar.",st_playN:"{name} ({c}): elige un animal, o una casilla del borde para entrar.",
+ st_play0:"Te toca ({camp}): elige un animal.",st_playN0:"{name} ({c}): elige un animal.",
+ st_sel:"Avanza (casillas teñidas), gira (>) o empuja (>>).",st_selX:" O sal (hueco punteado).",
  st_turnC:"Turno: {name} ({c}).",
  lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
- p_dir:"{m}; elige la orientación (flechas) y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
+ p_dir:"{m}; elige la orientación (cheurones) y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
+ p_push:"Empuje probado, {m}: confirma o reinicia.",
  d_enter:"entra en {t}, {d}",d_enterP:"entra en {t} empujando, {d}",d_turn:"{f} gira: {d}",d_exit:"{f} sale",d_move:"{f} → {t}, {d}",d_push:"{f} empuja hacia {t}",
  l_out:"sale {x}",w_rock:"ha salido una roca",
  boardLbl:"Tablero de Siam",
@@ -357,151 +381,257 @@ function logNode(e){const s=document.createElement('span');s.className='smm';con
 function logText(e){return e.code;}
 
 // ---------- the move being prepared ----------
-// ui.f: the animal selected (-1), ui.enter: entering from the reserve, ui.t: the square chosen, ui.d: the direction chosen,
-// ui.pending: the code of the complete move (core's Confirm)
-const newUi=()=>({f:-1,enter:false,t:-1,d:'',pending:null,hover:-1});
-const prepared=()=>ui.f>=0||ui.enter||!!ui.pending;
-function clearPrep(){ui.f=-1;ui.enter=false;ui.t=-1;ui.d='';ui.pending=null;}
+// ui.f: the animal in hand (-1), ui.pending: the code of the move prepared (core's Confirm), shown played on the board.
+// Everything is done on the board (Thibault, 17.11.2026): no button to enter or to leave. Changes of mind are free, except
+// after a push tried: the board is locked then, only Confirm (or the pusher touched again) and Reset remain.
+const newUi=()=>({f:-1,pending:null,hover:-1});
+const prepared=()=>ui.f>=0||!!ui.pending;
+function clearPrep(){ui.f=-1;ui.pending=null;}
 function cancelPrep(){clearPrep();ui.hover=-1;renderGame();}
 const confirmOn=()=>$('needConfirm').checked;
 let shown=null,lmCache={key:'',list:[]};
 function moves(st){const k=JSON.stringify(st.p)+st.turn+st.res;if(lmCache.key!==k)lmCache={key:k,list:SM.legalMoves(st)};return lmCache.list;}
-// the squares the animal selected (or one entering) can go to
-function targets(st){const L=moves(st),out=new Set();
-  for(const m of L){const e=SM.info(m);if(ui.enter&&e.kind==='enter')out.add(e.t);else if(ui.f>=0&&e.kind==='move'&&e.f===ui.f)out.add(e.t);}
-  return [...out];}
-const prefix=()=>ui.enter?'+'+NM(ui.t):NM(ui.f)+'-'+NM(ui.t);
-// the directions allowed for the move chosen (one for a push)
-const dirsFor=st=>'NESW'.split('').filter(d=>moves(st).includes(prefix()+d));
+// a push: a move or an entry onto an occupied square (on the position before the move)
+const isPush=(st,code)=>{const e=SM.info(code);return (e.kind==='enter'||e.kind==='move')&&!!st.p[e.t];};
+const lockedOn=st=>!!ui.pending&&!!SM.legal(st,ui.pending)&&isPush(st,ui.pending);
+// the sides of the board an edge square touches
+const outward=i=>{const[x,y]=SM.xy(i),o=[];if(y===0)o.push('S');if(y===4)o.push('N');if(x===0)o.push('W');if(x===4)o.push('E');return o;};
+// what a move displaces: [{from (square, −1: the reserve), to (square, −1: off the board), d (its new direction), dir (the
+// way it leaves), side (the side it enters from), exit (it leaves by itself), t (the camp entering)}]
+function effects(st,code){const e=SM.info(code),out=[];
+  const shift=(line,d)=>{for(const i of line){const[x,y]=SM.xy(i);out.push({from:i,to:SM.at(x+SM.DIRS[d][0],y+SM.DIRS[d][1]),dir:d});}};
+  if(e.kind==='turn')out.push({from:e.f,to:e.f,d:e.d});
+  else if(e.kind==='exit')out.push({from:e.f,to:-1,dir:outward(e.f)[0],exit:true});
+  else if(e.kind==='enter'){const occ=!!st.p[e.t],o=outward(e.t);if(occ)shift(SM.pushLine(st,e.t,e.d),e.d);
+    out.push({from:-1,to:e.t,d:e.d,t:SM.toMove(st),side:occ||o.includes(SM.OPP[e.d])?SM.OPP[e.d]:o[0]});}
+  else if(st.p[e.t])shift(SM.pushLine(st,e.f,e.d),e.d);else out.push({from:e.f,to:e.t,d:e.d});
+  return out;}
 function smBoard({r,d,mine,ms}){const live=navAt===null;
+  if(!(mine&&live)&&!ui.pending)ui.f=-1;   // not my turn (or looking back): nothing in hand
   if(mine&&live&&ui.f>=0&&!(ms.p[ui.f]&&ms.p[ui.f].t===SM.toMove(ms)))clearPrep();
+  if(mine&&live&&ui.pending&&!SM.legal(ms,ui.pending))clearPrep();
   shown={d,ms,mine:mine&&live};drawBoard();return {};}
-function smTurnStatus({r,prep,idle,RST}){const st=r.st,S=solo(),c=SM.toMove(st),me=seatName(st.turn);
-  if(ui.enter){status(soloWho(st.turn,t('st_enter')),'turn',[RST]);return;}
-  if(ui.f>=0){const f=NM(ui.f),ex=moves(st).includes(f+'-x')?{label:t('exit'),on:()=>pickCode(f+'-x',true)}:null;
-    status(soloWho(st.turn,t('st_sel')),'turn',[RST,ex]);
-    document.querySelectorAll('#notice .btns button').forEach(b=>{if(b.textContent===t('exit'))b.title=t('exitT');});return;}
-  const ent=st.res[st.turn]&&moves(st).some(m=>m[0]==='+')?{id:'bEnter',label:t('enter')+' ('+st.res[st.turn]+')',on:()=>{dropHint();clearPrep();ui.enter=true;renderGame();}}:null;
-  status(S?tN('st_playN',{name:me,c:CAMP(c)}):t('st_play',{camp:CAMP(c)}),'turn',[ent,...idle]);if($('bEnter'))$('bEnter').title=t('enterT');}
+function smTurnStatus({r,idle,RST}){const st=r.st,S=solo(),c=SM.toMove(st),me=seatName(st.turn);
+  if(ui.f>=0){status(soloWho(st.turn,t('st_sel')+(moves(st).includes(NM(ui.f)+'-x')?t('st_selX'):'')),'turn',[RST]);return;}
+  const k=st.res[st.turn]&&moves(st).some(m=>m[0]==='+')?'':'0';   // 0: nothing to bring in
+  status(S?tN('st_playN'+k,{name:me,c:CAMP(c)}):t('st_play'+k,{camp:CAMP(c)}),'turn',idle);}
 function smWaitStatus({r}){status(tN('st_turnC',{name:seatName(r.st.turn),c:CAMP(SM.toMove(r.st))}));return true;}
-// a move with a free direction: the direction buttons beside Confirm
-function pendText(mv,st){const e=SM.info(String(mv)),free=(e.kind==='enter'||e.kind==='move')&&!st.p[e.t];
-  return [free?t('p_dir',{m:describe(mv,st),d:DL(e.d)}):t('p_mv',{m:describe(mv,st)}),t('confirm1')];}
-function pendBtns(){return [];}   // the directions: the arrows on the board
-function playerCard(el,p,d){const st=d.st,col=st.col[p],dot=el.querySelector&&el.querySelector('.dot');
-  if(dot){dot.className='dot cmp '+CK(col);dot.title=CAMP(col);}
+// the bar of a move prepared: a push tried says so (the core's « click again » covers the other moves: GAME.again)
+function pendText(mv,st){const c=String(mv),e=SM.info(c),free=(e.kind==='enter'||e.kind==='move')&&!st.p[e.t];
+  return [isPush(st,c)?t('p_push',{m:describe(mv,st)}):free?t('p_dir',{m:describe(mv,st),d:DL(e.d)}):t('p_mv',{m:describe(mv,st)}),t('confirm1')];}
+function pendBtns(){return [];}   // the directions: the chevrons on the board
+// a small piece in a player's card: the real one (its point up in the reserve); empty: its outline, dotted
+function miniPiece(par,t0,full,ang,R){const p=SIAM_ART.pointe,l=R*(1+p)+5,w=2*R+5,up=ang===270;
+  const s=el('svg',{class:'pm',viewBox:up?`${-w/2} ${-(R*p+2.5)} ${w} ${l}`:`${-w/2} ${-w/2} ${l} ${w}`,width:up?w:l,height:up?l:w,'aria-hidden':'true'},par);
+  if(full)siamSprite(s,KN(t0),R,null,true).set({x:0,y:0,ang,flip:1});
+  else{const a=ang*Math.PI/180,u=Math.acos(1/p),q=(v,k)=>`${(k*Math.cos(a+v)).toFixed(2)} ${(k*Math.sin(a+v)).toFixed(2)}`;
+    el('path',{class:'vide',d:`M ${q(-u,R)} L ${q(0,R*p)} L ${q(u,R)} A ${R} ${R} 0 1 1 ${q(-u,R)} z`},s);}
+  return s;}
+// the reserve follows the move prepared (an entry tried takes a small piece away)
+function playerCard(elx,p,d){let st=d.st;const col=st.col[p],dot=elx.querySelector&&elx.querySelector('.dot');
+  if(shown&&shown.mine&&d===shown.d){const code=hintOn()?String(hintMv):ui.pending;if(code&&SM.legal(shown.ms,code)){st=SM.clone(shown.ms);SM.plan(st,code)();}}
   const x=document.createElement('div');x.className='resv';x.title=t('resv',{n:st.res[p]});
-  x.innerHTML=[0,1,2,3,4].map(k=>`<i class="${k<st.res[p]?'on '+CK(col):''}"></i>`).join('');el.appendChild(x);}
+  if(!ART){if(dot){dot.className='dot cmp '+CK(col);dot.title=CAMP(col);}
+    x.innerHTML=[0,1,2,3,4].map(k=>`<i class="${k<st.res[p]?'on '+CK(col):''}"></i>`).join('');elx.appendChild(x);return;}
+  if(dot){dot.className='dot art';dot.title=CAMP(col);miniPiece(dot,col,true,0,9.5);}
+  for(let k=0;k<5;k++)miniPiece(x,col,k<st.res[p],270,9);elx.appendChild(x);}
 function dropHint(){if(busy==='hint')stopAI();if(hintMv)hintMv=null;}
-function pickCode(code,plain){dropHint();const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
-  if(plain&&!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
 
 // ---------- input ----------
-// An arrow: the move it stands for, prepared (« Confirm each move ») or played; the arrow chosen clicked again: played
-function onArrow(code){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
-  if(ui.pending===code){pendAgain();return;}dropHint();const st=meSt(r),e=SM.info(code);
-  if(e.kind==='turn'){if(st.p[e.f]&&st.p[e.f].d===e.d){ui.pending=null;renderGame();return;}   // back to its own direction
-    ui.t=-1;ui.d='';if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();return;}
-  if(e.kind==='enter'&&st.p[e.t]){ui.f=-1;ui.enter=true;}
-  ui.t=e.t;ui.d=e.d;if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
-// Nothing selected: one of my animals selects it; a free edge square (with animals in reserve) starts an entry there.
-// Selected (or entering): a marked square places it there provisionally, facing the way it moved (an entry: inwards);
-// a push keeps its direction (and goes at once without « Confirm each move »). The provisional animal clicked again: played.
-// Changes of mind are free: another square, another animal, an arrow, whatever is prepared.
-function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
-  const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();const st=meSt(r),c=SM.toMove(st);
-  if(ui.t>=0&&i===ui.t&&ui.pending){pendAgain();return;}   // the provisional animal clicked again: played
-  if(ui.f===i&&ui.t<0){if(ui.pending){pendAgain();return;}clearPrep();renderGame();return;}   // a turn prepared: played
-  if(st.p[i]&&st.p[i].t===c&&i!==ui.f){clearPrep();ui.f=i;renderGame();return;}   // one of mine: chosen (its push: the arrow)
-  if((ui.f>=0||ui.enter)&&targets(st).includes(i)){ui.t=i;const ds=dirsFor(st);   // another square, even with a turn or a move prepared
-    const prefer=ui.enter?SM.inward(i):[Object.keys(SM.DIRS).find(k=>{const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);return SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b;})];
-    ui.d=ds.find(d=>prefer.includes(d))||ds[0];const code=prefix()+ui.d;
-    if(st.p[i]&&!confirmOn()&&!touch){clearPrep();send(code);return;}   // a push: its direction is fixed
-    ui.pending=code;renderGame();return;}
-  if(st.p[i]&&st.p[i].t===c){clearPrep();ui.f=i;renderGame();return;}
-  if(!st.p[i]&&SM.onEdge(i)&&st.res[st.turn]&&!prepared()){ui.enter=true;if(targets(st).includes(i))onCell(i,touch);else renderGame();return;}}
+// « Reset » trembles: a click that does nothing while a push tried locks the board
+function nudge(){PA.hit=true;const n=$('notice'),b=n&&[...n.querySelectorAll('button')].find(x=>x.title===t('reset'));if(!b)return;
+  b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}
+// the move prepared touched again: played. The core's second click for the moves it covers (GAME.again); a push tried is
+// not one of them (a click elsewhere must not drop it), so it goes from here, with the same guard against a double click
+function again(){if(againOn()){pendAgain();return;}PA.hit=true;if(!ui.pending||sending||Date.now()-PA.t<PA_GAP)return;send(ui.pending);}
+const myTurnSt=()=>{if(!view||navAt!==null)return null;const r=replay(view,view.moves,view.result);return isMyTurn(r)?meSt(r):null;};
+// A chevron: the move it stands for, prepared (« Confirm each move ») or played at once
+function onArrow(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){nudge();return;}dropHint();
+  if(code==='back'){ui.pending=null;renderGame();return;}   // a turn prepared, taken back
+  if(!SM.legal(st,code))return;if(SM.info(code).kind==='enter')ui.f=-1;
+  if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
+// The dotted slot in the border: the animal in hand leaves the board
+function onExit(code){const st=myTurnSt();if(!st)return;if(lockedOn(st)){nudge();return;}if(ui.pending===code){again();return;}dropHint();
+  if(!SM.legal(st,code))return;if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
+// A bar in the border (or its free edge square, see onCell): an animal of the reserve is put there, facing inwards from
+// the side touched; its direction is free, so it waits there for its chevrons or a second click
+function onEntry(i,d){const st=myTurnSt();if(!st)return;if(lockedOn(st)){nudge();return;}const code='+'+NM(i)+d;if(!moves(st).includes(code))return;
+  if(ui.pending===code){again();return;}dropHint();ui.f=-1;ui.pending=code;renderGame();}
+// Nothing in hand: one of my animals takes it in hand; a free edge square (with animals in reserve) brings one in there.
+// In hand: a tinted square moves it there provisionally, facing the way it moved. The provisional animal touched again:
+// played. Another animal, another square, another chevron: free, except after a push tried.
+function onCell(i){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
+  const st=myTurnSt();if(!st)return;const c=SM.toMove(st),L=moves(st),p=ui.pending&&SM.legal(st,ui.pending)?ui.pending:null,inf=p?SM.info(p):null,q=st.p[i];
+  if(p&&isPush(st,p)){if(i===inf.t)again();else nudge();return;}             // a push tried: confirm or reset
+  if(p&&i===(inf.kind==='turn'?inf.f:inf.t)){again();return;}                  // the animal prepared, touched again: played
+  dropHint();
+  if(q&&q.t===c){if(i!==ui.f){ui.f=i;ui.pending=null;}else if(p)ui.pending=null;else ui.f=-1;renderGame();return;}
+  if(ui.f>=0){const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i),d=DK.find(k=>SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b),code=d?NM(ui.f)+'-'+NM(i)+d:'';
+    if(d&&!q&&L.includes(code)){ui.pending=code;renderGame();return;}
+    if(!p){ui.f=-1;renderGame();}return;}
+  if(!q&&SM.onEdge(i)){const d=SM.inward(i).find(k=>L.includes('+'+NM(i)+k));if(d){ui.pending='+'+NM(i)+d;renderGame();}}}
 $('needConfirm').checked=LS.get('siam-confirm',true)!==false;
 $('needConfirm').onchange=e=>LS.set('siam-confirm',e.target.checked);
-let lastPT='mouse';
-$('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
-$('svg').addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-a]');if(a)onArrow(a.dataset.a);
-  else{const g=e.target.closest&&e.target.closest('[data-i]');if(g)onCell(+g.dataset.i,lastPT==='touch');}lastPT='mouse';});
+$('svg').addEventListener('click',e=>{const f=s=>e.target.closest&&e.target.closest(s);let g;
+  if((g=f('[data-a]')))onArrow(g.dataset.a);else if((g=f('[data-x]')))onExit(g.dataset.x);
+  else if((g=f('[data-e]'))){const[i,d]=g.dataset.e.split(':');onEntry(+i,d);}
+  else if((g=f('[data-i]')))onCell(+g.dataset.i);
+  else if(shown&&shown.mine&&lockedOn(shown.ms))nudge();});
 function hoverAt(i){if(i===ui.hover)return;ui.hover=i;drawHover();}
 if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const g=e.target.closest&&e.target.closest('[data-i]');hoverAt(g?+g.dataset.i:-1);});
   $('svg').addEventListener('pointerleave',()=>hoverAt(-1));}
 function altCells(){const out=new Map();if(typeof anaAlts!=='function'||!shown)return out;
   for(const c of anaAlts()){const e=SM.info(c);const i=e.t>=0?e.t:e.f;if(i>=0)out.set(i,c);}return out;}
+// stepping through a game (the bar under the board, the list of moves, the arrow keys) never animates: the next drawing
+// of the board places the pieces at once
+let navStep=false;
+{const mark=()=>{navStep=true;setTimeout(()=>{navStep=false;},0);};
+  for(const id of ['nav','log'])if($(id))$(id).addEventListener('click',mark,true);
+  document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key))mark();},true);}
 
 // ---------- drawing ----------
 const NS='http://www.w3.org/2000/svg',CS=100;
 function el(tg,a,p){const e=document.createElementNS(NS,tg);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
-// MG: the margin all round the board (the arrows of a push from outside; the coordinates, left and bottom, next to the board)
-const MG=62;
-const PX=i=>MG+(i%5)*CS+CS/2,PY=i=>MG+(4-Math.floor(i/5))*CS+CS/2,DV={N:[0,-1],E:[1,0],S:[0,1],W:[-1,0]},ROT={E:0,S:90,W:180,N:270};
-// an animal: a disc in its camp's colour, its point showing where it faces, its emblem on it
-// the pieces drawn (img/siam/siam-art.js, 15.11.2026): an animal engraved in its disc, its point showing where it faces
-// (ART false: the drawing file is not loaded, as in the regression's page, which keeps only common/ scripts)
-const DIRN={N:'haut',E:'droite',S:'bas',W:'gauche'},ART=typeof siamPiece==='function';
-function animal(g,x,y,t0,d,op){const p=el('g',{},g);if(op!==undefined)p.setAttribute('opacity',op);
-  if(ART)siamPiece(p,t0===SM.ELE?'elephant':'rhino',DIRN[d],x,y,36);return p;}
-function rock(g,x,y){if(ART)siamPiece(g,'rocher',null,x,y,38);}
-const frame=(g,i,dash,col)=>el('rect',{x:PX(i)-CS/2+6,y:PY(i)-CS/2+6,width:CS-12,height:CS-12,rx:8,fill:'none',stroke:col||'var(--mk)','stroke-width':3,...(dash?{'stroke-dasharray':'7 5'}:{})},g);
-function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('aria-label',t('boardLbl'));
-  const sh=shown,st=sh&&view?sh.d.st:SM.init();const W=5*CS+2*MG,H=W;
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);document.documentElement.style.setProperty('--board-ar',`${W}/${H}`);
-  // the squares (the board is drawn from y = 0; the coordinates in the left and bottom margins)
-  for(let i=0;i<25;i++){const x=PX(i)-CS/2,y=PY(i)-CS/2;el('rect',{x,y,width:CS,height:CS,fill:(i%5+Math.floor(i/5))%2?'var(--cell2)':'var(--cell)',stroke:'var(--cell-e)','stroke-width':1.5},svg);}
-  const g=el('g',{'pointer-events':'none'},svg);
-  if(coordsOn){const lab=(x,y,s)=>{const e=el('text',{class:'coord',x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':17},svg);e.textContent=s;};
-    for(let k=0;k<5;k++){lab(MG+k*CS+CS/2,MG+5*CS+11,String.fromCharCode(97+k));lab(MG-11,MG+(4-k)*CS+CS/2,String(k+1));}}
-  const mine=!!(sh&&sh.mine),ms=sh&&sh.ms,c=mine?SM.toMove(ms):-1;
-  // the position shown: with the move prepared (or the suggestion) played on a copy
-  let show=st,code=null;if(mine&&hintOn())code=String(hintMv);else if(mine&&ui.pending)code=ui.pending;
-  let e=null;if(code&&SM.legal(ms,code)){show=SM.clone(ms);SM.plan(show,code)();e=SM.info(code);}
-  for(let i=0;i<25;i++){const q=show.p[i];if(!q)continue;if(q.t===SM.ROCK)rock(g,PX(i),PY(i));else animal(g,PX(i),PY(i),q.t,q.d);}
-  if(e){if(e.f>=0&&e.kind!=='turn'){const q=st.p[e.f];if(q&&!show.p[e.f])animal(g,PX(e.f),PY(e.f),q.t,q.d,.3);}if(e.t>=0)frame(g,e.t,true);else if(e.f>=0)frame(g,e.f,true);}
-  else if(mine&&ui.f>=0){frame(g,ui.f,true,'var(--sel)');}
-  if(mine&&!hintOn()&&(ui.f>=0||ui.enter))for(const tt of targets(ms))if(tt!==ui.t)el('circle',{cx:PX(tt),cy:PY(tt),r:9,fill:'var(--sel)',opacity:.75},g);
-  // the last move: a solid frame on the square where the animal ended (left: the square it left), a dot where it came from
-  const last=sh?sh.d.last:null;
-  if(view&&last&&!e&&!(mine&&prepared())){const i=last.t>=0?last.t:last.f;frame(g,i,false);if(last.f>=0&&last.t>=0&&last.f!==last.t)el('circle',{cx:PX(last.f),cy:PY(last.f),r:6,fill:'var(--mk)'},g);}
-  for(const [i] of (sh?altCells():new Map()))el('circle',{cx:PX(i),cy:PY(i),r:12,fill:'none',stroke:'var(--mk)','stroke-width':3},g);
-  el('g',{id:'hov','pointer-events':'none'},svg);
-  const hit=el('g',{fill:'transparent'},svg),tg=mine&&!hintOn()&&(ui.f>=0||ui.enter)?targets(ms):[];
-  for(let i=0;i<25;i++){const r=el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,'data-i':i},hit);
-    if(mine&&(ms.p[i]&&ms.p[i].t===c||tg.includes(i)||!ms.p[i]&&SM.onEdge(i)&&ms.res[ms.turn]&&!prepared()))r.setAttribute('class','pt');}
-  if(mine&&!hintOn())drawArrows(svg,ms);
-  drawHover();}
-// The arrows (Thibault, 17.11.2026). Around the animal selected: a single arrow turns it that way, a double arrow in front of
-// it pushes. Around an animal moved or brought onto a free square: its direction. Outside the board, by an edge square: a
-// double arrow brings an animal in pushing the row. The arrow chosen stays among the others until the move is confirmed
-// (a second click on it plays it).
-// Never an arrow towards the way the animal faces as shown (Thibault, 17.11.2026): around a turn prepared, the arrow of
-// its former direction takes the turn back (or pushes, if it can).
-function arrowList(st){const L=moves(st),out=[],has=m=>L.includes(m);
-  const outside=()=>{for(const m of L){const e=SM.info(m);if(e.kind==='enter'&&st.p[e.t])out.push({at:e.t,d:e.d,code:m,two:true,out:true});}};
-  if(ui.t>=0&&!st.p[ui.t]){for(const d of dirsFor(st))if(d!==ui.d)out.push({at:ui.t,d,code:prefix()+d,two:false,out:false});
-    if(ui.enter)outside();return out;}
-  if(ui.f>=0){const f=NM(ui.f),q=st.p[ui.f],pr=ui.pending&&SM.info(ui.pending).kind==='turn'?SM.info(ui.pending).d:null,disp=pr||q.d;
-    const[x,y]=SM.xy(ui.f),j=SM.at(x+SM.DIRS[q.d][0],y+SM.DIRS[q.d][1]),push=j>=0&&st.p[j]&&has(f+'-'+NM(j)+q.d)?f+'-'+NM(j)+q.d:null;
-    for(const d of 'NESW'){
-      if(d===q.d&&push)out.push({at:ui.f,d,code:push,two:true,out:false});
-      else if(d!==disp&&(d===q.d||has(f+'='+d)))out.push({at:ui.f,d,code:f+'='+d,two:false,out:false});}
-    return out;}
-  outside();return out;}
-function drawArrows(svg,st){const g=el('g',{},svg);
-  for(const a of arrowList(st)){const[dx,dy]=DV[a.d],k=a.out?-(CS/2+40):CS/2+11,cx=PX(a.at)+dx*k,cy=PY(a.at)+dy*k,on=ui.pending===a.code;
-    const h=el('g',{'data-a':a.code,class:'pt arrow'+(on?' on':''),transform:`translate(${cx} ${cy}) rotate(${ROT[a.d]})`},g);
-    el('circle',{r:17,class:'ahit'},h);
-    const head=x=>`M ${x-7} -10 L ${x+6} 0 L ${x-7} 10 z`;
-    el('path',{d:a.two?head(-4)+' '+head(5):`M -10 -3.5 L -1 -3.5 L -1 -10 L 10 0 L -1 10 L -1 3.5 L -10 3.5 z`,class:'ashape'},h);
-    el('title',{},h).textContent=a.two?t('pushT',{d:DL(a.d)}):t('d'+a.d+'l');}}
-// under the mouse: the animal on a marked square, in transparency
-function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
-  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||!(ui.f>=0||ui.enter))return;const ms=sh.ms;if(!targets(ms).includes(i)||ms.p[i]||i===ui.t)return;
-  const c=SM.toMove(ms);let d;if(ui.enter)d=SM.inward(i)[0];else{const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);d=Object.keys(SM.DIRS).find(k=>SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b);}
-  animal(g,PX(i),PY(i),c,d,.5);}
+// MG: the border all round the board: the entries (a bar by each free edge square, a double chevron where an animal
+// enters pushing) and the way out (the dotted slot); XD: how far out the slot is
+const MG=62,XD=36;
+const PX=i=>MG+(i%5)*CS+CS/2,PY=i=>MG+(4-Math.floor(i/5))*CS+CS/2,DV={N:[0,-1],E:[1,0],S:[0,1],W:[-1,0]},ANG={E:0,S:90,W:180,N:270},FLIP={E:1,N:1,W:-1,S:-1},DK=['N','E','S','W'];
+// the pieces drawn (img/siam/siam-art.js, written by img/siam/gen.py): an animal engraved in its disc, its point and its
+// dark nose showing where it faces (ART false: the drawing file is not loaded, as in the regression's page, which keeps
+// only common/ scripts: a board without pieces, nothing animated)
+const ART=typeof siamSprite==='function',KN=t0=>t0===SM.ELE?'elephant':t0===SM.RHI?'rhino':'rocher',RA=34,RR=37;
+// --- the pieces on screen: kept from one drawing to the next, so that they slide, turn, come in and go out ---
+// DUR: a move prepared or taken back; DUR2: a move played elsewhere (the opponent, the computer). No animation when the
+// device asks for less motion, nor when stepping through the game.
+const DUR=260,DUR2=420,LESS=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+let gB=null,gU,gP,gHv,gH,gO,sprites=[],raf=0,fbT=0,SPR={key:'',st:null,len:-1,live:false,code:null};
+function layers(svg){if(gB&&gB.parentNode===svg)return;svg.textContent='';gB=el('g',{},svg);gU=el('g',{'pointer-events':'none'},svg);gP=el('g',{'pointer-events':'none'},svg);
+  gHv=el('g',{id:'hov','pointer-events':'none'},svg);gH=el('g',{fill:'transparent'},svg);gO=el('g',{},svg);sprites=[];SPR={key:'',st:null,len:-1,live:false,code:null};}
+const spot=(cell,d,k)=>({x:PX(cell),y:PY(cell),ang:k==='rocher'?0:ANG[d],flip:k==='rocher'?1:FLIP[d],op:1,sc:1});
+// off the board, in the border, smaller: where a piece comes in from, where it goes out to
+const off=(cell,dir,op,dist,sc)=>({x:PX(cell)+DV[dir][0]*(CS/2+(dist||MG/2)),y:PY(cell)+DV[dir][1]*(CS/2+(dist||MG/2)),op,sc:sc||.6});
+function mkSprite(k,d,cell){return {k,d,cell,pz:siamSprite(gP,k,k==='rocher'?RR:RA),cur:null,goal:null,anim:null,dead:false,temp:false};}
+function snap(sp,s){sp.cur={...s};sp.goal=s;sp.anim=null;sp.pz.set(sp.cur);}
+const sameSpot=(a,b)=>a.x===b.x&&a.y===b.y&&a.op===b.op&&a.sc===b.sc&&a.flip===b.flip&&((a.ang-b.ang)%360+360)%360===0;
+function drop(sp){sp.pz.el.remove();sprites=sprites.filter(x=>x!==sp);}
+function glide(sp,s,dur){if(!sp.cur||LESS||!dur){snap(sp,s);if(sp.dead)drop(sp);return;}if(sp.goal&&sameSpot(sp.goal,s))return;sp.goal=s;
+  const from={...sp.cur},da=(((s.ang-from.ang)%360)+540)%360-180;sp.anim={from,to:{...s,ang:from.ang+da},t0:performance.now(),dur};
+  if(!raf)raf=requestAnimationFrame(tick2);clearTimeout(fbT);fbT=setTimeout(()=>tick2(performance.now()+1e4),dur+120);}   // a hidden tab draws no frame: the pieces still arrive
+function tick2(now){raf=0;let busyA=false;
+  for(const sp of sprites.slice()){const a=sp.anim;if(!a)continue;const p=Math.min(1,Math.max(0,(now-a.t0)/a.dur)),e=1-Math.pow(1-p,3);
+    if(p>=1){sp.anim=null;sp.cur={...sp.goal};sp.pz.set(sp.cur);if(sp.dead)drop(sp);continue;}
+    for(const k of ['x','y','ang','flip','op','sc'])sp.cur[k]=a.from[k]+(a.to[k]-a.from[k])*e;sp.pz.set(sp.cur);busyA=true;}
+  if(busyA)raf=requestAnimationFrame(tick2);}
+const liveSp=()=>sprites.filter(s=>!s.dead&&!s.temp);
+function rebuild(st){for(const sp of sprites)sp.pz.el.remove();sprites=[];
+  for(let i=0;i<25;i++){const q=st.p[i];if(!q)continue;const k=KN(q.t),sp=mkSprite(k,q.d||'E',i);snap(sp,spot(i,sp.d,k));sprites.push(sp);}}
+// each piece where the move shown (prepared, suggested, being played) puts it; without one, where it stands
+function place(st,code,dur){const eff=code?effects(st,code):[],by=new Map(eff.filter(e=>e.from>=0).map(e=>[e.from,e]));
+  for(const sp of liveSp()){const e=by.get(sp.cell);
+    glide(sp,!e?spot(sp.cell,sp.d,sp.k):e.to<0?{...spot(sp.cell,sp.d,sp.k),...(e.exit?off(sp.cell,e.dir,.6,XD,.5):off(sp.cell,e.dir,.5))}:spot(e.to,e.d||sp.d,sp.k),dur);}
+  const en=eff.find(e=>e.from<0);let tmp=sprites.find(s=>s.temp&&!s.dead);
+  if(en){const k=KN(en.t);if(tmp&&tmp.k!==k){drop(tmp);tmp=null;}
+    if(!tmp){tmp=mkSprite(k,en.d,-1);tmp.temp=true;sprites.push(tmp);snap(tmp,{...spot(en.to,en.d,k),...off(en.to,en.side,0)});}
+    tmp.d=en.d;glide(tmp,spot(en.to,en.d,k),dur);}
+  else if(tmp){tmp.dead=true;glide(tmp,{...tmp.cur,op:0,sc:.6},160);}}
+// a move played on the position the pieces stand for: each piece takes its new square, one pushed off fades away
+function advance(st0,code,dur){const eff=effects(st0,code);place(st0,code,dur);
+  const by=new Map(liveSp().map(s=>[s.cell,s])),tmp=sprites.find(s=>s.temp&&!s.dead);
+  for(const e of eff){if(e.from<0){if(tmp){tmp.temp=false;tmp.cell=e.to;tmp.d=e.d;}continue;}
+    const sp=by.get(e.from);if(!sp)continue;if(e.to<0){sp.dead=true;glide(sp,{...sp.goal,op:0},dur);}else{sp.cell=e.to;if(e.d)sp.d=e.d;}}}
+// st: the position drawn; code: the move shown played on it (on eb); one move more than the last drawing, live: animated
+function syncSprites(st,live,code,eb){const key=SM.sig(st),len=live?view.moves.length:-1,last=live&&shown.d.last?shown.d.last.code:null;let dur=DUR;
+  if(key!==SPR.key){let adv=false;
+    if(SPR.st&&live&&SPR.live&&!navStep&&len===SPR.len+1&&last&&SM.legal(SPR.st,last)){const s2=SM.clone(SPR.st);SM.plan(s2,last)();s2.turn=1-s2.turn;adv=SM.sig(s2)===key;}
+    if(adv){if(SPR.code!==last)dur=DUR2;advance(SPR.st,last,dur);}else rebuild(st);
+    SPR.key=key;SPR.st=SM.clone(st);}
+  SPR.len=len;SPR.live=live;SPR.code=code;place(eb,code,dur);}
+// --- the board ---
+function drawSquares(){const g=gB,x0=MG,W=5*CS+2*MG;g.textContent='';
+  el('rect',{x:5,y:5,width:W-10,height:W-10,rx:26,fill:'var(--rim)',stroke:'var(--rim-e)','stroke-width':1.5},g);
+  el('clipPath',{id:'siamClip'},g).appendChild(el('rect',{x:x0,y:x0,width:5*CS,height:5*CS,rx:9}));const c=el('g',{'clip-path':'url(#siamClip)'},g);
+  for(let i=0;i<25;i++)el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,fill:(i%5+Math.floor(i/5))%2?'var(--cell2)':'var(--cell)'},c);
+  for(let k=1;k<5;k++)el('path',{d:`M ${x0+k*CS} ${x0} V ${x0+5*CS} M ${x0} ${x0+k*CS} H ${x0+5*CS}`,fill:'none',stroke:'var(--cell-e)','stroke-width':1.2},g);
+  el('rect',{x:x0,y:x0,width:5*CS,height:5*CS,rx:9,fill:'none',stroke:'var(--cell-e)','stroke-width':2},g);
+  // the coordinates: in the squares (the border is kept for the entries and the way out)
+  if(coordsOn)for(let k=0;k<5;k++){el('text',{class:'coord',x:MG+k*CS+CS-12,y:MG+5*CS-9,'text-anchor':'middle','font-size':16},g).textContent=String.fromCharCode(97+k);
+    el('text',{class:'coord',x:MG+12,y:MG+(4-k)*CS+21,'text-anchor':'middle','font-size':16},g).textContent=String(k+1);}}
+function drawBoard(){const svg=$('svg');layers(svg);svg.setAttribute('aria-label',t('boardLbl'));
+  const sh=shown,on=!!(sh&&view),live=on&&navAt===null,st=on?sh.d.st:SM.init(),W=5*CS+2*MG;
+  svg.setAttribute('viewBox',`0 0 ${W} ${W}`);document.documentElement.style.setProperty('--board-ar',`${W}/${W}`);
+  drawSquares();
+  const mine=!!(sh&&sh.mine),ms=sh&&sh.ms,hint=mine&&hintOn();
+  // the move shown played: the suggestion, or the move prepared
+  let code=hint?String(hintMv):mine&&ui.pending?ui.pending:null;if(code&&!SM.legal(ms,code))code=null;
+  if(ART)syncSprites(st,live,code,code?ms:st);
+  drawMarks(st,ms,mine,hint,code);drawHover();}
+// --- the markers ---
+// > turns the animal that way, >> pushes (an open angle of 113°, a rounded stroke, no disc behind)
+const CH1='M -6.5 -18 L 5.5 0 L -6.5 18',CH2='M -14 -18 L -2 0 L -14 18 M 2 -18 L 14 0 L 2 18';
+function chevron(x,y,d,two,code,title,x0,x1,hh){const g=el('g',{class:'arrow pt','data-a':code,transform:`translate(${x} ${y}) rotate(${ANG[d]})`},gO);
+  el('path',{d:two?CH2:CH1,class:'chevh'},g);el('path',{d:two?CH2:CH1,class:'chev'},g);
+  el('rect',{x:x0,y:-hh,width:x1-x0,height:2*hh,fill:'transparent'},g);el('title',{},g).textContent=title;}
+const sq=(i,cls)=>el('rect',{x:PX(i)-CS/2+5,y:PY(i)-CS/2+5,width:CS-10,height:CS-10,rx:9,class:cls},gU);
+function brackets(i){const a=PX(i)-43,b=PY(i)-43,c=PX(i)+43,d=PY(i)+43,l=16;
+  el('path',{class:'lastB',d:`M ${a} ${b+l} V ${b} H ${a+l} M ${c-l} ${b} H ${c} V ${b+l} M ${c} ${d-l} V ${d} H ${c-l} M ${a+l} ${d} H ${a} V ${d-l}`},gU);}
+// a push shown (tried, or suggested): its row tinted, the pusher framed, a pale double chevron behind it
+function pushTrace(st,code){const inf=SM.info(code),cells=new Set();for(const e of effects(st,code)){if(e.from>=0)cells.add(e.from);if(e.to>=0)cells.add(e.to);}
+  for(const i of cells)sq(i,'tint');sq(inf.t,'pendS');const back=inf.kind==='enter'?CS/2+MG/2:CS;
+  el('path',{d:CH2,class:'trail',transform:`translate(${PX(inf.t)-DV[inf.d][0]*back} ${PY(inf.t)-DV[inf.d][1]*back}) rotate(${ANG[inf.d]})`},gU);}
+function drawMarks(st,ms,mine,hint,code){gU.textContent='';gO.textContent='';gH.textContent='';
+  const my=mine&&!hint,c=my?SM.toMove(ms):-1,L=my?moves(ms):[],pend=my?code:null,inf=pend?SM.info(pend):null,lock=!!pend&&isPush(ms,pend),sel=my?ui.f:-1;
+  const ptr=new Set(),h=o=>o==='N'||o==='S';   // ptr: the squares where a click does something
+  // the last move: four brackets on the square where the animal ended (left the board: the square it left), a dot where it came from
+  const last=shown?shown.d.last:null;
+  if(view&&last&&!code&&!(mine&&prepared())){brackets(last.t>=0?last.t:last.f);if(last.f>=0&&last.t>=0&&last.f!==last.t&&!st.p[last.f])el('circle',{cx:PX(last.f),cy:PY(last.f),r:6,class:'lastD'},gU);}
+  const alts=shown?altCells():new Map();for(const [i] of alts){el('circle',{cx:PX(i),cy:PY(i),r:12,class:'altC'},gU);if(!prepared())ptr.add(i);}
+  if(hint&&code){const e=SM.info(code);if(isPush(ms,code))pushTrace(ms,code);else if(e.kind!=='exit')sq(e.kind==='turn'?e.f:e.t,'pendS');}
+  if(my){for(let i=0;i<25;i++)if(ms.p[i]&&ms.p[i].t===c&&!lock)ptr.add(i);
+    // the entries: a bar in the border by each free edge square; a double chevron where an animal enters pushing
+    if(!lock&&sel<0&&(!pend||inf.kind==='enter')&&ms.res[ms.turn]){const free=new Set();
+      for(const m of L){const e=SM.info(m);if(e.kind!=='enter')continue;
+        if(!ms.p[e.t])free.add(e.t);
+        else{const o=SM.OPP[e.d];chevron(PX(e.t)+DV[o][0]*(CS/2+MG/2),PY(e.t)+DV[o][1]*(CS/2+MG/2),e.d,true,m,t('pushT',{d:DL(e.d)}),-MG/2,MG/2,46);}}
+      for(const i of free){ptr.add(i);if(pend&&inf.t===i)continue;
+        for(const o of outward(i)){const cx=PX(i)+DV[o][0]*(CS/2+10),cy=PY(i)+DV[o][1]*(CS/2+10);
+          el('rect',{x:cx-(h(o)?32:3.5),y:cy-(h(o)?3.5:32),width:h(o)?64:7,height:h(o)?7:64,rx:3.5,class:'bar'},gU);
+          const z=el('rect',{x:PX(i)+DV[o][0]*(CS/2+MG/2)-(h(o)?CS/2:MG/2),y:PY(i)+DV[o][1]*(CS/2+MG/2)-(h(o)?MG/2:CS/2),width:h(o)?CS:MG,height:h(o)?MG:CS,class:'pt','data-e':i+':'+SM.OPP[o]},gH);
+          el('title',{},z).textContent=t('enterAt',{t:NM(i)});}}
+      // c1 and c5 during the first four moves: a cross where the bar would be
+      for(let i=0;i<25;i++)if(SM.marked(ms,i))for(const o of outward(i)){const cx=PX(i)+DV[o][0]*(CS/2+10),cy=PY(i)+DV[o][1]*(CS/2+10);
+        el('path',{d:`M ${cx-4.5} ${cy-4.5} L ${cx+4.5} ${cy+4.5} M ${cx+4.5} ${cy-4.5} L ${cx-4.5} ${cy+4.5}`,class:'nope'},gU);}}
+    if(lock){pushTrace(ms,pend);ptr.add(inf.t);}   // a push tried: nothing else to touch
+    else{const kind=inf?inf.kind:'',pc=!inf?sel:kind==='turn'?inf.f:kind==='exit'?-1:inf.t;   // the square where the animal in hand is shown
+      if(pc>=0){sq(pc,'selF');sq(pc,pend?'pendS':'selS');if(pend)ptr.add(pc);}
+      if(sel>=0){const f=NM(sel),q=ms.p[sel],[x,y]=SM.xy(sel);
+        if(pend&&kind!=='turn')el('circle',{cx:PX(sel),cy:PY(sel),r:6,class:'lastD'},gU);
+        // moving: the free squares next to it, tinted
+        for(const d of DK){const j=SM.at(x+SM.DIRS[d][0],y+SM.DIRS[d][1]);if(j<0||ms.p[j]||!L.includes(f+'-'+NM(j)+d)||j===pc)continue;
+          sq(j,'tint');el('circle',{cx:PX(j),cy:PY(j),r:6.5,class:'tdot'},gU);ptr.add(j);}
+        // leaving: a dotted slot in the border
+        if(L.includes(f+'-x')){const o=outward(sel)[0],cx=PX(sel)+DV[o][0]*(CS/2+XD),cy=PY(sel)+DV[o][1]*(CS/2+XD);
+          el('circle',{cx,cy,r:14.5,class:'slotF'},gU);el('circle',{cx,cy,r:14.5,class:'slotS'},gU);
+          const z=el('rect',{x:PX(sel)+DV[o][0]*(CS/2+MG/2)-(h(o)?CS/2:MG/2),y:PY(sel)+DV[o][1]*(CS/2+MG/2)-(h(o)?MG/2:CS/2),width:h(o)?CS:MG,height:h(o)?MG:CS,class:'pt','data-x':f+'-x'},gH);
+          el('title',{},z).textContent=t('exitT');}
+        // turning (>) and pushing (>>): round the animal, never towards the way it faces as shown; round a turn prepared,
+        // the chevron of its former direction takes the turn back (or pushes, if it can)
+        if(!pend||kind==='turn'){const disp=pend?inf.d:q.d,j=SM.at(x+SM.DIRS[q.d][0],y+SM.DIRS[q.d][1]),push=j>=0&&ms.p[j]&&L.includes(f+'-'+NM(j)+q.d)?f+'-'+NM(j)+q.d:null;
+          for(const d of DK){const cx=PX(sel)+DV[d][0]*60,cy=PY(sel)+DV[d][1]*60;
+            if(d===q.d&&push)chevron(cx,cy,d,true,push,t('pushT',{d:DL(d)}),-22,22,34);
+            else if(d===q.d&&pend)chevron(cx,cy,d,false,'back',t('turnT',{d:DL(d)}),-20,12,34);
+            else if(d!==disp&&d!==q.d&&L.includes(f+'='+d))chevron(cx,cy,d,false,f+'='+d,t('turnT',{d:DL(d)}),-20,12,34);}}}
+      // an animal put on a free square (moved or brought in): its other directions
+      if(pend&&(kind==='move'||kind==='enter')){const pre=pend.slice(0,-1);
+        for(const d of DK)if(d!==inf.d&&L.includes(pre+d))chevron(PX(inf.t)+DV[d][0]*60,PY(inf.t)+DV[d][1]*60,d,false,pre+d,t('turnT',{d:DL(d)}),-20,12,34);}}}
+  for(let i=0;i<25;i++){const r=el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,'data-i':i},gH);if(ptr.has(i))r.setAttribute('class','pt');}}
+// under the mouse: the animal, in transparency, on a square where it can go or come in
+function drawHover(){const g=gHv;if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
+  if(!ART||!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending)return;const ms=sh.ms,L=moves(ms),p=ui.pending&&SM.legal(ms,ui.pending)?ui.pending:null,inf=p?SM.info(p):null;
+  if(ms.p[i]||(p&&isPush(ms,p))||(inf&&inf.t===i))return;let d;
+  if(ui.f>=0){const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);d=DK.find(k=>SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b);if(!d||!L.includes(NM(ui.f)+'-'+NM(i)+d))return;}
+  else{if(!SM.onEdge(i))return;d=SM.inward(i).find(k=>L.includes('+'+NM(i)+k));if(!d)return;}
+  const k=KN(SM.toMove(ms));siamSprite(g,k,RA).set({...spot(i,d,k),op:.42});}
 
 // ---------- computer opponent ----------
 // Evaluation, for each rock and each direction it could leave by: the camp that would win that exit (the nearest animal
@@ -567,7 +697,9 @@ function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900
 // know the repetition (decision of Thibault, 15.11.2026)
 function histOf(v){GAME.replay(v,v.moves);const h={};for(const k of RK.sigs.slice(0,v.moves.length+1))h[k]=(h[k]||0)+1;return h;}
 // the positions already replayed are kept (core: replayKept); the engine plays on its position: each move on a copy
-const GAME={id:'siam',again:()=>true,seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
+// again: the core's second click (and its « a click elsewhere drops the move ») covers every move prepared but a push
+// tried, which locks the board (see onCell, again())
+const GAME={id:'siam',again:mv=>!(shown&&shown.ms&&SM.legal(shown.ms,String(mv))&&isPush(shown.ms,String(mv))),seatCol:s=>s?'camp1':'camp0',   // Éléphants (seat 0) / Rhinocéros
   size:5,codeTag:'SIAM1',i18n:SM_I18N,
   rules:()=>({}),form:()=>({}),
   replay:(r,m)=>replayKept(r,m,{init:()=>SM.init(),
