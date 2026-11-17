@@ -273,7 +273,8 @@ function ZertzEngine(size){
     for(const x of cand){const v=-neg(x[1],depth-1,-beta,-alpha,ply+1,fb);if(stop)return best>-INF?best:0;if(v>best)best=v;if(best>alpha)alpha=best;if(alpha>=beta)break;}return best;}
   // Iterative deepening on two axes: depth of quiet moves and number of forcing moves read beyond it.
   function search(s,o){o=o||{};const maxD=o.depth||3,maxF=o.fb??3,K0=o.rootBeam||30,tell=typeof aiBest==='function'?aiBest:null;BEAM=o.beam||10;QK=o.qk||12;QM=o.qm||450;
-    maxN=o.nodes||Infinity;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;if(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
+    maxN=o.nodes||Infinity;stop=false;nodes=0;const p=s[TURN];const moves=gen(s);if(!moves.length)return null;
+    if(o.random||o.algo==='random')return {move:moves[(Math.random()*moves.length)|0],score:0,depth:0,fb:0,random:true};   // level 0: a legal move at randomif(moves.length===1)return {move:moves[0],score:0,depth:0,fb:0};
     const fk=new Set(moves[0].t===0?forcing(s).map(key):[]);
     let list=[];for(const mv of moves){const c=apply(s,mv);const sc=won(c,p)?WIN:-neg(c,0,-INF,INF,1,0);list.push({mv,c,sc,f:mv.t===0&&fk.has(key(mv))});}
     maxN=Math.max(maxN,nodes+MORE);stop=false;
@@ -297,12 +298,18 @@ function ZertzEngine(size){
 // ===== Zèrtz on the shared code (common/core.js) =====
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
 const GOAL=[4,5,6];
-// Levels of the computer opponent: options of the engine's search (depth of quiet moves, forcing moves read beyond, nodes:
-// positions searched at most, random choice among near-best moves). A level is an amount of work, never a time
-// (16.11.2026): Débutant stops on its depth, Moyen and Fort on their depth or their nodes, what the reference Mac (M3 Pro)
-// searched in their former 1.5 and 3 s (outils/aitools/res/budgets-2026-11-16.md).
-const LEVELS={debutant:{depth:1,fb:1,noise:600},moyen:{depth:2,fb:2,nodes:2600000,noise:150},fort:{depth:3,fb:3,nodes:5300000}};
-const HINT=LEVELS.fort;
+// The ladder (v1, 16.11.2026, outils/aitools/res/zertz/niveaux.md): each level beats the one below by 80-87 % (level 1
+// beats random play by 93 %), and the one two below by 93 % or more. random = a legal move at random; depth = depth of
+// the quiet moves, fb = forcing moves read beyond, nodes = positions searched at most, noise = randomness added to the
+// move scores. A level is an amount of work, never a time (16.11.2026). Hints: the strongest level (median 0.09 s on
+// the reference Mac, outils/aitools/res/budgets-2026-11-16.md).
+const LEVELS={
+  l0:{algo:'random',random:true},
+  l1:{depth:1,fb:1,noise:600},
+  l2:{depth:1,fb:1},
+  l3:{depth:2,fb:1,nodes:2600000},
+  l4:{depth:3,fb:3,nodes:5300000}};
+const HINT={...LEVELS.l4};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
 const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
@@ -513,8 +520,8 @@ if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
 
 // ---------- computer opponent ----------
 // A forced move: the search found a single move, or a win before reading on (no depth, no forcing line)
-function zzSearch(s,opt){const r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.depth&&!r.fb};}
-function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>50000)return {k:'ai_win'};if(s<-50000)return {k:'ai_lost'};
+function zzSearch(s,opt){const r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.random&&!r.depth&&!r.fb};}
+function evalInfo(r){const s=r.score;if(r.random)return null;if(r.forced)return {k:'ai_forced'};if(s>50000)return {k:'ai_win'};if(s<-50000)return {k:'ai_lost'};
   return {k:Math.abs(s)<150?'ai_eq':s>0?(s>800?'ai_much':'ai_better'):(s<-800?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- drawing ----------
@@ -634,7 +641,7 @@ const GAME={howto:{off:true,titled:true,n:2,scene:zzHowto,vars:()=>({where:t(zBa
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc:()=>ZertzEngine.toString()+`
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
-function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.depth&&!r.fb};}`,
+function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.random&&!r.depth&&!r.fb};}`,
   aiPos:st=>Array.from(st),
   aiSearch:(st,opt)=>zzSearch(Int8Array.from(st),opt),
   evalInfo:res=>evalInfo(res)};
