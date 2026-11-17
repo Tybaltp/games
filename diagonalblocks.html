@@ -884,6 +884,9 @@ let TELL=false;
 const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>seatOf(S,S.tm),done:S=>!!S.ov,result,eval:evalS,
   playout,scratch:S=>copyInto(PS,S),best:r=>{if(TELL)aiBest({move:toMove(r.m),score:r.s,depth:r.depth});}});
 function search(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;
+  // random (level 0): a move at random among all the legal ones, the swap included (each placement once)
+  if(opt.random){const L=new Int32Array(NP),n=legal(S,S.tm,L),k=n+(canSwap(S)?1:0);if(!k)return null;const i=(Math.random()*k)|0;
+    return {move:toMove(i<n?L[i]:-1),score:0,depth:0,random:true};}
   if(S.n===0)r=opt.openTab?openTab(S,opt):opening(S,opt);
   else if(canSwap(S)&&!opt.noSwap)r=swapChoice(S,opt);
   if(!r){K.start(opt.nodes);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
@@ -909,33 +912,32 @@ return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fi
 // Any algo: endgame, the exact endgame solver once both sides together can add at most endgame cells (it plays a proved win,
 // else a proved draw, else hands over) · solveNodes, its budget · endLoss: when every move loses, the one that loses
 // by the fewest cells instead of handing over.
-// The ladder (10.11.2026, outils/aitools/res/diagonalblocks/niveaux.md, 300 games a pair): each level beats the one
-// below by 74-78 % (draws count half; level 8 beats 7 by 61 %; level 9 and 10, the strongest, see below). A level is an amount of work,
-// never a time (16.11.2026): the former caps (3 and 5 s; 1 s for the solver) were never reached on the reference Mac (M3 Pro)
-// below level 10, whose simulations are what that Mac did in its former 5 s (outils/aitools/res/budgets-2026-11-16.md).
+// The ladder (v1, 16.11.2026, outils/aitools/res/diagonalblocks/niveaux.md): each level beats the one below by 66-83 %
+// (level 1 beats random play by 83 %), and the one two below by 84 % or more. random = a random legal move. A level is
+// an amount of work, never a time (16.11.2026). Hints: the strongest level (median 4.8 s on the reference Mac,
+// outils/aitools/res/budgets-2026-11-16.md).
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
 const LEVELS={
-  l0:{algo:'greedy',cells:40,temp:1000,openPick:6},
-  l1:{algo:'greedy',cells:40,temp:4,openPick:6},
-  l2:{algo:'greedy',cells:40,temp:1.5,openPick:6},
-  l3:{algo:'greedy',cells:40,temp:.7,openPick:6},
-  l4:{algo:'greedy',cells:40,temp:.2,openPick:6},
-  l5:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,openPick:6},
-  l6:{...MC,sims:1800,c:.4,cellsIn:10},
-  l7:{...MC,sims:5000,c:.2,cellsIn:20},
-  l8:{...MC,sims:15000,c:.2,cellsIn:20},
-  l9:{...MC,sims:15000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1},   // l8 + the exact endgame solver and PUCT (12.11.2026, 300 games: 69.8 % against l8, 62.3 % against l8 with the solver alone)
-  l10:{...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1}};   // l9 with the simulations of the former 5 s
-const HINT={...LEVELS.l10,sims:33000};   // level 10's search with the simulations of 5 s at most on the reference Mac
+  l0:{random:true},
+  l1:{algo:'greedy',cells:40,temp:1000,openPick:6},
+  l2:{algo:'greedy',cells:40,temp:4,openPick:6},
+  l3:{algo:'greedy',cells:40,temp:1.5,openPick:6},
+  l4:{algo:'greedy',cells:40,temp:.7,openPick:6},
+  l5:{algo:'greedy',cells:40,temp:.2,openPick:6},
+  l6:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,openPick:6},
+  l7:{...MC,sims:1800,c:.4,cellsIn:10},
+  l8:{...MC,sims:5000,c:.2,cellsIn:20},
+  l9:{...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1}};
+const HINT={...LEVELS.l9};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const ENGINE={v:2,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
 const levelDesc=o=>o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice()};};
 let pageAI=null;   // the search on the page itself, when no worker can be made
 // The computer's opinion: none for the first piece and the swap; the score is in cells
-function dbEvalInfo(r,st){if(st.es.n<2)return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
+function dbEvalInfo(r,st){if(st.es.n<2||r.random)return null;const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>500)return {k:'ai_win'};if(s<-500)return {k:'ai_lost'};
   return {k:Math.abs(s)<1.5?'ai_eq':s>0?(s>6?'ai_much':'ai_better'):(s<-6?'ai_muchWorse':'ai_worse'),d:r.depth};}
 // ---------- the interface with common/core.js ----------
 const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).st,s)?'sc1':'sc0',   // Vert / Rose (they change hands with the swap)
