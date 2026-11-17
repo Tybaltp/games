@@ -37,6 +37,6 @@ a.gc:focus-visible{outline:2px solid var(--gacc);outline-offset:3px}
 .c-slither{--gbg:#e4e1ea;--gink:#211c2a;--gacc:#7a32c8;--img:url(../img/cartes/slither.svg)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-slither{--gbg:#211d28;--gink:#e8e4ef;--gacc:#a57de6;--img:url(../img/cartes/slither-dark.svg)}}
 :root[data-theme="dark"] .c-slither{--gbg:#211d28;--gink:#e8e4ef;--gacc:#a57de6;--img:url(../img/cartes/slither-dark.svg)}
-.c-siam{--gbg:#e6dccb;--gink:#272219;--gacc:#a0522d;--img:url(../img/cartes/siam.svg)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-siam{--gbg:#231f19;--gink:#ece6da;--gacc:#e0915f;--img:url(../img/cartes/siam-dark.svg)}}
-:root[data-theme="dark"] .c-siam{--gbg:#231f19;--gink:#ece6da;--gacc:#e0915f;--img:url(../img/cartes/siam-dark.svg)}
+.c-siam{--gbg:#e6dccb;--gink:#272219;--gacc:#17727c;--img:url(../img/cartes/siam.svg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c-siam{--gbg:#231f19;--gink:#ece6da;--gacc:#74cdd0;--img:url(../img/cartes/siam-dark.svg)}}
+:root[data-theme="dark"] .c-siam{--gbg:#231f19;--gink:#ece6da;--gacc:#74cdd0;--img:url(../img/cartes/siam-dark.svg)}
