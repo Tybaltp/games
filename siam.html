@@ -400,18 +400,20 @@ function pickCode(code,plain){dropHint();const r=replay(view,view.moves,view.res
 // An arrow: the move it stands for, prepared (« Confirm each move ») or played; the arrow chosen clicked again: played
 function onArrow(code){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(ui.pending===code){pendAgain();return;}dropHint();const st=meSt(r),e=SM.info(code);
-  if(e.kind==='turn'){if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();return;}
+  if(e.kind==='turn'){if(st.p[e.f]&&st.p[e.f].d===e.d){ui.pending=null;renderGame();return;}   // back to its own direction
+    ui.t=-1;ui.d='';if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();return;}
   if(e.kind==='enter'&&st.p[e.t]){ui.f=-1;ui.enter=true;}
   ui.t=e.t;ui.d=e.d;if(!confirmOn()){clearPrep();send(code);return;}ui.pending=code;renderGame();}
 // Nothing selected: one of my animals selects it; a free edge square (with animals in reserve) starts an entry there.
 // Selected (or entering): a marked square places it there provisionally, facing the way it moved (an entry: inwards);
-// a push keeps its direction (and goes at once without « Confirm each move »). The animal or the provisional square
-// clicked again takes one step back.
+// a push keeps its direction (and goes at once without « Confirm each move »). The provisional animal clicked again: played.
+// Changes of mind are free: another square, another animal, an arrow, whatever is prepared.
 function onCell(i,touch){if(!view||navAt!==null)return;const ac=altCells().get(i);if(ac!==undefined&&!prepared()){anaAltGo(ac);return;}
   const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;dropHint();const st=meSt(r),c=SM.toMove(st);
   if(ui.t>=0&&i===ui.t&&ui.pending){pendAgain();return;}   // the provisional animal clicked again: played
-  if(ui.f===i&&ui.t<0){clearPrep();renderGame();return;}
-  if((ui.f>=0||ui.enter)&&ui.t<0&&targets(st).includes(i)){ui.t=i;const ds=dirsFor(st);
+  if(ui.f===i&&ui.t<0){if(ui.pending){pendAgain();return;}clearPrep();renderGame();return;}   // a turn prepared: played
+  if(st.p[i]&&st.p[i].t===c&&i!==ui.f){clearPrep();ui.f=i;renderGame();return;}   // one of mine: chosen (its push: the arrow)
+  if((ui.f>=0||ui.enter)&&targets(st).includes(i)){ui.t=i;const ds=dirsFor(st);   // another square, even with a turn or a move prepared
     const prefer=ui.enter?SM.inward(i):[Object.keys(SM.DIRS).find(k=>{const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);return SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b;})];
     ui.d=ds.find(d=>prefer.includes(d))||ds[0];const code=prefix()+ui.d;
     if(st.p[i]&&!confirmOn()&&!touch){clearPrep();send(code);return;}   // a push: its direction is fixed
@@ -460,13 +462,13 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
   for(let i=0;i<25;i++){const q=show.p[i];if(!q)continue;if(q.t===SM.ROCK)rock(g,PX(i),PY(i));else animal(g,PX(i),PY(i),q.t,q.d);}
   if(e){if(e.f>=0&&e.kind!=='turn'){const q=st.p[e.f];if(q&&!show.p[e.f])animal(g,PX(e.f),PY(e.f),q.t,q.d,.3);}if(e.t>=0)frame(g,e.t,true);else if(e.f>=0)frame(g,e.f,true);}
   else if(mine&&ui.f>=0){frame(g,ui.f,true,'var(--sel)');}
-  if(mine&&!code&&(ui.f>=0||ui.enter))for(const tt of targets(ms))el('circle',{cx:PX(tt),cy:PY(tt),r:9,fill:'var(--sel)',opacity:.75},g);
+  if(mine&&!hintOn()&&(ui.f>=0||ui.enter))for(const tt of targets(ms))if(tt!==ui.t)el('circle',{cx:PX(tt),cy:PY(tt),r:9,fill:'var(--sel)',opacity:.75},g);
   // the last move: a solid frame on the square where the animal ended (left: the square it left), a dot where it came from
   const last=sh?sh.d.last:null;
   if(view&&last&&!e&&!(mine&&prepared())){const i=last.t>=0?last.t:last.f;frame(g,i,false);if(last.f>=0&&last.t>=0&&last.f!==last.t)el('circle',{cx:PX(last.f),cy:PY(last.f),r:6,fill:'var(--mk)'},g);}
   for(const [i] of (sh?altCells():new Map()))el('circle',{cx:PX(i),cy:PY(i),r:12,fill:'none',stroke:'var(--mk)','stroke-width':3},g);
   el('g',{id:'hov','pointer-events':'none'},svg);
-  const hit=el('g',{fill:'transparent'},svg),tg=mine&&!code?targets(ms):[];
+  const hit=el('g',{fill:'transparent'},svg),tg=mine&&!hintOn()&&(ui.f>=0||ui.enter)?targets(ms):[];
   for(let i=0;i<25;i++){const r=el('rect',{x:PX(i)-CS/2,y:PY(i)-CS/2,width:CS,height:CS,'data-i':i},hit);
     if(mine&&(ms.p[i]&&ms.p[i].t===c||tg.includes(i)||!ms.p[i]&&SM.onEdge(i)&&ms.res[ms.turn]&&!prepared()))r.setAttribute('class','pt');}
   if(mine&&!hintOn())drawArrows(svg,ms);
@@ -475,15 +477,19 @@ function drawBoard(){const svg=$('svg');svg.textContent='';svg.setAttribute('ari
 // it pushes. Around an animal moved or brought onto a free square: its direction. Outside the board, by an edge square: a
 // double arrow brings an animal in pushing the row. The arrow chosen stays among the others until the move is confirmed
 // (a second click on it plays it).
+// Never an arrow towards the way the animal faces as shown (Thibault, 17.11.2026): around a turn prepared, the arrow of
+// its former direction takes the turn back (or pushes, if it can).
 function arrowList(st){const L=moves(st),out=[],has=m=>L.includes(m);
-  if(ui.t>=0&&!st.p[ui.t]){for(const d of dirsFor(st))out.push({at:ui.t,d,code:prefix()+d,two:false,out:false});return out;}
-  if(ui.f>=0){const f=NM(ui.f),q=st.p[ui.f];
-    for(const d of 'NESW')if(d!==q.d&&has(f+'='+d))out.push({at:ui.f,d,code:f+'='+d,two:false,out:false});
-    const[x,y]=SM.xy(ui.f),j=SM.at(x+SM.DIRS[q.d][0],y+SM.DIRS[q.d][1]);
-    if(j>=0&&st.p[j]&&has(f+'-'+NM(j)+q.d))out.push({at:ui.f,d:q.d,code:f+'-'+NM(j)+q.d,two:true,out:false});
+  const outside=()=>{for(const m of L){const e=SM.info(m);if(e.kind==='enter'&&st.p[e.t])out.push({at:e.t,d:e.d,code:m,two:true,out:true});}};
+  if(ui.t>=0&&!st.p[ui.t]){for(const d of dirsFor(st))if(d!==ui.d)out.push({at:ui.t,d,code:prefix()+d,two:false,out:false});
+    if(ui.enter)outside();return out;}
+  if(ui.f>=0){const f=NM(ui.f),q=st.p[ui.f],pr=ui.pending&&SM.info(ui.pending).kind==='turn'?SM.info(ui.pending).d:null,disp=pr||q.d;
+    const[x,y]=SM.xy(ui.f),j=SM.at(x+SM.DIRS[q.d][0],y+SM.DIRS[q.d][1]),push=j>=0&&st.p[j]&&has(f+'-'+NM(j)+q.d)?f+'-'+NM(j)+q.d:null;
+    for(const d of 'NESW'){
+      if(d===q.d&&push)out.push({at:ui.f,d,code:push,two:true,out:false});
+      else if(d!==disp&&(d===q.d||has(f+'='+d)))out.push({at:ui.f,d,code:f+'='+d,two:false,out:false});}
     return out;}
-  for(const m of L){const e=SM.info(m);if(e.kind==='enter'&&st.p[e.t])out.push({at:e.t,d:e.d,code:m,two:true,out:true});}
-  return out;}
+  outside();return out;}
 function drawArrows(svg,st){const g=el('g',{},svg);
   for(const a of arrowList(st)){const[dx,dy]=DV[a.d],k=a.out?-(CS/2+40):CS/2+11,cx=PX(a.at)+dx*k,cy=PY(a.at)+dy*k,on=ui.pending===a.code;
     const h=el('g',{'data-a':a.code,class:'pt arrow'+(on?' on':''),transform:`translate(${cx} ${cy}) rotate(${ROT[a.d]})`},g);
@@ -493,7 +499,7 @@ function drawArrows(svg,st){const g=el('g',{},svg);
     el('title',{},h).textContent=a.two?t('pushT',{d:DL(a.d)}):t('d'+a.d+'l');}}
 // under the mouse: the animal on a marked square, in transparency
 function drawHover(){const g=$('hov');if(!g)return;g.textContent='';const sh=shown,i=ui.hover;
-  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||ui.pending||!(ui.f>=0||ui.enter))return;const ms=sh.ms;if(!targets(ms).includes(i)||ms.p[i])return;
+  if(!sh||!sh.mine||i<0||hintOn()||busy==='hint'||sending||!(ui.f>=0||ui.enter))return;const ms=sh.ms;if(!targets(ms).includes(i)||ms.p[i]||i===ui.t)return;
   const c=SM.toMove(ms);let d;if(ui.enter)d=SM.inward(i)[0];else{const[a,b]=SM.xy(ui.f),[x,y]=SM.xy(i);d=Object.keys(SM.DIRS).find(k=>SM.DIRS[k][0]===x-a&&SM.DIRS[k][1]===y-b);}
   animal(g,PX(i),PY(i),c,d,.5);}
 
