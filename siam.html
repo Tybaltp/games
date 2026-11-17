@@ -589,10 +589,11 @@ function chevron(x,y,d,two,code,title,zs){const g=el('g',{class:'arrow pt'+fr('c
 function hand(i,d,pend,bare,from){const k=fr((pend?'p':'s')+i+(from||'')),R=39.5,cx=PX(i)-DV[d][0]*5,cy=PY(i)-DV[d][1]*5,A=ANG[d]*Math.PI/180,o=28*Math.PI/180;
   const P=a=>`${(cx+R*Math.cos(a)).toFixed(2)} ${(cy+R*Math.sin(a)).toFixed(2)}`;
   if(pend&&!bare)el('rect',{x:PX(i)-CS/2+4,y:PY(i)-CS/2+4,width:CS-8,height:CS-8,rx:12,class:'pendF'+k},gU);
-  if(from&&from!==d){const dl=((ANG[d]-ANG[from])%360+360)%360,sg=dl===270?-1:1,span=(dl===270?90:dl)*Math.PI/180,a0=ANG[from]*Math.PI/180,a1=a0+sg*(span-o);
-    const tx=cx+R*Math.cos(a1),ty=cy+R*Math.sin(a1),ux=-Math.sin(a1)*sg,uy=Math.cos(a1)*sg,nx=Math.cos(a1),ny=Math.sin(a1),f=v=>v.toFixed(2);   // u: the way the arrow runs, n: outwards
+  if(from&&from!==d){const RT=45,PT=a=>`${(cx+RT*Math.cos(a)).toFixed(2)} ${(cy+RT*Math.sin(a)).toFixed(2)}`;   // a little wider than the ring: the head clears the piece
+    const dl=((ANG[d]-ANG[from])%360+360)%360,sg=dl===270?-1:1,span=(dl===270?90:dl)*Math.PI/180,a0=ANG[from]*Math.PI/180,a1=a0+sg*(span-o);
+    const tx=cx+RT*Math.cos(a1),ty=cy+RT*Math.sin(a1),ux=-Math.sin(a1)*sg,uy=Math.cos(a1)*sg,nx=Math.cos(a1),ny=Math.sin(a1),f=v=>v.toFixed(2);   // u: the way the arrow runs, n: outwards
     const head=`M ${f(tx-9*ux+6*nx)} ${f(ty-9*uy+6*ny)} L ${f(tx)} ${f(ty)} L ${f(tx-9*ux-6*nx)} ${f(ty-9*uy-6*ny)}`;
-    el('path',{d:`M ${P(a0)} A ${R} ${R} 0 ${span-o>Math.PI?1:0} ${sg>0?1:0} ${P(a1)} ${head}`,class:(pend?'pendS':'selS')+k,'stroke-linejoin':'round'},gU);return;}
+    el('path',{d:`M ${PT(a0)} A ${RT} ${RT} 0 ${span-o>Math.PI?1:0} ${sg>0?1:0} ${PT(a1)} ${head}`,class:(pend?'pendS':'selS')+k,'stroke-linejoin':'round'},gU);return;}
   el('path',{d:`M ${P(A+o)} A ${R} ${R} 0 1 1 ${P(A-o)}`,class:(pend?'pendS':'selS')+k},gU);}
 // the position before the last move shown (its push is drawn on it)
 function lastPre(){const n=navAt===null?view.moves.length:navAt;return n>0?replay(view,view.moves.slice(0,n-1),null).st:null;}
