@@ -85,19 +85,24 @@ html:root{--accRight:0px}
       
       <form class="form" id="createForm" hidden>
         <label for="cFirst"><span data-i18n="firstIs">Who starts</span><select id="cFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="opp" data-i18n="opp">My opponent</option></select></label>
+        <label for="cRows"><span data-i18n="rowsOpt">Board size</span><select id="cRows"></select></label>
         <label for="cTc"><span data-i18n="tc">Time control</span><select id="cTc"></select></label>
         <button class="primary" type="submit" data-i18n="createBtn">Create game</button>
       </form>
       <form class="form" id="aiForm" hidden>
         <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
+        <label for="aRows"><span data-i18n="rowsOpt">Board size</span><select id="aRows"></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <p class="hint err" id="aRowsNote"></p>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
+        <label for="fRows"><span data-i18n="rowsOpt">Board size</span><select id="fRows"></select></label>
         <label for="fTc"><span data-i18n="tc">Time control</span><select id="fTc"></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="testForm" hidden>
+        <label for="tRows"><span data-i18n="rowsOpt">Board size</span><select id="tRows"></select></label>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="loadForm" hidden>
@@ -170,8 +175,10 @@ html:root{--accRight:0px}
 <script src="common/ai.js?v=3"></script>
 <script>
 function VoloEngine(){
-  // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections.
-  const RAD=6,cells=[];
+  // Hexagonal board, edge 7 (radius 6), without the 6 corners and the centre: 120 intersections. Smaller boards (a trial,
+  // 18.11.2026): VoloEngine(5) (11 rows, 84 points) or VoloEngine(4) (9 rows, 54 points), the same centre and corners
+  // left out. (The radius is read from arguments: ~/Jeux/ia finds this function by its first line, unchanged.)
+  const RAD=arguments[0]||6,cells=[];
   for(let q=-RAD;q<=RAD;q++)for(let r=-RAD;r<=RAD;r++){const s=-q-r;if(Math.abs(s)>RAD)continue;
     const m=Math.max(Math.abs(q),Math.abs(r),Math.abs(s)),mn=Math.min(Math.abs(q),Math.abs(r),Math.abs(s));
     if(m===0)continue;                 // centre
@@ -252,14 +259,15 @@ function VoloEngine(){
     if(connected(t,p))return {w:p,why:'w_flock'};
     if(mv.keep>=0&&connected(t,1-p))return {w:1-p,why:'w_region'};
     return null;}
-  return {N,Q,R,NB,AT,TURN,PASS,MAX,NEST,init,gen,flights,placements,canPass,expand,base,dest,apply,outcome,connected,regions,emptyClass,count,flockCount,comps};
+  return {RAD,N,Q,R,NB,AT,TURN,PASS,MAX,NEST,init,gen,flights,placements,canPass,expand,base,dest,apply,outcome,connected,regions,emptyClass,count,flockCount,comps};
 }
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
+ rowsOpt:"Taille du plateau",rows_fmt:"{n} lignes",rows_std:"{n} lignes (le jeu)",rows_ai:"L’ordinateur n’est pas entraîné sur 11 et 9 lignes : il y joue moins bien qu’à 13 lignes.",
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",mq_p1:"Orange",mq_p2:"Bleu",
  lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",l_pass:"passe",w_pass:"les deux joueurs ont passé",ht_1:"<b>Ajouter un oiseau</b> Cliquer un emplacement légal.",ht_2:"<b>Faire voler un oiseau</b> Sélectionner et cliquer sur la destination.",ht_3:"<b>Faire voler une ligne</b> Cliquer aux deux extrémités. Choisir la destination.",rules:`<summary>Règles en bref</summary><ul>
- <li><b>Plateau</b> : un hexagone de 7 points de côté, privé de ses 6 coins et de son centre (120 points).</li>
+ <li><b>Plateau</b> : un hexagone de 7 points de côté, privé de ses 6 coins et de son centre (120 points). À l'essai, des plateaux plus petits : 11 lignes (84 points) ou 9 lignes (54 points), le même centre et les mêmes coins retirés.</li>
  <li><b>But</b> : réunir tous ses oiseaux en une seule nuée, des oiseaux qui se touchent de proche en proche. Les oiseaux sont illimités. Au départ, 3 oiseaux par camp sont dans les six nids, un point à l'intérieur de chaque coin retiré, en alternance. Orange commence.</li>
  <li>À son tour, on <b>ajoute un oiseau</b> ou on <b>fait voler</b> des oiseaux.</li>
  <li><b>Ajouter</b> : sur tout point libre qui n'est pas voisin d'un de ses oiseaux et n'est pas dans une zone close uniquement par des oiseaux adverses.</li>
@@ -269,10 +277,11 @@ const VO_I18N={fr:{
  <li><b>Passer</b> : seulement si l'on ne peut pas voler et qu'on ne peut ajouter que dans des zones closes par ses propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
+ rowsOpt:"Board size",rows_fmt:"{n} rows",rows_std:"{n} rows (the game)",rows_ai:"The computer is not trained on 11 and 9 rows: it plays less well there than on 13.",
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",mq_p1:"Orange",mq_p2:"Blue",
  lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game, colours swapped.",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",l_pass:"pass",w_pass:"both players passed",ht_1:"<b>Add a bird</b> Click a legal point.",ht_2:"<b>Fly a bird</b> Select it and click its destination.",ht_3:"<b>Fly a line</b> Click both ends. Choose the destination.",rules:`<summary>Rules in brief</summary><ul>
- <li><b>Board</b>: a hexagon with 7 points per side, without its 6 corners and its centre (120 points).</li>
+ <li><b>Board</b>: a hexagon with 7 points per side, without its 6 corners and its centre (120 points). On trial, smaller boards: 11 rows (84 points) or 9 rows (54 points), the same centre and corners left out.</li>
  <li><b>Goal</b>: bring all your birds together into a single flock, birds touching one another from neighbour to neighbour. Birds are unlimited. At the start, 3 birds per side are in the six nests, one point inside each removed corner, alternating. Orange plays first.</li>
  <li>On your turn, either <b>add a bird</b> or <b>let birds fly</b>.</li>
  <li><b>Add a bird</b>: on any free point that is not next to one of your birds and not inside an area enclosed only by the opponent's birds.</li>
@@ -282,10 +291,11 @@ const VO_I18N={fr:{
  <li><b>Pass</b>: only if you cannot fly and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row: a draw.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
 },es:{
+ rowsOpt:"Tamaño del tablero",rows_fmt:"{n} filas",rows_std:"{n} filas (el juego)",rows_ai:"El ordenador no está entrenado en 11 y 9 filas: juega peor que en 13.",
  mq_q:"¿Quieres jugar con Naranja (primero) o con Azul?",mq_1:"Naranja",mq_2:"Azul",mq_p1:"con Naranja",mq_p2:"con Azul",
  lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",st_autoPass:"Ninguna jugada posible: pasas.",
  needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",l_pass:"pasa",w_pass:"los dos jugadores han pasado",ht_1:"<b>Añadir un pájaro</b> Haz clic en un punto legal.",ht_2:"<b>Hacer volar un pájaro</b> Selecciónalo y haz clic en el destino.",ht_3:"<b>Hacer volar una línea</b> Haz clic en los dos extremos. Elige el destino.",rules:`<summary>Reglas en breve</summary><ul>
- <li><b>Tablero</b>: un hexágono de 7 puntos de lado, sin sus 6 esquinas ni su centro (120 puntos).</li>
+ <li><b>Tablero</b>: un hexágono de 7 puntos de lado, sin sus 6 esquinas ni su centro (120 puntos). A prueba, tableros más pequeños: 11 filas (84 puntos) o 9 filas (54 puntos), sin el mismo centro ni las mismas esquinas.</li>
  <li><b>Objetivo</b>: reunir todos sus pájaros en una sola bandada, pájaros que se tocan de vecino en vecino. Los pájaros son ilimitados. Al principio, 3 pájaros por bando están en los seis nidos, un punto hacia dentro de cada esquina retirada, alternándose. Naranja empieza.</li>
  <li>En su turno, se <b>añade un pájaro</b> o se <b>hacen volar</b> pájaros.</li>
  <li><b>Añadir</b>: en cualquier punto libre que no sea vecino de uno de sus pájaros ni esté en una zona cerrada únicamente por pájaros adversarios.</li>
@@ -295,36 +305,57 @@ const VO_I18N={fr:{
  <li><b>Pasar</b>: solo si no se puede volar y únicamente se puede añadir en zonas cerradas por sus propios pájaros (o en ninguna parte). Dos pases seguidos: tablas.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo es un juego de Dieter Stein (2010). Reglas: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Conservar {r}"
 }};
-const E=VoloEngine(),{N,TURN}=E;
+// Board sizes (a trial, 18.11.2026): 13 rows (the game's), 11 or 9. A game's rules hold rows only when it is not 13
+// (GAME.rules: {} at 13, so the 13-row games, links and saves are as before). E, N and TURN are the engine of the game
+// shown (view.rows), or of the size chosen on the home page (syncE); voReplay, the SGF and the worker take the engine of
+// the position or rules they are given.
+const ROWSET=[13,11,9],ENG={};
+const eng=rows=>ENG[rows]||(ENG[rows]=VoloEngine((rows-1)/2));
+const rowsOf=v=>ROWSET.includes(+(v&&v.rows))?+v.rows:13;
+let homeR=null;   // the size chosen on the home page (volo-rows), read once
+const homeRows=()=>homeR??(homeR=rowsOf({rows:LS.get('volo-rows',13)}));
+const engOfPos=st=>ROWSET.map(eng).find(e=>e.N+2===st.length||e.N+3===st.length)||eng(13);
+let E=eng(13),N=E.N,TURN=E.TURN;
+// the engine of the game shown, or of the home page's size: set again on entering each function of the page that uses E
+// (core calls them after changing view)
+function syncE(){const e=eng(typeof view!=='undefined'&&view?rowsOf(view):homeRows());if(e!==E){E=e;N=e.N;TURN=e.TURN;}}
 const SIZE=120;
 const CN=p=>t(p?'blue':'orange');
 // ---------- board ----------
 const SP=50,X=i=>SP*(E.Q[i]+E.R[i]/2),Y=i=>SP*0.866025*E.R[i];
-const ROWS=[],QMIN={};for(let i=0;i<N;i++){if(!ROWS.includes(E.R[i]))ROWS.push(E.R[i]);QMIN[E.R[i]]=Math.min(QMIN[E.R[i]]??99,E.Q[i]);}ROWS.sort((a,b)=>a-b);
 // Names: boardspace's (the one archive of Volo games), turned a quarter turn: its columns A–M are the rows here, a at the
 // top, and the number counts along the row from its left end as if the board were the full hexagon of side 7 (the six
 // corners and the centre, which Volo leaves out, keep their numbers): a2–a6, b1–b8 … f1–f12, g2–g12 without g7, h1–h12 …
 // m2–m6. On the upper half a number follows one diagonal, on the lower half the other. The board writes the first and
-// last name of each row at its two ends.
-const name=i=>'abcdefghijklm'[ROWS.indexOf(E.R[i])]+(E.Q[i]-Math.max(-6,-6-E.R[i])+1);
-// viewBox: room on both sides for the names at the rows' ends (core: coordsOn); without them, the same margin on both sides (--board-ar too)
-const VB=(()=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
-  return [`${x0-56} ${y0-30} ${x1-x0+112} ${y1-y0+60}`,`${x0-30} ${y0-30} ${x1-x0+60} ${y1-y0+60}`];})();
+// last name of each row at its two ends. The smaller boards the same way: rows a–k (11) or a–i (9).
+const nameIn=(e,i)=>'abcdefghijklm'[e.R[i]+e.RAD]+(e.Q[i]-Math.max(-e.RAD,-e.RAD-e.R[i])+1);
+const name=i=>nameIn(E,i);
+// viewBox: room on both sides for the names at the rows' ends (core: coordsOn); without them, the same margin on both
+// sides (--board-ar too, set for the size drawn: boardBox)
+const VBS={};
+function boardBox(){const e=E,k=e.RAD;if(!VBS[k]){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<e.N;i++){x0=Math.min(x0,X(i));x1=Math.max(x1,X(i));y0=Math.min(y0,Y(i));y1=Math.max(y1,Y(i));}
+  VBS[k]={vb:[`${x0-56} ${y0-30} ${x1-x0+112} ${y1-y0+60}`,`${x0-30} ${y0-30} ${x1-x0+60} ${y1-y0+60}`],ar:[(x1-x0+112)+'/'+(y1-y0+60),(x1-x0+60)+'/'+(y1-y0+60)]};}
+  const b=VBS[k],ds=document.documentElement.style;
+  if(k===6)ds.removeProperty('--board-ar');else ds.setProperty('--board-ar',b.ar[coordsOn?0:1]);
+  return b.vb[coordsOn?0:1];}
+const ROWSOF=()=>{const a=[];for(let r=-E.RAD;r<=E.RAD;r++)a.push(r);return a;};
 const enc=m=>m.t==='x'?'x':(m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'+m.k)+(m.keep>=0?'k'+m.keep:'');
 // the move list: a bird added « c4 », a flight « c3–c5→e4 » (first and last bird of the line, the first one's landing point)
-const txtOf=m=>m.t==='x'?t('l_pass'):m.t==='p'?name(m.at):(m.cells.length>1?name(m.cells[0])+'–'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+'→'+name(E.dest(m,m.cells[0]));
+const txtOf=m=>(syncE(),txtIn(E,m));
 // SGF: the same without arrows, « c4 », « c3-c5 e4 » (« c3 e4 » for one bird), « pass »; « /d6 »: a bird of the opponent's
 // region that stays, when the move cuts them into several
-const sgfV=m=>(m.t==='x'?'pass':m.t==='p'?name(m.at):(m.cells.length>1?name(m.cells[0])+'-'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+' '+name(E.dest(m,m.cells[0])))+(m.keep>=0?' /'+name(m.keep):'');
+const sgfV=(m,e)=>{e=e||E;const name=i=>nameIn(e,i);return (m.t==='x'?'pass':m.t==='p'?name(m.at):(m.cells.length>1?name(m.cells[0])+'-'+name(m.cells[m.cells.length-1]):name(m.cells[0]))+' '+name(e.dest(m,m.cells[0])))+(m.keep>=0?' /'+name(m.keep):'');};
 // a move awaiting confirmation: « Passer » for a pass, the regions mentioned when the move removes some
 const describe=m=>m.t==='x'?t('pass'):txtOf(m)+(m.keep>=0?' ('+t('regions').toLowerCase()+')':'');
 // st is the engine's array (st[TURN] = seat to move); st.turn is set for the shared code.
 // Replaying a move means generating every legal move (flights included) to find the one with that code: costly, so
-// the positions already replayed are kept (core: replayKept). The rules are ignored (a single rule set).
-function voReplay(rules,moves){return replayKept(rules,moves,{init:()=>{const st=E.init();st.turn=st[TURN];return st;},
-  play(st,code){const p=st[TURN],mv=E.gen(st).find(m=>enc(m)===code);if(!mv)return null;
-    const r=E.apply(st,mv);let t=txtOf(mv);if(r.removed.length)t+=' ⊖'+r.removed.length;r.st.turn=r.st[TURN];
-    return {st:r.st,e:{p,txt:t},last:{mv,removed:r.removed},over:E.outcome(r.st,p,mv)};}});}
+// the positions already replayed are kept (core: replayKept). The rules: the board's size alone (rows).
+const txtIn=(e,m)=>m.t==='x'?t('l_pass'):m.t==='p'?nameIn(e,m.at):(m.cells.length>1?nameIn(e,m.cells[0])+'–'+nameIn(e,m.cells[m.cells.length-1]):nameIn(e,m.cells[0]))+'→'+nameIn(e,e.dest(m,m.cells[0]));
+function voReplay(rules,moves){const e=eng(rowsOf(rules)),T=e.TURN;
+  return replayKept(rules,moves,{init:()=>{const st=e.init();st.turn=st[T];return st;},
+  play(st,code){const p=st[T],mv=e.gen(st).find(m=>enc(m)===code);if(!mv)return null;
+    const r=e.apply(st,mv);let t=txtIn(e,mv);if(r.removed.length)t+=' ⊖'+r.removed.length;r.st.turn=r.st[T];
+    return {st:r.st,e:{p,txt:t},last:{mv,removed:r.removed},over:e.outcome(r.st,p,mv)};}});}
 
 // ---------- move preparation ----------
 // ui: sel (the birds selected to fly), hist (the successive selections), basemv (a move that cuts the opponent's birds
@@ -335,10 +366,10 @@ const hov=()=>typeof ui.hover==='number'?ui.hover:-1;   // core may clear it to 
 // a move is being prepared: a selection, a region choice or a pending confirmation
 const preparing=()=>!!(ui.sel.length||ui.basemv||ui.pending);
 // Reset: drop the whole prepared sequence, back to the neutral board
-function cancelPrep(){if(!preparing())return;resetUi();renderGame();}
+function cancelPrep(){syncE();if(!preparing())return;resetUi();renderGame();}
 // Flights whose segment is exactly the current selection
 const sameSeg=(m,sel)=>m.t==='f'&&m.cells.length===sel.length&&m.cells.every((c,k)=>c===sel[k]);
-function lineThrough(a,b){ // cells strictly between a and b if they are on a common axis, else null
+function lineThrough(a,b){syncE(); // cells strictly between a and b if they are on a common axis, else null
   for(let d=0;d<6;d++){const path=[];let x=a;for(let k=0;k<14;k++){x=E.NB[x*6+d];if(x<0)break;if(x===b)return {d,path};path.push(x);}}return null;}
 const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().reverse():sel;
 // The landing point clicked for a flight: where one marked bird of the line lands, a different point for each flight.
@@ -346,15 +377,15 @@ const normSel=sel=>sel.length>1&&lineThrough(sel[0],sel[1]).d>=3?sel.slice().rev
 // ends first); otherwise (a line sliding along its axis only onto itself, in both directions) the front bird of each
 // flight: in file, the end on the side it flies to; side by side, the first bird.
 const leadOf=m=>m.cells.length>1&&m.d===lineThrough(m.cells[0],m.cells[1]).d?m.cells[m.cells.length-1]:m.cells[0];
-function soleLead(cells,legal){const fl=legal.filter(m=>sameSeg(m,cells));if(!fl.length)return -1;
+function soleLead(cells,legal){syncE();const fl=legal.filter(m=>sameSeg(m,cells));if(!fl.length)return -1;
   for(const b of [cells[0],cells[cells.length-1]].concat(cells.slice(1,-1)))if(fl.every(m=>!cells.includes(E.dest(m,b))))return b;
   return -1;}
-function landAt(m,legal){const b=soleLead(m.cells,legal);return E.dest(m,b>=0?b:leadOf(m));}
+function landAt(m,legal){syncE();const b=soleLead(m.cells,legal);return E.dest(m,b>=0?b:leadOf(m));}
 // The provisional birds of a prepared move: the bird added, or where the flying birds land
 const provCells=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>E.dest(m,c)):[];
 let curLegal=[];   // legal moves of the position drawn (for the hover)
 // A click (or a single tap) plays one step; a click on a provisional bird goes back one step.
-function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+function clickCell(i){syncE();if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;renderGame();}   // a click drops the suggestion
   const legal=E.gen(r.st),me=mySeat+1,st=r.st;ui.hover=-1;
   const prep=ui.pending||ui.basemv;
@@ -394,28 +425,28 @@ function clickCell(i){if(!view)return;const r=replay(view,view.moves,view.result
   if(st[i]===me){ui.sel=[i];ui.hist=[[i]];renderGame();return;}
   const pl=legal.find(m=>m.t==='p'&&m.at===i);if(pl)pick(pl);}
 // pick: base move chosen; if several variants exist (regions), ask which one stays
-function pick(mv){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
+function pick(mv){syncE();if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;const r=replay(view,view.moves,view.result);const vs=E.expand(r.st,mv);
   if(vs.length>1){ui.basemv={...mv,keep:-1};renderGame();}else choose(vs[0]);}
 // A move waits for the final confirmation (in the action bar) before it is sent, unless « Confirm each move » is off
 // (on a touch screen too, since 09.11.2026: the option used to be ignored there; never after a region choice); a move
 // that wins at once is sent without confirmation (C14)
-function choose(mv,viaRegion){if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;
+function choose(mv,viaRegion){syncE();if(mv.t!=='f')ui.hist=[];ui.sel=[];ui.hover=-1;ui.basemv=null;
   if(!$('needConfirm').checked&&!viaRegion||winsNow(mv)){ui.pending=null;send(mv);return;}
   ui.pending=mv;renderGame();}
-function winsNow(mv){if(!view)return false;const st=replay(view,view.moves,view.result).st,p=st[TURN],o=E.outcome(E.apply(st,mv).st,p,mv);return !!o&&o.w===p;}
+function winsNow(mv){syncE();if(!view)return false;const st=replay(view,view.moves,view.result).st,p=st[TURN],o=E.outcome(E.apply(st,mv).st,p,mv);return !!o&&o.w===p;}
 $('needConfirm').checked=LS.get('volo-confirm',true)!==false;
 $('needConfirm').onchange=e=>{LS.set('volo-confirm',e.target.checked);
   // switched off with a simple move waiting: it is played
   if(!e.target.checked&&ui.pending&&!(ui.pending.keep>=0)&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;ui.pending=null;send(mv);}}};
-function doPass(){if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);}
+function doPass(){syncE();if(!view)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;const mv=E.gen(r.st).find(m=>m.t==='x');if(mv)choose(mv);}
 // The region choice: one command per region of the opponent's birds (lettered on the board), « Keep A », « Keep B »…;
 // hovering a command shows the result (the birds of the other regions fade)
-function regionBtns(st){if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.basemv),1-mySeat);
+function regionBtns(st){syncE();if(!ui.basemv)return [];const rg=E.regions(E.base(st,ui.basemv),1-mySeat);
   return E.expand(st,ui.basemv).map(mv=>({k:rg.list.indexOf(rg.lab[mv.keep]),mv})).sort((a,b)=>a.k-b.k)
     .map(({k,mv})=>({label:t('keepR',{r:'ABCDEFGH'[k]||'?'}),on:()=>{if(!ui.basemv)return;ui.basemv=null;choose(mv,true);},
       hover:on=>{if(!ui.basemv)return;ui.hover=on?mv.keep:-1;redrawBoard();}}));}
 // The board alone (the hover changes nothing in the action bar)
-function redrawBoard(){if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);voBoard({r,d:r,mine:isMyTurn(r)});}
+function redrawBoard(){syncE();if(!view||navAt!==null)return;const r=replay(view,view.moves,view.result);voBoard({r,d:r,mine:isMyTurn(r)});}
 let lastPT='mouse';
 $('svg').addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';});
 $('svg').addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)clickCell(+g.dataset.i);lastPT='mouse';});
@@ -425,7 +456,7 @@ document.addEventListener('click',e=>{if(!view||!ui.sel.length||ui.pending||ui.b
 // With a mouse: the bird to add, or the flight to the point hovered, in transparency (legal targets only); any of my
 // birds hovered (able to fly or not) is ringed; during the region choice, an opponent's bird hovered fades the birds
 // of the other regions
-function hoverCell(i){if(!view||ui.pending||hintOn())return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+function hoverCell(i){syncE();if(!view||ui.pending||hintOn())return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
   const st=r.st;let nv=-1;
   if(i>=0){if(ui.basemv){if(E.base(st,ui.basemv)[i]===2-mySeat)nv=i;}
     else if(st[i]===mySeat+1){if(!ui.sel.includes(i))nv=i;}
@@ -437,7 +468,7 @@ if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
   $('svg').addEventListener('pointerleave',()=>hoverCell(-1));}
 
 // ---------- the board and the action bar (hooks) ----------
-function voBoard({r,d,mine}){
+function voBoard({r,d,mine}){syncE();
   if(navAt!==null){drawBoard(d.st,{last:d.last});return {legal:[]};}
   const legal=r.over?[]:E.gen(r.st);curLegal=mine?legal:[];
   const h=hov();let pv=null;
@@ -454,21 +485,21 @@ function voBoard({r,d,mine}){
 // A forced pass plays itself: half a second after the move that forces it, « No move available: you pass » for a
 // second, then the pass is sent. Returns whether the message is showing.
 let ap=null;   // {n: the position (moves played), shown}
-function autoPass(r){const n=view.moves.length;if(ap&&ap.n===n)return ap.shown;const a=ap={n,shown:false};
+function autoPass(r){syncE();const n=view.moves.length;if(ap&&ap.n===n)return ap.shown;const a=ap={n,shown:false};
   const still=()=>ap===a&&view&&!view.result&&view.moves.length===n;
   setTimeout(()=>{if(!still())return;a.shown=true;renderGame();
     setTimeout(()=>{if(!still())return;ap=null;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
       const L=E.gen(r.st);if(L.length===1&&L[0].t==='x')send(L[0]);},1000);},500);
   return false;}
 // My turn, no move awaiting confirmation (that one is the shared Reset + Confirm)
-function voTurnStatus({r,o,prep,idle,undoB,RST}){
+function voTurnStatus({r,o,prep,idle,undoB,RST}){syncE();
   if(ui.basemv)status(t('st_keep',{c:CN(1-mySeat)}),'turn',[RST].concat(regionBtns(r.st)));
   else if(ui.sel.length)status(t('st_sel'),'turn',[RST]);
   else if(prep)status('','turn',[RST]);
   else if(o.onlyPass)status(autoPass(r)?t('st_autoPass'):'','turn',[undoB]);
   else status(solo()?t('st_playN',{n:seatName(r.st.turn)}):t('st_play'),'turn',idle.concat([o.canPass?{label:t('pass'),on:doPass}:null]));}
 // Players' cards: birds in the sky and flocks, under each name (added to the cards the shared code draws)
-function voTally(){if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
+function voTally(){syncE();if(!view)return;const r=replay(view,view.moves,view.result),d=navAt===null?r:navPos(navAt);
   for(const p of [0,1]){const pc=$('pl'+p);if(!pc)continue;const ty=document.createElement('div');ty.className='tally';const on=E.count(d.st,p),fl=E.flockCount(d.st,p);
     const lab=(l,s)=>`title="${t(l)}" data-l="${t(l)}" data-s="${t(s||l)}"`;
     ty.innerHTML=`<span ${lab('sky')}>${on}</span><span ${lab('flocks')}>${fl}</span>`;pc.appendChild(ty);}}
@@ -483,13 +514,13 @@ const LASTDOT='#13202a';   // a dark edge (dark on both colours, in both themes)
 function newMark(g,x,y){el('circle',{cx:x,cy:y,r:FR,fill:'none',stroke:'var(--accent)','stroke-width':2.4,'pointer-events':'none'},g);}
 // cur: real position. opt: {legal (moves in cur), interactive, last (the last move, to mark), pv: {hover:mv} (in transparency)
 // or {prov:mv, region, hover} (a provisional move: the board after it, its birds opaque in a dashed frame)}
-function drawBoard(cur,opt){opt=opt||{};const svg=$('svg');svg.textContent='';
-  svg.setAttribute('viewBox',VB[coordsOn?0:1]);
+function drawBoard(cur,opt){syncE();opt=opt||{};const svg=$('svg');svg.textContent='';
+  svg.setAttribute('viewBox',boardBox());
     // grid lines between neighbouring points
   const grid=el('g',{stroke:'var(--grid)','stroke-width':1.3,opacity:.75},svg);
   for(let i=0;i<N;i++)for(let d=0;d<3;d++){const j=E.NB[i*6+d];if(j>=0)el('line',{x1:X(i),y1:Y(i),x2:X(j),y2:Y(j)},grid);}
   // coordinates (core: coordsOn): the first and last name of each row, at its two ends
-  if(coordsOn)for(const r of ROWS){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.R[i]===r){if(lo<0||E.Q[i]<E.Q[lo])lo=i;if(hi<0||E.Q[i]>E.Q[hi])hi=i;}
+  if(coordsOn)for(const r of ROWSOF()){let lo=-1,hi=-1;for(let i=0;i<N;i++)if(E.R[i]===r){if(lo<0||E.Q[i]<E.Q[lo])lo=i;if(hi<0||E.Q[i]>E.Q[hi])hi=i;}
     el('text',{class:'coord',x:X(lo)-25,y:Y(lo)+4,'text-anchor':'end','font-size':13},svg).textContent=name(lo);
     el('text',{class:'coord',x:X(hi)+25,y:Y(hi)+4,'text-anchor':'start','font-size':13},svg).textContent=name(hi);}
   const pv=opt.pv||null,prov=pv&&pv.prov,last=opt.last,lm=last&&last.mv,me=mySeat+1;
@@ -796,7 +827,15 @@ M.volo = {E, A};
 // les nids bleus : la position image a les couleurs échangées (et l'autre camp au trait), ce qui, vu du camp qui joue,
 // ne change que le plan 3. Les règles ne dépendent pas de la couleur en cours de partie.
 const {E, A} = require('./volo.js');
-const N = E.N, G = 13, HW = G * G, C = 12, NPOL = N + 1, PASS = N;
+const N = E.N, G = 13, HW = G * G, C = 12, NPOL = 121, PASS = 120;
+// (Hand change in the page, 18.11.2026, branch volo/petits-plateaux; not in games/volo/encode.js of ~/Jeux/ia.) A
+// smaller board (11 or 9 rows, E.RAD 5 or 4) sits in the middle of the 13×13 grid, its missing points masked by plane
+// 0; the network's policy stays on the 120 points of the 13-row board: BIG, a point's index there (13 rows: itself).
+const BIG = new Int16Array(N);
+{ const at = {}; let k = 0;
+  for (let q = -6; q <= 6; q++) for (let r = -6; r <= 6; r++) { const s = -q - r, a = [Math.abs(q), Math.abs(r), Math.abs(s)], m = Math.max(...a);
+    if (Math.abs(s) > 6 || m === 0 || (m === 6 && Math.min(...a) === 0)) continue; at[q + ',' + r] = k++; }
+  for (let i = 0; i < N; i++) BIG[i] = at[E.Q[i] + ',' + E.R[i]]; }
 const PLANES = ['plateau', 'mes oiseaux', 'oiseaux adverses', 'Bleu joue', 'ma mobilité', 'mobilité adverse',
   'vide clos par moi', 'vide clos par l\'adversaire', 'vide mixte', 'mes ajouts', 'ajouts adverses', 'passe avant'];
 const CELL = new Int16Array(N);   // point → case de la grille
@@ -833,7 +872,7 @@ function areasOf(S, p) { const c = p + 1; _EL.fill(-1); let k = 0;
 
 // ----- coups ↔ 121 cases -----
 // les cases d'un coup (un ajout : 1 ; un vol : ses cases d'arrivée ; passer : 120)
-function moveIdx(m) { return m.t === 'x' ? [PASS] : m.t === 'p' ? [m.at] : m.cells.map(z => E.dest(m, z)); }
+function moveIdx(m) { return m.t === 'x' ? [PASS] : m.t === 'p' ? [BIG[m.at]] : m.cells.map(z => BIG[E.dest(m, z)]); }
 const baseKey = m => m.t === 'x' ? 'x' : m.t === 'p' ? 'p' + m.at : 'f' + m.cells.join('.') + '>' + m.d + '.' + m.k;
 // distribution cible depuis les visites de la racine : chaque coup verse ses visites sur ses cases, à parts égales
 function policyTarget(moves, visits, out) {
@@ -1073,14 +1112,14 @@ const HINT={algo:'nn',sims:2000,net:NN_NET};   // the simulations of 5 s at most
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
 const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
 const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
-let pageAI=null;   // the search on the page itself, when no worker can be made
+let pageAI=null;   // the search on the page itself, when no worker can be made (one per board size)
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances
 function voEvalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(r.policy)return null;if(s>=1000||s>4)return {k:'ai_win'};if(s<=-1000||s<-4)return {k:'ai_lost'};
   return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
 // A blocked game, for the network levels (VoloNN): oppStuck, the opponent had to pass twice running (a pass is only
 // allowed without any other move); noProgress, the side to move's flocks are no fewer than 5 of its moves ago. Both:
 // the computer accepts a draw (without this, a group shut in for good could make the game go on for ever).
-function voProgress(v){const ms=v.moves||[],n=ms.length,me=n%2;let st=E.init();const fl=[];
+function voProgress(v){const ms=v.moves||[],n=ms.length,me=n%2,E=eng(rowsOf(v));let st=E.init();const fl=[];
   for(let k=0;k<n;k++){const mv=E.gen(st).find(m=>enc(m)===ms[k]);if(!mv)break;st=E.apply(st,mv).st;if(k%2===me)fl.push(E.flockCount(st,me));}
   return {oppStuck:n>=3&&ms[n-1]==='x'&&ms[n-3]==='x',noProgress:fl.length>=6&&fl[fl.length-1]>=fl[fl.length-6]};}
 // ---------- « Comment jouer » (GAME.howto; the card itself: common/core.js) ----------
@@ -1138,26 +1177,42 @@ function voHowto(k,A){const {svg,wait,tween,mover,cursor,click}=A;
 // ---------- the interface with common/core.js ----------
 const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',seatCol:s=>s?'mq_2':'mq_1',   // Orange (seat 0) / Bleu
   again:mv=>mv.t==='p'&&!(mv.keep>=0),size:SIZE,codeTag:'VOLO1',i18n:VO_I18N,drawOffer:true,
-  rules:()=>({}),form:()=>({}),
+  // the board's size: nothing at 13 rows (the games, links and files as before), {rows} at 11 or 9; kept between games
+  // (volo-rows); a game by link gives it to the guest with the rest of its rules (core: hostPublic)
+  rules:g=>{const n=rowsOf(g);return n===13?{}:{rows:n};},
+  form:p=>{const n=rowsOf({rows:$(p+'Rows')&&$(p+'Rows').value});LS.set('volo-rows',n);homeR=n;return n===13?{}:{rows:n};},
+  rulesTxt:r=>{const n=rowsOf(r);return n===13?'':t('rows_fmt',{n});},
+  applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Rows');if(!s)continue;const v=s.value||homeRows();
+    s.innerHTML=ROWSET.map(n=>`<option value="${n}">${t(n===13?'rows_std':'rows_fmt',{n})}</option>`).join('');s.value=v;}rowsNote();},
   // against the computer, its level and the options it plays with (the network's version among them), in the SGF only
-  sgf:{val:(code,st)=>{const m=E.gen(st).find(x=>enc(x)===code);return m?sgfV(m):code;},
-    code:(v,st)=>{v=String(v).trim().toLowerCase().replace(/\s+/g,' ');const m=E.gen(st).find(x=>sgfV(x)===v);return m?enc(m):null;}},
+  // SZ: the number of rows, written for 11 and 9 only (a 13-row file as before; XR holds the rows too)
+  sgf:{val:(code,st)=>{const e=engOfPos(st),m=e.gen(st).find(x=>enc(x)===code);return m?sgfV(m,e):code;},
+    code:(v,st)=>{v=String(v).trim().toLowerCase().replace(/\s+/g,' ');const e=engOfPos(st),m=e.gen(st).find(x=>sgfV(x,e)===v);return m?enc(m):null;},
+    sz:v=>{const n=rowsOf(v);return n===13?undefined:n;}},
   sgfHead:()=>{const o=role==='ai'&&LEVELS[level];return o?{XA:JSON.stringify({level,...o})}:{};},
   replay:voReplay,
-  legal:(st,code)=>E.gen(st).some(m=>enc(m)===code)?code:null,
+  legal:(st,code)=>engOfPos(st).gen(st).some(m=>enc(m)===code)?code:null,
   enc,describe,newUi,preparing,cancel:cancelPrep,
   board:voBoard,turnStatus:voTurnStatus,
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\n'+VoloNN.toString()+'\nconst VA=VoloAI(VoloEngine());function aiSearch(pos,opt){return VA.search(pos,opt);}'+
+  // one engine, fast rules and network per board size in the worker, told by the position's length (N+2 or N+3)
+  aiSrc:()=>AISearch.toString()+'\n'+VoloEngine.toString()+'\n'+VoloAI.toString()+'\n'+VoloNN.toString()+
+    '\nconst VE={},VAS={},VNS={},vRad=P=>P.length<=57?4:P.length<=87?5:6,vEng=k=>VE[k]||(VE[k]=VoloEngine(k)),vAI=k=>VAS[k]||(VAS[k]=VoloAI(vEng(k)));'+
+    '\nfunction aiSearch(pos,opt){return vAI(vRad(pos)).search(pos,opt);}'+
     // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
     // if the network cannot load (offline, old browser), the MCTS 3 s level answers instead
-    '\nconst VN=VoloNN(VoloEngine(),VoloAI(VoloEngine()),'+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(MCTS3)+';'+
+    '\nconst vNN=k=>VNS[k]||(VNS[k]=VoloNN(vEng(k),VoloAI(vEng(k)),'+JSON.stringify(location.href)+')),NN_FALLBACK='+JSON.stringify(MCTS3)+';'+
     '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
-    'VN.search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>VA.search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
+    'const k=vRad(m.st);vNN(k).search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>vAI(k).search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
   aiOpt:voProgress,
-  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>(pageAI=pageAI||VoloAI(E)).search(Array.from(st),opt.algo==='nn'?MCTS3:opt),   // no worker: no network either
+  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>{const e=engOfPos(st);pageAI=pageAI||{};return (pageAI[e.RAD]=pageAI[e.RAD]||VoloAI(e)).search(Array.from(st),opt.algo==='nn'?MCTS3:opt);},   // no worker: no network either
   evalInfo:voEvalInfo,
-  home:()=>{drawBoard(E.init(),{});}};
+  home:()=>{syncE();drawBoard(E.init(),{});}};
+// the size chosen redraws the home board and is kept (one choice for every form)
+for(const p of ['c','a','f','t'])if($(p+'Rows'))$(p+'Rows').addEventListener('change',e=>{homeR=rowsOf({rows:e.target.value});LS.set('volo-rows',homeR);
+  for(const q of ['c','a','f','t'])if($(q+'Rows'))$(q+'Rows').value=homeR;rowsNote();if(!view)GAME.home();});
+// against the computer on 11 or 9 rows: a warning in its form (the network was trained on 13 rows only)
+function rowsNote(){const n=$('aRowsNote'),s=$('aRows');if(n)n.textContent=s&&rowsOf({rows:s.value})!==13?t('rows_ai'):'';}
 coreStart();
 </script>
 <script src="common/accueil.js?v=1"></script>
