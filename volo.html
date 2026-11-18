@@ -93,6 +93,7 @@ html:root{--accRight:0px}
         <label for="aFirst"><span data-i18n="firstIs">Who starts</span><select id="aFirst"><option value="rnd" selected data-i18n="rnd">Random</option><option value="me" data-i18n="me">Me</option><option value="ai" data-i18n="computer">The computer</option></select></label>
         <label for="aRows"><span data-i18n="rowsOpt">Board size</span><select id="aRows"></select></label>
         <label for="aLevel"><span data-i18n="level">Level</span><select id="aLevel"></select></label>
+        <p class="hint err" id="aRowsNote"></p>
         <button class="primary" type="submit" data-i18n="play">Play</button>
       </form>
       <form class="form" id="faceForm" hidden>
@@ -262,7 +263,7 @@ function VoloEngine(){
 }
 // Volo strings, merged over the shared ones (core.js)
 const VO_I18N={fr:{
- rowsOpt:"Taille du plateau",rows_fmt:"{n} lignes",rows_std:"{n} lignes (le jeu)",
+ rowsOpt:"Taille du plateau",rows_fmt:"{n} lignes",rows_std:"{n} lignes (le jeu)",rows_ai:"L’ordinateur n’est pas entraîné sur 11 et 9 lignes : il y joue moins bien qu’à 13 lignes.",
  mq_q:"Voulez-vous jouer Orange (premier) ou Bleu ?",mq_1:"Orange",mq_2:"Bleu",mq_p1:"Orange",mq_p2:"Bleu",
  lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",st_autoPass:"Aucun coup possible : vous passez.",
  needConfirm:"Confirmer chaque coup",title:"Volo",lede:"Réunissez tous vos oiseaux en une seule nuée.",by:"Un jeu de Dieter Stein.",rm_ask:"{n} propose une nouvelle partie, couleurs inversées.",orange:"orange",blue:"bleu",regions:"Régions",sky:"ciel",flocks:"nuées",st_keep:"Cliquez un oiseau de la région {c} qui reste.",st_mustPass:"Aucun coup possible : vous devez passer.",st_sel:"Cliquez un point d'arrivée, ou un oiseau aligné pour allonger la ligne.",st_play:"Ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",st_playN:"{n} : ajoutez un oiseau, ou sélectionnez un oiseau ou une ligne pour les faire voler.",w_flock:"tous les oiseaux en une seule nuée",w_region:"une seule nuée reste après le retrait des régions",l_pass:"passe",w_pass:"les deux joueurs ont passé",ht_1:"<b>Ajouter un oiseau</b> Cliquer un emplacement légal.",ht_2:"<b>Faire voler un oiseau</b> Sélectionner et cliquer sur la destination.",ht_3:"<b>Faire voler une ligne</b> Cliquer aux deux extrémités. Choisir la destination.",rules:`<summary>Règles en bref</summary><ul>
@@ -276,7 +277,7 @@ const VO_I18N={fr:{
  <li><b>Passer</b> : seulement si l'on ne peut pas voler et qu'on ne peut ajouter que dans des zones closes par ses propres oiseaux (ou nulle part). Deux passes de suite : nulle.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo est un jeu de Dieter Stein (2010). Règles : <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Garder {r}"
 },en:{
- rowsOpt:"Board size",rows_fmt:"{n} rows",rows_std:"{n} rows (the game)",
+ rowsOpt:"Board size",rows_fmt:"{n} rows",rows_std:"{n} rows (the game)",rows_ai:"The computer is not trained on 11 and 9 rows: it plays less well there than on 13.",
  mq_q:"Do you want to play Orange (first) or Blue?",mq_1:"Orange",mq_2:"Blue",mq_p1:"Orange",mq_p2:"Blue",
  lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",st_autoPass:"No move available: you pass.",
  needConfirm:"Confirm each move",title:"Volo",lede:"Gather all your birds into a single flock.",by:"A game by Dieter Stein.",rm_ask:"{n} offers a new game, colours swapped.",orange:"orange",blue:"blue",regions:"Regions",sky:"sky",flocks:"flocks",st_keep:"Click a bird in the region of {c} birds that stays.",st_mustPass:"No move available: you must pass.",st_sel:"Click a landing point, or a bird in line to extend the line.",st_play:"Add a bird, or select a bird or a line to make them fly.",st_playN:"{n}: add a bird, or select a bird or a line to make them fly.",w_flock:"all birds in one flock",w_region:"a single flock is left after the regions were cleared",l_pass:"pass",w_pass:"both players passed",ht_1:"<b>Add a bird</b> Click a legal point.",ht_2:"<b>Fly a bird</b> Select it and click its destination.",ht_3:"<b>Fly a line</b> Click both ends. Choose the destination.",rules:`<summary>Rules in brief</summary><ul>
@@ -290,7 +291,7 @@ const VO_I18N={fr:{
  <li><b>Pass</b>: only if you cannot fly and can add birds only inside areas enclosed by your own birds (or nowhere at all). Two passes in a row: a draw.</li></ul>
  <p class="hint" style="margin-top:.6em">Volo was designed by Dieter Stein (2010). Rules: <a href="https://spielstein.com/games/volo/rules">spielstein.com</a>.</p>`,keepR:"Keep {r}"
 },es:{
- rowsOpt:"Tamaño del tablero",rows_fmt:"{n} filas",rows_std:"{n} filas (el juego)",
+ rowsOpt:"Tamaño del tablero",rows_fmt:"{n} filas",rows_std:"{n} filas (el juego)",rows_ai:"El ordenador no está entrenado en 11 y 9 filas: juega peor que en 13.",
  mq_q:"¿Quieres jugar con Naranja (primero) o con Azul?",mq_1:"Naranja",mq_2:"Azul",mq_p1:"con Naranja",mq_p2:"con Azul",
  lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",st_autoPass:"Ninguna jugada posible: pasas.",
  needConfirm:"Confirmar cada jugada",title:"Volo",lede:"Reúne todos tus pájaros en una sola bandada.",by:"Un juego de Dieter Stein.",rm_ask:"{n} propone una nueva partida, con los colores invertidos.",orange:"naranja",blue:"azul",regions:"Regiones",sky:"cielo",flocks:"bandadas",st_keep:"Haz clic en un pájaro de la región {c} que se queda.",st_mustPass:"Ninguna jugada posible: debes pasar.",st_sel:"Haz clic en un punto de llegada, o en un pájaro alineado para alargar la línea.",st_play:"Añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",st_playN:"{n}: añade un pájaro, o selecciona un pájaro o una línea para hacerlos volar.",w_flock:"todos los pájaros en una sola bandada",w_region:"queda una sola bandada tras la retirada de las regiones",l_pass:"pasa",w_pass:"los dos jugadores han pasado",ht_1:"<b>Añadir un pájaro</b> Haz clic en un punto legal.",ht_2:"<b>Hacer volar un pájaro</b> Selecciónalo y haz clic en el destino.",ht_3:"<b>Hacer volar una línea</b> Haz clic en los dos extremos. Elige el destino.",rules:`<summary>Reglas en breve</summary><ul>
@@ -1182,7 +1183,7 @@ const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',seatCol:s=>s?'mq_2':
   form:p=>{const n=rowsOf({rows:$(p+'Rows')&&$(p+'Rows').value});LS.set('volo-rows',n);homeR=n;return n===13?{}:{rows:n};},
   rulesTxt:r=>{const n=rowsOf(r);return n===13?'':t('rows_fmt',{n});},
   applyStatic:()=>{for(const p of ['c','a','f','t']){const s=$(p+'Rows');if(!s)continue;const v=s.value||homeRows();
-    s.innerHTML=ROWSET.map(n=>`<option value="${n}">${t(n===13?'rows_std':'rows_fmt',{n})}</option>`).join('');s.value=v;}},
+    s.innerHTML=ROWSET.map(n=>`<option value="${n}">${t(n===13?'rows_std':'rows_fmt',{n})}</option>`).join('');s.value=v;}rowsNote();},
   // against the computer, its level and the options it plays with (the network's version among them), in the SGF only
   // SZ: the number of rows, written for 11 and 9 only (a 13-row file as before; XR holds the rows too)
   sgf:{val:(code,st)=>{const e=engOfPos(st),m=e.gen(st).find(x=>enc(x)===code);return m?sgfV(m,e):code;},
@@ -1209,7 +1210,9 @@ const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',seatCol:s=>s?'mq_2':
   home:()=>{syncE();drawBoard(E.init(),{});}};
 // the size chosen redraws the home board and is kept (one choice for every form)
 for(const p of ['c','a','f','t'])if($(p+'Rows'))$(p+'Rows').addEventListener('change',e=>{homeR=rowsOf({rows:e.target.value});LS.set('volo-rows',homeR);
-  for(const q of ['c','a','f','t'])if($(q+'Rows'))$(q+'Rows').value=homeR;if(!view)GAME.home();});
+  for(const q of ['c','a','f','t'])if($(q+'Rows'))$(q+'Rows').value=homeR;rowsNote();if(!view)GAME.home();});
+// against the computer on 11 or 9 rows: a warning in its form (the network was trained on 13 rows only)
+function rowsNote(){const n=$('aRowsNote'),s=$('aRows');if(n)n.textContent=s&&rowsOf({rows:s.value})!==13?t('rows_ai'):'';}
 coreStart();
 </script>
 <script src="common/accueil.js?v=1"></script>
