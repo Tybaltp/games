@@ -255,7 +255,7 @@ const SL=SlitherEngine();
 
 // ===== Slither: the page's side of common/core.js =====
 const SL_I18N={fr:{
- lvd_g1:"un coup d'avance",lvd_gr:"un coup d'avance, avec une part de hasard",lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",
+ lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",
  title:"Slither",lede:"Serpentez jusqu'à relier vos bords.",by:"Un jeu de Corey Clark.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
  needConfirm:"Confirmer chaque coup",
@@ -283,7 +283,7 @@ const SL_I18N={fr:{
  <li><b>Échange</b> (option, activée par défaut) : au premier tour du second joueur, il peut prendre à son compte la pierre posée : les couleurs s'échangent et le premier joueur, devenu Blanc, joue.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Règles : <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },en:{
- lvd_g1:"one move ahead",lvd_gr:"one move ahead, with some randomness",lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",
+ lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",
  title:"Slither",lede:"Slither your way to connection.",by:"A game by Corey Clark.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
  needConfirm:"Confirm each move",
@@ -311,7 +311,7 @@ const SL_I18N={fr:{
  <li><b>Swap</b> (option, on by default): on the second player's first turn, they may take the stone placed as theirs: the colours are exchanged and the first player, now White, moves.</li></ul>
  <p class="hint" style="margin-top:.6em">Slither — Corey Clark (2010). Rules: <a href="https://docs.littlegolem.net/games/slither">Little Golem</a>.</p>`
 },es:{
- lvd_g1:"una jugada de antelación",lvd_gr:"una jugada de antelación, con algo de azar",lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",
+ lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",
  title:"Slither",lede:"Serpentea hasta unir tus bordes.",by:"Un juego de Corey Clark.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
  needConfirm:"Confirmar cada jugada",
@@ -1052,31 +1052,41 @@ async function search(P, opt, tell) {
 return {search, searchS, state, turnCode, load, X, F, Search};
 }
 /*NNEND*/
-// Former levels: Débutant (now 0), the best moves with some randomness; Moyen (now 1), the best move one turn ahead; Fort (now BEAM), two plies. Deeper
-// searches did not play better with this evaluation (depth 3 and 4 against 2: 8 and 4 wins out of 16).
-// The neural network levels (2 to 10, algo 'nn', SlitherNN, the NN block above): the network of ~/Jeux/ia (n° 212, stopped at its plateau, 18.11.2026) with a PUCT
-// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · no time cap (16.11.2026): a slower
-// device takes longer and plays the same · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
-// BEAM, the former Fort level (two plies): what answers when the network cannot load.
+// The ladder (v1, network n° 212 of ~/Jeux/ia, stopped at its plateau, 18.11.2026; outils/aitools/res/slither/niveaux.md,
+// 9 × 9, 100 games a pair): each level beats the one below by 63-85 % (no draws in Slither), and the one two below by
+// 84 % or more. Levels 0 to 11: one simulation, the turn drawn from the network's policy at temperature temp
+// (Search.pick); 1e9: a legal turn at random, drawn by the network's search as it was measured (random: its name in
+// core); the intuition alone (temp 0) is left out, barely stronger than temperature .35. Levels 12 to 17: a PUCT search
+// of `sims` simulations; step: the simulations of the turn's step once its placement is chosen · no time cap
+// (16.11.2026): a slower device takes longer and plays the same · net, the weights file next to the page.
+// BEAM, the former Fort level (two plies): what answers when the network cannot load. Deeper searches did not play
+// better with its evaluation (depth 3 and 4 against 2: 8 and 4 wins out of 16).
 const NN_NET='slither-net.onnx?v=212';
 const BEAM={algo:'beam',depth:2,widths:[12,10]};
 const LEVELS={
-  l0:{algo:'greedy',pick:5,temp:.8},
-  l1:{algo:'greedy',pick:1},
-  l2:{algo:'nn',sims:1,net:NN_NET},
-  l3:{algo:'nn',sims:6,net:NN_NET},
-  l4:{algo:'nn',sims:10,net:NN_NET},
-  l5:{algo:'nn',sims:22,net:NN_NET},
-  l6:{algo:'nn',sims:50,net:NN_NET},
-  l7:{algo:'nn',sims:130,net:NN_NET},
-  l8:{algo:'nn',sims:300,net:NN_NET},
-  l9:{algo:'nn',sims:700,net:NN_NET},
-  l10:{algo:'nn',sims:2600,step:1,net:NN_NET}};   // what the reference Mac did in the former 10 s of a turn: the placement alone searched (16.11.2026)
-const HINT={algo:'nn',sims:700,net:NN_NET};   // level 9, the highest that answers within 5 s on the reference Mac
+  l0:{algo:'nn',sims:1,temp:1e9,random:true,net:NN_NET},
+  l1:{algo:'nn',sims:1,temp:10,net:NN_NET},
+  l2:{algo:'nn',sims:1,temp:5,net:NN_NET},
+  l3:{algo:'nn',sims:1,temp:3,net:NN_NET},
+  l4:{algo:'nn',sims:1,temp:2.5,net:NN_NET},
+  l5:{algo:'nn',sims:1,temp:2,net:NN_NET},
+  l6:{algo:'nn',sims:1,temp:1.75,net:NN_NET},
+  l7:{algo:'nn',sims:1,temp:1.5,net:NN_NET},
+  l8:{algo:'nn',sims:1,temp:1.25,net:NN_NET},
+  l9:{algo:'nn',sims:1,temp:1,net:NN_NET},
+  l10:{algo:'nn',sims:1,temp:.7,net:NN_NET},
+  l11:{algo:'nn',sims:1,temp:.35,net:NN_NET},
+  l12:{algo:'nn',sims:10,net:NN_NET},
+  l13:{algo:'nn',sims:50,net:NN_NET},
+  l14:{algo:'nn',sims:130,net:NN_NET},
+  l15:{algo:'nn',sims:300,net:NN_NET},
+  l16:{algo:'nn',sims:700,net:NN_NET},
+  l17:{algo:'nn',sims:2600,step:1,net:NN_NET}};   // what the reference Mac did in the former 10 s of a turn: the placement alone searched (16.11.2026)
+const HINT={algo:'nn',sims:700,net:NN_NET};   // level 16, the highest that answers within 5 s on the reference Mac
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
-const levelDesc=o=>o.algo==='nn'?(o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims]):[o.pick>1||o.temp?'lvd_gr':'lvd_g1'];
+const ENGINE={v:3,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+SlitherEngine.toString()+'\n'+SlitherAI.toString()+'\n'+SlitherNN.toString()+'\nconst SA=SlitherAI(SlitherEngine());function aiSearch(pos,opt){return SA.search(pos,opt);}'+
