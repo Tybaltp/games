@@ -310,7 +310,7 @@ const SM_I18N={fr:{
  st_play0:"À vous ({camp}) : choisissez un animal.",st_playN0:"{name} ({c}) : choisissez un animal.",
  st_sel:"Avancez (anneaux), tournez (>) ou poussez (>>).",st_selX:" Ou sortez (pointillé).",
  st_turnC:"Au trait : {name} ({c}).",
- lvd_g1r:"un coup d'avance, au hasard parmi les meilleurs",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",
+ lvd_g1:"un coup d'avance",lvd_mix:"{n} % des coups lus un coup d'avance, les autres au hasard",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",lvd_nodes:"jusqu'à {n} coups d'avance, {k} positions lues au plus",
  p_dir:"{m} ; choisissez l'orientation (chevrons), puis confirmez.",p_mv:"{m}.",confirm1:"Confirmer",
  p_push:"Poussée essayée, {m} : confirmez ou réinitialisez.",
  d_enter:"entre en {t}, {d}",d_enterP:"entre en {t} en poussant, {d}",d_turn:"{f} tourne : {d}",d_exit:"{f} sort",d_move:"{f} → {t}, {d}",d_push:"{f} pousse vers {t}",
@@ -333,7 +333,7 @@ const SM_I18N={fr:{
  st_play0:"Your move ({camp}): choose an animal.",st_playN0:"{name} ({c}): choose an animal.",
  st_sel:"Move (rings), turn (>) or push (>>).",st_selX:" Or leave (dotted slot).",
  st_turnC:"To move: {name} ({c}).",
- lvd_g1r:"one move ahead, at random among the best",lvd_beam:"{n} moves ahead, on the best candidates",
+ lvd_g1:"one move ahead",lvd_mix:"{n} % of the moves read one move ahead, the others at random",lvd_beam:"{n} moves ahead, on the best candidates",lvd_nodes:"up to {n} moves ahead, {k} positions read at most",
  p_dir:"{m}; choose the direction (chevrons), then confirm.",p_mv:"{m}.",confirm1:"Confirm",
  p_push:"Push tried, {m}: confirm or reset.",
  d_enter:"enters on {t}, {d}",d_enterP:"enters on {t} pushing, {d}",d_turn:"{f} turns: {d}",d_exit:"{f} leaves",d_move:"{f} → {t}, {d}",d_push:"{f} pushes towards {t}",
@@ -356,7 +356,7 @@ const SM_I18N={fr:{
  st_play0:"Te toca ({camp}): elige un animal.",st_playN0:"{name} ({c}): elige un animal.",
  st_sel:"Avanza (anillos), gira (>) o empuja (>>).",st_selX:" O sal (hueco punteado).",
  st_turnC:"Turno: {name} ({c}).",
- lvd_g1r:"una jugada de antelación, al azar entre las mejores",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",
+ lvd_g1:"una jugada de antelación",lvd_mix:"{n} % de las jugadas con una jugada de antelación, las demás al azar",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",lvd_nodes:"hasta {n} jugadas de antelación, {k} posiciones leídas como máximo",
  p_dir:"{m}; elige la orientación (cheurones) y luego confirma.",p_mv:"{m}.",confirm1:"Confirmar",
  p_push:"Empuje probado, {m}: confirma o reinicia.",
  d_enter:"entra en {t}, {d}",d_enterP:"entra en {t} empujando, {d}",d_turn:"{f} gira: {d}",d_exit:"{f} sale",d_move:"{f} → {t}, {d}",d_push:"{f} empuja hacia {t}",
@@ -681,62 +681,153 @@ function drawHover(){const g=gHv;if(!g)return;g.textContent='';gU.querySelectorA
   if(ART){const k=KN(SM.toMove(ms));siamSprite(g,k,RA).set({...spot(i,d,k),op:.4});}}
 
 // ---------- computer opponent ----------
-// Evaluation, for each rock and each direction it could leave by: the camp that would win that exit (the nearest animal
-// behind the rock facing that way), worth more the nearer the rock is to that edge and if the push already goes through;
-// plus a little per animal on the board.
+// SiamAI v2 (18.11.2026, outils/aitools/res/siam/niveaux.md): beam search (common/ai.js) on a fast copy of the rules, with
+// an evaluation that knows the push of 15.11.2026 (the rows behind each rock, who wins each way out, who can push now,
+// the side to move that can win at once, the threats of the other side), and the repetition.
 /*AI*/
 function SiamAI(SM){
 'use strict';
-const D=['N','E','S','W'];
-function evalS(S,p){const st=S.st,me=st.col[p],op=st.col[1-p];let v=0;
-  for(let i=0;i<25;i++){const q=st.p[i];if(!q)continue;if(q.t===me)v+=.3;else if(q.t===op)v-=.3;
-    if(q.t!==SM.ROCK)continue;const[x,y]=SM.xy(i);
-    for(const d of D){const[dx,dy]=SM.DIRS[d],dist=d==='N'?4-y:d==='S'?y:d==='E'?4-x:x;
-      // behind the rock (towards -d): the row of pieces; the nearest animal facing d
-      let X=x-dx,Y=y-dy,who=-1,j;const row=[i];
-      while((j=SM.at(X,Y))>=0&&st.p[j]){row.push(j);if(who<0&&st.p[j].t!==SM.ROCK&&st.p[j].d===d)who=st.p[j].t;X-=dx;Y-=dy;}
-      if(who<0)continue;
-      // the pieces ahead of the rock, to the edge, are pushed too
-      let ax=x+dx,ay=y+dy;const ahead=[];while((j=SM.at(ax,ay))>=0&&st.p[j]){ahead.push(j);ax+=dx;ay+=dy;}
-      const line=row.slice().reverse().concat(ahead),go=SM.strength(st,line,d,false);
-      const w=(go?1:.35)/(dist+1-ahead.length>0?dist+1-ahead.length:1);v+=who===me?w:-w;}}
-  return v;}
-function result(S,p){return S.win===p?1000:-1000;}
-// Repetition (decision of Thibault, 15.11.2026): opt.hist = {sig: occurrences} of the positions of the game so far; in the
-// tree, a position already seen, in the game or higher on the line searched, is a finished game worth a draw (0)
+// v2 (18.11.2026). The search works on its own copy of the rules (checked against SiamEngine by outils/aitools,
+// budget/siam_xcheck.js): b[25] = 0 empty, 1 rock, 2+4·camp+dir an animal (dir 0 N, 1 E, 2 S, 3 W); res[seat]; turn
+// (seat); col[seat] = camp; n (moves played). A move is a number ((kind·32+f)·32+t)·4+d, kind 0 enter, 1 turn, 2 leave,
+// 3 move or push; code(m) is the page's notation.
+const DX=[0,1,0,-1],DY=[1,0,-1,0],DN='NESW',NB=new Int8Array(100),DIST=new Int8Array(100),EDGE=new Uint8Array(25),INW=new Uint8Array(25);
+for(let i=0;i<25;i++){const x=i%5,y=(i/5)|0;EDGE[i]=x===0||y===0||x===4||y===4?1:0;
+  INW[i]=(y===0?1:0)|(x===0?2:0)|(y===4?4:0)|(x===4?8:0);   // the directions entering the board from i (bit d)
+  for(let d=0;d<4;d++){const X=x+DX[d],Y=y+DY[d];NB[i*4+d]=X<0||Y<0||X>4||Y>4?-1:X+5*Y;DIST[i*4+d]=d===0?4-y:d===1?4-x:d===2?y:x;}}
+const name=i=>String.fromCharCode(97+i%5)+(((i/5)|0)+1);
+const code=m=>{const d=m&3,t=(m>>2)&31,f=(m>>7)&31,k=m>>12;
+  return k===0?'+'+name(t)+DN[d]:k===1?name(f)+'='+DN[d]:k===2?name(f)+'-x':name(f)+'-'+name(t)+DN[d];};
+const MK=(k,f,t,d)=>((k*32+f)*32+t)*4+d;
+const isA=v=>v>=2,campOf=v=>(v-2)>>2,dirOf=v=>(v-2)&3;
+// the push from `from` along d passes: from the pusher (+1 when entering, extra), each animal +1 facing d, −1 facing
+// against, 0 sideways, a rock −0.99; every partial sum above 0 (in hundredths)
+function pushes(b,from,d,extra){let s=extra?100:0,i=from;
+  while(i>=0&&b[i]){const v=b[i];s+=v===1?-99:dirOf(v)===d?100:dirOf(v)===((d+2)&3)?-100:0;if(s<=0)return false;i=NB[i*4+d];}
+  return true;}
+const marked=(S,i)=>S.n<4&&(i===2||i===22);
+function legal(S){const b=S.b,s=S.turn,c=S.col[s],out=[];
+  if(S.res[s]>0)for(let i=0;i<25;i++){if(!EDGE[i]||marked(S,i))continue;
+    if(!b[i]){for(let d=0;d<4;d++)out.push(MK(0,0,i,d));}
+    else for(let d=0;d<4;d++)if((INW[i]>>d&1)&&pushes(b,i,d,true))out.push(MK(0,0,i,d));}
+  for(let i=0;i<25;i++){const v=b[i];if(!isA(v)||campOf(v)!==c)continue;const di=dirOf(v);
+    for(let d=0;d<4;d++)if(d!==di)out.push(MK(1,i,i,d));
+    if(EDGE[i])out.push(MK(2,i,0,0));
+    for(let k=0;k<4;k++){const j=NB[i*4+k];if(j<0)continue;
+      if(!b[j]){for(let d=0;d<4;d++)out.push(MK(3,i,j,d));}
+      else if(k===di&&pushes(b,i,k,false))out.push(MK(3,i,j,k));}}
+  return out;}
+// plays the push from `from` along d in place (ent: the animal entering on from, 0 if none); returns the winner (camp) if
+// a rock goes out, else -1
+function push(S,from,d,ent){const b=S.b,L=[];let i=from;while(i>=0&&b[i]){L.push(i);i=NB[i*4+d];}
+  const last=L[L.length-1];let win=-1;
+  if(NB[last*4+d]<0){const v=b[last];
+    if(v===1){for(let k=L.length-2;k>=0&&win<0;k--){const w=b[L[k]];if(isA(w)&&dirOf(w)===d)win=campOf(w);}if(win<0&&ent)win=campOf(ent);}
+    else S.res[S.col[0]===campOf(v)?0:1]++;}
+  for(let k=L.length-1;k>=0;k--){const j=NB[L[k]*4+d];if(j>=0)b[j]=b[L[k]];b[L[k]]=0;}
+  if(ent)b[from]=ent;
+  return win;}
+// Repetition (decision of Thibault, 15.11.2026): opt.hist = {sig: occurrences} of the positions of the game so far (the
+// page's sig). In the tree, a position already seen, in the game or higher on the line searched, is a finished game
+// worth a draw (0): a side that judges itself ahead turns away from it, a side behind looks for it.
 let REP=null;
-function play(S,m){const st=SM.clone(S.st),r=SM.plan(st,m)();let win=-1;
-  if(r.out&&r.out.t===SM.ROCK)win=st.col.indexOf(r.winner);st.turn=1-st.turn;st.n++;const T={st,win};
-  if(REP&&win<0){const k=SM.sig(st);T.k=k;T.up=S;let rp=REP.has(k);for(let A=S;!rp&&A;A=A.up)rp=A.k===k;T.rp=rp;}
+const key=S=>String.fromCharCode.apply(null,S.b)+S.res[0]+S.res[1]+S.turn;
+function keyOfSig(g){const b=[],p=g.split('|'),s=p[0];for(let i=0;i<s.length;i++){const ch=s[i];
+    if(ch==='.')b.push(0);else if(ch==='r')b.push(1);else{b.push(2+4*(ch==='e'?SM.ELE:SM.RHI)+DN.indexOf(s[++i]));}}
+  const r=p[1].split(',');return String.fromCharCode.apply(null,b)+r[0]+r[1]+p[2];}
+function play(S,m){const T={b:S.b.slice(),res:S.res.slice(),turn:S.turn,col:S.col,n:S.n+1,win:-1,rp:false},b=T.b;
+  const d=m&3,t=(m>>2)&31,f=(m>>7)&31,k=m>>12,s=S.turn,c=S.col[s];let w=-1;
+  if(k===0){T.res[s]--;const a=2+4*c+d;if(b[t])w=push(T,t,d,a);else b[t]=a;}
+  else if(k===1)b[f]=2+4*c+d;
+  else if(k===2){b[f]=0;T.res[s]++;}
+  else if(b[t]){w=push(T,f,d,0);}
+  else{b[t]=2+4*c+d;b[f]=0;}
+  if(w>=0)T.win=T.col[0]===w?0:1;T.turn=1-s;
+  if(REP&&T.win<0){const kk=key(T);T.k=kk;T.up=S;let rp=REP.has(kk);for(let A=S;!rp&&A;A=A.up)rp=A.k===kk;T.rp=rp;}
   return T;}
-function gen(S){const out=[];for(const m of SM.legalMoves(S.st)){const T=play(S,m),p=S.st.turn;out.push({m,s:T.win>=0?(T.win===p?2000:-2000):T.rp?0:evalS(T,p)});}
+// a won game is worth more the sooner it comes (a lost one, the later)
+function result(S,p){if(S.win<0)return 0;const v=1000+Math.max(0,300-S.n)/10;return S.win===p?v:-v;}
+// The evaluation, for seat p, in points (an animal on the board 0.3):
+// · for each rock and each way out d, the camp that would win that exit (the animal nearest the rock behind it in the
+//   row, facing d), worth more the nearer the rock is to that edge (W) and if that camp can push the rock that way now
+//   (an animal of the row facing d whose push passes, or an entry at the back of a row that reaches the edge);
+// · the side to move that can put a rock out and win: a won position (WIN); the other side's threats of doing so
+//   (THR1 for one, THR2 for two or more, the opponent can hardly parry both);
+// · each further animal of the claimant's camp facing d in that row FORCE (times W: a row harder to stop);
+// · an animal on the board ANIM, on an edge square ANIM + EDG (an entry there pushes it off the board).
+// Weights tuned by games of depth 3 against depth 3 (res/siam/niveaux.md): a term for the animals facing a rock, a
+// flatter W and others did not help.
+const P={W:[1.2,.6,.33,.2,.12],NOW:1,LATER:.35,WIN:900,THR1:.8,THR2:4,ANIM:.3,EDG:-.3,FORCE:1};
+let Q=P;   // opt.ev: weights of one's own over P (the bench's tuning; no level uses it)
+function evalS(S,p){const b=S.b,mine=S.col[p],q=Q,W=q.W,mv=S.turn;let v=0,thr=0;
+  for(let i=0;i<25;i++){const x=b[i];if(!x)continue;
+    if(x>=2){const sg=campOf(x)===mine?1:-1;v+=sg*(q.ANIM+(EDGE[i]?q.EDG:0));
+      continue;}
+    for(let d=0;d<4;d++){const od=(d+2)&3,k=DIST[i*4+d];
+      // the row behind the rock: the claimant (nearest animal facing d), who can push now
+      let j=NB[i*4+od],back=i,claim=-1,can0=false,can1=false,nf=0;
+      while(j>=0&&b[j]){const y=b[j];
+        if(y>=2&&dirOf(y)===d){if(claim<0)claim=campOf(y);if(campOf(y)===claim)nf++;if(pushes(b,j,d,false)){if(S.col[0]===campOf(y))can0=true;else can1=true;}}
+        back=j;j=NB[j*4+od];}
+      if(j<0&&back!==i&&!marked(S,back)&&(INW[back]>>d&1)&&pushes(b,back,d,true)){   // an entry at the back of the row
+        if(S.res[0]>0&&(claim<0||claim===S.col[0]))can0=true;if(S.res[1]>0&&(claim<0||claim===S.col[1]))can1=true;}
+      if(claim<0)continue;
+      const cs=S.col[0]===claim?0:1,can=cs===0?can0:can1,sg=claim===mine?1:-1;
+      if(k===0&&can){if(cs===mv)return mv===p?q.WIN:-q.WIN;thr+=sg;}
+      v+=sg*W[k]*((can?q.NOW:q.LATER)+q.FORCE*(nf-1));}}
+  // the threats of the side not to move (thr: their count, signed for p)
+  if(thr){const a=Math.abs(thr);v+=Math.sign(thr)*(a>=2?q.THR2:q.THR1);}
+  return v;}
+function gen(S){const out=[],p=S.turn;for(const m of legal(S)){const T=play(S,m);out.push({m,s:T.win>=0?result(T,p):T.rp?0:evalS(T,p)});}
   out.sort((a,b)=>b.s-a.s);return out;}
 // TELL: the search in flight is the move's own: its best move so far goes to aiBest (core's worker, « Jouer maintenant »)
 let TELL=false;
-const KS=AISearch({moves:gen,play,turn:S=>S.st.turn,done:S=>S.win>=0||!!S.rp,result:(S,p)=>S.win<0?0:result(S,p),eval:evalS,playout:()=>{},scratch:S=>S,
-  best:r=>{if(TELL)aiBest({move:r.m,score:r.s,depth:r.depth});}});
-function search(P,opt){const st={p:P.p.map(q=>q&&{...q}),res:P.res.slice(),turn:P.turn,col:P.col.slice(),n:P.n||0},S={st,win:-1};
-  REP=opt.hist?new Map(Object.entries(opt.hist)):null;if(REP)S.k=SM.sig(st);KS.start(opt.nodes);
-  const C=gen(S);if(!C.length)return null;if(C[0].s>=2000)return {move:C[0].m,score:1000,depth:1};
-  TELL=typeof aiBest==='function';const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=false;
-  return {move:r.m,score:r.s,depth:r.depth,forced:C.length===1};}
-return {search,evalS,gen};
+const KS=AISearch({moves:gen,play,turn:S=>S.turn,done:S=>S.win>=0||S.rp,result,eval:evalS,playout:()=>{},scratch:S=>S,hash:key,
+  best:r=>{if(TELL)aiBest({move:code(r.m),score:r.s,depth:r.depth});}});
+function fromPos(P0){const b=new Int8Array(25);for(let i=0;i<25;i++){const q=P0.p[i];b[i]=!q?0:q.t===SM.ROCK?1:2+4*q.t+DN.indexOf(q.d);}
+  return {b,res:P0.res.slice(),turn:P0.turn,col:P0.col.slice(),n:P0.n||0,win:-1,rp:false};}
+function search(P0,opt){const S=fromPos(P0);REP=null;Q=opt.ev?{...P,...opt.ev}:P;
+  // level 0: a legal move at random; mix p (the levels just above): a move at random with probability p, else the level's own
+  if(opt.random||opt.mix&&Math.random()<opt.mix){const L=legal(S);return L.length?{move:code(L[(Math.random()*L.length)|0]),score:0,depth:0,random:true}:null;}
+  if(opt.hist){REP=new Map();for(const g in opt.hist)REP.set(keyOfSig(g),opt.hist[g]);S.k=key(S);}
+  KS.start(opt.nodes);const C=gen(S);if(!C.length)return null;
+  if(C[0].s>=1000)return {move:code(C[0].m),score:C[0].s,depth:1};   // a rock out at once, won
+  if(C.length===1)return {move:code(C[0].m),score:C[0].s,depth:0,forced:true};
+  TELL=typeof aiBest==='function';const r=KS[opt.algo](S,C,opt);TELL=false;
+  return {move:code(r.m),score:r.s,depth:r.depth,nodes:KS.nodes()};}
+return {search,evalS,gen,legal,play,fromPos,code,key,keyOfSig,P};
 }
 /*AIEND*/
-// Levels (named by the core: Niveau 0, 1, 2): one move ahead with some randomness; three plies; four (beam). Over 10
-// games from varied openings: level 1 beats level 0 8 times, level 2 beats level 1 7 times. A level is its depth, never
-// a time (main, 16.11.2026): the former caps of 4 and 5 s were never reached (at most 0.14 s a move at level 2 on this
-// Mac, 31 positions of a game). Hints use level 2, the highest.
-const LEVELS={debutant:{algo:'greedy',pick:6,temp:.5},moyen:{algo:'beam',depth:3,widths:[12,8,6]},fort:{algo:'beam',depth:4,widths:[16,10,8,6]}};
-const HINT={...LEVELS.fort};
+// The ladder (v2, 18.11.2026, outils/aitools/res/siam/niveaux.md, 96 to 192 games a pair, the search knowing the game's
+// positions): each level beats the one below by 68-82 % (level 1 beats random play by 91 %), and the one two below by
+// 80 % or more. random = a legal move at random; mix p = a move at random with probability p, else one move read;
+// greedy = one move read; beam = depth with widths (common/ai.js), tt its table of positions, nodes the positions read at
+// most (level 11: 0.35 s a move, 1.9 s at most, on the reference Mac). A level is an amount of work, never a time
+// (16.11.2026). Default: the core's rule (a third of the scale: level 4). Hints: the strongest level.
+const BW=[16,10,8,6],BX=[24,14,10,8];
+const LEVELS={
+  l0:{random:true},
+  l1:{mix:.9,algo:'greedy'},
+  l2:{mix:.8,algo:'greedy'},
+  l3:{mix:.65,algo:'greedy'},
+  l4:{mix:.45,algo:'greedy'},
+  l5:{mix:.25,algo:'greedy'},
+  l6:{algo:'greedy'},
+  l7:{algo:'beam',depth:2,widths:[16,10]},
+  l8:{algo:'beam',depth:3,widths:BW},
+  l9:{algo:'beam',depth:5,widths:BW},
+  l10:{algo:'beam',depth:7,widths:BX,tt:true},
+  l11:{algo:'beam',depth:9,widths:BX,tt:true,nodes:100000}};
+const HINT={...LEVELS.l11};
 // The engine: its version (a new scale, a new number) and its kind, under the level and in « Signaler un défaut » ·
 // levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
-const levelDesc=o=>o.algo==='greedy'?['lvd_g1r']:['lvd_beam',o.depth];
+const ENGINE={v:2,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const levelDesc=o=>o.mix?['lvd_mix',Math.round(100-o.mix*100)]:o.algo==='greedy'?['lvd_g1']:o.nodes?['lvd_nodes',o.depth,{k:o.nodes}]:['lvd_beam',o.depth];
 const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice(),n:st.n||0});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+SiamEngine.toString()+'\n'+SiamAI.toString()+'\nconst XA=SiamAI(SiamEngine());function aiSearch(pos,opt){return XA.search(pos,opt);}';
-function evalInfo(r){const s=r.score;if(r.forced)return {k:'ai_forced'};if(s>900)return {k:'ai_win'};if(s<-900)return {k:'ai_lost'};
+// (a score of ±900: the side to move at the end of the line searched can put a rock out and win)
+function evalInfo(r){const s=r.score;if(r.random)return null;if(r.forced)return {k:'ai_forced'};if(s>=900)return {k:'ai_win'};if(s<=-900)return {k:'ai_lost'};
   return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
 
 // ---------- the interface with common/core.js ----------
