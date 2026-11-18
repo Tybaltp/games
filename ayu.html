@@ -252,7 +252,7 @@ const AY=AyuEngine();
 
 // ===== Ayu: the page's side of common/core.js =====
 const AY_I18N={fr:{
- lvd_g1:"un coup d'avance",lvd_gr:"un coup d'avance, avec une part de hasard",lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",
+ lvd_nn1:"réseau de neurones, intuition seule",lvd_nn1t:"réseau de neurones, intuition seule, avec une part de hasard",lvd_nn:"réseau de neurones, {n} simulations par coup",
  title:"Ayu",lede:"Des pierres éparpillées partout : rassemblez les vôtres.",by:"Un jeu de Luis Bolaños Mures.",
  sizeOpt:"Plateau",size_fmt:"{n} × {n}",swapOpt:"Règle d'échange",
  needConfirm:"Confirmer chaque coup",
@@ -275,7 +275,7 @@ const AY_I18N={fr:{
  <li><b>Échange</b> (option, désactivée par défaut) : après le premier coup de Noir, le second joueur peut prendre les noires ; le premier joueur, devenu Blanc, joue alors.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Règles : <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 },en:{
- lvd_g1:"one move ahead",lvd_gr:"one move ahead, with some randomness",lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",
+ lvd_nn1:"neural network, intuition only",lvd_nn1t:"neural network, intuition only, with some randomness",lvd_nn:"neural network, {n} simulations a move",
  title:"Ayu",lede:"Stones scattered everywhere: gather yours.",by:"A game by Luis Bolaños Mures.",
  sizeOpt:"Board",size_fmt:"{n} × {n}",swapOpt:"Swap rule",
  needConfirm:"Confirm each move",
@@ -298,7 +298,7 @@ const AY_I18N={fr:{
  <li><b>Swap</b> (option, off by default): after Black's first move, the second player may take Black; the first player, now White, then moves.</li></ul>
  <p class="hint" style="margin-top:.6em">Ayu — Luis Bolaños Mures (2011). Rules: <a href="https://mindsports.nl/index.php/arena/ayu/724-ayu-rules">MindSports</a>.</p>`
 },es:{
- lvd_g1:"una jugada de antelación",lvd_gr:"una jugada de antelación, con algo de azar",lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",
+ lvd_nn1:"red neuronal, solo intuición",lvd_nn1t:"red neuronal, solo intuición, con algo de azar",lvd_nn:"red neuronal, {n} simulaciones por jugada",
  title:"Ayu",lede:"Piedras dispersas por todas partes: reúne las tuyas.",by:"Un juego de Luis Bolaños Mures.",
  sizeOpt:"Tablero",size_fmt:"{n} × {n}",swapOpt:"Regla de intercambio",
  needConfirm:"Confirmar cada jugada",
@@ -442,6 +442,8 @@ let TELL=0;   // the board's size while it is on
 const KS=AISearch({moves:gen,play,turn:S=>S.c,done,result,eval:evalS,playout:()=>{},scratch:S=>S,
   best:r=>{if(TELL)aiBest({move:AY.name(TELL,r.m[0])+'-'+AY.name(TELL,r.m[1]),score:r.s,depth:r.depth});}});
 function search(P,opt){const n=P.size,S={n,b:Int8Array.from(P.b),c:P.col[P.turn]};KS.start(opt.nodes);
+  if(opt.random){const L=AY.legalMoves(shim(S)),sw=P.swap&&P.ply===1?1:0;if(!L.length)return null;   // level 0: a legal move at random (the swap one of them), as the network's search draws them
+    const m=L[(Math.random()*(L.length+sw))|0];return {move:m?AY.name(n,m[0])+'-'+AY.name(n,m[1]):'swap',score:0,depth:0,forced:L.length+sw===1,kind:m?undefined:'swap'};}
   if(P.swap&&P.ply===1){const v=evalS(S,1-S.c);if(v>0)return {move:'swap',score:v,depth:0,kind:'swap'};}
   const C=gen(S);if(!C.length)return null;
   TELL=typeof aiBest==='function'?n:0;const r=C.length===1?{m:C[0].m,s:C[0].s,depth:0}:KS[opt.algo](S,C,opt);TELL=0;
@@ -932,29 +934,34 @@ async function search(P, opt, tell) {
 return {search, searchS, state, load, code, X, F, Search};
 }
 /*NNEND*/
-// The neural network levels (2 to 10, algo 'nn', AyuNN, the NN block above): the network of ~/Jeux/ia (n° 112, 14.11.2026) with a PUCT
-// search of `sims` simulations, Volo's ladder as it is (not measured for this game) · no time cap (16.11.2026): a slower
-// device takes longer and plays the same · net, the weights file next to the page. Levels 0 and 1: the former Débutant and Moyen.
+// The ladder (v1, network n° 112 of ~/Jeux/ia, 18.11.2026, outils/aitools/res/ayu/niveaux.md, 100 games a pair): each
+// level beats the one below by 66-81 % (no draws in Ayu), and the one two below by 83 % or more. Level 0: a legal move
+// at random (AyuAI.search, no network needed). Levels 1 to 6: one simulation, the move drawn from the network's policy
+// at temperature temp (Search.pick); the intuition alone (temp 0) is left out, barely stronger than temperature .35
+// (60 %). Levels 7 to 12: a PUCT search of `sims` simulations · no time cap (16.11.2026): a slower device takes longer
+// and plays the same · net, the weights file next to the page.
 // BEAM, the former Fort level (two plies): what answers when the network cannot load.
 const NN_NET='ayu-net.onnx?v=112';
 const BEAM={algo:'beam',depth:2,widths:[10,8]};
 const LEVELS={
-  l0:{algo:'greedy',pick:5,temp:1},
-  l1:{algo:'greedy',pick:1},
-  l2:{algo:'nn',sims:1,net:NN_NET},
-  l3:{algo:'nn',sims:6,net:NN_NET},
-  l4:{algo:'nn',sims:10,net:NN_NET},
-  l5:{algo:'nn',sims:22,net:NN_NET},
-  l6:{algo:'nn',sims:50,net:NN_NET},
-  l7:{algo:'nn',sims:130,net:NN_NET},
-  l8:{algo:'nn',sims:300,net:NN_NET},
-  l9:{algo:'nn',sims:700,net:NN_NET},
-  l10:{algo:'nn',sims:3000,net:NN_NET}};
+  l0:{random:true},
+  l1:{algo:'nn',sims:1,temp:4,net:NN_NET},
+  l2:{algo:'nn',sims:1,temp:2,net:NN_NET},
+  l3:{algo:'nn',sims:1,temp:1.4,net:NN_NET},
+  l4:{algo:'nn',sims:1,temp:1,net:NN_NET},
+  l5:{algo:'nn',sims:1,temp:.7,net:NN_NET},
+  l6:{algo:'nn',sims:1,temp:.35,net:NN_NET},
+  l7:{algo:'nn',sims:10,net:NN_NET},
+  l8:{algo:'nn',sims:30,net:NN_NET},
+  l9:{algo:'nn',sims:100,net:NN_NET},
+  l10:{algo:'nn',sims:300,net:NN_NET},
+  l11:{algo:'nn',sims:1000,net:NN_NET},
+  l12:{algo:'nn',sims:3000,net:NN_NET}};
 const HINT={algo:'nn',sims:1200,net:NN_NET};   // the simulations of 5 s at most on the reference Mac
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
-const levelDesc=o=>o.algo==='nn'?(o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims]):[o.pick>1||o.temp?'lvd_gr':'lvd_g1'];
+const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;
 const aiSrc=()=>AISearch.toString()+'\n'+AyuEngine.toString()+'\n'+AyuAI.toString()+'\n'+AyuNN.toString()+'\nconst AA=AyuAI(AyuEngine());function aiSearch(pos,opt){return AA.search(pos,opt);}'+
