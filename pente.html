@@ -399,7 +399,7 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
  const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -678,7 +678,7 @@ if(window.matchMedia&&window.matchMedia('(hover:hover)').matches){
 // ---------- computer opponent ----------
 // The engine (script engine-src) runs in core's worker; without a worker it is built once on the page
 let pageAI=null;
-const aiSrc=()=>$('engine-src').textContent;
+const aiSrc=()=>$('engine-src').textContent+'\nconst aiSearchJS=aiSearch;aiSearch=(p,o)=>(globalThis.WASM&&WASM.search(p,o))||aiSearchJS(p,o);';   // the precompiled engine first (GAME.wasm), else this one
 const aiPos=st=>({phase:st.phase,B:st.B.slice(),caps:st.caps.slice(),toMove:st.toMove});
 function aiSearchPage(st,opt){if(!pageAI)pageAI=new Function(aiSrc()+'\nreturn aiSearch;')();return pageAI(aiPos(st),opt);}
 function evalInfo(r){const m=r.move;if(r.random||m.t==='o'||m.t==='a')return null;if(m.t==='W')return {k:'ai_tookWhite'};if(m.t==='B')return {k:'ai_tookBlack'};
@@ -778,7 +778,7 @@ const GAME={id:'pente',seatCol:s=>{const m=view?view.moves:[],c1=m[1]==='B'||m[1
   logText:e=>logTxt(e),
   home:()=>{shown=null;drawBoard();},
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiSrc,aiPos,aiSearch:aiSearchPage,
+  wasm:{id:'pente',v:1},aiSrc,aiPos,aiSearch:aiSearchPage,
   evalInfo:res=>evalInfo(res)};
 coreStart();
 </script>

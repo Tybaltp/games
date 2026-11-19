@@ -81,6 +81,8 @@
 //                                position the computer is shown · {k,d} opinion line or null. A level is an amount of
 //                                work, never a time; a search may call aiBest({move,score,depth}) (defined in the
 //                                worker) with its best move so far, for « Play now » (see « computer opponent »)
+//  wasm?                         {id, v}: a precompiled engine for the worker (wasm/<id>.wasm), the same moves as the JS
+//                                engine; aiSrc uses self.WASM.search when set (see « computer opponent »)
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 const TCS=[{id:'20+10',base:20*60e3,inc:10e3},{id:'10+5',base:10*60e3,inc:5e3},{id:'5+3',base:5*60e3,inc:3e3},{id:'3+2',base:3*60e3,inc:2e3},{id:'none'}];
@@ -1027,7 +1029,18 @@ function pendClear(){C.pending=null;LS.del(netKey('pending',C.code));}
 const AI_SLOW_MS=10000;
 let worker=null,pool=[],reqId=0,cbs={},prog={},busy='',aiInfo=null,hintMv=null,aiLast=null;   // aiLast: the computer's last search (draw offers)
 let aiSlow=false,slowT=0,aiNow=null;   // the search in flight has passed AI_SLOW_MS · its timer · what « Play now » does
-function makeWorker(){const src=GAME.aiSrc()+`
+// GAME.wasm {id, v}: the game has a precompiled engine, wasm/<id>.wasm with its glue wasm/<id>.js (version v, for the
+// cache). The worker loads it first (synchronously, as Arimaa loads Sharp), with common/wasm.js; the game's aiSrc then
+// searches with self.WASM.search(pos,opt) when it is there and gives a move, else with its own JS engine. Any failure
+// (no wasm in this browser, a file missing, file://) leaves self.WASM null: the JS engine plays, nothing is shown.
+const WASM_V=1;   // common/wasm.js
+function wasmSrc(){const w=GAME.wasm;if(!w)return '';
+  const u=f=>{try{return JSON.stringify(new URL(f,location.href).href);}catch(e){return '""';}},q='?v='+w.v;
+  return `self.WASM=null;try{importScripts(${u('common/wasm.js?v='+WASM_V)},${u('wasm/'+w.id+'.js'+q)});
+const x=new XMLHttpRequest();x.open('GET',${u('wasm/'+w.id+'.wasm'+q)},false);x.responseType='arraybuffer';x.send();
+if(x.status===200&&x.response)self.WASM=WasmMoteur(x.response,Glue[${JSON.stringify(w.id)}]);}catch(e){self.WASM=null;}
+`;}
+function makeWorker(){const src=wasmSrc()+GAME.aiSrc()+`
 let __aiId=0;self.aiBest=(r,id)=>{if(r&&r.move!=null)self.postMessage({id:id===undefined?__aiId:id,p:{move:r.move,score:r.score,depth:r.depth}});};
 self.onmessage=e=>{const m=e.data;__aiId=m.id;self.__aiRoot=null;const r=aiSearch(m.st,m.opt);self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy,root:self.__aiRoot||undefined}});};`;
   const w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));

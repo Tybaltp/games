@@ -183,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 function ZertzEngine(size){
@@ -640,9 +640,10 @@ const GAME={howto:{off:true,titled:true,n:2,scene:zzHowto,vars:()=>({where:t(zBa
   logText:e=>logTxt(e),
   home:()=>{setBoard(48);drawBoard(ENG[48].init(),[],false,null);},
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  wasm:{id:'zertz',v:1},
   aiSrc:()=>ZertzEngine.toString()+`
 const ENG={37:ZertzEngine(37),48:ZertzEngine(48)};
-function aiSearch(m,opt){const s=Int8Array.from(m),r=ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.random&&!r.depth&&!r.fb};}`,
+function aiSearch(m,opt){const s=Int8Array.from(m),r=(globalThis.WASM&&WASM.search(s,opt))||ENG[(s.length-11)/2].search(s,opt);return r&&{...r,forced:!r.random&&!r.depth&&!r.fb};}`,
   aiPos:st=>Array.from(st),
   aiSearch:(st,opt)=>zzSearch(Int8Array.from(st),opt),
   evalInfo:res=>evalInfo(res)};

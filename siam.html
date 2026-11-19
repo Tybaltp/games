@@ -190,7 +190,7 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script src="img/siam/siam-art.js?v=2"></script>
@@ -825,7 +825,7 @@ const ENGINE={v:2,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en h
 const levelDesc=o=>o.mix?['lvd_mix',Math.round(100-o.mix*100)]:o.algo==='greedy'?['lvd_g1']:o.nodes?['lvd_nodes',o.depth,{k:o.nodes}]:['lvd_beam',o.depth];
 const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice(),n:st.n||0});
 let pageAI=null;
-const aiSrc=()=>AISearch.toString()+'\n'+SiamEngine.toString()+'\n'+SiamAI.toString()+'\nconst XA=SiamAI(SiamEngine());function aiSearch(pos,opt){return XA.search(pos,opt);}';
+const aiSrc=()=>AISearch.toString()+'\n'+SiamEngine.toString()+'\n'+SiamAI.toString()+'\nconst XA=SiamAI(SiamEngine());function aiSearch(pos,opt){return (globalThis.WASM&&WASM.search(pos,opt))||XA.search(pos,opt);}';
 // (a score of ±900: the side to move at the end of the line searched can put a rock out and win)
 function evalInfo(r){const s=r.score;if(r.random)return null;if(r.forced)return {k:'ai_forced'};if(s>=900)return {k:'ai_win'};if(s<=-900)return {k:'ai_lost'};
   return {k:Math.abs(s)<.3?'ai_eq':s>0?(s>1.5?'ai_much':'ai_better'):(s<-1.5?'ai_muchWorse':'ai_worse'),d:r.depth};}
@@ -853,7 +853,7 @@ const GAME={id:'siam',again:()=>true,seatCol:s=>s?'camp1':'camp0',   // Élépha
   playerCard,logNode,logText,
   home:()=>{shown=null;drawBoard();},
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiOpt:v=>({hist:histOf(v)}),aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||SiamAI(SM)).search(aiPos(st),opt),
+  aiOpt:v=>({hist:histOf(v)}),wasm:{id:'siam',v:1},aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||SiamAI(SM)).search(aiPos(st),opt),
   evalInfo};
 coreStart();
 </script>
