@@ -161,7 +161,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 function GygesEngine(){
@@ -975,9 +975,10 @@ const GAME={howto:{titled:true,n:3,scene:gyHowto},id:'gyges',size:36,chatBoard:.
   holdLegal:(r,s,code,g)=>{const mv=E.dec(code);return !!mv&&mv.t==='b'&&E.legal({...r.st,turn:s},mv,g.adv);},
   clockOff:(v,st)=>smOf(v)==='simul'&&E.setup(st),
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  wasm:{id:'gyges',v:1},
   aiSrc:()=>GygesEngine.toString()+GygesAI.toString()+`
 const E=GygesEngine(),A=GygesAI(E);
-function aiSearch(m,opt){return A.search({...m,b:Int8Array.from(m.b)},opt);}`,
+function aiSearch(m,opt){return (globalThis.WASM&&WASM.search({...m,b:Int8Array.from(m.b)},opt))||A.search({...m,b:Int8Array.from(m.b)},opt);}`,
   aiPos:st=>({...st,b:Array.from(st.b)}),
   aiSearch:(st,opt)=>AI.search(st,opt),
   aiOpt:v=>({adv:!!v.adv,hist:histOf(v)}),aiView:aiSafe,

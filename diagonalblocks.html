@@ -223,7 +223,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -959,7 +959,8 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
   noReset:mv=>mv.t==='p',   // a placement is dropped from the reserve (the picked piece again, or another piece)
   pendBtns:mv=>mv.t==='p'&&ui.piece>=0?[{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]:[],
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiSrc:()=>AISearch.toString()+'\n'+DiagAI.toString()+'\nconst DA=DiagAI();function aiSearch(pos,opt){return DA.search(pos,opt);}',
+  wasm:{id:'diagonalblocks',v:1},
+  aiSrc:()=>AISearch.toString()+'\n'+DiagAI.toString()+'\nconst DA=DiagAI();function aiSearch(pos,opt){return (globalThis.WASM&&WASM.search(pos,opt))||DA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||DiagAI()).search(aiPos(st),opt),
   evalInfo:dbEvalInfo,
   // a language switch: the texts kept with the replayed position (moves, score) and the trays are redone

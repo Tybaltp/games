@@ -20,6 +20,10 @@ common/games.css      styles communs : accueil, écran de jeu fixe, barre d'acti
 common/ai.js          recherche de l'ordinateur indépendante du jeu (AISearch : glouton, alpha-bêta en faisceau, MCTS),
                       interface documentée en tête ; chargé par Ponte del Diavolo, Tintas, Diagonal Blocks, Volo, Pylos, Ayu, Slither et Siam
 CHARTE-ERGONOMIE.md   principes d'ergonomie validés, que tout jeu applique
+common/wasm.js        chargement d'un moteur précompilé dans le worker de l'ordinateur (WasmMoteur), appelé par core.js
+wasm/<jeu>.wasm, .js  moteurs précompilés (WebAssembly) et leur colle : Quarto, Siam, Gygès, Zèrtz, Pente, Ponte del
+                      Diavolo, Diagonal Blocks (`GAME.wasm`). C'est le moteur JS de la page réécrit en C, mêmes coups ;
+                      sources, compilation et contrôle dans ~/Jeux/outils/moteurs_wasm. Le JS de la page reste le repli
 volo-net.onnx         poids du réseau de neurones de Volo (niveaux « Réseau », bloc /*NN*/ de volo.html), produits par
                       ~/volo-ia ; le worker charge onnxruntime-web depuis jsDelivr (repli unpkg, puis MCTS 3 s hors ligne)
 slither-net.onnx      poids du réseau de Slither (niveaux « Réseau » de slither.html), produits par ~/Jeux/ia
@@ -45,6 +49,7 @@ La page charge `common/core.js`, définit `const GAME={…}`, puis appelle `core
 ## Règles à respecter
 
 - **Version des fichiers communs.** Les pages chargent `common/core.js?v=N`, `common/games.css?v=N` et, pour huit d'entre elles, `common/ai.js?v=M`. Après toute modification d'un fichier commun, augmenter son numéro dans **toutes les pages qui le chargent** ; sinon un navigateur peut garder l'ancien fichier en cache à côté d'une page récente.
+- **Moteur précompilé.** Pour un jeu qui a `GAME.wasm`, toute modification de son moteur JS (évaluation, règle, niveau) est refaite dans le C de `~/Jeux/outils/moteurs_wasm/<jeu>/`, recompilée, contrôlée par `verif.js` (« aucun écart ») et recopiée dans `wasm/`, avec `GAME.wasm.v` monté ; sinon l'ordinateur jouerait autre chose que le JS et les échelles mesurées ne vaudraient plus.
 - **`GAME.id` ne change jamais.** Il préfixe les clés de stockage et les identifiants réseau (`gyges-test`, `gyges-p2p-…`) : le changer ferait perdre les parties enregistrées. Deux identifiants diffèrent du nom de fichier : `diagonalblocks.html` → `dblk`, `pontedeldiavolo.html` → `pdd`.
 - **Ergonomie.** Appliquer `CHARTE-ERGONOMIE.md` : survol en transparence, provisoire en pointillés, joué en plein, une seule mise en évidence, une seule barre d'actions, écran sans défilement.
 

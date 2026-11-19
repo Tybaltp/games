@@ -169,7 +169,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Quarto: rules =====
@@ -643,7 +643,8 @@ const GAME={id:'quarto',   // the end says why, « four pieces in a line, all da
   board:qBoard,turnStatus:qTurnStatus,
   applyStatic:()=>{viewSelects();sqLine();},
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return QA.search(pos,opt);}',
+  wasm:{id:'quarto',v:1},
+  aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return (globalThis.WASM&&WASM.search(pos,opt))||QA.search(pos,opt);}',
   aiPos:st=>({b:st.b.slice(),hand:st.hand}),aiOpt:v=>({sq:!!v.sq}),
   playerCard:qCard,aiSearch:(st,opt)=>(pageAI=pageAI||QuartoAI()).search({b:st.b.slice(),hand:st.hand},opt),
   evalInfo:qEvalInfo,

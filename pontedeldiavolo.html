@@ -191,7 +191,7 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=94"></script>
+<script src="common/core.js?v=95"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -944,7 +944,8 @@ const GAME={howto:{off:true,titled:true,n:3,scene:pdHowto},id:'pdd',seatCol:s=>{
       m=/^([a-j]\d+)-([a-j]\d+)$/.exec(v);if(!m)return null;const a=sqi(m[1]),b=sqi(m[2]);return a<0||b<0?null:enc({t:'b',a:Math.min(a,b),b:Math.max(a,b)});}},
   board:pdBoard,turnStatus:pdTurnStatus,waitStatus:pdWaitStatus,pendText:pdPendText,
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
-  aiSrc:()=>AISearch.toString()+'\n'+PonteAI.toString()+'\nconst PA=PonteAI();function aiSearch(pos,opt){return PA.search(pos,opt);}',
+  wasm:{id:'pontedeldiavolo',v:1},
+  aiSrc:()=>AISearch.toString()+'\n'+PonteAI.toString()+'\nconst PA=PonteAI();function aiSearch(pos,opt){return (globalThis.WASM&&WASM.search(pos,opt))||PA.search(pos,opt);}',
   aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||PonteAI()).search(aiPos(st),opt),
   evalInfo:pdEvalInfo,
   playerCard:pdCard,logText:pdLogText,logDesc:pdLogDesc,
