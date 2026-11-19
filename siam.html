@@ -798,22 +798,16 @@ function search(P0,opt){const S=fromPos(P0);REP=null;Q=opt.ev?{...P,...opt.ev}:P
 return {search,evalS,gen,legal,play,fromPos,code,key,keyOfSig,P};
 }
 /*AIEND*/
-// The ladder (v2, 18.11.2026, outils/aitools/res/siam/niveaux.md, 96 to 192 games a pair, the search knowing the game's
-// positions): each level beats the one below by 68-82 % (level 1 beats random play by 91 %), and the one two below by
-// 80 % or more. random = a legal move at random; mix p = a move at random with probability p, else one move read;
-// greedy = one move read; beam = depth with widths (common/ai.js), tt its table of positions, nodes the positions read at
-// most (level 11: 0.35 s a move, 1.9 s at most, on the reference Mac). A level is an amount of work, never a time
-// (16.11.2026). Default: the core's rule (a third of the scale: level 4). Hints: the strongest level.
+// The ladder (v3, 19.11.2026): v2's levels 6, 8, 9, 10 and 11 (outils/aitools/res/siam/niveaux.md, 96 to 192 games a
+// pair, the search knowing the game's positions), renumbered 0 to 4; v2's levels 0 to 5 (random play and moves mixed with
+// it) and 7 were dropped, Thibault finding nothing of interest below v2's level 8. In the v2 measures, levels 1 to 4 each beat
+// the one below by 68-82 %, and level 1 (v2's 8) beats level 0 (v2's 6) by 80 % or more. greedy = one move read; beam = depth with widths (common/ai.js), tt its table of
+// positions, nodes the positions read at most (level 4: 0.35 s a move, 1.9 s at most, on the reference Mac). A level is
+// an amount of work, never a time (16.11.2026). The keys keep v2's names (l6, l8…): the page names a level by its place.
+// Default: the core's rule (a third of the scale: level 1). Hints: the strongest level.
 const BW=[16,10,8,6],BX=[24,14,10,8];
 const LEVELS={
-  l0:{random:true},
-  l1:{mix:.9,algo:'greedy'},
-  l2:{mix:.8,algo:'greedy'},
-  l3:{mix:.65,algo:'greedy'},
-  l4:{mix:.45,algo:'greedy'},
-  l5:{mix:.25,algo:'greedy'},
   l6:{algo:'greedy'},
-  l7:{algo:'beam',depth:2,widths:[16,10]},
   l8:{algo:'beam',depth:3,widths:BW},
   l9:{algo:'beam',depth:5,widths:BW},
   l10:{algo:'beam',depth:7,widths:BX,tt:true},
@@ -821,7 +815,7 @@ const LEVELS={
 const HINT={...LEVELS.l11};
 // The engine: its version (a new scale, a new number) and its kind, under the level and in « Signaler un défaut » ·
 // levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const ENGINE={v:3,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
 const levelDesc=o=>o.mix?['lvd_mix',Math.round(100-o.mix*100)]:o.algo==='greedy'?['lvd_g1']:o.nodes?['lvd_nodes',o.depth,{k:o.nodes}]:['lvd_beam',o.depth];
 const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice(),n:st.n||0});
 let pageAI=null;
