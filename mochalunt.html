@@ -38,6 +38,9 @@ h2{font-size:1.05rem;margin:0 0 10px}
 .panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}
 [hidden]{display:none!important}
 label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+/* the rule of Gygès chosen by the match's creator, told once to each player as the match begins */
+.ov{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 60%,transparent);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}.ov[hidden]{display:none}.ov .panel{width:min(24rem,100%);margin:0;box-shadow:0 10px 32px rgba(0,0,0,.22)}.ov h2{margin:0}.ov p{margin:0}
+label.toggle{flex-direction:row;align-items:center;gap:8px;color:var(--ink);cursor:pointer}label.toggle[hidden]{display:none}.toggle input{width:18px;height:18px;accent-color:var(--accent);flex:none;margin:0}
 input,select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
 button{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
 button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
@@ -138,6 +141,7 @@ h2 .n{color:var(--muted);font-weight:500}
     <label><span data-i18n="j1"></span><select id="nJ1"><option value="c" data-i18n="j1Me"></option><option value="i" data-i18n="j1Opp"></option><option value="rnd" data-i18n="j1Rnd"></option></select></label>
     <label><span data-i18n="fmt"></span><select id="nFmt"><option value="all" data-i18n="fmtAll"></option><option value="team" data-i18n="fmtTeam"></option></select></label>
     <label id="nExclW" hidden><span data-i18n="excl"></span><select id="nExcl"></select></label>
+    <label class="toggle" id="nBackW"><input type="checkbox" id="nNoBack" checked> <span data-i18n="noBack"></span></label>
     <p class="hint" id="nHint"></p>
     <p class="err" id="nErr" hidden></p>
     <button class="primary" type="submit" data-i18n="create"></button>
@@ -194,18 +198,26 @@ h2 .n{color:var(--muted);font-weight:500}
 </section>
 <p class="err" id="err"></p>
 </main>
+<div class="ov" id="backOv" hidden><div class="panel" role="dialog" aria-modal="true" aria-labelledby="backT"><h2 id="backT" data-i18n="backT"></h2><p id="backTxt"></p><p class="hint" id="backBy"></p><button class="primary" type="button" id="backOk" data-i18n="backOk"></button></div></div>
 <script>
 'use strict';
 // The match: the plan below, the record kept on each device under mochalunt-<code> (see common/core.js, « Mochalunt
 // matches »), the tables played on the games' own pages (#mt-<code>-<k>).
 const MOCHA=[{id:'arimaa',page:'arimaa',name:'Arimaa',cls:'arimaa',tc:'20 min + 30 s'},{id:'dblk',page:'diagonalblocks',name:'Diagonal Blocks',cls:'dblocks',card:'Diagonal Blocks',tc:'20 min + 10 s',note:'swap'},
   {id:'volo',page:'volo',name:'Volo',cls:'volo',tc:'20 min + 20 s'},{id:'gyges',page:'gyges',name:'Gygès',cls:'gyges',tc:'20 min + 10 s',note:'adv'},{id:'tintas',page:'tintas',name:'Tintas',cls:'tintas',tc:'20 min + 10 s'}];
+const GYI=MOCHA.findIndex(g=>g.id==='gyges');
+// A player's first step into the match (to the first table, or to the one open): the creator's choice for Gygès is said
+// once, in a window (Thibault, 20.11.2026); then go()
+function tellBack(rec,go){if(!rec.me||rec.backTold||!plan(rec.excl).some(g=>g.id==='gyges')){go();return;}
+  $('backTxt').textContent=t(rec.gyb?'backYes':'backNo');const n=rec.names&&rec.names.c;
+  $('backBy').textContent=rec.me==='c'?t('backMe'):n?t('backBy',{n}):'';$('backOv').hidden=false;$('backOk').focus();
+  $('backOk').onclick=()=>{$('backOv').hidden=true;rec.backTold=true;LS.set('mochalunt-'+rec.code,rec);go();};}
 // the editions: a year, a round, its five games in the tournament's order (only one so far, the games above)
 const EDITIONS=[{y:2026,r:7,games:MOCHA}];
 const I18N={
  fr:{review:"Revoir",over:"terminé",ed:"{y}, ronde {r}",started:"commencé le {d}",hRes:"Reprendre un match",noRes:"Aucun match interrompu.",noMine:"Aucun match sur cet appareil.",mineHint:"Les matchs sont gardés dans ce navigateur : ils disparaissent si ses données sont effacées.",year:"Année",round:"Ronde",roundN:"Ronde {r}",tables:"Les tables",j1Hint:"Le joueur 1 choisit sa place aux tables {a} ; l'autre aux tables {b}.",lede:"Jouez et revoyez vos matchs Mochalunt.",more:"Plus d'infos :",mine:"Mes matchs",newT:"Nouveau match",name:"Votre nom",fmt:"Format",
   fmtAll:"Match individuel : les 5 jeux",fmtTeam:"Match par équipe : 4 jeux",excl:"Jeu retiré",j1:"Joueur 1 du match",j1Rnd:"Tirage au sort",j1Me:"Moi",j1Opp:"Mon adversaire",
-  create:"Créer le match",madeT:"Match créé",invLink:"Lien d'invitation, à envoyer à votre adversaire",
+  create:"Créer le match",noBack:"Gygès : interdire les coups qui ramènent à la position d'origine",backT:"Gygès : la règle de ce match",backNo:"Les coups qui ramènent à la position d'origine sont interdits.",backYes:"Les coups qui ramènent à la position d'origine sont autorisés.",backBy:"Choix de {n}, qui a créé le match.",backMe:"C'est votre choix, à la création du match.",backOk:"Compris",madeT:"Match créé",invLink:"Lien d'invitation, à envoyer à votre adversaire",
   watchLink:"Lien pour les observateurs",copy:"Copier",copied:"Copié",goFirst:"Aller à la première table",joinT:"Vous êtes invité à un match Mochalunt",joinTn:"{n} vous invite à un match Mochalunt",watchTn:"{n} vous invite à suivre un match Mochalunt",joinWho:"{g} jeux · vous choisissez votre place aux tables {t}",watchWho:"{g} jeux, une table par jeu",and:" et ",prog:"Le programme",watchBtn:"Suivre le match",nameOpt:"Votre nom (facultatif : sans nom, vous restez anonyme)",joinBtn:"Rejoindre le match",
   watchT:"Suivre un match Mochalunt",watchFind:"Recherche de la table en cours…",watchNone:"Aucune table n'est ouverte pour l'instant : les joueurs ne sont pas encore à une table.",retry:"Réessayer",
   resT:"Résultat du match",wins:"{n} gagne {x}–{y}",tie:"Égalité {x}–{y}",sofar:"Score : {a} {x} – {y} {b}",resume:"Reprendre",del:"Supprimer",delQ:"Supprimer le match contre {n} de cet appareil ?",
@@ -216,7 +228,7 @@ const I18N={
   copyHand:"Copiez le lien à la main"},
  en:{review:"Review",over:"finished",ed:"{y}, round {r}",started:"started {d}",hRes:"Resume a match",noRes:"No interrupted match.",noMine:"No match on this device.",mineHint:"Matches are kept in this browser: they disappear if its data is cleared.",year:"Year",round:"Round",roundN:"Round {r}",tables:"The tables",j1Hint:"Player 1 chooses their seat at tables {a}; the other at tables {b}.",lede:"Play and review your Mochalunt matches.",more:"More info:",mine:"My matches",newT:"New match",name:"Your name",fmt:"Format",
   fmtAll:"Individual match: the 5 games",fmtTeam:"Team match: 4 games",excl:"Game left out",j1:"Player 1 of the match",j1Rnd:"Random draw",j1Me:"Me",j1Opp:"My opponent",
-  create:"Create the match",madeT:"Match created",invLink:"Invitation link, to send to your opponent",
+  create:"Create the match",noBack:"Gygès: bar the moves that bring back the starting position",backT:"Gygès: this match's rule",backNo:"Moves that bring back the starting position are barred.",backYes:"Moves that bring back the starting position are allowed.",backBy:"Chosen by {n}, who created the match.",backMe:"Your choice, when you created the match.",backOk:"Got it",madeT:"Match created",invLink:"Invitation link, to send to your opponent",
   watchLink:"Link for spectators",copy:"Copy",copied:"Copied",goFirst:"Go to the first table",joinT:"You are invited to a Mochalunt match",joinTn:"{n} invites you to a Mochalunt match",watchTn:"{n} invites you to follow a Mochalunt match",joinWho:"{g} games · you choose your seat at tables {t}",watchWho:"{g} games, one table each",and:" and ",prog:"The programme",watchBtn:"Follow the match",nameOpt:"Your name (optional: without one, you stay anonymous)",joinBtn:"Join the match",
   watchT:"Follow a Mochalunt match",watchFind:"Looking for the table in play…",watchNone:"No table is open yet: the players are not at a table.",retry:"Try again",
   resT:"Match result",wins:"{n} wins {x}–{y}",tie:"Tie {x}–{y}",sofar:"Score: {a} {x} – {y} {b}",resume:"Resume",del:"Delete",delQ:"Delete the match against {n} from this device?",
@@ -227,7 +239,7 @@ const I18N={
   copyHand:"Copy the link by hand"},
  es:{review:"Revisar",over:"terminado",ed:"{y}, ronda {r}",started:"empezado el {d}",hRes:"Reanudar un encuentro",noRes:"Ningún encuentro interrumpido.",noMine:"Ningún encuentro en este dispositivo.",mineHint:"Los encuentros se guardan en este navegador: desaparecen si se borran sus datos.",year:"Año",round:"Ronda",roundN:"Ronda {r}",tables:"Las mesas",j1Hint:"El jugador 1 elige su lugar en las mesas {a}; el otro en las mesas {b}.",lede:"Juega y revisa tus encuentros Mochalunt.",more:"Más información:",mine:"Mis encuentros",newT:"Nuevo encuentro",name:"Tu nombre",fmt:"Formato",
   fmtAll:"Encuentro individual: los 5 juegos",fmtTeam:"Encuentro por equipos: 4 juegos",excl:"Juego excluido",j1:"Jugador 1 del encuentro",j1Rnd:"Sorteo",j1Me:"Yo",j1Opp:"Mi adversario",
-  create:"Crear el encuentro",madeT:"Encuentro creado",invLink:"Enlace de invitación, para enviar a tu adversario",
+  create:"Crear el encuentro",noBack:"Gygès: prohibir las jugadas que devuelven a la posición de partida",backT:"Gygès: la regla de este encuentro",backNo:"Las jugadas que devuelven a la posición de partida están prohibidas.",backYes:"Las jugadas que devuelven a la posición de partida están permitidas.",backBy:"Elección de {n}, que creó el encuentro.",backMe:"Es tu elección, al crear el encuentro.",backOk:"Entendido",madeT:"Encuentro creado",invLink:"Enlace de invitación, para enviar a tu adversario",
   watchLink:"Enlace para los espectadores",copy:"Copiar",copied:"Copiado",goFirst:"Ir a la primera mesa",joinT:"Te han invitado a un encuentro Mochalunt",joinTn:"{n} te invita a un encuentro Mochalunt",watchTn:"{n} te invita a seguir un encuentro Mochalunt",joinWho:"{g} juegos · eliges tu sitio en las mesas {t}",watchWho:"{g} juegos, una mesa por juego",and:" y ",prog:"El programa",watchBtn:"Seguir el encuentro",nameOpt:"Tu nombre (opcional: sin nombre, sigues anónimo)",joinBtn:"Unirse al encuentro",
   watchT:"Seguir un encuentro Mochalunt",watchFind:"Buscando la mesa en curso…",watchNone:"Ninguna mesa está abierta por ahora: los jugadores aún no están en una mesa.",retry:"Reintentar",
   resT:"Resultado del encuentro",wins:"{n} gana {x}–{y}",tie:"Empate {x}–{y}",sofar:"Marcador: {a} {x} – {y} {b}",resume:"Reanudar",del:"Eliminar",delQ:"¿Eliminar el encuentro contra {n} de este dispositivo?",
@@ -249,8 +261,8 @@ const score=rec=>{const p={c:0,i:0};for(const k in rec.res||{}){const w=rec.res[
 const nameOf=(rec,ro)=>rec.names&&rec.names[ro]||(rec.me===ro?rec.name:'')||(rec.me?(ro===rec.me?t('you'):t('opp')):ro==='c'?'J1':'J2');
 // the link's tail: the game left out ('a': none), the match's Player 1 ('c' the creator, 'i' the invitee), then the year
 // and round (2026r7; older links have none)
-const tail=rec=>(rec.excl<0?'a':String(rec.excl))+rec.j1+(/^\d{4}-\d+$/.test(rec.ed||'')?rec.ed.replace('-','r'):'');
-function parseTail(x){const m=/^([a0-4])([ci])(?:(\d{4})r(\d{1,2}))?$/.exec(x||'');return m?{excl:m[1]==='a'?-1:+m[1],j1:m[2],ed:m[3]?m[3]+'-'+m[4]:null}:null;}
+const tail=rec=>(rec.excl<0?'a':String(rec.excl))+rec.j1+(/^\d{4}-\d+$/.test(rec.ed||'')?rec.ed.replace('-','r'):'')+(rec.gyb?'b':'');   // b: Gygès with the moves back allowed (the creator's choice)
+function parseTail(x){const m=/^([a0-4])([ci])(?:(\d{4})r(\d{1,2}))?(b)?$/.exec(x||'');return m?{excl:m[1]==='a'?-1:+m[1],j1:m[2],ed:m[3]?m[3]+'-'+m[4]:null,gyb:!!m[5]}:null;}
 const nextK=rec=>{const P=plan(rec.excl);let k=0;while(k<P.length&&rec.res&&rec.res[k])k++;return k;};
 const tableUrl=(rec,k,kind)=>{const P=plan(rec.excl);return k>=P.length?'mochalunt.html#res-'+rec.code:P[k].page+'.html#m'+kind+'-'+rec.code+'-'+k;};
 // one card per table: the game's card (a link when href is given), then the table's number and a caption
@@ -312,7 +324,7 @@ function newMatch(){show('vNew');$('nName').value=LS.get('games-name','');
   const y0=yr.value;yr.innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join('');keep(yr,y0);
   const rounds=()=>{const r0=rd.value;rd.innerHTML=EDITIONS.filter(e=>e.y===+yr.value).sort((a,b)=>b.r-a.r).map(e=>`<option value="${e.r}">${t('roundN',{r:e.r})}</option>`).join('');keep(rd,r0);};
   const e0=ex.value;ex.innerHTML=MOCHA.map((g,i)=>`<option value="${i}">${g.name}</option>`).join('');keep(ex,e0);
-  const upd=()=>{const team=$('nFmt').value==='team',n=team?4:5,T=[...Array(n)].map((x,i)=>i+1);$('nExclW').hidden=!team;
+  const upd=()=>{const team=$('nFmt').value==='team',n=team?4:5,T=[...Array(n)].map((x,i)=>i+1);$('nExclW').hidden=!team;$('nBackW').hidden=team&&+ex.value===GYI;
     $('nHint').textContent=t('j1Hint',{a:listAnd(T.filter(i=>i%2)),b:listAnd(T.filter(i=>!(i%2)))});mpList($('nPlan'),team?+ex.value:-1);};
   yr.onchange=()=>{rounds();upd();};rd.onchange=upd;$('nFmt').onchange=upd;ex.onchange=upd;rounds();upd();}
 function forget(r){const ids=['mochalunt-'+r.code],tb=new RegExp('^'+r.code+'t\\d+$');
@@ -322,14 +334,14 @@ function forget(r){const ids=['mochalunt-'+r.code],tb=new RegExp('^'+r.code+'t\\
 function needName(inp,err){const nm=inp.value.trim().slice(0,24);$(err).hidden=!!nm;$(err).textContent=nm?'':t('noName');if(!nm){inp.focus();inp.oninput=()=>{if(inp.value.trim())$(err).hidden=true;};}return nm;}
 $('newForm').addEventListener('submit',e=>{e.preventDefault();const nm=needName($('nName'),'nErr');if(!nm)return;LS.set('games-name',nm);
   const team=$('nFmt').value==='team',jv=$('nJ1').value;
-  const rec={code:rnd(6),wcode:rnd(8),ed:$('nYear').value+'-'+$('nRound').value,excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now(),t0:Date.now()};
+  const rec={code:rnd(6),wcode:rnd(8),ed:$('nYear').value+'-'+$('nRound').value,excl:team?+$('nExcl').value:-1,j1:jv==='rnd'?(Math.random()<.5?'c':'i'):jv,gyb:!$('nNoBack').checked&&!(team&&+$('nExcl').value===GYI),me:'c',pid:rnd(16),name:nm,names:{c:nm},res:{},at:Date.now(),t0:Date.now()};
   LS.set('mochalunt-'+rec.code,rec);history.replaceState(null,'','#made-'+rec.code);made(rec);});
 function made(rec){show('vMade');const base=location.href.split('#')[0];
   const nm='~'+encodeURIComponent(rec.name);   // the host's name, after a ~ (links without it still work)
   $('invLink').value=base+'#join-'+rec.code+'-'+tail(rec)+'-'+rec.wcode+nm;$('watchLink').value=base+'#watch-'+rec.wcode+'-'+tail(rec)+nm;   // two codes: the spectators' does not give the players'
   const e=edOf(rec);$('madeEd').textContent='· '+t('ed',{y:e.y,r:e.r});
   $('madeJ1').textContent=t('j1Is',{n:rec.j1==='c'?rec.name:t('opp')});mpList($('madePlan'),rec.excl);
-  $('madeGo').onclick=()=>{location.href=tableUrl(rec,0,'t');};}
+  $('madeGo').onclick=()=>tellBack(rec,()=>{location.href=tableUrl(rec,0,'t');});}
 
 // ---------- an invitation ----------
 // A player already in the match on this device goes to their table. Otherwise, once named, the open table is looked
@@ -344,8 +356,8 @@ function join(code,x,wcode,host){const p=parseTail(x);if(!p){home();$('err').tex
   progList($('joinPlan'),p.excl);$('jName').value=old&&old.name||LS.get('games-name','');
   for(const id of ['jErr','joinMsg','joinActs'])$(id).hidden=true;$('joinForm').querySelector('.go').hidden=false;
   $('joinForm').onsubmit=e=>{e.preventDefault();const nm=needName($('jName'),'jErr');if(!nm)return;LS.set('games-name',nm);
-    const rec=old&&old.me?{...old,name:nm,names:{...old.names,i:nm}}:{code,wcode:wcode||null,ed:p.ed||undefined,excl:p.excl,j1:p.j1,me:'i',pid:rnd(16),name:nm,names:host?{c:host,i:nm}:{i:nm},res:{},at:Date.now(),t0:Date.now()};
-    LS.set('mochalunt-'+code,rec);$('joinForm').querySelector('.go').hidden=true;joinSeek(rec);};}
+    const rec=old&&old.me?{...old,name:nm,names:{...old.names,i:nm}}:{code,wcode:wcode||null,ed:p.ed||undefined,excl:p.excl,j1:p.j1,gyb:p.gyb,me:'i',pid:rnd(16),name:nm,names:host?{c:host,i:nm}:{i:nm},res:{},at:Date.now(),t0:Date.now()};
+    LS.set('mochalunt-'+code,rec);tellBack(rec,()=>{$('joinForm').querySelector('.go').hidden=true;joinSeek(rec);});};}
 function joinSeek(rec){const msg=$('joinMsg');msg.hidden=false;msg.textContent=t('joinFind');$('joinActs').hidden=true;
   if(typeof Peer==='undefined'){msg.textContent=t('noPeer');return;}
   seekTable(rec,k=>{location.href=tableUrl(rec,k,'t');},()=>{msg.textContent=t('joinNone');$('joinActs').hidden=false;
@@ -353,7 +365,7 @@ function joinSeek(rec){const msg=$('joinMsg');msg.hidden=false;msg.textContent=t
 
 // ---------- a spectator: the open table, from the last one back ----------
 function watch(code,x,host){const p=parseTail(x);if(!p){home();$('err').textContent=t('bad');return;}
-  let rec=recOf(code);if(!rec){rec={code,ed:p.ed||undefined,excl:p.excl,j1:p.j1,me:null,res:{},names:{}};LS.set('mochalunt-'+code,rec);}
+  let rec=recOf(code);if(!rec){rec={code,ed:p.ed||undefined,excl:p.excl,j1:p.j1,gyb:p.gyb,me:null,res:{},names:{}};LS.set('mochalunt-'+code,rec);}
   else if(p.ed&&!rec.ed){rec.ed=p.ed;LS.set('mochalunt-'+code,rec);}
   show('vWatch');$('watchT').textContent=host?t('watchTn',{n:host}):t('watchT');
   $('watchWho').textContent=(rec.ed?(e=>t('ed',{y:e.y,r:e.r})+' · ')(edOf(rec)):'')+t('watchWho',{g:plan(rec.excl).length});
