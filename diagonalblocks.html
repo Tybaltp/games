@@ -1457,7 +1457,7 @@ return {search, searchS, state, toMove, load, X, F, Search, evals: () => evals};
 // Level 9 (20.11.2026): network n° 130 of ~/Jeux/ia (8 blocks × 64 channels, the six variants), a PUCT search of sims
 // root visits (no tree kept from one move to the next), after the exact endgame solver of MC9 (solve: its options;
 // a proved result is played, else the network searches). net: the weights file next to the page. It replaces MC9 at the
-// top: 59 % ± 10 against it (100 games, the six variants), about the same time a move (niveaux.md). When the network
+// top: 63 % against it (150 games, the six variants, clear at 99 %), about the same time a move (niveaux.md). When the network
 // cannot load (offline, old browser), MC9 answers instead.
 const NN_NET='dblocks-net.onnx?v=130';
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
