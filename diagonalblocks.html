@@ -1459,10 +1459,10 @@ return {search, searchS, state, toMove, load, X, F, Search, evals: () => evals};
 // (level 1 beats random play by 83 %), and the one two below by 84 % or more. random = a random legal move. A level is
 // an amount of work, never a time (16.11.2026). Hints: MC9, the former level 9 (median 4.8 s on the reference Mac,
 // outils/aitools/res/budgets-2026-11-16.md).
-// Level 9 (20.11.2026): network n° 130 of ~/Jeux/ia (8 blocks × 64 channels, the six variants), a PUCT search of sims
+// Level 10 (20.11.2026, Thibault: 1600 visits, the former level 9 back as level 9): network n° 130 of ~/Jeux/ia (8 blocks × 64 channels, the six variants), a PUCT search of sims
 // root visits (no tree kept from one move to the next), after the exact endgame solver of MC9 (solve: its options;
-// a proved result is played, else the network searches). net: the weights file next to the page. It replaces MC9 at the
-// top: 63 % against it (150 games, the six variants, clear at 99 %), about the same time a move (niveaux.md). When the network
+// a proved result is played, else the network searches). net: the weights file next to the page. At 800 visits it made
+// 63 % against MC9 (150 games, the six variants, clear at 99 %); 1600 visits, not measured, for a full step. When the network
 // cannot load (offline, old browser), MC9 answers instead.
 const NN_NET='dblocks-net.onnx?v=130';
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
@@ -1478,11 +1478,12 @@ const LEVELS={
   l6:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,openPick:6},
   l7:{...MC,sims:1800,c:.4,cellsIn:10},
   l8:{...MC,sims:5000,c:.2,cellsIn:20},
-  l9:{algo:'nn',sims:800,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
+  l9:MC9,
+  l10:{algo:'nn',sims:1600,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
 const HINT={...MC9};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:3,fr:"recherche arborescente Monte-Carlo et réseau de neurones",en:"Monte Carlo tree search and neural network",es:"búsqueda en árbol Monte Carlo y red neuronal"};
+const ENGINE={v:4,fr:"recherche arborescente Monte-Carlo et réseau de neurones",en:"Monte Carlo tree search and neural network",es:"búsqueda en árbol Monte Carlo y red neuronal"};
 const levelDesc=o=>o.algo==='nn'?['lvd_nnE',o.sims]:o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice(),
