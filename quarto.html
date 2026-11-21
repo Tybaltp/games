@@ -608,10 +608,11 @@ function QuartoAI(){'use strict';
 // The ladder (v1, 16.11.2026, outils/aitools/res/quarto/niveaux.md, 300 games a pair): each level beats the one below
 // by 71-78 % (draws count half; level 1 beats random play by 90 %), and the one two below by 81 % or more.
 // random = a random legal move; depth = depth in whole moves (place, then give), noise = probability of a random legal
-// move, nodes = positions searched at most. A level is an amount of work, never a time (16.11.2026). Hints: the
+// move, nodes = positions searched at most. Level 0 (random play) removed on 21.11.2026 (Thibault: level 1, half its
+// moves at random, is weak enough); the levels shown are numbered from 0 again (the former level 1 is level 0, engine v3),
+// the default stays the same search (key l2, shown as level 1). A level is an amount of work, never a time (16.11.2026). Hints: the
 // strongest level (median 0.55 s on the reference Mac, outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={
-  l0:{random:true},
   l1:{depth:1,noise:.5},
   l2:{depth:1,noise:.15},
   l3:{depth:2,noise:.02},
@@ -621,7 +622,7 @@ const LEVELS={
 const HINT={...LEVELS.l6};
 // The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const ENGINE={v:3,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
 const levelDesc=o=>o.nodes?['lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 let pageAI=null;
 function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null;
@@ -643,7 +644,7 @@ const GAME={id:'quarto',   // the end says why, « four pieces in a line, all da
       const a=m[1]?(4-m[2])*4+m[1].charCodeAt(0)-97:-1,g=m[3]?(m[3]==='D'?1:0)|(m[6]==='T'?2:0)|(m[4]==='S'?4:0)|(m[5]==='H'?8:0):-1;return enc({a,g});}},rich:qRich,logNode:qLogNode,newUi,preparing,cancel:cancelPrep,
   board:qBoard,turnStatus:qTurnStatus,
   applyStatic:()=>{viewSelects();sqLine();},
-  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  levels:LEVELS,levelDefault:'l2',engine:ENGINE,levelDesc,hintLevel:HINT,
   wasm:{id:'quarto',v:1},
   aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return (globalThis.WASM&&WASM.search(pos,opt))||QA.search(pos,opt);}',
   aiPos:st=>({b:st.b.slice(),hand:st.hand}),aiOpt:v=>({sq:!!v.sq}),
