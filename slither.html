@@ -166,7 +166,7 @@ ol.log .slm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -1088,9 +1088,9 @@ const LEVELS={
   l16:{algo:'nn',sims:700,net:NN_NET},
   l17:{algo:'nn',sims:2600,step:1,net:NN_NET}};   // what the reference Mac did in the former 10 s of a turn: the placement alone searched (16.11.2026)
 const HINT={algo:'nn',sims:700,net:NN_NET};   // level 16, the highest that answers within 5 s on the reference Mac
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:3,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const ENGINE={fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
 const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
 const aiPos=st=>({size:st.size,b:Array.from(st.b),col:st.col.slice(),turn:st.turn,ply:st.ply,swap:st.swap});
 let pageAI=null;

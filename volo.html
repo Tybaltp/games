@@ -170,7 +170,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -1115,9 +1115,9 @@ const LEVELS={
   l11:{algo:'nn',sims:700,net:NN_NET},
   l12:{algo:'nn',sims:3000,net:NN_NET}};
 const HINT={algo:'nn',sims:2000,net:NN_NET};   // the simulations of 5 s at most on the reference Mac
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const ENGINE={fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
 const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
 let pageAI=null;   // the search on the page itself, when no worker can be made (one per board size)
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances

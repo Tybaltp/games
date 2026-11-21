@@ -231,7 +231,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -1481,9 +1481,9 @@ const LEVELS={
   l9:MC9,
   l10:{algo:'nn',sims:1600,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
 const HINT={...MC9};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:4,fr:"recherche arborescente Monte-Carlo et réseau de neurones",en:"Monte Carlo tree search and neural network",es:"búsqueda en árbol Monte Carlo y red neuronal"};
+const ENGINE={fr:"recherche arborescente Monte-Carlo et réseau de neurones",en:"Monte Carlo tree search and neural network",es:"búsqueda en árbol Monte Carlo y red neuronal"};
 const levelDesc=o=>o.algo==='nn'?['lvd_nnE',o.sims]:o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice(),

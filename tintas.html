@@ -182,7 +182,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -637,9 +637,9 @@ const LEVELS={
   l11:{...MC,sims:100000},
   l12:{...MC,sims:300000}};
 const HINT={...LEVELS.l12};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const ENGINE={fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
 const levelDesc=o=>o.algo==='mcts'?['lvd_mc',o.sims]:['lvd_ab',o.depth];
 const aiPos=st=>({b:st.b,pawn:st.pawn,turn:st.turn,cap:st.cap});
 let pageAI=null;   // the search on the page itself, when no worker can be made

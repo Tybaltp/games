@@ -183,7 +183,7 @@ html.ingame.band #playersTop .tally .mb{grid-column:1 / -1;justify-self:center}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 function ZertzEngine(size){
@@ -311,9 +311,9 @@ const LEVELS={
   l3:{depth:2,fb:1,nodes:2600000},
   l4:{depth:3,fb:3,nodes:5300000}};
 const HINT={...LEVELS.l4};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const ENGINE={fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
 const levelDesc=o=>o.nodes?[o.noise?'lvd_dkn':'lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 // Zèrtz strings, merged over the shared ones (core.js)
 const ZZ_I18N={fr:{

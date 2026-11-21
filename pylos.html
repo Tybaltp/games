@@ -390,7 +390,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -795,9 +795,9 @@ const LEVELS={n0:{algo:'random',random:true},n1:{algo:'greedy',pick:8,temp:4},n2
   n5:{algo:'beam',depth:3,widths:[24,14,8]},n6:{algo:'beam',depth:4,widths:[28,16,10,6]},
   n7:{algo:'beam',depth:6,widths:[32,18,12,8,6,6]}};
 const HINT={...LEVELS.n7};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const ENGINE={fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
 const levelDesc=o=>o.algo==='greedy'?[o.pick>1?'lvd_g1r':'lvd_g1']:[o.noise?'lvd_beamN':'lvd_beam',o.depth];
 const aiPos=st=>({variant:st.variant,b:Array.from(st.b),res:st.res.slice(),turn:st.turn});
 let pageAI=null;   // the search on the page itself, when no worker can be made

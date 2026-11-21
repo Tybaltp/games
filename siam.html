@@ -190,7 +190,7 @@ ol.log .smm .tag{color:var(--muted);font-size:.72rem}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script src="img/siam/siam-art.js?v=2"></script>
@@ -819,9 +819,9 @@ const LEVELS={
   l10:{algo:'beam',depth:7,widths:BX,tt:true},
   l11:{algo:'beam',depth:9,widths:BX,tt:true,nodes:100000}};
 const HINT={...LEVELS.l11};
-// The engine: its version (a new scale, a new number) and its kind, under the level and in « Signaler un défaut » ·
+// The engine: its kind (no versions since 21.11.2026), under the level and in « Signaler un défaut » ·
 // levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
+const ENGINE={fr:"recherche en faisceau",en:"beam search",es:"búsqueda en haz"};
 const levelDesc=o=>o.mix?['lvd_mix',Math.round(100-o.mix*100)]:o.algo==='greedy'?['lvd_g1']:o.nodes?['lvd_nodes',o.depth,{k:o.nodes}]:['lvd_beam',o.depth];
 const aiPos=st=>({p:st.p.map(q=>q&&{...q}),res:st.res.slice(),turn:st.turn,col:st.col.slice(),n:st.n||0});
 let pageAI=null;

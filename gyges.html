@@ -165,7 +165,7 @@ html.nocoords{--board-ar:388/552}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=96"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 function GygesEngine(){
@@ -520,9 +520,9 @@ const LEVELS={
   l8:{depth:12,placeTries:6,shuffle:true,placeTol:0,ts:true,nodes:200000},
   l9:{depth:12,placeTries:6,shuffle:true,placeTol:0,ts:true,nodes:560000}};
 const HINT={...LEVELS.l9};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:1,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const ENGINE={fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
 const levelDesc=o=>o.nodes?['lvd_nodes',o.nodes]:o.maxSeg<99?['lvd_dsn',o.depth,{s:o.maxSeg-1}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 // Setup modes: 'piece' one piece at a time in turn (default) · 'simul' both rows chosen at the same time, hidden until both
 // are validated · 'seq' J1's whole row, then J2's. Missing (old saves, resume codes) = 'piece'.
