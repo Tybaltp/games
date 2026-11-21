@@ -86,7 +86,7 @@
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
 // Time control: two choices, the main time (minutes, or no clock) and the time added per move (seconds)
-const TC_MAIN=[3,5,10,20],TC_INC=[5,10,20,30];
+const TC_MAIN=[3,5,10,20],TC_INC=[1,3,5,10,20,30];
 // fill a main-time select (id) and its per-move select (id+'I', made here, in a label after it); saved under key, key+'-inc'
 function tcFill(id,key,dMain,dInc){const sel=$(id);if(!sel)return;
   if(!sel.tcI){const lab=document.createElement('label');lab.htmlFor=id+'I';lab.append(document.createElement('span'));const si=document.createElement('select');si.id=id+'I';lab.append(si);
