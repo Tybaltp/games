@@ -523,11 +523,12 @@ function qTurnStatus({r,o,idle,RST}){const st=o.st,who=solo()?seatName(st.turn)+
   const k=st.hand<0?'st_give1':ui.a<0?'st_placeNow':'st_giveNow';   // one step at a time: place, then give
   status(who+cap(t(k)),'turn',preparing()?[RST]:idle);}
 
-// The player to move: the piece received, small, in their card (« to place »)
-function qCard(el,p,d){const st=d.st;if(d.over||st.turn!==p||st.hand<0)return;
-  const w=document.createElement('div');w.className='qhand';
-  const svg=miniPiece(st.hand);svg.setAttribute('aria-hidden','true');   // the same picture as in the texts
-  const tx=document.createElement('span');tx.textContent=t('toPlace');w.append(svg,tx);w.title=pieceName(st.hand);el.appendChild(w);}
+// The player to move: the piece received, small, in their card (« to place »). The other card (and both before the
+// first piece is given) holds the same line, hidden, so the cards keep their height and the board its size
+function qCard(el,p,d){const st=d.st;if(d.over)return;const on=st.turn===p&&st.hand>=0;
+  const w=document.createElement('div');w.className='qhand';if(!on){w.style.visibility='hidden';w.setAttribute('aria-hidden','true');}
+  const svg=miniPiece(on?st.hand:0);svg.setAttribute('aria-hidden','true');   // the same picture as in the texts
+  const tx=document.createElement('span');tx.textContent=t('toPlace');w.append(svg,tx);if(on)w.title=pieceName(st.hand);el.appendChild(w);}
 // the variant's state in the rules (« on in this game »)
 function sqLine(){document.querySelectorAll('.sqState').forEach(e=>e.textContent=t(view&&view.sq?'sqOn':'sqOff'));}
 
