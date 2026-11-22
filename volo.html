@@ -1091,9 +1091,9 @@ return {search, load, X, Search};
 // neural network of ~/volo-ia with a PUCT search of `sims` simulations (same strength wherever it finishes them: about
 // 500 to 1000 network evaluations a second on a recent computer; no time cap, 16.11.2026: a slower device takes longer
 // and plays the same) · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
-// The network (20.11.2026, Thibault): n° 78 of the sizes run (runs/volo-tailles, from n° 130, trained on 13, 11 and 9
-// rows), 68 % against n° 130 on 13 rows (100 games, clear at 99 %); the ladder below is kept as calibrated with n° 130.
-const NN_NET='volo-net.onnx?v=t78';
+// The network (22.11.2026, Thibault): n° 110 of the sizes run (runs/volo-tailles, after n° 78, trained on 13, 11 and 9
+// rows), its best at release; the ladder below is kept as calibrated with n° 130.
+const NN_NET='volo-net.onnx?v=t110';
 // The ladder (v1, network n° 130, 17.11.2026, outils/aitools/res/volo/niveaux.md, 100 to 300 games a pair): each level
 // beats the one below by 65-83 % (wins + half the draws), and the one two below by 85 % or more. Level 0: a legal move
 // at random. Levels 1 to 3: one simulation, the move drawn from the network's policy at temperature temp (Search.pick).
