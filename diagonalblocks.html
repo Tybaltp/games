@@ -839,15 +839,47 @@ function openTab(S,opt){const T=opt.firstTab||FIRST,n=legal(S,0,MV),ks=[];for(le
 // whose position (green to move) is nearest SWAP for green; the second player takes green above SWAP, else pink (the
 // same threshold: firstValue is that very value, read after the pink reply).
 function greenValue(S){const E=EV;EV=EV0;const v=evalS(S,seatOf(S,0));EV=E;return v;}
-function openingBest(S,opt){const n=legal(S,0,MV),L=Array.from(MV.subarray(0,n)),cand=[];
-  for(const m of L){if(SIZE[PKA[m]]<4)continue;cand.push({m,v:firstValue(play(copy(S),m))});}
+function openingBest(S,opt){const n=legal(S,0,MV),L=Array.from(MV.subarray(0,n)),cand=[],T=opt.openTab&&opt.firstTab;
+  // with a table (openTab, firstTab): only the openPieces pieces the table scores highest
+  const keep=T&&new Set([...T.keys()].filter(k=>T[k]>=0).sort((x,y)=>T[y]-T[x]).slice(0,opt.openPieces||3));
+  for(const m of L){if(SIZE[PKA[m]]<4||keep&&!keep.has(PKA[m]))continue;cand.push({m,v:firstValue(play(copy(S),m))});}
   cand.sort((x,y)=>y.v-x.v);const x=cand[(Math.random()*Math.min(opt.openPick||6,cand.length))|0];return {m:x.m,s:0,depth:0};}
 function pinkOpening(S,opt){const n=legal(S,1,MV),L=Array.from(MV.subarray(0,n)),cand=[];
   for(const m of L){if(SIZE[PKA[m]]<4)continue;cand.push({m,v:greenValue(play(copy(S),m))});}
   cand.sort((x,y)=>Math.abs(x.v-SWAP)-Math.abs(y.v-SWAP));const x=cand[(Math.random()*Math.min(opt.openPick||6,cand.length))|0];return {m:x.m,s:0,depth:0};}
 function swap2Choice(S){const v=greenValue(S);return v>SWAP?null:{m:-1,s:SWAP-v,depth:1};}
 function swapTab(S,opt){const T=opt.firstTab||FIRST;let k=-1;for(let j=0;j<NK;j++)if(S.u[0]>>j&1)k=j;
-  return k>=0&&T[k]>.5?{m:-1,s:T[k]-.5,depth:1}:null;}
+  if(k<0||T[k]<0){const v=firstValue(S);return v>SWAP?{m:-1,s:v-SWAP,depth:1}:null;}   // a piece the table lacks: the threshold
+  return T[k]>.5?{m:-1,s:T[k]-.5,depth:1}:null;}
+
+// Level option ptab (the full board, 22.11.2026): the first pieces by placement, from a table measured at level 8 (both
+// sides, no swap; outils/aitools/res/diagonalblocks/plein/): first[key], the first colour's score (wins + half the
+// draws) by its first piece; pair[key], green's by its first piece and pink's (Swap 2); swapF, the threshold on
+// firstValue for a first piece the table lacks. A key: the cells, the smaller of the placement and its mirror on the main
+// diagonal (the board and both start cells are symmetric about it). The opener plays a placement whose score is nearest
+// 50 % (no swap: the highest); the second player swaps (Swap 2: takes pink) when the first colour's is above 50 %.
+const srt=cs=>Array.from(cs).sort((x,y)=>x-y).join('.'),trs=cs=>Array.from(cs,i=>(i%W)*W+((i/W)|0));
+const tkey=(g,p)=>{const a=srt(g)+(p?'|'+srt(p):''),b=srt(trs(g))+(p?'|'+srt(trs(p)):'');return a<b?a:b;};
+const cellsOf=(S,c)=>{const o=[];for(let i=0;i<N;i++)if(S.b[i]===c+1)o.push(i);return o;};
+// among colour c's legal placements the table T scores, one of those with the least bad(score), at random; g: green's
+// first piece when c is pink (pair keys)
+function tabOpen(S,c,T,bad,g){const n=legal(S,c,MV);let best=1e9,L=[];
+  for(let i=0;i<n;i++){const m=MV[i],v=T[g?tkey(g,PCl[m]):tkey(PCl[m])];if(v===undefined)continue;const b=bad(v);
+    if(b<best-1e-9){best=b;L=[m];}else if(b<best+1e-9)L.push(m);}
+  return L.length?{m:L[(Math.random()*L.length)|0],s:0,depth:0}:null;}
+function ptOpen(S,opt){const P=opt.ptab;
+  if(S.rs===1)return tabOpen(S,0,P.first,v=>-v)||openingBest(S,opt);
+  if(S.rs!==2)return tabOpen(S,0,P.first,v=>Math.abs(v-.5))||opening(S,opt);
+  // Swap 2: the green piece of the pair nearest 50 %
+  const G={};for(const k in P.pair){const g=k.split('|')[0].split('.').map(Number),gk=tkey(g),b=Math.abs(P.pair[k]-.5);if(!(G[gk]<=b))G[gk]=b;}
+  return tabOpen(S,0,G,b=>b)||opening(S,opt);}
+function ptPink(S,opt){return tabOpen(S,1,opt.ptab.pair,v=>Math.abs(v-.5),cellsOf(S,0))||pinkOpening(S,opt);}
+function ptSwap(S,opt){const P=opt.ptab,v=P.first[tkey(cellsOf(S,0))];
+  if(v!==undefined)return v>.5?{m:-1,s:v-.5,depth:1}:null;
+  const f=firstValue(S),t=P.swapF??SWAP;return f>t?{m:-1,s:f-t,depth:1}:null;}
+function ptSwap2(S,opt){const v=opt.ptab.pair[tkey(cellsOf(S,0),cellsOf(S,1))];
+  if(v!==undefined)return v>.5?null:{m:-1,s:.5-v,depth:1};
+  return swap2Choice(S);}
 
 // ----- exact endgame solver (level option endgame): alpha-beta to the end on the final cell difference -----
 // The colours interact only by covering cells (side contact forbids only one's own colour). R_c: the empty playable
@@ -935,13 +967,16 @@ const PS=blank();
 let TELL=false;
 const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>seatOf(S,S.tm),done:S=>!!S.ov,result,eval:evalS,
   playout,scratch:S=>copyInto(PS,S),best:r=>{if(TELL)aiBest({move:toMove(r.m),score:r.s,depth:r.depth});}});
-function search(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;useBoard(S.full);
+// opt.full: options that replace the level's own on the full board (FULL); its ev, weights for that search only
+function search(P,opt){if(P.full&&opt.full)opt={...opt,...opt.full};if(!opt.ev)return search1(P,opt);
+  const E0=EV;EV={...EV,...opt.ev};try{return search1(P,opt);}finally{EV=E0;}}
+function search1(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;useBoard(S.full);
   // random (level 0): a move at random among all the legal ones, the swap included (each placement once)
   if(opt.random){const L=new Int32Array(NPMAX),n=legal(S,S.tm,L),k=n+(canSwap(S)?1:0);if(!k)return null;const i=(Math.random()*k)|0;
     return {move:toMove(i<n?L[i]:-1),score:0,depth:0,random:true};}
-  if(S.n===0)r=S.rs===1?openingBest(S,opt):opt.openTab&&!S.rs?openTab(S,opt):opening(S,opt);
-  else if(S.rs===2&&S.n===1)r=pinkOpening(S,opt);
-  else if(canSwap(S)&&!opt.noSwap)r=S.rs===2?swap2Choice(S):swapChoice(S,opt);
+  if(S.n===0)r=opt.ptab?ptOpen(S,opt):S.rs===1?openingBest(S,opt):opt.openTab&&!S.rs?openTab(S,opt):opening(S,opt);
+  else if(S.rs===2&&S.n===1)r=opt.ptab?ptPink(S,opt):pinkOpening(S,opt);
+  else if(canSwap(S)&&!opt.noSwap)r=opt.ptab?(S.rs===2?ptSwap2(S,opt):ptSwap(S,opt)):S.rs===2?swap2Choice(S):swapChoice(S,opt);
   if(!r){K.start(opt.nodes);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
     if(!C.length)return null;
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
@@ -1465,9 +1500,16 @@ return {search, searchS, state, toMove, load, X, F, Search, evals: () => evals};
 // 63 % against MC9 (150 games, the six variants, clear at 99 %); 1600 visits, not measured, for a full step. When the network
 // cannot load (offline, old browser), MC9 answers instead.
 const NN_NET='dblocks-net.onnx?v=130';
+// the full board's first pieces and swap (ptab, DiagAI; 22.11.2026): 8 first pieces and 21 Swap 2 pairs, those MC9 plays,
+// each measured at level 8 (100 and 50 games, outils/aitools/res/diagonalblocks/plein/); swapF, decided without a measure
+const PT_FULL={first:{"32.33.46.47.60":0.695,"32.46.47.60.61":0.655,"33.46.47.60.61":0.81,"60.61.62.63.64":0.71,"60.61.62.76.77":0.605,"60.61.74.75":0.505,"60.61.75.76.77":0.555,"60.61.75.76.89":0.775},pair:{"32.33.46.47.60|105.106.120.121.135":0.49,"32.33.46.47.60|105.119.120.134.135":0.59,"32.33.46.47.60|106.119.120.121.135":0.47,"32.33.46.47.60|106.119.120.134.135":0.56,"32.33.46.47.60|106.120.133.134.135":0.52,"32.33.46.47.60|107.119.120.121.135":0.77,"32.46.47.60.61|105.106.120.134.135":0.68,"32.46.47.60.61|105.119.120.121.135":0.54,"32.46.47.60.61|106.119.120.121.135":0.67,"32.46.47.60.61|106.119.120.134.135":0.5,"32.46.47.60.61|106.120.133.134.135":0.56,"32.46.47.60.61|107.119.120.121.135":0.46,"33.46.47.60.61|105.106.120.134.135":0.75,"33.46.47.60.61|105.119.120.121.135":0.6,"33.46.47.60.61|106.119.120.121.135":0.36,"33.46.47.60.61|106.119.120.134.135":0.69,"33.46.47.60.61|106.120.133.134.135":0.46,"33.46.47.60.61|107.119.120.121.135":0.48,"60.61.74.75|105.106.120.134.135":0.39,"60.61.74.75|106.119.120.121.135":0.86,"60.61.74.75|106.120.133.134.135":0.78},swapF:-3.6};
+const FULL={ptab:PT_FULL};
+// MC9 on the full board also searches wider (cellsIn 40, cells 100 instead of 20 and 60; 22.11.2026): with the table, 80 %
+// against MC9 before (200 games, the three openings), for 10 % more time per move; 60 and 150 measured no better, 25 % slower
+const FULL9={...FULL,cellsIn:40,cells:100};
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
 // the former level 9 (47 000 simulations + exact endgame): hints, and the network's stand-in when it cannot load
-const MC9={...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1};
+const MC9={...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1,full:FULL9};
 const LEVELS={
   l0:{random:true},
   l1:{algo:'greedy',cells:40,temp:1000,openPick:6},
@@ -1476,8 +1518,8 @@ const LEVELS={
   l4:{algo:'greedy',cells:40,temp:.7,openPick:6},
   l5:{algo:'greedy',cells:40,temp:.2,openPick:6},
   l6:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,openPick:6},
-  l7:{...MC,sims:1800,c:.4,cellsIn:10},
-  l8:{...MC,sims:5000,c:.2,cellsIn:20},
+  l7:{...MC,sims:1800,c:.4,cellsIn:10,full:FULL},
+  l8:{...MC,sims:5000,c:.2,cellsIn:20,full:FULL},
   l9:MC9,
   l10:{algo:'nn',sims:1600,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
 const HINT={...MC9};
