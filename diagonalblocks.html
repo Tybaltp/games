@@ -839,7 +839,7 @@ function openTab(S,opt){const T=opt.firstTab||FIRST,n=legal(S,0,MV),ks=[];for(le
 // whose position (green to move) is nearest SWAP for green; the second player takes green above SWAP, else pink (the
 // same threshold: firstValue is that very value, read after the pink reply).
 function greenValue(S){const E=EV;EV=EV0;const v=evalS(S,seatOf(S,0));EV=E;return v;}
-function openingBest(S,opt){const n=legal(S,0,MV),L=Array.from(MV.subarray(0,n)),cand=[],T=opt.openTab&&opt.firstTab;
+function openingBest(S,opt){const n=legal(S,0,MV),L=Array.from(MV.subarray(0,n)),cand=[],T=opt.openTab&&(opt.firstTab||FIRST);
   // with a table (openTab, firstTab): only the openPieces pieces the table scores highest
   const keep=T&&new Set([...T.keys()].filter(k=>T[k]>=0).sort((x,y)=>T[y]-T[x]).slice(0,opt.openPieces||3));
   for(const m of L){if(SIZE[PKA[m]]<4||keep&&!keep.has(PKA[m]))continue;cand.push({m,v:firstValue(play(copy(S),m))});}
@@ -977,6 +977,7 @@ function search1(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;useBoa
   if(S.n===0)r=opt.ptab?ptOpen(S,opt):S.rs===1?openingBest(S,opt):opt.openTab&&!S.rs?openTab(S,opt):opening(S,opt);
   else if(S.rs===2&&S.n===1)r=opt.ptab?ptPink(S,opt):pinkOpening(S,opt);
   else if(canSwap(S)&&!opt.noSwap)r=opt.ptab?(S.rs===2?ptSwap2(S,opt):ptSwap(S,opt)):S.rs===2?swap2Choice(S):swapChoice(S,opt);
+  if(opt.openOnly&&!r)return null;   // the first piece and the swap only (the network's level, NN_OPEN)
   if(!r){K.start(opt.nodes);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
     if(!C.length)return null;
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
@@ -1510,6 +1511,10 @@ const FULL9={...FULL,cellsIn:40,cells:100};
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
 // the former level 9 (47 000 simulations + exact endgame): hints, and the network's stand-in when it cannot load
 const MC9={...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1,full:FULL9};
+// The network's level opens by the tables (22.11.2026, Thibault, until a table measured with the network): the first piece
+// and the swap as MC9 with openTab (FIRST, level 6, cut corners) and ptab (PT_FULL, level 8, full board); openOnly: else
+// nothing, the network plays. A swap declined: the network then sees the game without swap (rs 1), so it cannot swap
+const NN_OPEN={...MC9,openTab:true,openOnly:true};
 const LEVELS={
   l0:{random:true},
   l1:{algo:'greedy',cells:40,temp:1000,openPick:6},
@@ -1521,7 +1526,7 @@ const LEVELS={
   l7:{...MC,sims:1800,c:.4,cellsIn:10,full:FULL},
   l8:{...MC,sims:5000,c:.2,cellsIn:20,full:FULL},
   l9:MC9,
-  l10:{algo:'nn',sims:1600,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
+  l10:{algo:'nn',sims:1600,net:NN_NET,open:NN_OPEN,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
 const HINT={...MC9};
 // The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
@@ -1538,7 +1543,9 @@ const aiSrc=()=>AISearch.toString()+'\n'+DiagAI.toString()+'\n'+DBlocksNN.toStri
   '\nconst NV=DBlocksNN('+JSON.stringify(location.href)+'),NN_FALLBACK='+JSON.stringify(MC9)+';'+
   '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
   'const sv=m.opt.solve&&m.st.n>=2&&!m.st.over?aiSearch(m.st,{algo:"greedy",cells:40,temp:0,...m.opt.solve}):null;'+
-  '(sv&&sv.solved?Promise.resolve(sv):NV.search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>aiSearch(m.st,NN_FALLBACK))).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
+  // opt.open (NN_OPEN): the first piece and the swap by the tables (Swap 2 left to the network)
+  'const st=m.st,o=m.opt.open,op=!!o&&!st.over&&st.rs!==2&&(st.n===0||st.n===1&&!st.rs&&!st.sw),tb=op?DA.search(st,o):null,pos=op&&!tb&&st.n===1?{...st,rs:1}:st;'+
+  '(sv&&sv.solved?Promise.resolve(sv):tb?Promise.resolve(tb):NV.search(pos,m.opt,r=>self.aiBest(r,m.id)).catch(()=>aiSearch(m.st,NN_FALLBACK))).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,nn:r.nn}}));});}});';
 // The computer's opinion: none for the first piece and the swap; the score is in cells
 // (the network's level, r.nn: the score a logit of its winning chances, as Slither)
 function dbEvalInfo(r,st){if(st.es.n<(s2(st.es)?3:2)||r.random)return null;const s=r.score;if(r.forced)return {k:'ai_forced'};
@@ -1575,7 +1582,8 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
     const B=LS.get('dblk-board','cut'),Z=LS.get('dblk-start','swap');
     for(const p of ['c','a','f','t']){const b=$(p+'Board'),z=$(p+'Start');if(!b||!z)continue;const bv=b.value||B,zv=z.value||Z;
       b.innerHTML=['cut','full'].map(v=>`<option value="${v}">${t('b_'+v)}</option>`).join('');b.value=bv;
-      z.innerHTML=['swap','none','swap2'].map(v=>`<option value="${v}">${t('s_'+v)}</option>`).join('');z.value=zv;}},
+      // no Swap 2 against the computer for now (22.11.2026, Thibault)
+      z.innerHTML=(p==='a'?['swap','none']:['swap','none','swap2']).map(v=>`<option value="${v}">${t('s_'+v)}</option>`).join('');z.value=p==='a'&&zv==='swap2'?'swap':zv;}},
   home:()=>drawBoard(E.init(),null,null,null,-1)};
 coreStart();
 if(mqWide.addEventListener)mqWide.addEventListener('change',placeBlocks);else mqWide.addListener(placeBlocks);
