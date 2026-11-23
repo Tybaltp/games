@@ -1521,7 +1521,12 @@ async function searchS(S, opt, tell) {
   let tot = 0; for (const x of s.root.N) tot += x; let pb = 0; for (let k = 1; k < s.root.P.length; k++) if (s.root.P[k] > s.root.P[pb]) pb = k;
   const m = s.root.moves[tot && opt.sims >= 1 ? s.pick(opt.temp || 0) : pb]; let d = 0, n = s.root;
   while (n && n.N) { const b = topOf(n); if (!n.N[b]) break; d++; n = n.ch[b]; }
-  return {m, value: s.value(), depth: d, nodes: s.sims};
+  // labo : sans recherche, la valeur est celle de la position d'après le coup (du point de vue de celui qui le joue)
+  let value = s.value();
+  if (!(tot && opt.sims >= 1)) { const T = F.play(S, m);
+    if (T.ov) value = Math.sign(F.diff(T, S.tm));
+    else { const L2 = []; F.gen(T, L2); const o = await evalNet({S: T, moves: L2}); value = F.side(T) === F.side(S) ? o.value : -o.value; } }
+  return {m, value, depth: d, nodes: s.sims};
 }
 // the answer in the page's form (as DiagAI().search): the score a logit of the winning chances, nn: true (evalInfo)
 async function search(P, opt, tell) {
