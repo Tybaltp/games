@@ -1677,7 +1677,7 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
  const ev0=GAME.evalInfo;GAME.evalInfo=(r,st)=>{if(r&&!r.forced&&(r.nn||r.depth===99)){const s=r.score;   // depth 99 : un résultat du solveur
      
      lastEv=r.nn?{p:1/(1+Math.exp(-s))}:s>500?{txt:'Solveur : gain prouvé pour l’ordinateur'}:s<-500?{txt:'Solveur : perte prouvée pour l’ordinateur, de '+(-(s+1000))+' case'+(-(s+1000)>1?'s':'')}:{txt:'Solveur : nulle prouvée'};evShow();}
-   return ev0(r,st);};
+   return null;};   // labo : l'avis de l'ordinateur n'est plus affiché dans les options, le bandeau le remplace
  self.laboEvReset=()=>{lastEv=null;evShow();};
  $('laboE').checked=cf.e;$('laboE').onchange=e=>{cf.e=e.target.checked;apply();evShow();};evShow();
  self.laboSet=(v,s)=>{cf.v=v;cf.s=s;$('laboR').value=v;$('laboS').checked=s;apply();mark();};self.laboCf=()=>cf;
