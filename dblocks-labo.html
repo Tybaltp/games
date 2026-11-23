@@ -1668,7 +1668,7 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
    if(!lastEv){el.innerHTML='<span style="opacity:.7">Évaluation : après le prochain coup de l’ordinateur.</span>';return;}
    if(lastEv.txt){el.innerHTML='<b>'+lastEv.txt+'</b>';return;}
    const p=Math.round(100*lastEv.p),bar=`<span style="display:inline-block;width:160px;height:10px;border-radius:5px;overflow:hidden;background:var(--line,#888)"><span style="display:block;height:100%;width:${p}%;background:var(--accent,#c90)"></span></span>`;
-   el.innerHTML=`Réseau : ordinateur <b>${p} %</b> ${bar} vous <b>${100-p} %</b>`;};
+   el.innerHTML=`Chances de gain selon le réseau : <b>${p} %</b> ${bar}`;};
  const ev0=GAME.evalInfo;GAME.evalInfo=(r,st)=>{if(r&&!r.forced&&(r.nn||r.depth===99)){const s=r.score;   // depth 99 : un résultat du solveur
      
      lastEv=r.nn?{p:1/(1+Math.exp(-s))}:s>500?{txt:'Solveur : gain prouvé pour l’ordinateur'}:s<-500?{txt:'Solveur : perte prouvée pour l’ordinateur, de '+(-(s+1000))+' case'+(-(s+1000)>1?'s':'')}:{txt:'Solveur : nulle prouvée'};evShow();}
