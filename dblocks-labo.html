@@ -1605,16 +1605,49 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
    $('laboV').textContent=cf.v===0?'0 (réseau seul, sans recherche)':cf.v;};
  const box=document.createElement('div');box.id='labo';
  box.style.cssText='margin:6px 0 10px;padding:8px 12px;border:1px solid var(--line,#888);border-radius:8px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:.92rem';
- box.innerHTML='<b>Labo, réseau n° 286 (niveau 10)</b><label style="display:flex;gap:8px;align-items:center">Visites <input id="laboR" type="range" min="0" max="1000" step="10" style="width:180px"> <span id="laboV" style="font-variant-numeric:tabular-nums;min-width:3ch"></span></label><label style="display:flex;gap:6px;align-items:center"><input id="laboS" type="checkbox"> Solveur exact de fin</label><span id="laboL" style="display:flex;gap:4px;flex-wrap:wrap"></span><span style="opacity:.7">Choisir le niveau 10 pour jouer contre lui ; le réglage vaut dès le coup suivant. Échelle : chaque marche double les visites.</span>';
+ box.innerHTML='<b>Labo, réseau n° 286 (niveau 10)</b><button type="button" id="laboNew" style="font:inherit;font-size:.85rem;padding:2px 10px;border-radius:6px;border:1px solid var(--accent,#888);background:transparent;color:inherit;cursor:pointer">Nouvelle partie</button><label style="display:flex;gap:8px;align-items:center">Visites <input id="laboR" type="range" min="0" max="1000" step="10" style="width:180px"> <span id="laboV" style="font-variant-numeric:tabular-nums;min-width:3ch"></span></label><label style="display:flex;gap:6px;align-items:center"><input id="laboS" type="checkbox"> Solveur exact de fin</label><span id="laboL" style="display:flex;gap:4px;flex-wrap:wrap"></span><span style="opacity:.7">Réglage valable dès le coup suivant. Échelle : chaque marche double les visites.</span>';
  const hd=document.querySelector('header');hd.after(box);
  const LAD=[0,25,50,100,200,400,800],mark=()=>{for(const x of $('laboL').children)x.style.outline=+x.dataset.v===cf.v?'2px solid currentColor':'';};
  LAD.forEach((v,i)=>{const b=document.createElement('button');b.type='button';b.dataset.v=v;b.textContent='M'+(i+1)+' · '+v;
    b.style.cssText='font:inherit;font-size:.85rem;padding:2px 8px;border-radius:6px;border:1px solid var(--line,#888);background:transparent;color:inherit;cursor:pointer';
    b.onclick=()=>{cf.v=v;$('laboR').value=v;apply();mark();};$('laboL').appendChild(b);});
  $('laboR').value=cf.v;$('laboS').checked=cf.s;setTimeout(mark);
+ self.laboSet=(v,s)=>{cf.v=v;cf.s=s;$('laboR').value=v;$('laboS').checked=s;apply();mark();};self.laboCf=()=>cf;
  $('laboR').oninput=e=>{cf.v=+e.target.value;apply();mark();};$('laboS').onchange=e=>{cf.s=e.target.checked;apply();};apply();}
 GAME.levelDefault='l10';
 coreStart();
+// labo : la fenêtre de départ (règles, premier joueur, visites, solveur), puis la partie contre le n° 286
+{const LAD=[0,25,50,100,200,400,800];let pr={board:'cut',start:'swap',first:'me'};try{pr={...pr,...JSON.parse(localStorage.getItem('dblk-labo-start')||'{}')};}catch(e){}
+ const ov=document.createElement('div');ov.id='laboModal';ov.hidden=true;
+ ov.style.cssText='position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+ const sel=(id,opts)=>`<select id="${id}" style="font:inherit;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)">${opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select>`;
+ const row=(l,h)=>`<label style="display:grid;grid-template-columns:9em 1fr;gap:10px;align-items:center">${l}${h}</label>`;
+ ov.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="lmT" style="background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:18px 20px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:12px">
+  <b id="lmT" style="font-size:1.1rem">Partie contre le réseau n° 286</b>
+  ${row('Plateau',sel('lmB',[['cut','Coins coupés (184 cases)'],['full','Plateau plein (196 cases)']]))}
+  ${row('Départ',sel('lmS',[['swap','Échange'],['none','Sans échange']]))}
+  ${row('Premier joueur',sel('lmF',[['me','Moi'],['ai',"L'ordinateur"],['rnd','Au hasard']]))}
+  <div style="display:flex;flex-direction:column;gap:6px"><span>Visites : <b id="lmV"></b></span>
+    <div id="lmL" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    <input id="lmR" type="range" min="0" max="1000" step="10" aria-label="Visites"></div>
+  <label style="display:flex;gap:6px;align-items:center"><input id="lmX" type="checkbox"> Solveur exact de fin</label>
+  <button type="button" id="lmGo" style="font:inherit;font-weight:600;padding:8px;border-radius:8px;border:0;background:var(--accent);color:var(--accent-ink,#fff);cursor:pointer">Jouer</button></div>`;
+ document.body.appendChild(ov);
+ let v=self.laboCf().v;const show=()=>{$('lmV').textContent=v===0?'0 (réseau seul)':v;$('lmR').value=v;for(const b of $('lmL').children)b.style.outline=+b.dataset.v===v?'2px solid currentColor':'';};
+ LAD.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.dataset.v=x;b.textContent='M'+(i+1)+' · '+x;
+   b.style.cssText='font:inherit;font-size:.85rem;padding:2px 8px;border-radius:6px;border:1px solid var(--line);background:transparent;color:inherit;cursor:pointer';
+   b.onclick=()=>{v=x;show();};$('lmL').appendChild(b);});
+ $('lmR').oninput=e=>{v=+e.target.value;show();};
+ const open=()=>{v=self.laboCf().v;$('lmB').value=pr.board;$('lmS').value=pr.start;$('lmF').value=pr.first;$('lmX').checked=self.laboCf().s;show();ov.hidden=false;$('lmGo').focus();};
+ $('lmGo').onclick=()=>{pr={board:$('lmB').value,start:$('lmS').value,first:$('lmF').value};try{localStorage.setItem('dblk-labo-start',JSON.stringify(pr));}catch(e){}
+   self.laboSet(v,$('lmX').checked);
+   const lv=$('aLevel');lv.value='l10';lv.dispatchEvent(new Event('change'));
+   $('aBoard').value=pr.board;$('aStart').value=pr.start;$('aFirst').value=pr.first;
+   ov.hidden=true;$('aiForm').requestSubmit();};
+ ov.addEventListener('keydown',e=>{if(e.key==='Escape')ov.hidden=true;});
+ $('laboNew').onclick=open;
+ if(!/^#ai-/.test(location.hash))open();}
+
 if(mqWide.addEventListener)mqWide.addEventListener('change',placeBlocks);else mqWide.addListener(placeBlocks);
 </script>
 <script src="common/accueil.js?v=1"></script>
