@@ -1683,6 +1683,7 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
  self.laboSet=(v,s)=>{cf.v=v;cf.s=s;$('laboR').value=v;$('laboS').checked=s;apply();mark();};self.laboCf=()=>cf;
  $('laboR').oninput=e=>{cf.v=+e.target.value;apply();mark();};$('laboS').onchange=e=>{cf.s=e.target.checked;apply();};apply();}
 GAME.levelDefault='l10';
+GAME.hintLevel={algo:'nn',sims:800,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}};   // labo : la Suggestion par le n° 286, toujours à 800 visites, solveur de fin compris
 coreStart();
 // labo : la fenêtre de départ (règles, premier joueur, visites, solveur), puis la partie contre le n° 286
 {const LAD=[0,25,50,100,200,400,800];let pr={board:'cut',start:'swap',first:'me'};try{pr={...pr,...JSON.parse(localStorage.getItem('dblk-labo-start')||'{}')};}catch(e){}
