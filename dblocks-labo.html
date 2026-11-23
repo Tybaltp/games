@@ -1625,7 +1625,7 @@ coreStart();
  ov.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="lmT" style="background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:18px 20px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:12px">
   <b id="lmT" style="font-size:1.1rem">Partie contre le réseau n° 286</b>
   ${row('Plateau',sel('lmB',[['cut','Coins coupés (184 cases)'],['full','Plateau plein (196 cases)']]))}
-  ${row('Départ',sel('lmS',[['swap','Échange'],['none','Sans échange']]))}
+  ${row('Départ',sel('lmS',[['swap','Échange'],['none','Sans échange'],['swap2','Swap 2']]))}
   ${row('Premier joueur',sel('lmF',[['me','Moi'],['ai',"L'ordinateur"],['rnd','Au hasard']]))}
   <div style="display:flex;flex-direction:column;gap:6px"><span>Visites : <b id="lmV"></b></span>
     <div id="lmL" style="display:flex;gap:4px;flex-wrap:wrap"></div>
@@ -1639,14 +1639,19 @@ coreStart();
    b.onclick=()=>{v=x;show();};$('lmL').appendChild(b);});
  $('lmR').oninput=e=>{v=+e.target.value;show();};
  const open=()=>{v=self.laboCf().v;$('lmB').value=pr.board;$('lmS').value=pr.start;$('lmF').value=pr.first;$('lmX').checked=self.laboCf().s;show();ov.hidden=false;$('lmGo').focus();};
+ let prev=null;   // la partie d'attente montrée derrière la fenêtre au chargement (vous au trait, rien ne calcule)
  $('lmGo').onclick=()=>{pr={board:$('lmB').value,start:$('lmS').value,first:$('lmF').value};try{localStorage.setItem('dblk-labo-start',JSON.stringify(pr));}catch(e){}
    self.laboSet(v,$('lmX').checked);
    const lv=$('aLevel');lv.value='l10';lv.dispatchEvent(new Event('change'));
-   $('aBoard').value=pr.board;$('aStart').value=pr.start;$('aFirst').value=pr.first;
-   ov.hidden=true;$('aiForm').requestSubmit();};
+   const zs=$('aStart');if(![...zs.options].some(o=>o.value==='swap2')){const o=document.createElement('option');o.value='swap2';o.textContent='Swap 2';zs.appendChild(o);}
+   $('aBoard').value=pr.board;zs.value=pr.start;$('aFirst').value=pr.first;
+   ov.hidden=true;$('aiForm').requestSubmit();
+   if(prev&&prev!==SGID){const s=LS.get(K('ai-'+prev),null);if(s&&s.view&&!s.view.moves.length)LS.del(K('ai-'+prev));}prev=null;};
  ov.addEventListener('keydown',e=>{if(e.key==='Escape')ov.hidden=true;});
  $('laboNew').onclick=open;
- if(!/^#ai-/.test(location.hash))open();}
+ const zs0=$('aStart');if(![...zs0.options].some(o=>o.value==='swap2')){const o=document.createElement('option');o.value='swap2';o.textContent='Swap 2';zs0.appendChild(o);}
+ if(!/^#ai-/.test(location.hash)){const lv=$('aLevel');lv.value='l10';lv.dispatchEvent(new Event('change'));
+   $('aBoard').value=pr.board;zs0.value=pr.start;startAI(0,GAME.form('a'));prev=SGID;open();}}
 
 if(mqWide.addEventListener)mqWide.addEventListener('change',placeBlocks);else mqWide.addListener(placeBlocks);
 </script>
