@@ -169,7 +169,7 @@ html:root{--accX:max(var(--accMinX),calc(100vw - var(--accW) * .835))}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=99"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Quarto: rules =====
@@ -523,11 +523,12 @@ function qTurnStatus({r,o,idle,RST}){const st=o.st,who=solo()?seatName(st.turn)+
   const k=st.hand<0?'st_give1':ui.a<0?'st_placeNow':'st_giveNow';   // one step at a time: place, then give
   status(who+cap(t(k)),'turn',preparing()?[RST]:idle);}
 
-// The player to move: the piece received, small, in their card (« to place »)
-function qCard(el,p,d){const st=d.st;if(d.over||st.turn!==p||st.hand<0)return;
-  const w=document.createElement('div');w.className='qhand';
-  const svg=miniPiece(st.hand);svg.setAttribute('aria-hidden','true');   // the same picture as in the texts
-  const tx=document.createElement('span');tx.textContent=t('toPlace');w.append(svg,tx);w.title=pieceName(st.hand);el.appendChild(w);}
+// The player to move: the piece received, small, in their card (« to place »). The other card (and both before the
+// first piece is given) holds the same line, hidden, so the cards keep their height and the board its size
+function qCard(el,p,d){const st=d.st;if(d.over)return;const on=st.turn===p&&st.hand>=0;
+  const w=document.createElement('div');w.className='qhand';if(!on){w.style.visibility='hidden';w.setAttribute('aria-hidden','true');}
+  const svg=miniPiece(on?st.hand:0);svg.setAttribute('aria-hidden','true');   // the same picture as in the texts
+  const tx=document.createElement('span');tx.textContent=t('toPlace');w.append(svg,tx);if(on)w.title=pieceName(st.hand);el.appendChild(w);}
 // the variant's state in the rules (« on in this game »)
 function sqLine(){document.querySelectorAll('.sqState').forEach(e=>e.textContent=t(view&&view.sq?'sqOn':'sqOff'));}
 
@@ -607,10 +608,11 @@ function QuartoAI(){'use strict';
 // The ladder (v1, 16.11.2026, outils/aitools/res/quarto/niveaux.md, 300 games a pair): each level beats the one below
 // by 71-78 % (draws count half; level 1 beats random play by 90 %), and the one two below by 81 % or more.
 // random = a random legal move; depth = depth in whole moves (place, then give), noise = probability of a random legal
-// move, nodes = positions searched at most. A level is an amount of work, never a time (16.11.2026). Hints: the
+// move, nodes = positions searched at most. Level 0 (random play) removed on 21.11.2026 (Thibault: level 1, half its
+// moves at random, is weak enough); the levels shown are numbered from 0 again (the former level 1 is level 0),
+// the default stays the same search (key l2, shown as level 1). A level is an amount of work, never a time (16.11.2026). Hints: the
 // strongest level (median 0.55 s on the reference Mac, outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={
-  l0:{random:true},
   l1:{depth:1,noise:.5},
   l2:{depth:1,noise:.15},
   l3:{depth:2,noise:.02},
@@ -618,9 +620,9 @@ const LEVELS={
   l5:{depth:6},
   l6:{depth:8,nodes:7300000}};
 const HINT={...LEVELS.l6};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const ENGINE={fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
 const levelDesc=o=>o.nodes?['lvd_dk',o.depth,{k:o.nodes}]:[o.noise?'lvd_dn':'lvd_d_ab',o.depth];
 let pageAI=null;
 function qEvalInfo(r){if(r.forced)return {k:'ai_forced'};if(!r.depth)return null;
@@ -642,7 +644,7 @@ const GAME={id:'quarto',   // the end says why, « four pieces in a line, all da
       const a=m[1]?(4-m[2])*4+m[1].charCodeAt(0)-97:-1,g=m[3]?(m[3]==='D'?1:0)|(m[6]==='T'?2:0)|(m[4]==='S'?4:0)|(m[5]==='H'?8:0):-1;return enc({a,g});}},rich:qRich,logNode:qLogNode,newUi,preparing,cancel:cancelPrep,
   board:qBoard,turnStatus:qTurnStatus,
   applyStatic:()=>{viewSelects();sqLine();},
-  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  levels:LEVELS,levelDefault:'l2',engine:ENGINE,levelDesc,hintLevel:HINT,
   wasm:{id:'quarto',v:1},
   aiSrc:()=>QuartoAI.toString()+'\nconst QA=QuartoAI();function aiSearch(pos,opt){return (globalThis.WASM&&WASM.search(pos,opt))||QA.search(pos,opt);}',
   aiPos:st=>({b:st.b.slice(),hand:st.hand}),aiOpt:v=>({sq:!!v.sq}),

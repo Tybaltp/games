@@ -191,7 +191,7 @@ html #setup .accTile:hover:not(:disabled){background:color-mix(in srgb,var(--acc
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=99"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -868,9 +868,9 @@ const LEVELS={
   l9:{...MC,sims:5000,c:.2},
   l10:{...MC,sims:42000,c:.2}};
 const HINT={...LEVELS.l9};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
+const ENGINE={fr:"recherche arborescente Monte-Carlo",en:"Monte Carlo tree search",es:"búsqueda en árbol Monte Carlo"};
 const levelDesc=o=>o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
 const aiPos=st=>({cells:Array.from(st.cells),bridges:st.bridges.map(B=>[Math.min(B.a,B.b),Math.max(B.a,B.b),B.o]),phase:st.phase,toMove:st.toMove,finalTurn:st.finalTurn,colorA:st.colorA});
 let pageAI=null;   // the search on the page itself, when no worker can be made

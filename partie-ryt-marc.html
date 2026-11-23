@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Partie ryt – Marc</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Plateau à gauche, fiche du coup et liste des coups à droite ; une colonne sur téléphone */
+:root{
+  --bg:#f5f6f3;--panel:#ffffff;--fg:#1d2420;--muted:#66706a;--line:#d9ddd7;--cell:#eceee9;--wall:transparent;
+  --green:#3f9b5a;--pink:#d9608f;--best:#e0a21b;--bad:#c4422f;--ok:#3f9b5a;
+  --f-d:"Space Grotesk",system-ui,sans-serif;--f-b:Inter,system-ui,sans-serif;--f-m:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151916;--panel:#1d221f;--fg:#e6ebe7;--muted:#9aa49e;--line:#323a35;--cell:#252b27;--green:#55b872;--pink:#e57aa3;--best:#f0b73a;--bad:#e5694f;--ok:#55b872;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#151916;--panel:#1d221f;--fg:#e6ebe7;--muted:#9aa49e;--line:#323a35;--cell:#252b27;--green:#55b872;--pink:#e57aa3;--best:#f0b73a;--bad:#e5694f;--ok:#55b872;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-b);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+h1{font-family:var(--f-d);font-weight:600;font-size:1.5rem;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 18px}
+.wrap{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;max-width:1100px}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}}
+svg{width:100%;max-width:100%;height:auto;display:block}
+.nav{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}button:focus-visible,input:focus-visible{outline:2px solid var(--best);outline-offset:2px}
+input[type=range]{flex:1;min-width:120px}
+label.chk{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:.9rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.card h2{font-family:var(--f-d);font-size:1.1rem;margin:0 0 8px;font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.92rem}.kv dt{color:var(--muted)}.kv dd{margin:0;font-family:var(--f-m);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.8rem;font-weight:600;font-family:var(--f-m)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill.na{color:var(--muted);border:1px solid var(--line)}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.list{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.list table{border-collapse:collapse;width:100%;font-size:.86rem}
+.list td,.list th{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.list th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:500}
+.list tr{cursor:pointer}.list tr.cur td{background:color-mix(in srgb,var(--best) 16%,transparent)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.num{font-family:var(--f-m);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin-top:8px}
+.sw{display:inline-block;width:14px;height:10px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.note{font-size:.85rem;color:var(--muted);max-width:65ch}
+</style>
+<script>try{const v=JSON.parse(localStorage.getItem("games-theme"));if(v==="dark"||v==="light")document.documentElement.dataset.theme=v;}catch(e){}</script>
+</head>
+<body>
+<h1 id="title">Partie</h1>
+<p class="sub" id="sub"></p>
+<div class="wrap">
+  <div>
+    <svg id="board" viewBox="0 0 434 434" role="img" aria-label="Plateau"></svg>
+    <div class="nav">
+      <button id="first" title="Début">⏮</button><button id="prev" title="Coup précédent (←)">◀</button>
+      <input type="range" id="slider" min="0" value="0" aria-label="Coup">
+      <button id="next" title="Coup suivant (→)">▶</button><button id="last" title="Fin">⏭</button>
+    </div>
+    <div class="nav"><label class="chk"><input type="checkbox" id="showBest" checked> Montrer les coups optimaux</label>
+      <button id="nextErr">Erreur suivante</button></div>
+    <div class="legend"><span><span class="sw" style="outline:2px solid var(--fg)"></span>coup joué</span><span><span class="sw" style="background:color-mix(in srgb,var(--best) 55%,transparent)"></span>coup optimal</span></div>
+  </div>
+  <div class="side">
+    <div class="card" id="info"></div>
+    <div class="list"><table><thead><tr><th>#</th><th>Joueur</th><th>Pose</th><th>Perte</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <p class="note">Valeurs exactes (solveur de fin du site, recherche complète) : l'écart final de cases, du point de vue du joueur au trait, si les deux côtés jouent ensuite parfaitement. La perte d'un coup est l'écart entre le meilleur coup et le coup joué. Avant le premier coup résolu en 10 s, rien n'est calculé.</p>
+  </div>
+</div>
+<script>
+const D={"names":["ryt","Marc"],"moves":[{"who":"ryt","col":0,"cells":[60,61,74],"swap":false},{"who":"Marc","col":1,"cells":[],"swap":true},{"who":"ryt","col":1,"cells":[107,120,121,122,135],"swap":false},{"who":"Marc","col":0,"cells":[76,77,91,92,105],"swap":false},{"who":"ryt","col":1,"cells":[104,117,118,132,133],"swap":false},{"who":"Marc","col":0,"cells":[89,102,103,115,116],"swap":false},{"who":"ryt","col":1,"cells":[64,65,79,80,94],"swap":false},{"who":"Marc","col":0,"cells":[131,145,146,147,148],"swap":false},{"who":"ryt","col":1,"cells":[150,164,177,178,192],"swap":false},{"who":"Marc","col":0,"cells":[36,48,49,50,51],"swap":false},{"who":"ryt","col":1,"cells":[38,52,53,67],"swap":false},{"who":"Marc","col":0,"cells":[11,23,24,25,39],"swap":false},{"who":"ryt","col":1,"cells":[128,129,130,144,158],"swap":false},{"who":"Marc","col":0,"cells":[99,100,113,126,127],"swap":false},{"who":"ryt","col":1,"cells":[55,69,82,83,96],"swap":false},{"who":"Marc","col":0,"cells":[142,143,156,157,171],"swap":false},{"who":"ryt","col":1,"cells":[173,184,185,186,187],"swap":false},{"who":"Marc","col":0,"cells":[66],"swap":false},{"who":"ryt","col":1,"cells":[109],"swap":false},{"who":"Marc","col":0,"cells":[81,95],"swap":false},{"who":"ryt","col":1,"cells":[111,124,125,139],"swap":false},{"who":"Marc","col":0,"cells":[6,7,8,21],"swap":false,"vp":3,"best":3,"loss":0,"nlegal":115,"bests":[[6,7,8,21],[7,8,20,21],[31,32,33,45],[19,31,32,33],[18,19,32,33],[44,45,58,72],[28,42,56,70,84]]},{"who":"ryt","col":1,"cells":[26,40],"swap":false,"vp":-3,"best":-3,"loss":0,"nlegal":28,"bests":[[26,40],[140,141,154,155,169],[152,166,180],[152,166,167],[160,161,162,175,189],[160,161,175,189,190],[161,162,175,189,190]]},{"who":"Marc","col":0,"cells":[2,3,4,18,19],"swap":false,"vp":1,"best":3,"loss":2,"nlegal":80,"bests":[[19,31,32,33],[18,19,32,33],[44,45,58,72],[28,42,56,70,84]]},{"who":"ryt","col":1,"cells":[152,166,180],"swap":false,"vp":-1,"best":-1,"loss":0,"nlegal":20,"bests":[[140,141,154,155,169],[152,166,180],[152,166,167],[160,161,162,175,189],[160,161,175,189,190],[161,162,175,189,190]]},{"who":"Marc","col":0,"cells":[15,28,29,30,43],"swap":false,"vp":1,"best":1,"loss":0,"nlegal":38,"bests":[[15,28,29,30,43]]},{"who":"ryt","col":1,"cells":[160,161,175,189,190],"swap":false,"vp":-1,"best":-1,"loss":0,"nlegal":16,"bests":[[140,141,154,155,169],[160,161,162,175,189],[160,161,175,189,190],[161,162,175,189,190]]},{"who":"Marc","col":0,"cells":[56,58,70,71,72],"swap":false,"vp":1,"best":1,"loss":0,"nlegal":5,"bests":[[56,58,70,71,72]]},{"who":"ryt","col":1,"cells":[140,141,154,155,169],"swap":false,"vp":-1,"best":-1,"loss":0,"nlegal":7,"bests":[[140,141,154,155,169]]}],"start":21,"v0":3};
+const W=14,C=31,O=0,OK=[];for(let r=0;r<W;r++)for(let c=0;c<W;c++){const e=Math.min(r,W-1-r)+Math.min(c,W-1-c);const corner=(Math.min(r,W-1-r)===0&&Math.min(c,W-1-c)<=1)||(Math.min(c,W-1-c)===0&&Math.min(r,W-1-r)<=1);OK.push(!corner);}
+const M=D.moves,N=M.length,css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const nm=cells=>cells.map(i=>String.fromCharCode(97+i%W)+(W-Math.floor(i/W))).join(',');
+let k=0;// position after k moves
+document.getElementById('title').textContent=`${D.names[0]} – ${D.names[1]}, analyse exacte`;
+const svg=document.getElementById('board'),NS='http://www.w3.org/2000/svg';
+function el(t,a){const e=document.createElementNS(NS,t);for(const x in a)e.setAttribute(x,a[x]);return e;}
+function draw(){svg.innerHTML='';const own=new Array(W*W).fill(-1),cnt=[0,0];
+  for(let i=0;i<k;i++){const m=M[i];for(const c of m.cells)own[c]=m.col;cnt[m.col]+=m.cells.length;}
+  const cur=k<N?M[k]:null,prevM=k>0?M[k-1]:null;
+  for(let i=0;i<W*W;i++){if(!OK[i])continue;const x=(i%W)*C,y=Math.floor(i/W)*C;
+    const f=own[i]<0?'var(--cell)':own[i]===0?'var(--green)':'var(--pink)';
+    svg.appendChild(el('rect',{x:x+1,y:y+1,width:C-2,height:C-2,rx:3,fill:f}));}
+  // coordonnées
+  for(let c=0;c<W;c++){const t=el('text',{x:c*C+C/2,y:W*C+12,'text-anchor':'middle','font-size':9,fill:'var(--muted)','font-family':'JetBrains Mono,monospace'});t.textContent=String.fromCharCode(97+c);}
+  if(prevM&&prevM.cells.length)for(const c of prevM.cells)svg.appendChild(el('circle',{cx:(c%W)*C+C/2,cy:Math.floor(c/W)*C+C/2,r:3.5,fill:'var(--bg)'}));
+  if(cur&&document.getElementById('showBest').checked&&cur.bests){for(const b of cur.bests.slice(0,6))for(const c of b)
+    svg.appendChild(el('rect',{x:(c%W)*C+4,y:Math.floor(c/W)*C+4,width:C-8,height:C-8,rx:3,fill:'var(--best)','fill-opacity':.55}));}
+  if(cur&&cur.cells.length)for(const c of cur.cells)svg.appendChild(el('rect',{x:(c%W)*C+2,y:Math.floor(c/W)*C+2,width:C-4,height:C-4,rx:3,fill:'none',stroke:'var(--fg)','stroke-width':2.5}));
+  return cnt;}
+function pill(m){if(m.loss===undefined)return '<span class="pill na">–</span>';return m.loss>0?`<span class="pill bad">−${m.loss}</span>`:'<span class="pill ok">0</span>';}
+const sg=v=>v>0?'+'+v:''+v;
+function info(cnt){const e=document.getElementById('info');const col=c=>`<span class="dot" style="background:var(--${c?'pink':'green'})"></span>`;
+  let h=`<h2>${k<N?`Coup ${k+1} : ${col(M[k].col)}${M[k].who}`:'Fin de partie'}</h2><dl class="kv"><dt>Cases</dt><dd>${col(0)}${cnt[0]} · ${col(1)}${cnt[1]}</dd>`;
+  if(k<N){const m=M[k];h+=`<dt>Joué</dt><dd>${m.swap?'échange':nm(m.cells)}</dd>`;
+    if(m.loss!==undefined){h+=`<dt>Valeur du coup joué</dt><dd>${sg(m.vp)} pour ${m.who}</dd><dt>Meilleure valeur</dt><dd>${sg(m.best)} (${m.bests.length} coup${m.bests.length>1?'s':''} sur ${m.nlegal})</dd><dt>Perte</dt><dd>${pill(m)}</dd>`;
+      h+=`<dt>Optimal</dt><dd>${m.bests.slice(0,4).map(nm).join('<br>')}${m.bests.length>4?'<br>…':''}</dd>`;}
+    else h+=`<dt>Analyse</dt><dd>trop tôt pour le solveur</dd>`;}
+  else{const d=cnt[0]-cnt[1];h+=`<dt>Écart</dt><dd>${d===0?'égalité':(d>0?'verts':'roses')+' +'+Math.abs(d)}</dd>`;}
+  e.innerHTML=h+'</dl>';}
+const rows=document.getElementById('rows');
+M.forEach((m,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td class="num">${i+1}</td><td><span class="dot" style="background:var(--${m.col?'pink':'green'})"></span>${m.who}</td><td class="num">${m.swap?'échange':m.cells.length+' cases'}</td><td>${pill(m)}</td>`;tr.onclick=()=>go(i);rows.appendChild(tr);});
+const tot=[0,0].map((_,s)=>M.filter(m=>m.who===D.names[s]&&m.loss>0).reduce((a,m)=>a+m.loss,0));
+const nerr=s=>M.filter(m=>m.who===D.names[s]&&m.loss>0).length;
+document.getElementById('sub').textContent=D.start>=0?`Solveur exact à partir du coup ${D.start+1}. Erreurs : ${D.names[0]} ${nerr(0)} (−${tot[0]} cases), ${D.names[1]} ${nerr(1)} (−${tot[1]} cases).`:'Aucune position résolue.';
+const sl=document.getElementById('slider');sl.max=N;
+function go(i){k=Math.max(0,Math.min(N,i));sl.value=k;const cnt=draw();info(cnt);[...rows.children].forEach((r,j)=>r.classList.toggle('cur',j===k));const r=rows.children[k];if(r)r.scrollIntoView({block:'nearest'});}
+document.getElementById('first').onclick=()=>go(0);document.getElementById('last').onclick=()=>go(N);
+document.getElementById('prev').onclick=()=>go(k-1);document.getElementById('next').onclick=()=>go(k+1);
+sl.oninput=()=>go(+sl.value);document.getElementById('showBest').onchange=()=>go(k);
+document.getElementById('nextErr').onclick=()=>{for(let i=k+1;i<N+k+1;i++){const j=i%N;if(M[j].loss>0){go(j);return;}}};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')go(k-1);if(e.key==='ArrowRight')go(k+1);});
+go(D.start>=0?D.start:0);
+</script>
+
+</body>
+</html>

@@ -170,7 +170,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=99"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -1032,12 +1032,17 @@ const CDN = ['https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/', 'https
 let sess = null, loading = null, ortLib = null;
 function load(opt) {
   if (!loading) loading = (async () => {
+    const r = await fetch(new URL(opt.net, base)); if (!r.ok) throw new Error('weights: HTTP ' + r.status);
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    // (Hand change in the page, 20.11.2026, not in build.js.) common/nn.js: WebGPU when the browser has it and it is
+    // faster on a control input, else WASM; any failure there: WASM one thread as below (and in the tests, NN_WASM).
+    if (!self.NN_WASM) try { if (!self.NNSession) importScripts(new URL('common/nn.js?v=1', base).href);
+      ({ort: ortLib, sess} = await self.NNSession(bytes, [1, X.C, X.G, X.G], ['policy', 'value'])); return; } catch (e) { sess = null; }
     let dir = null;
     for (const d of CDN) { try { importScripts(d + 'ort.wasm.min.js'); dir = d; break; } catch (e) {} }
     if (!dir) throw new Error('onnxruntime-web unavailable');
     ortLib = self.ort; ortLib.env.wasm.numThreads = 1; ortLib.env.wasm.wasmPaths = self.NN_WASM || dir;   // NN_WASM : tests (Node)
-    const r = await fetch(new URL(opt.net, base)); if (!r.ok) throw new Error('weights: HTTP ' + r.status);
-    sess = await ortLib.InferenceSession.create(new Uint8Array(await r.arrayBuffer()), {executionProviders: ['wasm'], graphOptimizationLevel: 'all'});
+    sess = await ortLib.InferenceSession.create(bytes, {executionProviders: ['wasm'], graphOptimizationLevel: 'all'});
   })().catch(e => { loading = null; throw e; });
   return loading;
 }
@@ -1086,7 +1091,9 @@ return {search, load, X, Search};
 // neural network of ~/volo-ia with a PUCT search of `sims` simulations (same strength wherever it finishes them: about
 // 500 to 1000 network evaluations a second on a recent computer; no time cap, 16.11.2026: a slower device takes longer
 // and plays the same) · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
-const NN_NET='volo-net.onnx?v=130';
+// The network (22.11.2026, Thibault): n° 110 of the sizes run (runs/volo-tailles, after n° 78, trained on 13, 11 and 9
+// rows), its best at release; the ladder below is kept as calibrated with n° 130.
+const NN_NET='volo-net.onnx?v=t110';
 // The ladder (v1, network n° 130, 17.11.2026, outils/aitools/res/volo/niveaux.md, 100 to 300 games a pair): each level
 // beats the one below by 65-83 % (wins + half the draws), and the one two below by 85 % or more. Level 0: a legal move
 // at random. Levels 1 to 3: one simulation, the move drawn from the network's policy at temperature temp (Search.pick).
@@ -1108,9 +1115,9 @@ const LEVELS={
   l11:{algo:'nn',sims:700,net:NN_NET},
   l12:{algo:'nn',sims:3000,net:NN_NET}};
 const HINT={algo:'nn',sims:2000,net:NN_NET};   // the simulations of 5 s at most on the reference Mac
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
+const ENGINE={fr:"réseau de neurones et recherche arborescente",en:"neural network and tree search",es:"red neuronal y búsqueda en árbol"};
 const levelDesc=o=>o.sims<=1?[o.temp?'lvd_nn1t':'lvd_nn1']:['lvd_nn',o.sims];
 let pageAI=null;   // the search on the page itself, when no worker can be made (one per board size)
 // The computer's opinion: greedy scores in moves of advance, mcts a logit (×scale) of its winning chances

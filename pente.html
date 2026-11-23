@@ -399,7 +399,7 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
  const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=95"></script>
+<script src="common/core.js?v=99"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -416,12 +416,11 @@ const coord=i=>LET[i%N]+(N-((i/N)|0));
 // by 70-76 %; levels 1 to 4 are wide steps (85-97 %) between random play and the first level that reads a move.
 // random = a random legal move; mix = share of random moves, the rest played as level 5 (its settings); maxDepth = depth, noise =
 // randomness added to the move scores, ext:false = no forced-line extension, k = moves read per node, nodes = positions.
+// Levels 0 to 2 (random play, 90 % and 75 % of random moves) removed on 21.11.2026 (Thibault: level 3 is the first
+// that makes sense): the levels shown start at 0 with the former level 3; the default stays the same search (key l5).
 // A level is an amount of work, never a time (16.11.2026). Hints: the strongest level (median 1.0 s on the reference
 // Mac, outils/aitools/res/budgets-2026-11-16.md).
 const LEVELS={
- l0:{random:true},
- l1:{maxDepth:1,noise:2500,ext:false,k:6,mix:.9},
- l2:{maxDepth:1,noise:2500,ext:false,k:6,mix:.75},
  l3:{maxDepth:1,noise:2500,ext:false,k:6,mix:.5},
  l4:{maxDepth:1,noise:2500,ext:false,k:6,mix:.25},
  l5:{maxDepth:1,noise:2500,ext:false,k:6},
@@ -435,9 +434,9 @@ const LEVELS={
  l13:{maxDepth:7,k:10},
  l14:{nodes:520000}};
 const HINT={...LEVELS.l14,hint:true};
-// The engine (decisions of 15.11.2026): its version (a new scale, a new number) and its kind, under the level and in
+// The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
-const ENGINE={v:2,fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
+const ENGINE={fr:"recherche alpha-bêta",en:"alpha-beta search",es:"búsqueda alfa-beta"};
 const levelDesc=o=>o.mix?['lvd_mix',Math.round(o.mix*100)]:o.nodes?['lvd_nodes',o.nodes]:[o.noise?'lvd_dn':'lvd_d_ab',o.maxDepth];
 
 
@@ -777,7 +776,7 @@ const GAME={id:'pente',seatCol:s=>{const m=view?view.moves:[],c1=m[1]==='B'||m[1
   playerCard,
   logText:e=>logTxt(e),
   home:()=>{shown=null;drawBoard();},
-  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  levels:LEVELS,levelDefault:'l5',engine:ENGINE,levelDesc,hintLevel:HINT,
   wasm:{id:'pente',v:1},aiSrc,aiPos,aiSearch:aiSearchPage,
   evalInfo:res=>evalInfo(res)};
 coreStart();

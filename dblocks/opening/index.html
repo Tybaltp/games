@@ -1,0 +1,166 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{const t=JSON.parse(localStorage.getItem("games-theme"));if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<title>Ouvertures de dBlocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Mise en page : un en-tête qui pose le calcul, une barre de tranches qui sert aussi d'histogramme, puis la grille des poses de la tranche choisie */
+:root{
+  --bg:#f3f5f6; --panel:#ffffff; --ink:#18232b; --muted:#5b6a74; --line:#d9e0e4;
+  --green:#2f9e5b; --green-soft:#d7efe0; --pink:#d94f86; --pink-soft:#f8dde8; --wall:#c6cfd5; --cell:#eef2f4;
+  --amber:#b7791f; --amber-soft:#f6ead3;
+  --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-num:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11181d; --panel:#18222a; --ink:#e4eaee; --muted:#93a3ad; --line:#2a3842;
+  --green:#4cc27d; --green-soft:#1d3a2a; --pink:#ef77a6; --pink-soft:#43243a; --wall:#33424c; --cell:#1f2b33;
+  --amber:#e0a648; --amber-soft:#3b2f1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11181d; --panel:#18222a; --ink:#e4eaee; --muted:#93a3ad; --line:#2a3842;
+  --green:#4cc27d; --green-soft:#1d3a2a; --pink:#ef77a6; --pink-soft:#43243a; --wall:#33424c; --cell:#1f2b33;
+  --amber:#e0a648; --amber-soft:#3b2f1a; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-size:2rem;letter-spacing:-.01em}
+h2{font-size:1.15rem}
+.lede{color:var(--muted);max-width:68ch;margin:.4rem 0 0}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rule{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0}
+.rule .lab{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.rule p{margin:0}
+.rule b.big{font-family:var(--f-num);font-size:1.5rem}
+.bands{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.band{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 6px 7px;cursor:pointer;display:grid;gap:4px;justify-items:center;font:inherit;min-width:0}
+.band:hover{border-color:var(--muted)}
+.band:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.band[aria-selected="true"]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--ink)}
+.band .bar{width:70%;height:54px;display:flex;align-items:flex-end}
+.band .bar i{display:block;width:100%;background:var(--green);border-radius:3px 3px 0 0;min-height:2px}
+.band.swapz .bar i{background:var(--amber)}
+.band .r{font-family:var(--f-num);font-size:.78rem;white-space:nowrap}
+.band .c{font-size:.72rem;color:var(--muted)}
+.tabhead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.tabhead p{margin:0;color:var(--muted);max-width:70ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;min-width:0}
+.card.played{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.card svg{width:100%;height:auto;display:block}
+.score{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.score b{font-family:var(--f-num);font-size:1.35rem}
+.score span{font-family:var(--f-num);font-size:.75rem;color:var(--muted)}
+.meter{height:6px;border-radius:3px;background:var(--cell);position:relative;overflow:hidden}
+.meter i{position:absolute;top:0;bottom:0;background:var(--green);opacity:.35}
+.meter u{position:absolute;top:-1px;bottom:-1px;width:2px;background:var(--ink)}
+.meter s{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--muted);text-decoration:none}
+.meta{font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap}
+.chip.sw{background:var(--pink-soft);color:var(--pink)}
+.chip.kp{background:var(--green-soft);color:var(--green)}
+.chip.pl{background:var(--amber-soft);color:var(--amber)}
+.chip.rt{background:var(--cell);color:var(--muted)}
+.sort{font-size:.85rem;color:var(--muted);display:inline-flex;align-items:center;gap:8px}
+.sort select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.sort select:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sq{width:11px;height:11px;border-radius:2px;display:inline-block}
+.foot{font-size:.8rem;color:var(--muted);max-width:75ch}
+@media (max-width:640px){.bands{grid-template-columns:repeat(4,minmax(0,1fr))}h1{font-size:1.6rem}}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+*{box-sizing:border-box}body{margin:0;font-size:14px}
+</style></head><body>
+<div class="wrap">
+  <header><p style="margin:0 0 8px"><a href="../../diagonalblocks.html" style="color:var(--muted)">← Diagonal Blocks</a></p>
+    <h1>Ouvertures de dBlocks</h1>
+    <p class="lede">Coins coupés. Chaque carte est une première pose possible de la couleur qui ouvre, sur sa case de départ, avec le score que fait cette couleur quand le réseau n° 170 joue la suite contre lui-même, sans échange.</p>
+  </header>
+
+  <section class="rules" aria-label="Le calcul">
+    <div class="rule"><span class="lab">Mesure</span><b class="big" id="totGames">—</b>
+      <p>parties sur <span class="num" id="totPoses">199</span> poses, 400 visites par coup et solveur de fin. 20 parties par pose, puis 40 pour celles entre 35 et 65 %, puis 200 pour les dix plus proches de 50 %.</p></div>
+    <div class="rule"><span class="lab">Quand l'adversaire ouvre</span><b class="big">&gt; 50 %</b>
+      <p>Le niveau 10 échange si la pose de l'adversaire dépasse 50 %, et la garde sinon.</p></div>
+    <div class="rule"><span class="lab">Quand le niveau 10 ouvre</span><b class="big" id="pickTxt">3 poses</b>
+      <p id="pickList">Il tire au hasard parmi les trois poses mesurées sur 200 parties les plus proches de 50 %, pour qu'échanger ne rapporte rien.</p></div>
+    <div class="rule"><span class="lab">Vérification</span><b class="big">55,5 %</b>
+      <p>Le n° 170 avec cette table bat le n° 170 sans table (±5 points, 400 parties, coins coupés avec échange). En ligne depuis le 22.11.2026.</p></div>
+  </section>
+
+  <section aria-label="Tranches">
+    <div class="bands" role="tablist" id="bands"></div>
+  </section>
+
+  <section>
+    <div class="tabhead"><h2 id="tabTitle">—</h2>
+      <label class="sort" for="sortSel">Pièces
+        <select id="sortSel"><option value="all">toutes</option><option value="5">de 5 cases</option><option value="4">de 4 cases</option><option value="3">de 3 cases</option><option value="2">de 2 cases</option><option value="1">d’une case</option></select></label>
+      <p id="tabNote" style="flex-basis:100%"></p></div>
+    <div class="legend" style="margin:10px 0 14px">
+      <span><i class="sq" style="background:var(--green)"></i>la pose</span>
+      <span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5"/><circle cx="6" cy="6" r="1.6" fill="var(--ink)"/></svg>case de départ de l'ouvreur</span>
+      <span><i class="sq" style="background:var(--wall)"></i>coins coupés</span>
+      <span><i class="sq" style="border:2px solid var(--pink);width:9px;height:9px"></i>départ de l'adversaire</span>
+      <span>barre : score, trait central à 50 %, zone claire = marge d'erreur</span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <p class="foot">Le score compte une victoire pour 1 et une nulle pour ½. La marge affichée couvre 95 % des cas : avec 20 parties, elle est d'environ ±20 points, avec 200 parties d'environ ±7. Les poses de 1 à 3 cases ont été ajoutées le 23.11.2026, à 20 parties chacune, puis 50 pour celles à 35 % ou plus. Les poses hors de 35 à 65 % n'ont pas été affinées : pour l'échange, il suffit de savoir qu'elles sont nettement au-dessus ou au-dessous de 50 %. Le jeu sans échange et le plateau plein ne lisent pas cette table.</p>
+</div>
+<script>
+const D={"ok":"0011111111110001111111111110111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110111111111111000111111111100","start":[60,135],"open":["32.46.60.74","32.46.47.60.74","46.59.60.61.74","60.61.62.75.89","33.45.46.47.60","46.60.74.75.89","46.60.74.87.88","47.60.61.74","46.47.59.60","33.47.60.61"],"pick":3,"poses":[["32.33.45.46.60",0,22,5.5],["47.60.61.62.76",0,36,32],["31.32.46.47.60",0,35,10],["32.45.46.60.61",0,22,6.5],["18.32.46.60.74",1,36,10.5],["32.46.60.74.75",2,40,16],["45.46.60.74.88",2,22,3],["32.46.60.73.74",2,22,2.5],["60.61.62.63.77",2,22,5.5],["17.31.45.46.60",3,22,2],["19.32.33.46.60",3,40,24.5],["32.46.59.60.73",3,36,26.5],["47.60.61.74.75",4,40,15],["46.47.60.61.74",4,41,25.5],["46.47.59.60.61",4,21,3],["45.46.47.59.60",4,21,3],["48.60.61.62.76",5,35,26],["32.46.47.48.60",5,41,26],["46.47.48.60.62",6,34,26.5],["60.61.75.88.89",6,34,10.5],["60.61.62.74.88",7,33,10],["34.48.60.61.62",7,34,12.5],["30.31.45.46.60",8,20,4],["47.60.61.73.74",8,33,25.5],["47.60.61.75.89",10,40,12.5],["46.60.74.75.88",10,34,20.5],["60.61.62.63.76",10,40,15],["46.59.60.61.62",10,33,24.5],["34.46.47.48.60",11,32,14.5],["46.60.61.62.76",11,33,31],["32.46.60.61",13,20,3],["45.46.60.74",13,41,14],["46.60.61.62",13,33,23.5],["60.61.62.75",14,20,4.5],["46.60.61.74",14,20,3.5],["45.46.60.61",15,33,24],["60.61.74.75",16,41,27],["31.44.45.46.60",0,40,14.5],["31.45.46.47.60",0,22,6],["33.45.46.47.60",0,200,93.5],["60.61.62.63.64",1,22,1],["17.18.32.46.60",2,22,5.5],["17.31.45.59.60",2,40,12.5],["18.32.46.59.60",2,22,5],["32.33.46.60.74",2,40,18],["46.60.61.75.89",3,34,25.5],["46.47.48.59.60",3,40,17.5],["60.61.75.76.77",3,40,25],["60.61.62.76.77",3,22,2],["31.32.45.46.60",4,21,5],["32.45.46.59.60",4,41,17.5],["45.46.47.60.74",5,20,0],["32.46.47.60.61",4,20,4.5],["32.33.46.60.61",6,32,27],["33.47.60.61.62",5,20,4],["32.33.47.60.61",6,40,24],["32.33.34.46.60",7,32,22.5],["46.47.59.60.73",8,40,17.5],["32.46.58.59.60",7,32,20.5],["33.46.47.59.60",8,32,24],["18.31.32.46.60",10,20,2],["32.46.47.60.74",10,200,101],["31.45.59.60.73",10,20,1.5],["33.47.60.61.75",10,20,0],["33.34.47.60.61",11,32,19.5],["45.46.60.74.75",11,32,24],["46.60.74.88",12,20,4],["60.61.62.74",13,20,2],["33.47.60.61",13,200,83],["60.61.62.76",13,40,30],["47.60.61.62",14,20,1],["31.45.46.60",15,40,11],["45.46.59.60",16,32,20],["46.47.59.60.74",0,40,17],["33.47.48.60.61",0,22,0],["45.46.60.61.74",0,34,25.5],["46.47.48.49.60",2,22,1],["33.46.47.48.60",0,40,26],["32.46.60.74.88",1,22,2],["46.60.61.62.63",2,34,27.5],["60.61.75.89.103",2,40,23.5],["17.31.32.46.60",3,34,13],["32.46.60.61.75",3,34,14],["33.46.47.60.74",3,40,21.5],["46.47.60.61.62",4,22,5],["46.60.73.74.87",3,22,5],["45.46.47.60.61",4,40,24],["47.48.60.61.62",4,22,4],["46.48.60.61.62",6,32,25],["60.61.62.74.75",4,21,3],["31.45.58.59.60",5,22,4.5],["32.46.60.61.62",7,40,24.5],["60.61.62.74.76",6,33,27],["30.31.32.46.60",7,32,25.5],["46.60.61.75.76",8,32,21.5],["45.46.60.61.75",8,40,27.5],["46.59.60.61.74",9,200,97],["48.60.61.62.63",10,32,25],["60.61.62.63.75",10,40,24],["18.32.45.46.60",10,20,2],["30.31.45.59.60",11,32,12.5],["48.60.61.62.74",11,32,25],["18.32.46.60",12,20,2],["46.60.74.75",13,20,0],["48.60.61.62",13,32,22],["32.33.46.60",13,40,17],["47.60.61.75",14,20,3],["46.47.59.60",15,200,113.5],["33.46.47.60",15,32,22],["46.60.61.62.75",0,40,17],["4.18.32.46.60",1,22,4],["31.32.46.60.74",2,22,6],["46.47.60.74.88",2,40,15.5],["32.33.46.47.60",4,34,23.5],["47.48.49.60.61",3,40,21],["46.47.60.61.75",4,22,4],["60.61.62.75.89",5,201,104.5],["46.47.60.74.75",6,40,22],["46.47.48.60.74",7,20,5],["47.48.60.61.74",8,40,28.5],["32.45.46.60.74",10,20,2],["60.61.75.89.90",11,40,15],["46.60.61.74.88",10,40,18],["46.60.73.74",13,20,2],["31.45.59.60",13,40,19],["32.46.47.60",14,40,19],["46.47.60.61",16,32,20.5],["46.60.61.73.74",0,34,28.5],["47.60.61.62.74",0,40,25.5],["60.61.62.63.74",2,40,13],["18.19.32.46.60",2,22,5],["45.46.60.61.62",3,34,13.5],["46.60.74.75.89",3,200,106.5],["47.60.61.75.76",0,40,15],["32.46.47.59.60",0,40,18],["46.60.74.88.89",2,40,17],["46.60.74.87.88",2,200,108.5],["31.45.59.60.74",3,22,1.5],["33.47.60.61.74",3,34,20],["45.46.59.60.61",4,34,27],["46.47.48.60.61",4,40,15],["46.60.61.62.74",5,40,25.5],["31.45.59.60.61",7,41,13.5],["31.45.46.60.61",8,32,27.5],["32.45.46.47.60",9,40,23.5],["45.46.47.48.60",10,40,15],["47.60.61.62.63",10,20,3.5],["60.61.62.63",12,40,21],["60.61.75.89",13,32,23],["32.45.46.60",14,40,17.5],["60.61.75.76",15,40,22.5],["46.59.60.61.75",0,22,6],["48.60.61.62.75",0,40,23],["18.32.46.60.61",2,34,29],["19.33.47.60.61",2,34,13.5],["48.49.60.61.62",3,40,18.5],["19.33.46.47.60",3,40,21.5],["33.46.47.60.61",4,41,22],["46.60.61.74.75",4,41,17.5],["46.60.73.74.75",5,41,12],["45.46.60.73.74",6,21,6],["33.47.59.60.61",7,32,13],["34.47.48.60.61",8,40,18],["32.46.60.61.74",10,40,28],["46.60.73.74.88",10,32,25.5],["46.47.60.73.74",11,40,22.5],["31.32.46.60",13,40,14.5],["45.46.47.60",14,32,26.5],["46.60.61.75",15,40,22],["47.48.60.61.75",0,34,11],["60.61.75.76.89",0,34,26.5],["46.60.74.88.102",1,22,3],["49.60.61.62.63",2,34,26],["31.45.46.60.74",3,34,11.5],["47.60.61.74.88",3,34,26],["60.61.62.75.76",4,22,2.5],["31.45.46.59.60",4,33,26.5],["32.46.59.60.61",5,33,24],["31.32.46.59.60",6,40,12],["60.61.62.76.90",7,20,1.5],["60.61.75.76.90",8,40,13.5],["18.32.46.47.60",10,20,3],["32.46.59.60.74",10,40,21],["32.33.46.59.60",11,32,24.5],["46.47.48.60",13,40,13.5],["46.47.60.74",13,40,18],["47.48.60.61",15,20,4.5],["60.61.74.75.76",4,41,19],["31.32.45.59.60",6,21,5.5],["31.32.33.46.60",5,33,27.5],["46.60.74.75.76",7,21,2],["33.34.46.47.60",8,40,25],["47.60.61.62.75",9,40,23.5],["18.32.33.46.60",10,20,5],["31.32.46.60.61",11,40,12.5],["32.46.60.74",12,201,100],["32.46.59.60",13,32,15],["46.59.60.61",14,40,23.5],["47.60.61.74",15,200,111],["60",20,50,12.5],["60.61",19,20,6],["45.46.60",18,20,1.5],["32.46.60",17,50,26.5],["60.61.75",18,50,16],["46.60.74",17,20,4],["60.61.74",18,20,6],["47.60.61",18,20,5],["46.60",19,50,13.5],["46.59.60",18,50,26],["46.47.60",18,50,24.5],["46.60.61",18,20,5],["60.61.62",17,20,2.5]]};
+const W=14,OK=D.ok,START=D.start,OPEN=new Set(D.open);
+const poses=D.poses.map(([key,k,n,s])=>{const p=s/n,cells=key.split('.').map(Number);return {key,k,n,s,p,cells,ci:1.96*Math.sqrt(Math.max(p*(1-p),.0025)/n)};});
+// les poses que joue le niveau 10 : parmi les retenues, les D.pick écarts à 50 % distincts les plus petits
+const op=poses.filter(x=>OPEN.has(x.key)),ds=[...new Set(op.map(x=>Math.abs(x.p-.5)))].sort((a,b)=>a-b),lim=ds[Math.min(D.pick,ds.length)-1]+1e-9;
+op.forEach(x=>{if(Math.abs(x.p-.5)<=lim)x.played=true;});
+const BANDS=[[0,20],[20,35],[35,45],[45,55],[55,65],[65,80],[80,100]];
+const id=b=>b?'t'+b[0]+'-'+b[1]:'toutes';
+const inB=(x,b)=>{const v=100*x.p;return v>=b[0]&&(b[1]===100?v<=100:v<b[1]);};
+const pc=v=>(100*v).toLocaleString('fr-FR',{maximumFractionDigits:1,minimumFractionDigits:1})+' %';
+document.getElementById('totGames').textContent=poses.reduce((a,x)=>a+x.n,0).toLocaleString('fr-FR');
+document.getElementById('totPoses').textContent=poses.length;
+const pl=op.filter(x=>x.played).sort((a,b)=>Math.abs(a.p-.5)-Math.abs(b.p-.5));
+document.getElementById('pickTxt').textContent=pl.length+' poses';
+document.getElementById('pickList').textContent='Il tire au hasard parmi les '+pl.length+' poses les plus proches de 50 % de celles mesurées sur 200 parties ('+pl.map(x=>pc(x.p)).join(', ')+'), pour qu’échanger ne rapporte rien.';
+function board(x){const c=10,set=new Set(x.cells);let s=`<svg viewBox="0 0 ${W*c} ${W*c}" role="img" aria-label="pose ${x.key}">`;
+  for(let i=0;i<W*W;i++){const r=Math.floor(i/W),q=i%W,f=OK[i]==='0'?'var(--wall)':set.has(i)?'var(--green)':'var(--cell)';
+    s+=`<rect x="${q*c+.5}" y="${r*c+.5}" width="${c-1}" height="${c-1}" rx="1.5" fill="${f}"/>`;}
+  const a=START[0],ax=(a%W)*c+c/2,ay=Math.floor(a/W)*c+c/2;s+=`<circle cx="${ax}" cy="${ay}" r="3.2" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.2"/><circle cx="${ax}" cy="${ay}" r="1.2" fill="var(--ink)"/>`;
+  const o=START[1];s+=`<rect x="${(o%W)*c+1.25}" y="${Math.floor(o/W)*c+1.25}" width="${c-2.5}" height="${c-2.5}" rx="1.5" fill="none" stroke="var(--pink)" stroke-width="1.5"/>`;
+  return s+'</svg>';}
+function card(x){const lo=Math.max(0,x.p-x.ci),hi=Math.min(1,x.p+x.ci);
+  const ch=[x.played?'<span class="chip pl">jouée par le niveau 10</span>':OPEN.has(x.key)?'<span class="chip rt">retenue, 200 parties</span>':'',
+    x.p>.5?'<span class="chip sw">l’adversaire échange</span>':'<span class="chip kp">gardée</span>'].join('');
+  return `<article class="card${x.played?' played':''}">${board(x)}
+    <div class="score"><b>${pc(x.p)}</b><span>±${Math.round(100*x.ci)} pts</span></div>
+    <div class="meter" aria-hidden="true"><i style="left:${100*lo}%;width:${100*(hi-lo)}%"></i><s></s><u style="left:calc(${100*x.p}% - 1px)"></u></div>
+    <div class="meta"><span class="num">${x.n} parties</span></div>
+    <div class="chips">${ch}</div></article>`;}
+const bandsEl=document.getElementById('bands'),max=Math.max(...BANDS.map(b=>poses.filter(x=>inB(x,b)).length));
+BANDS.concat([null]).forEach(b=>{const n=b?poses.filter(x=>inB(x,b)).length:poses.length,el=document.createElement('button');
+  el.className='band'+(b&&b[0]===45?' swapz':'');el.setAttribute('role','tab');el.id='tab-'+id(b);el.type='button';
+  el.innerHTML=`<span class="bar"><i style="height:${b?Math.max(4,100*n/max):100}%;${b?'':'background:var(--muted)'}"></i></span><span class="r">${b?b[0]+'–'+b[1]+' %':'toutes'}</span><span class="c">${n} pose${n>1?'s':''}</span>`;
+  el.addEventListener('click',()=>{location.hash=id(b);show(b);});bandsEl.appendChild(el);});
+const NOTE={0:'Très mauvaises pour l’ouvreur : toujours gardées.',20:'Mauvaises pour l’ouvreur : gardées.',35:'Plutôt défavorables : gardées. Affinées à 40 parties.',
+  45:'La zone qui compte pour l’échange : c’est ici que le niveau 10 choisit sa pose.',55:'Plutôt favorables à l’ouvreur : échangées. Affinées à 40 parties.',65:'Favorables : échangées.',80:'Les plus fortes : toujours échangées. Sans échange, ce seraient les meilleures, mais elles ne sont mesurées que sur 20 à 40 parties.'};
+let cur=BANDS[3];const sortSel=document.getElementById('sortSel');
+try{const v=localStorage.getItem('ouv-size');if(v&&[...sortSel.options].some(o=>o.value===v))sortSel.value=v;}catch(e){}
+sortSel.addEventListener('change',()=>{try{localStorage.setItem('ouv-size',sortSel.value);}catch(e){}show(cur);});
+const keep=x=>sortSel.value==='all'||x.cells.length===+sortSel.value;
+function show(b){cur=b;document.querySelectorAll('.band').forEach(e=>e.setAttribute('aria-selected',String(e.id==='tab-'+id(b))));
+  // les barres et les comptes des tranches suivent le filtre
+  const P=poses.filter(keep),mx=Math.max(1,...BANDS.map(t=>P.filter(x=>inB(x,t)).length));
+  BANDS.concat([null]).forEach(t=>{const e=document.getElementById('tab-'+id(t)),n=t?P.filter(x=>inB(x,t)).length:P.length;
+    e.querySelector('.c').textContent=n+' pose'+(n>1?'s':'');if(t)e.querySelector('.bar i').style.height=Math.max(4,100*n/mx)+'%';});
+  const L=P.filter(x=>!b||inB(x,b)).sort((a,c)=>c.p-a.p);
+  document.getElementById('tabTitle').textContent=(b?'De '+b[0]+' à '+b[1]+' %':'Toutes les poses')+' · '+L.length+' pose'+(L.length>1?'s':'');
+  document.getElementById('tabNote').textContent=b?NOTE[b[0]]:'Classées du meilleur au moins bon score pour l’ouvreur.';
+  document.getElementById('grid').innerHTML=L.map(card).join('');}
+function route(){const h=location.hash.slice(1),b=BANDS.find(x=>id(x)===h);show(h==='toutes'?null:b||BANDS[3]);}
+window.addEventListener('hashchange',route);route();
+</script>
+</body></html>
