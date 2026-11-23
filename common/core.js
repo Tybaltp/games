@@ -692,7 +692,8 @@ function navGo(k){const n=view.moves.length;navAt=k===null||k>=n?null:Math.max(0
 // The line shown is that path, then the first child at each branching.
 const ana=()=>!!view&&(role==='test'||role==='file'||((role==='local'||role==='ai')&&!!view.tree));
 const meS=()=>role==='ai'&&view&&view.tree?view.names.indexOf('me'):mySeat;   // against the computer: the player, whoever moves in the analysis
-function anaInit(){const root={c:[]};let n=root;for(const m of view.moves){const x={m,c:[]};n.c.push(x);n=x;}view.tree=root;view.gameResult=view.result||null;}
+function anaInit(){const root={c:[]};let n=root;for(const m of view.moves){const x={m,c:[]};n.c.push(x);n=x;}view.tree=root;view.gameResult=view.result||null;
+  if(role==='ai')view.aiGame=view.moves.slice();}   // against the computer: the game as it ended, for an undo (aiEnd)
 function anaNode(p){let n=view.tree;for(const m of p){n=n&&n.c.find(x=>x.m===m);}return n||null;}
 function anaLine(){const p=view.moves.slice();let n=anaNode(p);while(n&&n.c.length){n=n.c[0];p.push(n.m);}return p;}
 function anaMain(p){let n=view.tree;for(const m of p){if(!n.c.length||n.c[0].m!==m)return false;n=n.c[0];}return !n.c.length;}
@@ -752,7 +753,7 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
   // being prepared), with the game's own commands · move complete: Reset + Confirm · suggestion shown: Play this move +
   // Dismiss · waiting states: the message only.
   const prep=GAME.preparing(),RST={label:t('reset'),on:GAME.cancel};
-  const undoB=canUndo()&&!A&&!busy&&undoOk(r)?{label:t('undo'),short:t('undoS'),on:doUndo}:null;
+  const undoB=canUndo()&&(!A||aiEnd())&&!busy&&undoOk(r)?{label:t('undo'),short:t('undoS'),on:doUndo}:null;
   const hintB=canHint()&&!busy&&mine&&(!GAME.hintable||GAME.hintable(o))?{label:t('hint'),on:doHint}:null;
   const idle=[undoB,hintB];
   if(r.over){const q=GAME.quietWhy&&GAME.quietWhy(r.over.why)?'Q':'';   // the game's own reasons left out (GAME.quietWhy)
@@ -1150,8 +1151,14 @@ function aiStep(){if(role!=='ai'||busy||ana()||HT.hold)return;const r=replay(vie
   ask(aiView(r.st),GAME.levels[level],res=>{const wait=Math.max(0,400-(Date.now()-t0));setTimeout(()=>{if(role!=='ai'||view.moves.length!==n||busy!=='ai')return;busy='';
     if(!res||!res.move){renderGame();return;}aiInfo=GAME.evalInfo(res,r.st);aiLast=res;view.draw=null;view.moves=view.moves.concat([GAME.enc(res.move)]);renderGame();aiStep();},wait);});}
 // Undo last move: free play takes back one move; against the computer, back to my last turn before my last move
-const undoOk=r=>role==='test'?view.moves.length>0:role==='ai'?r.log.some(e=>e.p===mySeat):false;
-function doUndo(){if(!view||!canUndo()||GAME.preparing())return;replayForget();if(role==='test'){testUndo();return;}stopAI();const m=view.moves.slice();
+// Against the computer, the game over (its analysis, shown at the game's last position): Undo still offered; it leaves the
+// analysis (its variations dropped) and takes back as during the game, or cancels a resignation alone; the game goes on.
+const aiEnd=()=>role==='ai'&&!!view.tree&&Array.isArray(view.aiGame)&&view.moves.length===view.aiGame.length&&view.moves.every((m,i)=>m===view.aiGame[i]);
+const undoOk=r=>role==='test'?view.moves.length>0:role==='ai'?(view.tree?!!view.gameResult||r.log.some(e=>e.p===meS()):r.log.some(e=>e.p===mySeat)):false;
+function doUndo(){if(!view||!canUndo()||GAME.preparing())return;replayForget();if(role==='test'){testUndo();return;}
+  if(view.tree){if(!aiEnd())return;stopAI();mySeat=meS();const res=view.gameResult;delete view.tree;delete view.gameResult;delete view.aiGame;
+    if(res&&!replay(view,view.moves,null).over){view.result=null;view.draw=null;aiLast=null;resetUi();aiInfo=null;hintMv=null;renderGame();aiStep();return;}}   // a resignation: cancelled alone
+  stopAI();const m=view.moves.slice();
   const turnAt=k=>replay(view,m.slice(0,k),null).st.turn;let k=m.length;
   while(k>0){k--;if(turnAt(k)===mySeat)break;}
   if(turnAt(k)!==mySeat)k=0;
