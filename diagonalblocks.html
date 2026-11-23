@@ -608,13 +608,15 @@ function selectPiece(k,silent){if(!silent&&(hintMv||busy==='hint')){if(busy==='h
 function turnPiece(how){if(ui.piece<0||ui.pending&&ui.pending.t!=='p')return;ui.cur=how==='f'?E.flip(ui.cur):E.rot(ui.cur);ui.ctr=centreOf(ui.cur);
   const c=myColour();if(c>=0){oris[c][ui.piece]=ui.cur.map(x=>x.slice());oriV++;LS.set('dblk-oris',oris);}
   if(ui.pending)ui.pending=refit(ui.pending.cells);renderGame();}
-// A placed (unconfirmed) piece turned or flipped: the legal placement of the new orientation closest to the old one (most
-// cells in common, then nearest centre), or null (the piece leaves the board and stays picked)
+// A placed (unconfirmed) piece turned or flipped: the legal placement of the new orientation that still covers the old
+// one's corner cell (the cell touching its colour by a corner, or the start cell), if one does; among those, or failing
+// them all, the closest to the old one (most cells in common, then nearest centre); null: the piece leaves the board
+// and stays picked
 function refit(old){if(!view)return null;const r=replay(view,view.moves,view.result),c=myColour();if(c<0)return null;
-  const o=ui.cur,ctr=a=>{let x=0,y=0;for(const i of a){x+=i%W;y+=(i/W)|0;}return [x/a.length,y/a.length];},[ox,oy]=ctr(old),seen=new Set();let best=null,bs=-1e9;
+  const o=ui.cur,ctr=a=>{let x=0,y=0;for(const i of a){x+=i%W;y+=(i/W)|0;}return [x/a.length,y/a.length];},[ox,oy]=ctr(old),seen=new Set(),A=new Set(E.anchors(r.st,c).filter(i=>old.includes(i)));let best=null,bs=-1e9;
   for(const h0 of old)for(let dr=-2;dr<=2;dr++)for(let dq=-2;dq<=2;dq++){const hr=((h0/W)|0)+dr,hq=h0%W+dq;if(hr<0||hr>=W||hq<0||hq>=W)continue;const h=hr*W+hq;
     for(let ai=0;ai<o.length;ai++){const cells=E.placeAt(o,ai,h);if(!cells)continue;const k=cells.slice().sort((a,b)=>a-b).join('.');if(seen.has(k))continue;seen.add(k);
-      if(!E.fits(r.st,c,cells))continue;const [x,y]=ctr(cells),sc=cells.filter(i=>old.includes(i)).length*10-Math.hypot(x-ox,y-oy);if(sc>bs){bs=sc;best=cells;}}}
+      if(!E.fits(r.st,c,cells))continue;const [x,y]=ctr(cells),sc=(cells.some(i=>A.has(i))?1000:0)+cells.filter(i=>old.includes(i)).length*10-Math.hypot(x-ox,y-oy);if(sc>bs){bs=sc;best=cells;}}}
   return best?{t:'p',k:ui.piece,cells:best.slice().sort((a,b)=>a-b)}:null;}
 
 // ---------- input ----------
