@@ -221,6 +221,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
         <p class="hint" id="aiInfo"></p>
       </div>
       <label class="toggle" for="needConfirm" id="confirmOpt" hidden><input type="checkbox" id="needConfirm" checked> <span data-i18n="needConfirm">Confirm each move</span></label>
+      <label class="toggle" for="cbcOn"><input type="checkbox" id="cbcOn"> <span data-i18n="cbcOpt">Place cell by cell</span></label>
       <div class="toggle" style="cursor:default"><label class="toggle" for="sndOn"><input type="checkbox" id="sndOn"> <span data-i18n="sounds">Sounds</span></label><input type="range" id="sndVol" min="0" max="100" step="5" aria-label="Sound volume" style="flex:1;min-width:0;accent-color:var(--accent)"></div>
       <label class="toggle" for="coordOn"><input type="checkbox" id="coordOn"> <span data-i18n="coords">Coordinates</span></label>
     </details>
@@ -314,7 +315,7 @@ function DBEngine(){
 // Diagonal Blocks strings, merged over the shared ones (core.js)
 const DB_I18N={fr:{
  lvd_gr:"un coup d'avance, avec une part de hasard",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",lvd_mc:"recherche Monte-Carlo, {n} simulations par coup",lvd_mcE:"recherche Monte-Carlo, {n} simulations par coup, fin de partie calculée exactement",lvd_nnE:"réseau de neurones, {n} simulations par coup, fin de partie calculée exactement",
- needConfirm:"Confirmer chaque coup",boardOpt:"Plateau",b_cut:"Coins coupés (184 cases)",b_full:"Plateau plein (196 cases)",startOpt:"Départ",s_swap:"Échange",s_none:"Sans échange",s_swap2:"Swap 2",rt_full:"plateau plein",rt_none:"sans échange",rt_swap2:"Swap 2",st_swap2:"Votre couleur : les verts (vous jouez) ou les roses (l'autre joue) ?",takeGreen:"Prendre les verts",takeGreenS:"Verts",takePink:"Prendre les roses",takePinkS:"Roses",swap2Mv:"Prendre les roses : votre adversaire pose la pièce verte suivante",st_swap2Wait:"{n} choisit sa couleur : les verts ou les roses.",st_s2g:"Swap 2 : posez la première pièce verte, sur sa case de départ.",st_s2p:"Posez maintenant la première pièce rose, sur sa case de départ. Votre adversaire choisira ensuite sa couleur.",st_s2gN:"{n} : posez la première pièce verte, sur sa case de départ (Swap 2).",st_s2pN:"{n} : posez la première pièce rose, sur sa case de départ.",st_s2Wait:"{n} pose la première pièce verte et la première rose.",st_s2pink:"{n} prend les roses : à vous de poser la pièce verte suivante.",st_s2pinkMe:"Vous avez pris les roses.",st_s2pinkW:"{n} a pris les roses.",title:"Diagonal Blocks",lede:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",by:"Inspiré de Blokus, un jeu de Bernard Tavitian.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",st_play:"Choisissez une pièce dans votre réserve.",st_playN:"{n} : choisissez une pièce dans votre réserve.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",sc0:"Vert",sc1:"Rose",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_swappedMe:"Vous avez échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
+ needConfirm:"Confirmer chaque coup",cbcOpt:"Pose case par case",cbcHint:"Touchez une case pour l'ajouter ou l'enlever.",st_playC:"Touchez un coin, ou choisissez une pièce.",st_playCN:"{n} : touchez un coin, ou choisissez une pièce.",boardOpt:"Plateau",b_cut:"Coins coupés (184 cases)",b_full:"Plateau plein (196 cases)",startOpt:"Départ",s_swap:"Échange",s_none:"Sans échange",s_swap2:"Swap 2",rt_full:"plateau plein",rt_none:"sans échange",rt_swap2:"Swap 2",st_swap2:"Votre couleur : les verts (vous jouez) ou les roses (l'autre joue) ?",takeGreen:"Prendre les verts",takeGreenS:"Verts",takePink:"Prendre les roses",takePinkS:"Roses",swap2Mv:"Prendre les roses : votre adversaire pose la pièce verte suivante",st_swap2Wait:"{n} choisit sa couleur : les verts ou les roses.",st_s2g:"Swap 2 : posez la première pièce verte, sur sa case de départ.",st_s2p:"Posez maintenant la première pièce rose, sur sa case de départ. Votre adversaire choisira ensuite sa couleur.",st_s2gN:"{n} : posez la première pièce verte, sur sa case de départ (Swap 2).",st_s2pN:"{n} : posez la première pièce rose, sur sa case de départ.",st_s2Wait:"{n} pose la première pièce verte et la première rose.",st_s2pink:"{n} prend les roses : à vous de poser la pièce verte suivante.",st_s2pinkMe:"Vous avez pris les roses.",st_s2pinkW:"{n} a pris les roses.",title:"Diagonal Blocks",lede:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",by:"Inspiré de Blokus, un jeu de Bernard Tavitian.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",st_play:"Choisissez une pièce dans votre réserve.",st_playN:"{n} : choisissez une pièce dans votre réserve.",swap:"Échanger",myPieces:"Vos pièces",rotate:"↻ Tourner",flip:"⇋ Retourner",trayHint:"Choisissez une pièce ; R la tourne, F la retourne.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",sc0:"Vert",sc1:"Rose",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_swappedMe:"Vous avez échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : couvrir le plus de cases possible. Chaque joueur a sa couleur, vert ou rose, et 21 pièces de 1 à 5 carrés, toutes différentes (89 carrés en tout). On peut tourner et retourner les pièces.</li>
  <li><b>Plateau</b> : 14 × 14, chaque coin privé de 3 cases (la case du coin et ses deux voisines sur le bord), soit 184 cases. Deux cases de départ : la verte en haut à gauche, la rose en bas à droite.</li>
  <li><b>Première pièce</b> : à son premier tour, un joueur place une pièce en couvrant la case de départ de sa couleur. Vert commence.</li>
@@ -326,7 +327,7 @@ const DB_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
  lvd_gr:"one move ahead, with some randomness",lvd_beam:"{n} moves ahead, on the best candidates",lvd_mc:"Monte Carlo search, {n} simulations a move",lvd_mcE:"Monte Carlo search, {n} simulations a move, exact endgame",lvd_nnE:"neural network, {n} simulations a move, exact endgame",
- needConfirm:"Confirm each move",boardOpt:"Board",b_cut:"Cut corners (184 cells)",b_full:"Full board (196 cells)",startOpt:"Opening",s_swap:"Swap",s_none:"No swap",s_swap2:"Swap 2",rt_full:"full board",rt_none:"no swap",rt_swap2:"Swap 2",st_swap2:"Your colour: green (you play next) or pink (they do)?",takeGreen:"Take green",takeGreenS:"Green",takePink:"Take pink",takePinkS:"Pink",swap2Mv:"Take pink: your opponent places the next green piece",st_swap2Wait:"{n} chooses a colour: green or pink.",st_s2g:"Swap 2: place the first green piece, on its start cell.",st_s2p:"Now place the first pink piece, on its start cell. Your opponent will then choose a colour.",st_s2gN:"{n}: place the first green piece, on its start cell (Swap 2).",st_s2pN:"{n}: place the first pink piece, on its start cell.",st_s2Wait:"{n} places the first green piece and the first pink one.",st_s2pink:"{n} takes pink: your turn to place the next green piece.",st_s2pinkMe:"You took pink.",st_s2pinkW:"{n} took pink.",title:"Diagonal Blocks",lede:"Place your polyominoes corner to corner, cover the most squares.",by:"Inspired by Blokus, a game by Bernard Tavitian.",rm_ask:"{n} offers a new game, first player swapped.",placeHint:"Place the piece on the board.",st_play:"Choose a piece from your reserve.",st_playN:"{n}: choose a piece from your reserve.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",sc0:"Green",sc1:"Pink",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_swappedMe:"You swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
+ needConfirm:"Confirm each move",cbcOpt:"Place cell by cell",cbcHint:"Tap a cell to add it or take it off.",st_playC:"Tap a corner, or choose a piece.",st_playCN:"{n}: tap a corner, or choose a piece.",boardOpt:"Board",b_cut:"Cut corners (184 cells)",b_full:"Full board (196 cells)",startOpt:"Opening",s_swap:"Swap",s_none:"No swap",s_swap2:"Swap 2",rt_full:"full board",rt_none:"no swap",rt_swap2:"Swap 2",st_swap2:"Your colour: green (you play next) or pink (they do)?",takeGreen:"Take green",takeGreenS:"Green",takePink:"Take pink",takePinkS:"Pink",swap2Mv:"Take pink: your opponent places the next green piece",st_swap2Wait:"{n} chooses a colour: green or pink.",st_s2g:"Swap 2: place the first green piece, on its start cell.",st_s2p:"Now place the first pink piece, on its start cell. Your opponent will then choose a colour.",st_s2gN:"{n}: place the first green piece, on its start cell (Swap 2).",st_s2pN:"{n}: place the first pink piece, on its start cell.",st_s2Wait:"{n} places the first green piece and the first pink one.",st_s2pink:"{n} takes pink: your turn to place the next green piece.",st_s2pinkMe:"You took pink.",st_s2pinkW:"{n} took pink.",title:"Diagonal Blocks",lede:"Place your polyominoes corner to corner, cover the most squares.",by:"Inspired by Blokus, a game by Bernard Tavitian.",rm_ask:"{n} offers a new game, first player swapped.",placeHint:"Place the piece on the board.",st_play:"Choose a piece from your reserve.",st_playN:"{n}: choose a piece from your reserve.",swap:"Swap",myPieces:"Your pieces",rotate:"↻ Rotate",flip:"⇋ Flip",trayHint:"Pick a piece; R rotates it, F flips it.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",sc0:"Green",sc1:"Pink",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_swappedMe:"You swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: cover as many cells as possible. Each player has a colour, green or pink, and 21 pieces of 1 to 5 squares, all different (89 squares in all). Pieces may be rotated and flipped.</li>
  <li><b>Board</b>: 14 × 14, with 3 cells removed at each corner (the corner cell and its two neighbours on the edge), that is 184 cells. Two start cells: the green one top left, the pink one bottom right.</li>
  <li><b>First piece</b>: on their first turn, a player places a piece covering the start cell of their colour. Green starts.</li>
@@ -338,7 +339,7 @@ const DB_I18N={fr:{
  <p class="hint" style="margin-top:.6em">Two-player adaptation of Diagonal Blocks (Dave Dyer); board size and swap rule chosen for this site.</p>`
 },es:{
  lvd_gr:"una jugada de antelación, con algo de azar",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",lvd_mc:"búsqueda Monte Carlo, {n} simulaciones por jugada",lvd_mcE:"búsqueda Monte Carlo, {n} simulaciones por jugada, final calculado con exactitud",lvd_nnE:"red neuronal, {n} simulaciones por jugada, final calculado con exactitud",
- needConfirm:"Confirmar cada jugada",boardOpt:"Tablero",b_cut:"Esquinas cortadas (184 casillas)",b_full:"Tablero completo (196 casillas)",startOpt:"Salida",s_swap:"Intercambio",s_none:"Sin intercambio",s_swap2:"Swap 2",rt_full:"tablero completo",rt_none:"sin intercambio",rt_swap2:"Swap 2",st_swap2:"Tu color: ¿el verde (juegas tú) o el rosa (juega el otro)?",takeGreen:"Tomar el verde",takeGreenS:"Verde",takePink:"Tomar el rosa",takePinkS:"Rosa",swap2Mv:"Tomar el rosa: tu adversario coloca la pieza verde siguiente",st_swap2Wait:"{n} elige su color: el verde o el rosa.",st_s2g:"Swap 2: coloca la primera pieza verde, en su casilla de salida.",st_s2p:"Coloca ahora la primera pieza rosa, en su casilla de salida. Tu adversario elegirá luego su color.",st_s2gN:"{n}: coloca la primera pieza verde, en su casilla de salida (Swap 2).",st_s2pN:"{n}: coloca la primera pieza rosa, en su casilla de salida.",st_s2Wait:"{n} coloca la primera pieza verde y la primera rosa.",st_s2pink:"{n} toma el rosa: te toca colocar la pieza verde siguiente.",st_s2pinkMe:"Has tomado el rosa.",st_s2pinkW:"{n} ha tomado el rosa.",title:"Diagonal Blocks",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",by:"Inspirado en Blokus, un juego de Bernard Tavitian.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"↻ Girar",flip:"⇋ Voltear",trayHint:"Elige una pieza; R la gira, F la voltea.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",sc0:"Verde",sc1:"Rosa",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_swappedMe:"Has intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
+ needConfirm:"Confirmar cada jugada",cbcOpt:"Colocar casilla a casilla",cbcHint:"Toca una casilla para añadirla o quitarla.",st_playC:"Toca una esquina, o elige una pieza.",st_playCN:"{n}: toca una esquina, o elige una pieza.",boardOpt:"Tablero",b_cut:"Esquinas cortadas (184 casillas)",b_full:"Tablero completo (196 casillas)",startOpt:"Salida",s_swap:"Intercambio",s_none:"Sin intercambio",s_swap2:"Swap 2",rt_full:"tablero completo",rt_none:"sin intercambio",rt_swap2:"Swap 2",st_swap2:"Tu color: ¿el verde (juegas tú) o el rosa (juega el otro)?",takeGreen:"Tomar el verde",takeGreenS:"Verde",takePink:"Tomar el rosa",takePinkS:"Rosa",swap2Mv:"Tomar el rosa: tu adversario coloca la pieza verde siguiente",st_swap2Wait:"{n} elige su color: el verde o el rosa.",st_s2g:"Swap 2: coloca la primera pieza verde, en su casilla de salida.",st_s2p:"Coloca ahora la primera pieza rosa, en su casilla de salida. Tu adversario elegirá luego su color.",st_s2gN:"{n}: coloca la primera pieza verde, en su casilla de salida (Swap 2).",st_s2pN:"{n}: coloca la primera pieza rosa, en su casilla de salida.",st_s2Wait:"{n} coloca la primera pieza verde y la primera rosa.",st_s2pink:"{n} toma el rosa: te toca colocar la pieza verde siguiente.",st_s2pinkMe:"Has tomado el rosa.",st_s2pinkW:"{n} ha tomado el rosa.",title:"Diagonal Blocks",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",by:"Inspirado en Blokus, un juego de Bernard Tavitian.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"↻ Girar",flip:"⇋ Voltear",trayHint:"Elige una pieza; R la gira, F la voltea.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",sc0:"Verde",sc1:"Rosa",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_swappedMe:"Has intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: cubrir el mayor número posible de casillas. Cada jugador tiene su color, verde o rosa, y 21 piezas de 1 a 5 cuadrados, todas distintas (89 cuadrados en total). Las piezas se pueden girar y voltear.</li>
  <li><b>Tablero</b>: 14 × 14, con 3 casillas quitadas en cada esquina (la casilla de la esquina y sus dos vecinas del borde), es decir 184 casillas. Dos casillas de salida: la verde arriba a la izquierda, la rosa abajo a la derecha.</li>
  <li><b>Primera pieza</b>: en su primer turno, cada jugador coloca una pieza que cubre la casilla de salida de su color. Empieza Verde.</li>
@@ -395,15 +396,37 @@ const plain=s=>seatName(s),meIs=s=>role==='ai'&&s===meS(),mid=s=>{const n=plain(
 // ---------- move preparation ----------
 // ui: piece picked in the tray (-1: none), its current orientation (cur) and the cell under the pointer (ctr), the cell
 // hovered or tapped, the move awaiting confirmation (a placement or the swap); kept: the number of moves when the swap
-// was declined (« Keep the pink pieces »)
-function newUi(){return {piece:-1,cur:null,ctr:0,hover:-1,pending:null,kept:-1};}
-const preparing=()=>ui.piece>=0||!!ui.pending;
+// was declined (« Keep the pink pieces »); cbc: the cells of the shape being built cell by cell (option « Place cell by cell »)
+function newUi(){return {piece:-1,cur:null,ctr:0,hover:-1,pending:null,kept:-1,cbc:[]};}
+const preparing=()=>ui.piece>=0||!!ui.pending||!!(ui.cbc&&ui.cbc.length);
 const hv=()=>typeof ui.hover==='number'?ui.hover:-1;
 // Reset: drop the whole move being prepared (placement, aim, picked piece) and come back to the bare position
-function cancelPrep(){ui.pending=null;ui.hover=-1;selectPiece(-1);}
+function cancelPrep(){ui.pending=null;ui.hover=-1;ui.cbc=[];selectPiece(-1);}
 // Corner cells where a piece can go, for the player to move (cached per position).
 let liveKey='',liveVal=null;
 function liveCorners(st,c){const k=view.moves.join(',')+'|'+c;if(k!==liveKey){liveKey=k;liveVal=new Set(E.liveAnchors(st,c));}return liveVal;}
+// Placing cell by cell (option « Place cell by cell »): a tap on a corner cell where a piece can start begins a shape
+// (ui.cbc); a tap on a cell next to it by a side adds that cell while the shape stays part of at least one legal placement
+// of a piece left (the engine's moves: so of a piece as large or larger); a tap on one of its cells takes it off when the
+// rest still holds together by the sides. The shape exactly a legal placement awaits confirmation (ui.pending): the
+// dashed frame; otherwise it stays translucent. The moves sent are the usual ones.
+const cbcOn=()=>!!($('cbcOn')&&$('cbcOn').checked);
+let candKey=null,candVal=[];
+function cbcCands(st){const k=[view.board,view.start,view.moves.join(',')].join('|');if(k!==candKey){candKey=k;candVal=E.allMoves(st.es).filter(m=>m.t==='p').map(m=>({k:m.k,cells:m.cells,set:new Set(m.cells)}));}return candVal;}
+const cbcFits=(st,F)=>cbcCands(st).some(m=>m.cells.length>=F.length&&F.every(i=>m.set.has(i)));
+const cbcExact=(st,F)=>cbcCands(st).find(m=>m.cells.length===F.length&&F.every(i=>m.set.has(i)));
+const sideN=i=>{const r=(i/W)|0,q=i%W,o=[];if(r>0)o.push(i-W);if(r<W-1)o.push(i+W);if(q>0)o.push(i-1);if(q<W-1)o.push(i+1);return o;};
+function joined(F){if(F.length<2)return true;const set=new Set(F),seen=new Set([F[0]]),todo=[F[0]];
+  while(todo.length){const x=todo.pop();for(const y of sideN(x))if(set.has(y)&&!seen.has(y)){seen.add(y);todo.push(y);}}return seen.size===F.length;}
+// the cells a tap would add (marked on the board): the shape empty, the corner cells where a piece can start
+function cbcAddable(st,c,F){if(!F.length)return liveCorners(st,c);const set=new Set(F),out=new Set();
+  for(const i of F)for(const j of sideN(i))if(!set.has(j)&&!out.has(j)&&cbcFits(st,F.concat(j)))out.add(j);return out;}
+function cbcSet(st,F){ui.cbc=F;const m=F.length?cbcExact(st,F):null;ui.pending=m?{t:'p',k:m.k,cells:m.cells.slice()}:null;}
+function cbcTap(r,i){const st=r.st,c=E.colorOf(st,mySeat),F=ui.cbc;
+  if(F.includes(i)){const G=F.filter(x=>x!==i);if(!joined(G))return;cbcSet(st,G);}
+  else if(!F.length?liveCorners(st,c).has(i):sideN(i).some(j=>F.includes(j))&&cbcFits(st,F.concat(i)))cbcSet(st,F.concat(i));
+  else return;
+  ui.hover=-1;renderGame();}
 // Placement of the selected piece around cell h: a legal one covering h (centre cell first, then the other cells of the
 // piece as the anchor), or null
 function previewAt(st,c,h){if(ui.piece<0||h<0||!ui.cur)return null;const o=ui.cur;
@@ -423,11 +446,12 @@ function dbBoard({r,d,mine}){
   if(hint)pv={cells:hintMv.cells,ok:true,pend:true};
   else if(navAt===null){if(ui.pending&&ui.pending.t==='p')pv={cells:ui.pending.cells,ok:true,pend:true};
     else if(ui.pending&&ui.pending.t==='s'&&d.last&&d.last.mv.t==='p')pv={cells:d.last.mv.cells,ok:true,swap:true};
+    else if(mine&&ui.cbc.length)pv={cells:ui.cbc,ok:true};   // a shape being built cell by cell, not yet a piece
     else if(mine&&!ui.pending&&ui.piece>=0&&hv()>=0){pv=previewAt(r.st,myC,hv());}}
   if(pv)pv.c=myC;
   // a placed piece waiting for Confirm: hovering elsewhere shows where a click would move it
   let hov=null;if(navAt===null&&mine&&ui.pending&&ui.pending.t==='p'&&hv()>=0&&!ui.pending.cells.includes(hv())){hov=previewAt(r.st,myC,hv());if(hov)hov.c=myC;}
-  const marks=mine&&!ui.pending&&!hint&&!r.over?liveCorners(r.st,myC):null;
+  const marks=mine&&!hint&&!r.over&&navAt===null&&ui.cbc.length?cbcAddable(r.st,myC,ui.cbc):mine&&!ui.pending&&!hint&&!r.over?liveCorners(r.st,myC):null;
   // the last move's frame goes as soon as a move is being prepared
   drawBoard(d.st,navAt===null&&(preparing()||hint)?null:d.last,pv,marks,marks?myC:-1,hov);
   const o=swapInfo(r);renderTrays(d.st,mine&&(!ui.pending||ui.pending.t==='p')&&!o.ask);
@@ -439,11 +463,12 @@ function keepPink(){ui.kept=view.moves.length;renderGame();}
 function dbTurnStatus({r,o,idle,RST}){
   if(o.ask){status(t(s2(r.st)?'st_swap2':'st_swap'),'turn',idle.concat(s2(r.st)?[{label:t('takeGreen'),short:t('takeGreenS'),on:keepPink},{label:t('takePink'),short:t('takePinkS'),on:doSwap}]:
     [{label:t('swap'),on:doSwap},{label:t('keepPink'),short:t('keepPinkS'),on:keepPink}]));return;}
+  if(ui.cbc.length){status(t('cbcHint'),'turn',[RST]);return;}
   if(ui.piece>=0){status(t('placeHint'),'turn',[{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]);return;}
   const sk=o.stuckC!==undefined?E.seatOf(r.st,o.stuckC):-1;
   const msg=o.lastSwap?(meIs(1-r.st.turn)?t(s2(r.st)?'st_s2pinkMe':'st_swappedMe'):t(s2(r.st)?'st_s2pink':'st_swapped',{n:plain(1-r.st.turn)})):sk>=0?(meIs(sk)?t('st_meStuck',{n:mid(1-sk)}):t('st_stuck',{n:plain(sk)})):
     s2(r.st)&&r.st.n<2?(solo()?t(r.st.n?'st_s2pN':'st_s2gN',{n:seatName(r.st.turn)}):t(r.st.n?'st_s2p':'st_s2g')):
-    solo()?t('st_playN',{n:seatName(r.st.turn)}):t('st_play');
+    solo()?t(cbcOn()?'st_playCN':'st_playN',{n:seatName(r.st.turn)}):t(cbcOn()?'st_playC':'st_play');
   status(msg,'turn',idle);}
 function dbWaitStatus({r}){const o=swapInfo(r);
   if(o.swapNow){status(t(s2(r.st)?'st_swap2Wait':'st_swapWait',{n:plain(r.st.turn)}));return true;}
@@ -498,11 +523,12 @@ function fullTray(box,cell,tg){const w=box.clientWidth,key=w+'/'+cell+'/'+(tg?1:
   box.parentNode.appendChild(t);const h=t.offsetHeight,rows=new Set([...t.children].map(e=>Math.round(e.offsetTop+e.offsetHeight/2))).size;t.remove();   // a row's squares share their centre
   return fit[key]={h,rows};}
 function fillTray(box,st,c,live){box.textContent='';box.classList.toggle('live',!!live);const tg=tight();
-  for(const k of ORDER){const p=E.P[k];if(st.used[c]>>k&1)continue;const sel=live&&k===ui.piece,b=document.createElement('button');b.type='button';
-    const o=sel&&ui.cur?ui.cur:oriOf(c,k),n=slotN(k,tg);b.className='slot'+(sel?' sel':'');b.dataset.k=k;b.style.setProperty('--n',n);
+  const ck=live&&ui.cbc.length&&ui.pending&&ui.pending.t==='p'?ui.pending.k:-1;   // the piece a shape built cell by cell makes, as placed
+  for(const k of ORDER){const p=E.P[k];if(st.used[c]>>k&1)continue;const sel=live&&(k===ui.piece||k===ck),b=document.createElement('button');b.type='button';
+    const o=k===ui.piece&&ui.cur?ui.cur:k===ck?E.norm(ui.pending.cells.map(i=>[(i/W)|0,i%W])):oriOf(c,k),n=slotN(k,tg);b.className='slot'+(sel?' sel':'');b.dataset.k=k;b.style.setProperty('--n',n);
     b.title=p.name;b.setAttribute('aria-label',p.name);b.disabled=!live;b.appendChild(miniSvg(o,c,n,n));
     // a piece placed but not confirmed is taken off the board when another one (or none) is picked
-    if(live)b.onclick=()=>{ui.pending=null;ui.hover=-1;selectPiece(k===ui.piece?-1:k);};box.appendChild(b);}}
+    if(live)b.onclick=()=>{ui.pending=null;ui.hover=-1;ui.cbc=[];selectPiece(k===ui.piece?-1:k);};box.appendChild(b);}}
 // The cell size of both reserves, the largest (16 px at most) that leaves the board its room: phones, at least 50 % of the
 // height under the header (less when the width limits the board anyway); wide screens, a full reserve in 3 rows at most.
 // Phones: each block's wrapper keeps the height the block has with a full reserve, so the board never changes size.
@@ -558,7 +584,7 @@ function dbChat(on){const R=document.documentElement;if(R.classList.contains('pc
 // Against the computer, the analysis that follows the game moves mySeat with the side to move: the player's block stays below (meS)
 const seatsShown=r=>{if(solo())return {top:1,bot:0};const me=meS(),bot=me>=0?me:r.st.turn;return {top:1-bot,bot};};
 function renderTrays(st,live){const r=replay(view,view.moves,view.result),{top,bot}=seatsShown(r);
-  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,$('myTray').clientWidth,tight(),ui.piece,ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
+  const key=[lang,role,st.n,st.sw,st.used.join(','),mySeat,top,live,oriV,$('myTray').clientWidth,tight(),ui.piece,ui.cbc.length&&ui.pending?ui.pending.cells.join('.'):'',ui.cur?E.shapeOf(ui.cur.map(([r,q])=>r*W+q)):''].join(';');
   if(key===trayKey)return;trayKey=key;
   fillTray($('oppTray'),st,E.colorOf(st,top),mySeat===top&&live);fillTray($('myTray'),st,E.colorOf(st,bot),mySeat===bot&&live);}
 // After core's render: the players' cards go into the blocks (opponent above, player below), the action bar into mine
@@ -597,6 +623,8 @@ function refit(old){if(!view)return null;const r=replay(view,view.moves,view.res
 // The placement (or the swap) then waits for Confirm in the action bar.
 function boardTap(i){if(!view||i<0)return;
   if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;renderGame();}
+  // placing cell by cell: no piece picked, no swap pending
+  if(cbcOn()&&ui.piece<0&&(!ui.pending||ui.pending.t==='p'&&ui.cbc.length)){const r=replay(view,view.moves,view.result);if(isMyTurn(r)&&!r.over&&!swapInfo(r).ask)cbcTap(r,i);return;}
   // clicking the placed (unconfirmed) piece takes it back: the piece stays picked, same orientation
   // the first piece, framed while the swap awaits Confirm: clicking it drops the swap, as Reset does
   if(ui.pending){if(ui.pending.t!=='p'){const l=replay(view,view.moves,view.result).last;if(l&&l.mv.t==='p'&&l.mv.cells.includes(i))cancelPrep();return;}if(ui.pending.cells.includes(i)){pendAgain();return;}}   // the placed piece clicked again: played (C14)
@@ -607,6 +635,8 @@ function boardTap(i){if(!view||i<0)return;
 // « Confirm each move » is off (offered only with a mouse, where the hover already shows the placement)
 const MOUSE=!!(window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:fine)').matches);
 const confirmOn=()=>!MOUSE||$('needConfirm').checked;
+if($('cbcOn')){$('cbcOn').checked=LS.get('dblk-cbc',false)===true;
+  $('cbcOn').onchange=e=>{LS.set('dblk-cbc',e.target.checked);if(!view)return;if(ui.cbc.length)cancelPrep();else renderGame();};}
 function choose(mv){ui.hover=-1;if(!confirmOn()){ui.pending=null;send(mv);return;}ui.pending=mv;renderGame();}
 if(MOUSE){$('confirmOpt').hidden=false;$('needConfirm').checked=LS.get('dblk-confirm',true)!==false;
   $('needConfirm').onchange=e=>{LS.set('dblk-confirm',e.target.checked);if(!e.target.checked&&ui.pending&&ui.pending.t==='p'&&view){const r=replay(view,view.moves,view.result);if(isMyTurn(r)){const mv=ui.pending;ui.pending=null;send(mv);}}};}
@@ -1583,9 +1613,9 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
       const cells=v.split(/\s*,\s*/).map(x=>{const m=/^([a-n])(\d+)$/.exec(x);return m&&+m[2]>=1&&+m[2]<=W?(W-m[2])*W+m[1].charCodeAt(0)-97:-1;});
       if(cells.some(i=>i<0))return null;const sh=E.shapeOf(cells),k=E.P.findIndex(p=>p.size===cells.length&&p.keys.has(sh));return k<0?null:enc({t:'p',k,cells});}},newUi,preparing,cancel:cancelPrep,
   board:dbBoard,turnStatus:dbTurnStatus,waitStatus:dbWaitStatus,ownLayout:true,
-  again:mv=>mv.t==='p',
+  again:mv=>mv.t==='p'&&!ui.cbc.length,   // cell by cell, a click on the shape takes a cell off
   pendText:mv=>[mv.t==='s'?t(view&&view.start==='swap2'?'swap2Mv':'swapMv'):t('pend_mv',{m:txtOf(mv)}),t('confirmMv')],
-  noReset:mv=>mv.t==='p',   // a placement is dropped from the reserve (the picked piece again, or another piece)
+  noReset:mv=>mv.t==='p'&&!ui.cbc.length,   // a placement is dropped from the reserve (the picked piece again, or another piece)
   pendBtns:mv=>mv.t==='p'&&ui.piece>=0?[{label:t('rotate'),short:'↻',on:()=>turnPiece('r')},{label:t('flip'),short:'⇋',on:()=>turnPiece('f')}]:[],
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   wasm:{id:'diagonalblocks',v:1},
