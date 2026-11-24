@@ -130,7 +130,7 @@ const I18C={fr:{
  an_ask:"Demander le contrôle",an_unask:"Annuler la demande",an_take:"Reprendre le contrôle",an_takeFree:"Prendre le contrôle",an_drop:"Rendre le contrôle",
  an_free:"Vous parcourez les coups seul ; {n} a le contrôle.",an_live:"Revenir au direct",an_taken:"{n} a repris le contrôle.",
  an_owner:"propriétaire",an_ctlTag:"a le contrôle",an_reqTag:"demande le contrôle",an_youTag:"vous",
- an_link:"Copier le lien d'invitation",an_linkTxt:"Qui ouvre ce lien rejoint la table et voit l'analyse en direct.",
+ an_invite:"Inviter à analyser",an_open:"Ouvrir la table d'analyse",an_openTxt:"Ceux à qui vous donnez le lien rejoignent cette analyse et la suivent en direct ; vous en gardez le contrôle et pouvez le leur donner. La table vit dans votre navigateur : elle se ferme si vous la quittez.",
  lg_ctl:"{n} a le contrôle du plateau.",lg_ctlA:"Un observateur anonyme a le contrôle du plateau.",lg_ctlNone:"Personne n'a plus le contrôle du plateau."
 },en:{
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
@@ -164,7 +164,7 @@ const I18C={fr:{
  an_ask:"Ask for control",an_unask:"Cancel the request",an_take:"Take control back",an_takeFree:"Take control",an_drop:"Release control",
  an_free:"You are going through the moves on your own; {n} has control.",an_live:"Back to live",an_taken:"{n} took control back.",
  an_owner:"owner",an_ctlTag:"has control",an_reqTag:"asks for control",an_youTag:"you",
- an_link:"Copy the invitation link",an_linkTxt:"Whoever opens this link joins the table and sees the analysis live.",
+ an_invite:"Invite to analyse",an_open:"Open the analysis table",an_openTxt:"Those you give the link to join this analysis and follow it live; you keep control and can give it to them. The table lives in your browser: it closes if you leave it.",
  lg_ctl:"{n} has control of the board.",lg_ctlA:"An anonymous spectator has control of the board.",lg_ctlNone:"Nobody has control of the board any more."
 },es:{
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
@@ -198,7 +198,7 @@ const I18C={fr:{
  an_ask:"Pedir el control",an_unask:"Anular la petición",an_take:"Recuperar el control",an_takeFree:"Tomar el control",an_drop:"Soltar el control",
  an_free:"Estás recorriendo las jugadas por tu cuenta; {n} tiene el control.",an_live:"Volver al directo",an_taken:"{n} ha recuperado el control.",
  an_owner:"propietario",an_ctlTag:"tiene el control",an_reqTag:"pide el control",an_youTag:"tú",
- an_link:"Copiar el enlace de invitación",an_linkTxt:"Quien abra este enlace se une a la mesa y ve el análisis en directo.",
+ an_invite:"Invitar a analizar",an_open:"Abrir la mesa de análisis",an_openTxt:"Quienes reciban el enlace se unen a este análisis y lo siguen en directo; tú conservas el control y puedes dárselo. La mesa vive en tu navegador: se cierra si la abandonas.",
  lg_ctl:"{n} tiene el control del tablero.",lg_ctlA:"Un observador anónimo tiene el control del tablero.",lg_ctlNone:"Ya nadie tiene el control del tablero."
 }};
 let I18N=I18C;
@@ -349,7 +349,7 @@ function hostHold(s,code){const g=H.game;if(!g.hold)g.hold=[null,null];if(g.hold
 const myHoldOf=s=>H.game.hold&&s>=0?H.game.hold[s]||null:null;
 function hostPublic(){const g=H.game,run=g.running&&!g.result&&!g.paused;return {size:g.size,...GAME.rules(g),held:[0,1].map(q=>!!(g.hold&&g.hold[q])),tc:g.tc||null,names:g.names.slice(),first:g.first,moves:g.moves.slice(),clock:g.clock.slice(),
   running:run,elapsed:run?Date.now()-H.turnStart:0,result:g.result,guestOn:!!H.guestConn,watchers:H.watchers.size,wnames:[...H.watchers].map(c=>c.wname||''),
-  started:!!g.started,goIn:g.goAt&&!g.started?Math.max(0,g.goAt-Date.now()):null,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,wcode:H.wcode||null,rematch:g.rematch||null,draw:g.draw||null,chat:(g.chat||[]).filter(x=>(!x.w||x.v)&&!chatHeld(g,x)),match:g.match?{...g.match,res:MATCH?MATCH.res:{}}:null,an:anPublic(g)};}
+  started:!!g.started,goIn:g.goAt&&!g.started?Math.max(0,g.goAt-Date.now()):null,ready:(g.ready||[false,false]).slice(),th:g.th.slice(),paused:!!g.paused,ver:g.ver||0,wcode:H.wcode||null,rematch:g.rematch||null,draw:g.draw||null,chat:(g.chat||[]).filter(x=>(!x.w||x.v)&&!chatHeld(g,x)),match:g.match?{...g.match,res:MATCH?MATCH.res:{}}:null,an:anPublic(g),anOnly:!!g.anOnly};}
 // Only the guest also gets what it needs to take the table over (becomeHost): the whole chat, spectators' messages
 // marked and not yet shown (it never shows them: chat stays filtered), the result already logged, the spectators
 // already announced, the absence in progress.
@@ -394,7 +394,7 @@ const REPX={seen:null};   // the position whose third-repetition frame was answe
 const repKey=()=>view?location.hash+'|'+view.moves.join(','):null;   // the game's address and its moves (forgotten when a game starts: renderGame)
 function rmSend(op){if(role==='host')rematchOp(seatN(),op);else if(C.conn&&C.conn.open)C.conn.send({t:'rematch',op});else status(t('st_noHost2'));}
 // The clocks stop only when it is the absent player's turn: while it is my turn, my clock keeps running.
-function hostSyncPause(){const g=H.game;if(!g.started||g.result){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
+function hostSyncPause(){const g=H.game;if(!g.started||g.result||g.an){g.paused=false;return;}const live=!!(H.guestConn&&H.guestConn.open);
   const r=replay(g,g.moves,g.result),absentTurn=!r.over&&r.st.turn!==seatN(),want=!live&&absentTurn&&!simHold(g,r);   // no clock, so no pause, in a simultaneous phase
   if(want&&!g.paused){if(g.running&&!r.over){const tt=r.st.turn;g.clock[tt]=Math.max(0,g.clock[tt]-(Date.now()-H.turnStart));}H.turnStart=Date.now();g.paused=true;}
   else if(!want&&g.paused){g.paused=false;H.turnStart=Date.now();}}
@@ -440,7 +440,8 @@ function hostStart(saved){role='host';CH={seen:-1,key:''};H.conns=new Set();H.wa
   if(!H.wcode)H.wcode=newCode(9);
   H.peerId=PID(H.code);const g0=H.game;if(!g0.ready)g0.ready=[false,false];if(g0.started===undefined)g0.started=!!(g0.running||g0.moves.length);Object.assign(g0,GAME.rules(g0));if(!Array.isArray(g0.chat))g0.chat=[];
   if(!g0.th){const hs=g0.first==='host'?0:1;g0.th=[null,null];g0.th[hs]=hh(MYID);g0.th[1-hs]=H.guestCid?hh(H.guestCid):null;}
-  mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0){mySeat=g0.first==='host'?0:1;g0.th[mySeat]=hh(MYID);}netSeat=mySeat;
+  if(g0.anOnly)mySeat=-1;   // a table opened from an analysis: its host has no seat
+  else{mySeat=g0.th.indexOf(hh(MYID));if(mySeat<0){mySeat=g0.first==='host'?0:1;g0.th[mySeat]=hh(MYID);}}netSeat=mySeat;
   if(g0.an){if(g0.an.ctl!==H.peerId)g0.an.ctl=null;g0.an.req=[];}   // the table reopened: the others come back, their control does not
   // reloaded at the opponent's turn: their clock ran meanwhile on their screen (no jump back when the state comes)
   if(saved&&saved.savedAt&&g0.running&&!g0.paused&&!g0.result){const r=replay(g0,g0.moves,g0.result);if(!r.over&&r.st.turn!==mySeat&&!simHold(g0,r))H.turnStart-=Math.min(30000,Math.max(0,Date.now()-saved.savedAt));}
@@ -496,7 +497,7 @@ function seatAnswer(yes){const q=H.seatReq;H.seatReq=null;if(!q||role!=='host')r
   hostBroadcast();}
 function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date.now();if(d.t==='ping'){try{conn.send({t:'pong'});}catch(e){}return;}if(d.t==='pong')return;const g=H.game;
   if(d.t==='bye'){try{conn.close();}catch(e){}hostDrop(conn);return;}   // the page is closing: absent at once
-  if(d.t==='hello'){if(conn.watchOnly)d={...d,role:'watch'};
+  if(d.t==='hello'){if(conn.watchOnly||g.anOnly)d={...d,role:'watch'};   // a table opened from an analysis has no seat to take
     const th=hh(d.cid);let s=d.role==='play'?g.th.indexOf(th):-1;const known=s>=0;   // known: this player already had the seat (they come back)
     const gc=H.guestConn,live=!!gc&&gc!==conn&&gc.open&&Date.now()-(gc.lastSeen||0)<NET_SILENT;   // the guest seat's player is connected
     // the same player in another tab (same identity, another page) while the first one is there: that one stops
@@ -548,7 +549,7 @@ const CHATMAX=100,chatClean=v=>String(v||'').replace(/\s+/g,' ').trim().slice(0,
 function hostLog(k,a,quiet){const g=H.game;if(!g.chat)g.chat=[];g.chat.push({k,a:a||{}});if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);if(!quiet)hostBroadcast();}
 function hostJoinLog(conn){if(conn&&conn.jpend&&conn.seat>=0){conn.jpend=false;hostLog('lg_join',{n:H.game.names[conn.seat]},true);}}
 // A Mochalunt table (its chat goes on from the previous one) also shows them before its game starts.
-function chatReveal(){const g=H.game;if(!g||!g.chat)return;const o=replay(g,g.moves,g.result).over;
+function chatReveal(){const g=H.game;if(!g||!g.chat)return;if(g.anOnly){for(const x of g.chat)if(x.w)x.v=1;return;}const o=replay(g,g.moves,g.result).over;
   if(!o){g.endLog=false;if(!(g.match&&!g.started))return;}
   else if(!g.endLog){g.endLog=true;hostLog(o.w<0?'draw':'wins',o.w<0?{why:o.why}:{n:g.names[o.w]||'',why:o.why},true);}
   for(const x of g.chat){if(x.w)x.v=1;delete x.h;}}
@@ -788,7 +789,7 @@ function anEvents(g){const a=g.an;if(!a){AN.evN=null;AN.note=null;AN.reqK='';ret
 // the game is over (not a match table): the table opens, its tree the game itself, nobody in control
 function anOpen(g){if(!g||g.an||g.match||!g.started||!replay(g,g.moves,g.result).over)return;
   const root={c:[]};let n=root;for(const m of g.moves){const x={m,c:[]};n.c.push(x);n=x;}g.an={tree:root,path:g.moves.slice(),ctl:null,req:[],ev:null};}
-function anWho(){const g=H.game,me=seatN(),L=[{id:H.peerId,n:g.names[me]||'',s:me}];
+function anWho(){const g=H.game,me=seatN(),L=[{id:H.peerId,n:(g.anOnly?g.hostName:g.names[me])||'',s:me}];
   for(const c of H.conns||[])if(c.open&&c.peer&&!L.some(x=>x.id===c.peer))L.push({id:c.peer,n:c===H.guestConn&&c.seat>=0?g.names[c.seat]||'':c.wname||'',s:c===H.guestConn?c.seat:-1});
   return L;}
 function anPublic(g){const a=g.an;return a?{tree:a.tree,path:a.path.slice(),ctl:a.ctl,req:a.req.slice(),ev:a.ev,own:H.peerId,who:anWho()}:null;}
@@ -817,18 +818,28 @@ function anLeft(conn){const a=H.game&&H.game.an;if(!a||!conn.peer||[...H.conns].
   a.req=a.req.filter(x=>x!==conn.peer);if(a.ctl===conn.peer){a.ev={n:((a.ev&&a.ev.n)||0)+1,k:'left',by:conn.peer,to:null,from:a.ctl};a.ctl=null;hostLog('lg_ctlNone',null,true);}}
 // the guest takes the table over: it keeps control if it had it (its id becomes the host's), nobody else does
 function anTaken(a,old,nw){return {tree:a.tree,path:(a.path||[]).slice(),ctl:a.ctl&&a.ctl===old?nw:null,req:[],ev:null};}
+// --- a table opened from an analysis on one screen (decision of Thibault, 25.11.2026) ---
+// A game read from a file (« #sgf= » too), Libre play, a game over against the computer or face to face: the invitation
+// section (« Inviter à analyser ») opens the analysis as a table. This page becomes its host and owner, with control; the
+// table has no seats (g.anOnly: everyone joins by the spectators' link, the chat is everyone's); the rest is as above.
+const anPre=()=>!!view&&!anaNet()&&ana()&&['file','test','local','ai'].includes(role)&&typeof Peer!=='undefined';
+function anHostOpen(){if(!anPre())return;stopAI();hintMv=null;
+  const nm=s=>role==='ai'?(s===meS()?nickGet()||t('you'):t('computer')):seatName(s),path=view.moves.slice(),main=anaMainLine();
+  const g={size:view.size,...GAME.rules(view),tc:null,first:'host',names:[nm(0),nm(1)],moves:main,clock:[0,0],running:false,result:view.gameResult||null,
+    started:true,ready:[true,true],th:[null,null],paused:false,ver:0,chat:[],endLog:true,anOnly:true,hostName:nickGet()||'',
+    an:{tree:JSON.parse(JSON.stringify(view.tree)),path,ctl:null,req:[],ev:null}};
+  H.code=newCode(7);H.wcode=null;H.guestCid=null;H.game=g;H.turnStart=Date.now();g.an.ctl=PID(H.code);   // the opener has control
+  hostStart(null);hostBroadcast();$('inviteBox').open=true;}
 // --- the card « Table d'analyse » (side panel) and the bar ---
 function anUi(){if($('anCard')||!$('endCard'))return;
   const mk=(tag,id,cls,par)=>{const e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(tag==='button')e.type='button';par.appendChild(e);return e;};   // no innerHTML: the test pages' DOM has none
   const d=document.createElement('details');d.id='anCard';d.className='ancard';d.open=true;d.hidden=true;
   mk('summary','anSum','',d);mk('p','anCtlTxt','hint',d);mk('ul','anWho','anwho',d);mk('button','anMainB','',mk('div','anBtns','confirm',d));
-  const lr=mk('div','anLinkRow','anlink',d),inp=mk('input','anLinkIn','vh',lr),b=mk('button','anLinkB','',lr);mk('p','anLinkTxt','hint',d);
-  inp.readOnly=true;inp.tabIndex=-1;inp.setAttribute('aria-hidden','true');$('endCard').after(d);
-  b.onclick=()=>{const ok=()=>{b.textContent=t('copied');setTimeout(()=>{b.textContent=t('an_link');},1500);};inp.select();
-    try{navigator.clipboard.writeText(inp.value).then(ok,()=>{try{document.execCommand('copy');ok();}catch(e){}});}catch(e){try{document.execCommand('copy');ok();}catch(e2){}}};}
-function anLink(){const wc=role==='host'?H.wcode:role==='guest'?view.g0&&view.g0.wcode:C.code&&codeWatch(C.code)?C.code:null;
-  return wc&&/^https?:$/.test(location.protocol)?location.href.split('#')[0]+'#watch-'+codeShow(wc):'';}
-function anRender(r){const box=$('anCard');if(!box)return;const a=anaNet()?anA():null;box.hidden=!a;if(!a)return;
+  $('endCard').after(d);
+  // an analysis on one screen (a file, Libre play, a game over against the computer or face to face): the invitation
+  // section offers to open it as a table
+  const ib=$('inviteBox');if(ib){const o=mk('div','anOpenBox','',ib);o.hidden=true;mk('p','anOpenTxt','hint',o);mk('button','anOpenB','primary',mk('div','','confirm',o)).onclick=anHostOpen;}}
+function anRender(r){const box=$('anCard');if(!box)return;if($('anOpenTxt')&&anPre()){$('anOpenTxt').textContent=t('an_openTxt');$('anOpenB').textContent=t('an_open');}const a=anaNet()?anA():null;box.hidden=!a;if(!a)return;
   const me=anMe(),own=role==='host',isC=!!a.ctl&&a.ctl===me,asked=a.req.includes(me);
   $('anSum').textContent=t('an_title');$('anCtlTxt').textContent=!a.ctl?t('an_none'):isC?t('an_you'):t('an_by',{n:anName(a,a.ctl)});
   const ul=$('anWho'),key=JSON.stringify([a.who,a.ctl,a.req,me,lang]);
@@ -842,7 +853,7 @@ function anRender(r){const box=$('anCard');if(!box)return;const a=anaNet()?anA()
   // one command: take it (nobody has it), give it back (I have it), take it back (the owner), ask for it / cancel the request
   const B=$('anMainB'),[k,op]=!a.ctl?['an_takeFree','ask']:isC?['an_drop','drop']:own?['an_take','take']:asked?['an_unask','unask']:['an_ask','ask'];
   B.textContent=t(k);B.className=!a.ctl||op==='take'||op==='ask'&&!asked&&a.ctl?'primary':'';B.onclick=()=>{if(op==='take'||op==='ask')AN.free=false;anSend({op});};
-  const ln=anLink();$('anLinkRow').hidden=!ln;$('anLinkIn').value=ln;if($('anLinkB').textContent!==t('copied'))$('anLinkB').textContent=t('an_link');$('anLinkTxt').hidden=!ln;$('anLinkTxt').textContent=t('an_linkTxt');}
+  if($('anOpenTxt')){$('anOpenTxt').textContent=t('an_openTxt');$('anOpenB').textContent=t('an_open');}}
 // the bar: a request to answer (who has control, and the owner), my own walk, someone else's control; else the game's
 // own message, with « Vous avez le contrôle » before it for a few seconds
 function anBar(r){const a=anA();if(!a)return;const me=anMe(),own=role==='host',isC=!!a.ctl&&a.ctl===me,S=barLast,asked=a.req.includes(me);
@@ -956,7 +967,8 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
   sfRender(r);
   {const ib=$('inviteBox'),waiting=seatN()>=0&&(!view.names[1-seatN()]||!view.started),wC=role==='watch'&&!!C.code&&codeWatch(C.code);
     // always there in a network game, folded once it has started: a match gives its own pages' links, a spectator only the spectators' link
-    const invOn=!(role==='ai'||solo()||role==='file'||(view.match?MTW==='v':!(role==='host'||(seatN()>=0&&C.code)||wC)));ib.hidden=!invOn;$('invPart').hidden=!invOn;{const k=waiting?'invite':'codes',sm=$('inviteSum');if(sm.dataset.i18n!==k||sm.textContent!==t(k)){sm.dataset.i18n=k;sm.textContent=t(k);}}
+    const invOn=!(role==='ai'||solo()||role==='file'||(view.match?MTW==='v':!(role==='host'||(seatN()>=0&&C.code)||wC))),pre=anPre();ib.hidden=!invOn&&!pre;$('invPart').hidden=!invOn;if($('anOpenBox'))$('anOpenBox').hidden=!pre;
+    {const k=pre||view.anOnly?'an_invite':waiting?'invite':'codes',sm=$('inviteSum');if(sm.dataset.i18n!==k||sm.textContent!==t(k)){sm.dataset.i18n=k;sm.textContent=t(k);}}
     if(invOn){if(view.match)fillMatch();else if(role==='watch')fillWatch(C.code);else if(role!=='host'&&C.code)fillCodes(C.code,true);}
     const prom=waiting&&!view.match;   // a match: the links stay folded, under the match's card
     if(prom!==ib.classList.contains('prominent')){ib.classList.toggle('prominent',prom);ib.open=prom;}
@@ -1313,6 +1325,7 @@ const aiFirst=()=>{const v=$('aFirst').value;return v==='me'?0:v==='ai'?1:Math.r
 
 // ---------- invitation codes ----------
 function fillCodes(code,guest){code=code||H.code;linkOnly(false);const web=/^https?:$/.test(location.protocol),base=location.href.split('#')[0];
+  if(!guest&&H.game&&H.game.anOnly){fillWatch(H.wcode);return;}   // a table opened from an analysis: the spectators' link only
   if($('codePBox'))$('codePBox').hidden=false;$('codeC').value=codeShow(code);$('linksBox').hidden=!web;$('fileNote').hidden=web;$('oppLink').hidden=!!guest;$('hostNote').hidden=!!guest;
   const wc=guest?view&&view.wcode:H.wcode;
   if($('codeWC')){$('codeWC').value=codeShow(wc);$('codeWBox').hidden=!wc;}
