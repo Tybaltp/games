@@ -424,3 +424,6 @@ svg .coord{font-family:var(--f-mono);font-weight:600;fill:var(--lab);pointer-eve
 .ancard .anwho button{margin-left:auto;padding:3px 12px;font-size:.82rem}
 .ancard .anlink{display:flex}.ancard .anlink button{flex:1}
 .ancard #anCtlTxt{color:var(--ink)}
+/* the table's voice (core.js: tvRender), in the card « Table d'analyse » */
+.ancard .voicein{margin-top:10px}
+#tvMute{flex:none;padding:5px 10px;line-height:1}#tvMute.on{border-color:var(--danger);color:var(--danger)}

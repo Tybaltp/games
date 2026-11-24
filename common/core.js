@@ -131,7 +131,9 @@ const I18C={fr:{
  an_free:"Vous parcourez les coups seul ; {n} a le contrôle.",an_live:"Revenir au direct",an_taken:"{n} a repris le contrôle.",
  an_owner:"propriétaire",an_ctlTag:"a le contrôle",an_reqTag:"demande le contrôle",an_youTag:"vous",
  an_link:"Copier le lien d'invitation",an_linkTxt:"Qui ouvre ce lien rejoint la table et voit l'analyse en direct.",
- lg_ctl:"{n} a le contrôle du plateau.",lg_ctlA:"Un observateur anonyme a le contrôle du plateau.",lg_ctlNone:"Personne n'a plus le contrôle du plateau."
+ lg_ctl:"{n} a le contrôle du plateau.",lg_ctlA:"Un observateur anonyme a le contrôle du plateau.",lg_ctlNone:"Personne n'a plus le contrôle du plateau.",
+ tv_join:"Rejoindre le vocal",tv_leave:"Quitter le vocal",tv_with:"Dans le vocal avec {n}.",tv_alone:"Vous êtes seul dans le vocal pour l'instant.",tv_in:"Dans le vocal : {n}.",
+ tv_none:"Vocal de la table : personne pour l'instant.",tv_inv:"{n} vous invite au vocal de la table.",tv_invS:"Inviter",tv_invTo:"Inviter {n} au vocal",tv_fail:"pas de liaison"
 },en:{
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
  fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_n:"Level {n}",lv_rand:"Level {n}, at random",lv_top:"Level {n}, the strongest",lv_one:"level {a}",lv_two:"levels {a} and {b}",lv_run:"levels {a} to {b}",lv_and:" and ",lv_grp:"{l}: {d}",lv_sep:"; ",lvd_rand:"at random",lv_rg:"{a} to {b}",lv_cnt:"{n} levels, from 0 to {m}.",eng_line:"Engine: {e}",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_again:"Click again to play this move.",pend_againT:"Tap again to play this move.",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",aiSlow:"Slow device for this level: this may take a while.",hintSlow:"Slow device for this search: it may take a while.",playNow:"Play now",hintNow:"Show now",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",sepN:" — ",report:"Report a problem",rp_subj:"{g}: problem",rp_body:"Describe the problem here:",rp_info:"Details added by the page",rp_mode:"Mode",rp_moves:"Moves",rp_long:"list too long for an email; export the game as SGF and attach the file",rp_none:"no game open",turnPhone:"Turn your phone upright to play.",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_wait:"Waiting for {n}'s answer.",close:"Close",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
@@ -165,7 +167,9 @@ const I18C={fr:{
  an_free:"You are going through the moves on your own; {n} has control.",an_live:"Back to live",an_taken:"{n} took control back.",
  an_owner:"owner",an_ctlTag:"has control",an_reqTag:"asks for control",an_youTag:"you",
  an_link:"Copy the invitation link",an_linkTxt:"Whoever opens this link joins the table and sees the analysis live.",
- lg_ctl:"{n} has control of the board.",lg_ctlA:"An anonymous spectator has control of the board.",lg_ctlNone:"Nobody has control of the board any more."
+ lg_ctl:"{n} has control of the board.",lg_ctlA:"An anonymous spectator has control of the board.",lg_ctlNone:"Nobody has control of the board any more.",
+ tv_join:"Join the voice chat",tv_leave:"Leave the voice chat",tv_with:"In the voice chat with {n}.",tv_alone:"You are alone in the voice chat for now.",tv_in:"In the voice chat: {n}.",
+ tv_none:"Table voice chat: nobody yet.",tv_inv:"{n} invites you to the table's voice chat.",tv_invS:"Invite",tv_invTo:"Invite {n} to the voice chat",tv_fail:"no connection"
 },es:{
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
  fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_n:"Nivel {n}",lv_rand:"Nivel {n}, al azar",lv_top:"Nivel {n}, el más fuerte",lv_one:"nivel {a}",lv_two:"niveles {a} y {b}",lv_run:"niveles {a} a {b}",lv_and:" y ",lv_grp:"{l}: {d}",lv_sep:"; ",lvd_rand:"al azar",lv_rg:"de {a} a {b}",lv_cnt:"{n} niveles, de 0 a {m}.",eng_line:"Motor: {e}",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",pend_again:"Haz clic de nuevo para hacer esta jugada.",pend_againT:"Toca de nuevo para hacer esta jugada.",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",aiSlow:"Dispositivo lento para este nivel: el cálculo puede tardar.",hintSlow:"Dispositivo lento para esta búsqueda: puede tardar.",playNow:"Jugar ahora",hintNow:"Mostrar ahora",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",sepN:" — ",report:"Informar de un fallo",rp_subj:"{g}: fallo",rp_body:"Describe el fallo aquí:",rp_info:"Datos añadidos por la página",rp_mode:"Modo",rp_moves:"Jugadas",rp_long:"lista demasiado larga para un correo; exporta la partida en SGF y adjunta el archivo",rp_none:"ninguna partida abierta",turnPhone:"Pon el teléfono en vertical para jugar.",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_wait:"Esperando la respuesta de {n}.",close:"Cerrar",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
@@ -199,7 +203,9 @@ const I18C={fr:{
  an_free:"Estás recorriendo las jugadas por tu cuenta; {n} tiene el control.",an_live:"Volver al directo",an_taken:"{n} ha recuperado el control.",
  an_owner:"propietario",an_ctlTag:"tiene el control",an_reqTag:"pide el control",an_youTag:"tú",
  an_link:"Copiar el enlace de invitación",an_linkTxt:"Quien abra este enlace se une a la mesa y ve el análisis en directo.",
- lg_ctl:"{n} tiene el control del tablero.",lg_ctlA:"Un observador anónimo tiene el control del tablero.",lg_ctlNone:"Ya nadie tiene el control del tablero."
+ lg_ctl:"{n} tiene el control del tablero.",lg_ctlA:"Un observador anónimo tiene el control del tablero.",lg_ctlNone:"Ya nadie tiene el control del tablero.",
+ tv_join:"Unirse al chat de voz",tv_leave:"Salir del chat de voz",tv_with:"En el chat de voz con {n}.",tv_alone:"Por ahora estás solo en el chat de voz.",tv_in:"En el chat de voz: {n}.",
+ tv_none:"Chat de voz de la mesa: nadie por ahora.",tv_inv:"{n} te invita al chat de voz de la mesa.",tv_invS:"Invitar",tv_invTo:"Invitar a {n} al chat de voz",tv_fail:"sin conexión"
 }};
 let I18N=I18C;
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||(l=>l.startsWith('fr')?'fr':l.startsWith('es')?'es':'en')((navigator.language||'fr').toLowerCase());
@@ -449,7 +455,7 @@ function hostStart(saved){role='host';CH={seen:-1,key:''};H.conns=new Set();H.wa
   setHash('host-'+codeShow(H.code));status(t('st_open'));showGame();
   const me=newPeer(H.peerId);peer=me;
   me.on('open',()=>{if(peer!==me)return;TAKE.at=0;fillCodes();hostBroadcast();hostWatchPeer();});
-  me.on('call',c=>{if(peer===me)voiceIncoming(c);else{try{c.close();}catch(e){}}});
+  me.on('call',c=>{if(peer!==me){try{c.close();}catch(e){}}else if(c.metadata&&c.metadata.tv)tvIncoming(c);else voiceIncoming(c);});
   me.on('connection',conn=>{if(peer!==me){try{conn.close();}catch(e){}return;}conn.on('data',d=>{if(peer===me)hostOnData(conn,d);});conn.on('close',()=>{if(peer===me)hostDrop(conn);});conn.on('error',()=>{if(peer===me)hostDrop(conn);});});
   me.on('disconnected',()=>{if(peer!==me)return;status(t('st_lostMm'));setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500);});
   me.on('error',e=>{if(peer!==me)return;
@@ -600,7 +606,7 @@ function voiceOnMsg(op){
   else if(op==='bye'){if(V.st!=='off')voiceStop(t('vEnd'),false);mVoiceSet(false);}}
 const voiceVol=()=>{const v=LS.get('games-voicevol',80);return typeof v==='number'?v:80;};
 function voiceMute(){if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
-function voiceRender(){tvRender();const b=$('voiceBox'),pl=seatN()>=0&&(role==='host'||role==='guest')&&voiceOk();b.hidden=!pl;if(!pl)return;
+function voiceRender(){tvRender();const b=$('voiceBox'),pl=!TV.on&&seatN()>=0&&(role==='host'||role==='guest')&&voiceOk();b.hidden=!pl;if(!pl)return;
   const o=vNm(),st=V.st,there=!!(view&&view.names[1-seatN()])&&(role==='guest'||!!view.guestOn);
   if(st==='off'&&V.note&&!there)V.note='';
   $('voiceAsk').hidden=st!=='off';$('voiceAsk').disabled=!there;
@@ -643,6 +649,7 @@ function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4)
   if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=netSeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
   {const pd=LS.get(netKey('pending',code),null);if(!asWatch&&pd&&pd.code===code&&view&&view.moves.length===pd.n){C.pending={n:pd.n,code:pd.mv,at:Date.now(),sent:0};pendView();sending=true;renderGame();}}
   const me=newPeer();peer=me;const c0=C;me.on('open',()=>{if(peer===me&&C===c0)clientConnect();});
+  me.on('call',c=>{if(peer===me&&c.metadata&&c.metadata.tv)tvIncoming(c);else{try{c.close();}catch(e){}}});   // the table's voice only
   me.on('error',e=>{if(peer!==me)return;if(e.type==='peer-unavailable'){clientLost();if(!view&&C.none)clientNone();}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){status(t('st_noMm'));clientRetry();}});
   me.on('disconnected',()=>setTimeout(()=>{try{if(!me.destroyed)me.reconnect();}catch(e){}},1500));}
@@ -671,6 +678,7 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
   if(d.t==='seatWait'){clearTimeout(C.nt);C.none=false;status(t('seat_wait',{n:d.n||'…'}));return;}
   if(d.t==='welcome'){role=d.role;mySeat=netSeat=d.seat;if(view&&view.g0)anaNetView(view.g0);if(d.note)status(d.note);if(C.ask&&role==='guest'){C.ask=false;if(!d.known)nameOv('play');}}
   else if(d.t==='voice'){if(role==='guest')voiceOnMsg(d.op);}
+  else if(d.t==='tv'){if(d.op==='inv')tvInvited(d.n);}
   else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);clearTimeout(C.nt);try{peer.destroy();}catch(e){}clientRefused(d.why);}
   else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();
     if(C.hold&&(d.game.myHold===C.hold.code||d.game.moves.length))C.hold=null;
@@ -687,7 +695,7 @@ function refusedBar(){const code=C.code;status(t(C.refused),'',[C.refused==='t_d
 function showGame(){replayForget();$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
 function showSetup(msg){replayForget();if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');tvStop(true);role=null;view=null;mySeat=netSeat=-1;AN.free=false;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;saveRender();$('joinErr').textContent=msg||'';if(msg&&$('joinD'))$('joinD').open=true;status(msg||'');}
 function showState(g){const prevLen=view?view.moves.join(','):null,prevRes=view?JSON.stringify(view.result):'',prevSeat=view?view.mySeatSeen:-2;
-  view={...g,recvAt:Date.now(),mySeatSeen:mySeat};anEvents(g);if(g.an)anaNetView(g);else AN.free=false;
+  view={...g,recvAt:Date.now(),mySeatSeen:mySeat};anEvents(g);if(g.an)anaNetView(g);else AN.free=false;tvSync();
   guestSave();
   if(prevLen!==view.moves.join(',')||prevRes!==JSON.stringify(view.result)||prevSeat!==mySeat)resetUi();
   if(prevRes&&prevRes!=='null'&&!g.result&&!g.moves.length)sheet(false);   // a rematch begins: the board, not the panel
@@ -779,7 +787,7 @@ function anLive(){AN.free=false;if(view&&view.g0)anaNetView(view.g0);resetUi();r
 function anSend(d){if(role==='host')anOp(anMe(),d);else if(C.conn&&C.conn.open)C.conn.send({t:'an',...d});}
 // what changed in control since the last state: « Vous avez le contrôle » (or taken back) for a few seconds, a tone
 // for a request to the one who can answer it
-function anEvents(g){const a=g.an;if(!a){AN.evN=null;AN.note=null;AN.reqK='';return;}const ev=a.ev,n=ev?ev.n:0,me=anMe();
+function anEvents(g){const a=g.an;if(!a){AN.evN=null;AN.note=null;AN.reqK='';TV.inv=null;return;}const ev=a.ev,n=ev?ev.n:0,me=anMe();
   if(AN.evN!==null&&n!==AN.evN&&ev){
     if(ev.to===me&&ev.by!==me){AN.note={k:'an_you',at:Date.now()};AN.free=false;tone(660,.18,.05);}
     else if(ev.from===me&&ev.by!==me&&ev.k==='take')AN.note={k:'an_taken',n:anName(a,ev.by),at:Date.now()};
@@ -792,7 +800,7 @@ function anOpen(g){if(!g||g.an||g.match||!g.started||!replay(g,g.moves,g.result)
 function anWho(){const g=H.game,me=seatN(),L=[{id:H.peerId,n:g.names[me]||'',s:me}];
   for(const c of H.conns||[])if(c.open&&c.peer&&!L.some(x=>x.id===c.peer))L.push({id:c.peer,n:c===H.guestConn&&c.seat>=0?g.names[c.seat]||'':c.wname||'',s:c===H.guestConn?c.seat:-1});
   return L;}
-function anPublic(g){const a=g.an;return a?{tree:a.tree,path:a.path.slice(),ctl:a.ctl,req:a.req.slice(),ev:a.ev,own:H.peerId,who:anWho()}:null;}
+function anPublic(g){const a=g.an;return a?{tree:a.tree,path:a.path.slice(),ctl:a.ctl,req:a.req.slice(),ev:a.ev,own:H.peerId,who:anWho(),tv:(a.tv||[]).slice()}:null;}
 // a path asked for: each move already in the tree, or legal (added there, under its canonical code); null: refused
 function anPath(g,p){if(!Array.isArray(p)||p.length>2000)return null;const out=[];let n=g.an.tree;
   for(const m0 of p){if(typeof m0!=='string'||m0.length>400)return null;let x=n.c.find(y=>y.m===m0);
@@ -815,14 +823,16 @@ function anOp(id,d){const g=H.game,a=g&&g.an;if(!a||!d||typeof d!=='object'||!id
   hostBroadcast();}
 // someone leaves the table (their last link): their control goes to nobody, their request lapses (hostDrop broadcasts)
 function anLeft(conn){const a=H.game&&H.game.an;if(!a||!conn.peer||[...H.conns].some(c=>c!==conn&&c.open&&c.peer===conn.peer))return;
-  a.req=a.req.filter(x=>x!==conn.peer);if(a.ctl===conn.peer){a.ev={n:((a.ev&&a.ev.n)||0)+1,k:'left',by:conn.peer,to:null,from:a.ctl};a.ctl=null;hostLog('lg_ctlNone',null,true);}}
+  a.req=a.req.filter(x=>x!==conn.peer);if(a.tv)a.tv=a.tv.filter(x=>x!==conn.peer);if(a.ctl===conn.peer){a.ev={n:((a.ev&&a.ev.n)||0)+1,k:'left',by:conn.peer,to:null,from:a.ctl};a.ctl=null;hostLog('lg_ctlNone',null,true);}}
 // the guest takes the table over: it keeps control if it had it (its id becomes the host's), nobody else does
-function anTaken(a,old,nw){return {tree:a.tree,path:(a.path||[]).slice(),ctl:a.ctl&&a.ctl===old?nw:null,req:[],ev:null};}
+function anTaken(a,old,nw){return {tree:a.tree,path:(a.path||[]).slice(),ctl:a.ctl&&a.ctl===old?nw:null,req:[],ev:null,tv:[]};}
 // --- the card « Table d'analyse » (side panel) and the bar ---
 function anUi(){if($('anCard')||!$('endCard'))return;
   const mk=(tag,id,cls,par)=>{const e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(tag==='button')e.type='button';par.appendChild(e);return e;};   // no innerHTML: the test pages' DOM has none
   const d=document.createElement('details');d.id='anCard';d.className='ancard';d.open=true;d.hidden=true;
   mk('summary','anSum','',d);mk('p','anCtlTxt','hint',d);mk('ul','anWho','anwho',d);mk('button','anMainB','',mk('div','anBtns','confirm',d));
+  const tb=mk('div','tvBox','voicein',d);mk('p','tvTxt','hint',tb);const tj=mk('button','tvJoin','',mk('div','','confirm',tb)),tc=mk('div','tvCtl','confirm',tb),tm=mk('button','tvMute','vmute',tc),tl=mk('button','tvLeave','',tc);
+  tj.onclick=tvJoin;tm.onclick=tvMute;tl.onclick=()=>tvStop(true);tb.hidden=true;tc.hidden=true;
   const lr=mk('div','anLinkRow','anlink',d),inp=mk('input','anLinkIn','vh',lr),b=mk('button','anLinkB','',lr);mk('p','anLinkTxt','hint',d);
   inp.readOnly=true;inp.tabIndex=-1;inp.setAttribute('aria-hidden','true');$('endCard').after(d);
   b.onclick=()=>{const ok=()=>{b.textContent=t('copied');setTimeout(()=>{b.textContent=t('an_link');},1500);};inp.select();
@@ -832,13 +842,14 @@ function anLink(){const wc=role==='host'?H.wcode:role==='guest'?view.g0&&view.g0
 function anRender(r){const box=$('anCard');if(!box)return;const a=anaNet()?anA():null;box.hidden=!a;if(!a)return;
   const me=anMe(),own=role==='host',isC=!!a.ctl&&a.ctl===me,asked=a.req.includes(me);
   $('anSum').textContent=t('an_title');$('anCtlTxt').textContent=!a.ctl?t('an_none'):isC?t('an_you'):t('an_by',{n:anName(a,a.ctl)});
-  const ul=$('anWho'),key=JSON.stringify([a.who,a.ctl,a.req,me,lang]);
+  const ul=$('anWho'),tvL=a.tv||[],key=JSON.stringify([a.who,a.ctl,a.req,me,lang,tvL,TV.on,!!TV.stream,Object.keys(TV.calls).map(x=>x+TV.calls[x].st)]);
   if(ul.dataset.k!==key){ul.dataset.k=key;ul.textContent='';
     for(const w of a.who||[]){const li=document.createElement('li');if(w.id===a.ctl)li.className='ctl';
       const nm=document.createElement('span');nm.className='nm';nm.textContent=anName(a,w.id)+(w.id===me?' ('+t('an_youTag')+')':'');li.appendChild(nm);
-      const tags=[w.id===a.own?t('an_owner'):'',w.id===a.ctl?t('an_ctlTag'):'',a.req.includes(w.id)?t('an_reqTag'):''].filter(Boolean);
+      const kc=TV.calls[w.id],tags=[w.id===a.own?t('an_owner'):'',w.id===a.ctl?t('an_ctlTag'):'',a.req.includes(w.id)?t('an_reqTag'):'',tvL.includes(w.id)?'🎙'+(kc&&kc.st==='fail'?' '+t('tv_fail'):''):''].filter(Boolean);
       if(tags.length){const tg=document.createElement('span');tg.className='tag';tg.textContent=tags.join(' · ');li.appendChild(tg);}
       if((isC||own)&&w.id!==a.ctl&&w.id!==me){const b=document.createElement('button');b.type='button';b.textContent=t('an_giveS');b.title=t('an_giveTo',{n:anName(a,w.id)});b.setAttribute('aria-label',b.title);b.onclick=()=>anSend({op:'give',to:w.id});li.appendChild(b);}
+      if(TV.on&&TV.stream&&w.id!==me&&!tvL.includes(w.id)){const b=document.createElement('button');b.type='button';b.textContent=t('tv_invS');b.title=t('tv_invTo',{n:anName(a,w.id)});b.setAttribute('aria-label',b.title);b.onclick=()=>{tvSend({op:'inv',to:w.id});b.disabled=true;};li.appendChild(b);}
       ul.appendChild(li);}}
   // one command: take it (nobody has it), give it back (I have it), take it back (the owner), ask for it / cancel the request
   const B=$('anMainB'),[k,op]=!a.ctl?['an_takeFree','ask']:isC?['an_drop','drop']:own?['an_take','take']:asked?['an_unask','unask']:['an_ask','ask'];
@@ -852,9 +863,61 @@ function anBar(r){const a=anA();if(!a)return;const me=anMe(),own=role==='host',i
   if((isC||own)&&req.length){const q=req[0];status(t('an_reqAsk',{n:anName(a,q)}),'turn',[{label:t('decline'),on:()=>anSend({op:'no',to:q})},{label:t('an_give'),primary:true,on:()=>anSend({op:'give',to:q})}]);return;}
   if(AN.free){status(t('an_free',{n:anName(a,a.ctl)}),'',[{label:t('an_live'),primary:true,on:anLive},{...askB,primary:false}]);return;}
   if(a.ctl&&!isC){const tk=AN.note&&AN.note.k==='an_taken'&&Date.now()-AN.note.at<4000;status((tk?t('an_taken',{n:AN.note.n}):t(asked?'an_asked':'an_by',{n:anName(a,a.ctl)}))+(r.over&&S.txt?' '+S.txt:''),r.over?S.cls:'',[askB]);return;}
+  if(TV.inv&&!TV.on){status(t('tv_inv',{n:TV.inv.n}),'turn',[{label:t('decline'),on:()=>{TV.inv=null;renderGame();}},{label:t('tv_join'),primary:true,on:tvJoin}]);return;}
   if(AN.note&&Date.now()-AN.note.at<4000)status(t(AN.note.k,{n:AN.note.n||''})+(S.txt?' '+S.txt:''),S.cls||'turn',S.btns);}
-// the table's voice (below)
-function tvStop(){}function tvRender(){}function tvHostMsg(){}
+// ---------- the table's voice ----------
+// At a shared analysis, a voice open to everyone there (players and spectators), apart from the players' own voice
+// (voiceBox, unchanged: joining the table's voice ends it). A mesh: each page in the voice calls each other page in it
+// (PeerJS media calls straight between the pages; of two pages, the one with the smaller id calls), so each one hears
+// all the others; fine for a few people, the usual size of a table. The host keeps who is in it (g.an.tv: their ids)
+// and relays the invitations: someone in the voice invites someone who is not ({t:'tv',op:'inv',to}); they get it in
+// their bar (Decline / Join). The microphone is asked only on joining. No relay server (TURN): on some networks a call
+// cannot connect; it is said after 15 s on that person's line. Choice made without Thibault (the steering session left
+// it open): a mesh rather than a mix by the host, which would need audio processing in the host's page.
+let TV={on:false,stream:null,calls:{},muted:false,inv:null,note:''};
+function tvOk(){return voiceOk()&&anaNet();}
+function tvHostMsg(conn,d){tvOp(conn.peer,d);}
+// host: who joins, leaves, invites (a member's message, or the host's own)
+function tvOp(id,d){const g=H.game,a=g&&g.an;if(!a||!id)return;if(!a.tv)a.tv=[];
+  if(d.op==='join'){if(!a.tv.includes(id))a.tv.push(id);}
+  else if(d.op==='leave')a.tv=a.tv.filter(x=>x!==id);
+  else if(d.op==='inv'){if(!a.tv.includes(id)||typeof d.to!=='string'||a.tv.includes(d.to))return;const w=anWho().find(x=>x.id===id),n=w&&w.n||'';
+    if(d.to===H.peerId){tvInvited(n);return;}
+    for(const c of H.conns)if(c.open&&c.peer===d.to){try{c.send({t:'tv',op:'inv',n});}catch(e){}}return;}
+  else return;
+  hostBroadcast();}
+function tvSend(d){if(role==='host')tvOp(anMe(),d);else if(C.conn&&C.conn.open)C.conn.send({t:'tv',...d});}
+function tvInvited(n){if(TV.on)return;TV.inv={n:n||t('anon')};tone(520,.12,.05);if(view)renderGame();}
+function tvJoin(){if(TV.on||!tvOk())return;TV.inv=null;TV.note='';TV.on=true;TV.wait=true;if(V.st!=='off'){voiceStop('',true);mVoiceSet(false);}renderGame();
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}).then(st=>{if(!TV.on){st.getTracks().forEach(k=>k.stop());return;}
+    TV.stream=st;TV.wait=false;TV.muted=false;tvSend({op:'join'});tvSync();renderGame();},()=>{TV.on=false;TV.wait=false;TV.note=t('vMic');renderGame();});}
+function tvStop(tell){const was=TV.on;if(tell&&was&&TV.stream)tvSend({op:'leave'});
+  for(const id in TV.calls){const k=TV.calls[id];clearTimeout(k.to);try{k.c.close();}catch(e){}if(k.audio){try{k.audio.srcObject=null;k.audio.remove();}catch(e){}}}
+  try{TV.stream&&TV.stream.getTracks().forEach(k=>k.stop());}catch(e){}
+  TV={on:false,stream:null,calls:{},muted:false,inv:null,note:''};if(was&&view&&!$('game').hidden)renderGame();}
+// after each state: a call to each newcomer (when my id is the smaller one), the calls of those who left closed; the
+// table gone (a rematch, home): out of the voice
+function tvSync(){if(!TV.on)return;const a=anA();if(!a){tvStop(false);return;}if(!TV.stream)return;const me=anMe(),L=a.tv||[];
+  if(!L.includes(me)){tvSend({op:'join'});return;}   // a new host does not know me yet
+  for(const id in TV.calls)if(!L.includes(id)){const k=TV.calls[id];clearTimeout(k.to);try{k.c.close();}catch(e){}if(k.audio)k.audio.remove();delete TV.calls[id];}
+  for(const id of L)if(id!==me&&!TV.calls[id]&&me<id&&peer&&peer.open){try{tvWire(id,peer.call(id,TV.stream,{metadata:{tv:1}}));}catch(e){}}}
+function tvIncoming(c){if(!TV.on||!TV.stream){try{c.close();}catch(e){}return;}const old=TV.calls[c.peer];if(old&&old.c!==c){try{old.c.close();}catch(e){}if(old.audio)old.audio.remove();}
+  c.answer(TV.stream);tvWire(c.peer,c);}
+function tvWire(id,c){if(!c)return;const k={c,st:'conn'};TV.calls[id]=k;k.to=setTimeout(()=>{if(TV.calls[id]===k&&k.st!=='on'){k.st='fail';renderGame();}},15000);
+  c.on('stream',rs=>{if(TV.calls[id]!==k)return;clearTimeout(k.to);
+    if(!k.audio){const a=document.createElement('audio');a.autoplay=true;a.setAttribute('playsinline','');a.hidden=true;document.body.appendChild(a);k.audio=a;}
+    k.audio.srcObject=rs;k.audio.volume=voiceVol()/100;const pl=k.audio.play&&k.audio.play();
+    if(pl&&pl.catch)pl.catch(()=>{const f=()=>{if(k.audio&&k.audio.paused)k.audio.play().catch(()=>{});};document.addEventListener('pointerdown',f,{once:true});document.addEventListener('keydown',f,{once:true});});
+    k.st='on';renderGame();});
+  const end=()=>{if(TV.calls[id]!==k)return;clearTimeout(k.to);if(k.audio)k.audio.remove();delete TV.calls[id];renderGame();};c.on('close',end);c.on('error',end);}
+function tvMute(){if(!TV.stream)return;TV.muted=!TV.muted;TV.stream.getAudioTracks().forEach(k=>{k.enabled=!TV.muted;});renderGame();}
+// the card's voice part: who is in it, Join / Mute + Leave; the lines of the members (anRender) say who is in it and offer to invite
+function tvRender(){const b=$('tvBox');if(!b)return;const a=anaNet()?anA():null,on=!!a&&tvOk();b.hidden=!on;if(!on)return;
+  const me=anMe(),L=(a.tv||[]).filter(x=>(a.who||[]).some(w=>w.id===x)),others=L.filter(x=>x!==me).map(x=>anName(a,x));
+  $('tvTxt').textContent=TV.wait?t('vConn'):TV.on?(others.length?t('tv_with',{n:others.join(', ')}):t('tv_alone')):TV.note||(L.length?t('tv_in',{n:L.map(x=>anName(a,x)).join(', ')}):t('tv_none'));
+  $('tvJoin').hidden=TV.on;$('tvJoin').textContent=t('tv_join');$('tvCtl').hidden=!TV.on;
+  $('tvMute').disabled=!TV.stream;$('tvMute').textContent=TV.muted?'🔇':'🎙';$('tvMute').title=t(TV.muted?'vUnmute':'vMute');$('tvMute').setAttribute('aria-label',$('tvMute').title);$('tvMute').classList.toggle('on',!!TV.muted);
+  $('tvLeave').textContent=t('tv_leave');}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
 // names typed in an analysis or read from a file (customNames: true, or one flag per seat; a loaded game read only: its own names)
 const nmCustom=s=>{const c=view.customNames;return role==='file'&&c===undefined||c===true||Array.isArray(c)&&!!c[s];};
@@ -1828,7 +1891,7 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
   $('chatForm').onsubmit=e=>{e.preventDefault();chatSend();};$('chatName').onclick=()=>{sheet(false);chatUp(false);nameOv('watch');};
   $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
   $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>{voiceStop(t('vEnd'),true);mVoiceSet(false);};
-  {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
+  {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;for(const id in TV.calls)if(TV.calls[id].audio)TV.calls[id].audio.volume=(+r.value)/100;});}
   $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});
   {const cb=document.createElement('button');cb.type='button';cb.id='chatBtn';cb.className='chatbtn';cb.textContent='💬';cb.hidden=true;$('optBtn').before(cb);cb.onclick=()=>chatUp(true);
     const bg=document.createElement('div');bg.className='sheetbg chatbg';bg.id='chatBg';bg.hidden=true;bg.onclick=()=>chatUp(false);document.body.appendChild(bg);
