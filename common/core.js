@@ -1340,6 +1340,9 @@ function init(){GAME.home();saveMigrate();saveRender();
   status('');
   // #ai-<id>, #local-<id>: that game; #ai, #local (older addresses): the latest of that mode
   {const m=/^#(ai|local)(?:-([a-z0-9]{6,12}))?$/.exec(location.hash);if(m){const id=m[2]||(saveList().find(e=>e.mode===m[1])||{}).id;if(id&&(m[1]==='ai'?aiResume(id):localResume(id)))return;setHash('');}}
+  // #sgf=<file>: a game file of the site (a relative path on this server) opened for analysis, at its first position (24.11.2026)
+  {const ms=/^#sgf=([\w\-./%]+\.sgf)$/.exec(location.hash),u=ms&&decodeURIComponent(ms[1]);if(u&&!u.includes('..')&&!u.startsWith('/')){
+    fetch(u).then(r=>{if(!r.ok)throw 0;return r.text();}).then(tx=>{const e=sgfLoad(tx);if(e)status(e);}).catch(()=>status(t('sgfBad')));return;}}
   if(location.hash==='#test'){const sv=LS.get(TK(),null);startTest(GAME.rules(sv||{}));if(sv&&sv.moves){view={...sv,names:sv.customNames?sv.names:view.names};testTurn();}return;}
   {const mm=/^#m([twv])-([a-z0-9]+)-(\d+)$/.exec(location.hash);if(mm&&mStart(mm[1],mm[2],+mm[3]))return;}
   const m=/^#(join|watch|host)-([a-z0-9-]+)$/.exec(location.hash);if(!m)return;m[2]=cleanCode(m[2]);const saved=LS.get(netKey('host',m[2]),null),sg=LS.get(netKey('guest',m[2]),null);
