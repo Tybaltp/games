@@ -1549,12 +1549,12 @@ return {search, searchS, state, toMove, load, X, F, Search, evals: () => evals};
 // (level 1 beats random play by 83 %), and the one two below by 84 % or more. random = a random legal move. A level is
 // an amount of work, never a time (16.11.2026). Hints: MC9, the former level 9 (median 4.8 s on the reference Mac,
 // outils/aitools/res/budgets-2026-11-16.md).
-// Level 10 (20.11.2026, the former level 9 back as level 9; 23.11.2026, Thibault: 800 visits instead of 1600): network n° 270 of ~/Jeux/ia (23.11.2026: 88.0 % against n° 214, 200 games, 200 visits; n° 250 before it, 76.8 % against n° 170, 200 games, network alone, 400 visits) (8 blocks × 64 channels, the six variants), a PUCT search of sims
+// Level 10 (20.11.2026, the former level 9 back as level 9; 23.11.2026, Thibault: 800 visits instead of 1600): network n° 332 of ~/Jeux/ia (24.11.2026: 63.2 % against n° 270 at the site settings, 800 visits + endgame solver, 200 games, variants 1, 2, 4, 5; 93.0 % against n° 214) (8 blocks × 64 channels, the six variants), a PUCT search of sims
 // root visits (no tree kept from one move to the next), after the exact endgame solver of MC9 (solve: its options;
 // a proved result is played, else the network searches). net: the weights file next to the page. At 800 visits it made
 // 63 % against MC9 (150 games, the six variants, clear at 99 %); 1600 visits (20 to 23.11.2026) were not measured. When the network
 // cannot load (offline, old browser), MC9 answers instead.
-const NN_NET='dblocks-net.onnx?v=270';
+const NN_NET='dblocks-net.onnx?v=332';
 // the full board's first pieces and swap (ptab, DiagAI; 22.11.2026): 8 first pieces and 21 Swap 2 pairs, those MC9 plays,
 // each measured at level 8 (100 and 50 games, outils/aitools/res/diagonalblocks/plein/); swapF, decided without a measure
 const PT_FULL={first:{"32.33.46.47.60":0.695,"32.46.47.60.61":0.655,"33.46.47.60.61":0.81,"60.61.62.63.64":0.71,"60.61.62.76.77":0.605,"60.61.74.75":0.505,"60.61.75.76.77":0.555,"60.61.75.76.89":0.775},pair:{"32.33.46.47.60|105.106.120.121.135":0.49,"32.33.46.47.60|105.119.120.134.135":0.59,"32.33.46.47.60|106.119.120.121.135":0.47,"32.33.46.47.60|106.119.120.134.135":0.56,"32.33.46.47.60|106.120.133.134.135":0.52,"32.33.46.47.60|107.119.120.121.135":0.77,"32.46.47.60.61|105.106.120.134.135":0.68,"32.46.47.60.61|105.119.120.121.135":0.54,"32.46.47.60.61|106.119.120.121.135":0.67,"32.46.47.60.61|106.119.120.134.135":0.5,"32.46.47.60.61|106.120.133.134.135":0.56,"32.46.47.60.61|107.119.120.121.135":0.46,"33.46.47.60.61|105.106.120.134.135":0.75,"33.46.47.60.61|105.119.120.121.135":0.6,"33.46.47.60.61|106.119.120.121.135":0.36,"33.46.47.60.61|106.119.120.134.135":0.69,"33.46.47.60.61|106.120.133.134.135":0.46,"33.46.47.60.61|107.119.120.121.135":0.48,"60.61.74.75|105.106.120.134.135":0.39,"60.61.74.75|106.119.120.121.135":0.86,"60.61.74.75|106.120.133.134.135":0.78},swapF:-3.6};
