@@ -455,11 +455,11 @@ function hostStart(saved){role='host';CH={seen:-1,key:''};H.conns=new Set();H.wa
   me.on('error',e=>{if(peer!==me)return;
     if(e.type==='unavailable-id'){try{me.destroy();}catch(_){}wpeerStop();becomeClient();}
     else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error')status(t('st_noMm'));});}
-function becomeClient(){if(V.st!=='off')voiceStop('',false);tvStop(false);const seat=seatN(),pub={...hostPublic(),myHold:myHoldOf(seat),...hostPriv()},code=H.code,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
+function becomeClient(){if(V.st!=='off')voiceStop('',false);const seat=seatN(),pub={...hostPublic(),myHold:myHoldOf(seat),...hostPriv()},code=H.code,nm=H.game.names[seat]||nickGet()||t('p1');role=null;
   const tk=TAKE.at;TAKE.at=0;{const sv=LS.get(netKey('host',code),null);if(sv&&sv.code===code)LS.del(netKey('host',code));}   // another page holds this game: this one is no longer to resume as its host
   if(pub.running&&!pub.result){const r=replay(pub,pub.moves,pub.result);if(!r.over)pub.clock[r.st.turn]=Math.max(0,pub.clock[r.st.turn]-pub.elapsed);}
   clientStart(code,nm,false);role='guest';mySeat=netSeat=seat;view={...pub,running:false,elapsed:0,paused:pub.started&&!pub.result,recvAt:Date.now()};if(pub.an){view.paused=false;anaNetView(view);}C.lostSince=tk&&Date.now()-tk<60000?tk:Date.now();renderGame();}   // a takeover that failed: tried again soon
-function becomeHost(){if(!view)return;if(V.st!=='off')voiceStop('',false);tvStop(false);const me=seatN(),myOld=peer&&peer.id;const pm=!!C.pending&&view.moves.length===C.pending.n+1;if(C.pending){pendClear();delete view.runSeat;}TAKE.at=C.lostSince||Date.now();LS.del(netKey('guest',C.code));C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
+function becomeHost(){if(!view)return;if(V.st!=='off')voiceStop('',false);const me=seatN(),myOld=peer&&peer.id;const pm=!!C.pending&&view.moves.length===C.pending.n+1;if(C.pending){pendClear();delete view.runSeat;}TAKE.at=C.lostSince||Date.now();LS.del(netKey('guest',C.code));C.stop=true;clearTimeout(C.t);clearTimeout(C.ct);const old=peer;peer=null;try{old&&old.destroy();}catch(e){}
   const rem=remaining(),v=view.g0||view;   // a shared analysis: the game itself, not the position shown
   H.code=C.code;H.wcode=v.wcode||newCode(9);H.guestCid=null;H.game={size:v.size,...GAME.rules(v),hold:v.myHold&&!v.moves.length?(me===0?[v.myHold,null]:[null,v.myHold]):null,tc:v.tc||null,first:v.first,names:v.names.slice(),moves:v.moves.slice(),clock:rem,running:!!v.started,result:v.result,started:!!v.started,
     ready:(v.ready||[false,false]).slice(),th:(v.th||[null,null]).slice(),paused:!!v.started&&!v.result,ver:v.ver||0,match:v.match?{...v.match}:null,chat:(Array.isArray(v.chatAll)?v.chatAll:Array.isArray(v.chat)?v.chat:[]).slice(),
@@ -514,7 +514,6 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
   if(d.t==='wname'){if(H.watchers.has(conn)){conn.wname=nmClean(d.name);hostWatchLog(conn.wname);hostBroadcast();}return;}
   if(d.t==='chat'){if(conn===H.guestConn&&conn.seat>=0)hostChat(g.names[conn.seat],false,d.m);else if(H.watchers.has(conn)&&conn.wname)hostChat(conn.wname,true,d.m);return;}
   if(d.t==='an'){if(H.conns.has(conn))anOp(conn.peer,d);return;}   // the shared analysis: anyone at the table
-  if(d.t==='tv'){if(H.conns.has(conn))tvHostMsg(conn,d);return;}   // the table's voice
   if(conn!==H.guestConn)return;
   if(d.t==='name'){const v=nmClean(d.name);if(v&&conn.seat>=0){g.names[conn.seat]=v;hostJoinLog(conn);hostBroadcast();}return;}
   const s=conn.seat;
@@ -600,7 +599,7 @@ function voiceOnMsg(op){
   else if(op==='bye'){if(V.st!=='off')voiceStop(t('vEnd'),false);mVoiceSet(false);}}
 const voiceVol=()=>{const v=LS.get('games-voicevol',80);return typeof v==='number'?v:80;};
 function voiceMute(){if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
-function voiceRender(){tvRender();const b=$('voiceBox'),pl=seatN()>=0&&(role==='host'||role==='guest')&&voiceOk();b.hidden=!pl;if(!pl)return;
+function voiceRender(){const b=$('voiceBox'),pl=seatN()>=0&&(role==='host'||role==='guest')&&voiceOk();b.hidden=!pl;if(!pl)return;
   const o=vNm(),st=V.st,there=!!(view&&view.names[1-seatN()])&&(role==='guest'||!!view.guestOn);
   if(st==='off'&&V.note&&!there)V.note='';
   $('voiceAsk').hidden=st!=='off';$('voiceAsk').disabled=!there;
@@ -685,7 +684,7 @@ function refusedBar(){const code=C.code;status(t(C.refused),'',[C.refused==='t_d
 
 // ---------- game view ----------
 function showGame(){replayForget();$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
-function showSetup(msg){replayForget();if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');tvStop(true);role=null;view=null;mySeat=netSeat=-1;AN.free=false;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;saveRender();$('joinErr').textContent=msg||'';if(msg&&$('joinD'))$('joinD').open=true;status(msg||'');}
+function showSetup(msg){replayForget();if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');role=null;view=null;mySeat=netSeat=-1;AN.free=false;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;saveRender();$('joinErr').textContent=msg||'';if(msg&&$('joinD'))$('joinD').open=true;status(msg||'');}
 function showState(g){const prevLen=view?view.moves.join(','):null,prevRes=view?JSON.stringify(view.result):'',prevSeat=view?view.mySeatSeen:-2;
   view={...g,recvAt:Date.now(),mySeatSeen:mySeat};anEvents(g);if(g.an)anaNetView(g);else AN.free=false;
   guestSave();
@@ -853,8 +852,6 @@ function anBar(r){const a=anA();if(!a)return;const me=anMe(),own=role==='host',i
   if(AN.free){status(t('an_free',{n:anName(a,a.ctl)}),'',[{label:t('an_live'),primary:true,on:anLive},{...askB,primary:false}]);return;}
   if(a.ctl&&!isC){const tk=AN.note&&AN.note.k==='an_taken'&&Date.now()-AN.note.at<4000;status((tk?t('an_taken',{n:AN.note.n}):t(asked?'an_asked':'an_by',{n:anName(a,a.ctl)}))+(r.over&&S.txt?' '+S.txt:''),r.over?S.cls:'',[askB]);return;}
   if(AN.note&&Date.now()-AN.note.at<4000)status(t(AN.note.k,{n:AN.note.n||''})+(S.txt?' '+S.txt:''),S.cls||'turn',S.btns);}
-// the table's voice (below)
-function tvStop(){}function tvRender(){}function tvHostMsg(){}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
 // names typed in an analysis or read from a file (customNames: true, or one flag per seat; a loaded game read only: its own names)
 const nmCustom=s=>{const c=view.customNames;return role==='file'&&c===undefined||c===true||Array.isArray(c)&&!!c[s];};
