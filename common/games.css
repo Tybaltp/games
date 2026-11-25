@@ -180,6 +180,9 @@ ol.log li.cur{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 .navbar button:disabled{opacity:.35;cursor:default}
 @media (max-width:400px){.navbar{gap:2px}.navbar button:not(.navalt){min-width:34px;padding:6px 4px}}   /* a phone, in analysis: seven buttons and « Jugada 44 / 44 » on one line */
 ol.log .alt{color:var(--accent);margin-left:2px}
+/* a private move at a shared analysis (only this page sees it): italic, a dashed frame */
+ol.log li.priv{font-style:italic;outline:1px dashed color-mix(in srgb,var(--muted) 80%,transparent);outline-offset:-1px;border-radius:4px}
+ol.log li.priv .n::after{content:' ⦿';color:var(--muted);font-style:normal}
 .navpos{font-family:var(--f-mono);font-size:.85rem;font-variant-numeric:tabular-nums;min-width:11ch;text-align:center;color:var(--muted);white-space:nowrap}
 details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 details summary{cursor:pointer;font-weight:600}

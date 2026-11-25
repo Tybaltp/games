@@ -128,7 +128,7 @@ const I18C={fr:{
  an_title:"Table d'analyse",an_none:"Personne n'a le contrôle : le premier qui joue un coup ou se déplace dans les coups le prend.",an_you:"Vous avez le contrôle.",an_by:"{n} a le contrôle.",
  an_asked:"Vous avez demandé le contrôle à {n}.",an_reqAsk:"{n} demande le contrôle.",an_give:"Donner le contrôle",an_giveS:"Donner",an_giveTo:"Donner le contrôle à {n}",
  an_ask:"Demander le contrôle",an_unask:"Annuler la demande",an_take:"Reprendre le contrôle",an_takeFree:"Prendre le contrôle",an_drop:"Rendre le contrôle",
- an_free:"Vous parcourez les coups seul ; {n} a le contrôle.",an_live:"Revenir au direct",an_taken:"{n} a repris le contrôle.",
+ an_free:"Vous parcourez les coups seul ; {n} a le contrôle.",an_freeN:"Vous parcourez les coups seul ; personne n'a le contrôle.",an_priv:"Variante privée, que vous seul voyez ; {n} a le contrôle.",an_privN:"Variante privée, que vous seul voyez ; personne n'a le contrôle.",an_privT:"Coup privé : vous seul le voyez",an_live:"Revenir au direct",an_taken:"{n} a repris le contrôle.",
  an_owner:"propriétaire",an_ctlTag:"a le contrôle",an_reqTag:"demande le contrôle",an_youTag:"vous",
  an_invite:"Inviter à analyser",an_open:"Ouvrir la table d'analyse",an_openTxt:"Ceux à qui vous donnez le lien rejoignent cette analyse et la suivent en direct ; vous en gardez le contrôle et pouvez le leur donner. La table vit dans votre navigateur : elle se ferme si vous la quittez.",
  lg_ctl:"{n} a le contrôle du plateau.",lg_ctlA:"Un observateur anonyme a le contrôle du plateau.",lg_ctlNone:"Personne n'a plus le contrôle du plateau.",
@@ -163,7 +163,7 @@ const I18C={fr:{
  an_title:"Analysis table",an_none:"Nobody has control: the first to play a move or step through the moves takes it.",an_you:"You have control.",an_by:"{n} has control.",
  an_asked:"You asked {n} for control.",an_reqAsk:"{n} asks for control.",an_give:"Give control",an_giveS:"Give",an_giveTo:"Give control to {n}",
  an_ask:"Ask for control",an_unask:"Cancel the request",an_take:"Take control back",an_takeFree:"Take control",an_drop:"Release control",
- an_free:"You are going through the moves on your own; {n} has control.",an_live:"Back to live",an_taken:"{n} took control back.",
+ an_free:"You are going through the moves on your own; {n} has control.",an_freeN:"You are going through the moves on your own; nobody has control.",an_priv:"Private variation, seen by you only; {n} has control.",an_privN:"Private variation, seen by you only; nobody has control.",an_privT:"Private move: only you see it",an_live:"Back to live",an_taken:"{n} took control back.",
  an_owner:"owner",an_ctlTag:"has control",an_reqTag:"asks for control",an_youTag:"you",
  an_invite:"Invite to analyse",an_open:"Open the analysis table",an_openTxt:"Those you give the link to join this analysis and follow it live; you keep control and can give it to them. The table lives in your browser: it closes if you leave it.",
  lg_ctl:"{n} has control of the board.",lg_ctlA:"An anonymous spectator has control of the board.",lg_ctlNone:"Nobody has control of the board any more.",
@@ -198,7 +198,7 @@ const I18C={fr:{
  an_title:"Mesa de análisis",an_none:"Nadie tiene el control: el primero que juegue una jugada o se mueva por las jugadas lo toma.",an_you:"Tienes el control.",an_by:"{n} tiene el control.",
  an_asked:"Has pedido el control a {n}.",an_reqAsk:"{n} pide el control.",an_give:"Dar el control",an_giveS:"Dar",an_giveTo:"Dar el control a {n}",
  an_ask:"Pedir el control",an_unask:"Anular la petición",an_take:"Recuperar el control",an_takeFree:"Tomar el control",an_drop:"Soltar el control",
- an_free:"Estás recorriendo las jugadas por tu cuenta; {n} tiene el control.",an_live:"Volver al directo",an_taken:"{n} ha recuperado el control.",
+ an_free:"Estás recorriendo las jugadas por tu cuenta; {n} tiene el control.",an_freeN:"Estás recorriendo las jugadas por tu cuenta; nadie tiene el control.",an_priv:"Variante privada, solo tú la ves; {n} tiene el control.",an_privN:"Variante privada, solo tú la ves; nadie tiene el control.",an_privT:"Jugada privada: solo tú la ves",an_live:"Volver al directo",an_taken:"{n} ha recuperado el control.",
  an_owner:"propietario",an_ctlTag:"tiene el control",an_reqTag:"pide el control",an_youTag:"tú",
  an_invite:"Invitar a analizar",an_open:"Abrir la mesa de análisis",an_openTxt:"Quienes reciban el enlace se unen a este análisis y lo siguen en directo; tú conservas el control y puedes dárselo. La mesa vive en tu navegador: se cierra si la abandonas.",
  lg_ctl:"{n} tiene el control del tablero.",lg_ctlA:"Un observador anónimo tiene el control del tablero.",lg_ctlNone:"Ya nadie tiene el control del tablero.",
@@ -367,7 +367,7 @@ function rematchOp(s,op){const g=H.game,rm=g.rematch;if(!replay(g,g.moves,g.resu
   else if(op==='cancel'&&rm&&rm.from===s&&rm.st==='ask')g.rematch=null;
   else if(op==='no'&&rm&&rm.from!==s&&rm.st==='ask')g.rematch={from:rm.from,st:'no'};
   else if(op==='yes'&&rm&&rm.from!==s&&rm.st==='ask'){
-    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.hold=null;g.result=null;g.rematch=null;g.draw=null;g.away=null;g.an=null;AN.free=false;
+    g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();g.moves=[];g.hold=null;g.result=null;g.rematch=null;g.draw=null;g.away=null;g.an=null;AN.free=false;AN.pt=null;
     g.clock=[g.tc?g.tc.base:0,g.tc?g.tc.base:0];g.started=true;g.running=true;g.ready=[true,true];g.paused=false;g.ver=(g.ver||0)+1;H.turnStart=Date.now();
     hostLog('lg_rematch',null,true);
     mySeat=netSeat=1-seatN();if(H.guestConn){H.guestConn.seat=1-H.guestConn.seat;try{H.guestConn.send({t:'welcome',role:'guest',seat:H.guestConn.seat});}catch(e){}}}
@@ -663,7 +663,7 @@ let C={};   // {code,cid,name,conn,retry}
 function clientStart(raw,nm,asWatch){const code=cleanCode(raw);if(code.length<4){$('joinErr').textContent=t('codeShort');return;}
   clearTimeout(C.t);clearTimeout(C.ct);CH={seen:-1,key:''};C={hold:null,code,host:PID(code),play:!asWatch,name:nm,cid:MYID,retry:0,lostSince:0};
   $('joinErr').textContent='';setHash((asWatch?'watch-':'join-')+codeShow(code));
-  role='watch';mySeat=netSeat=-1;view=null;showGame();AN.free=false;status(t('st_conn'));clientWait();
+  role='watch';mySeat=netSeat=-1;view=null;showGame();AN.free=false;AN.pt=null;status(t('st_conn'));clientWait();
   const sv=LS.get(netKey('guest',code),null);   // last position seen as a guest: shown at once, and used to take over if the host does not come back
   if(!asWatch&&sv&&sv.code===code&&sv.cid){MYID=sv.cid;C.cid=MYID;}   // the identity this game knows (another tab of this browser may have given this one another)
   if(!asWatch&&sv&&sv.code===code&&sv.view&&!sv.view.result){role='guest';mySeat=netSeat=sv.seat;view={...sv.view,recvAt:Date.now()};C.lostSince=Date.now();renderGame();}
@@ -712,7 +712,7 @@ function refusedBar(){const code=C.code;status(t(C.refused),'',[C.refused==='t_d
 
 // ---------- game view ----------
 function showGame(){replayForget();$('setup').hidden=true;$('game').hidden=false;$('status').hidden=true;document.documentElement.classList.add('ingame');}
-function showSetup(msg){replayForget();if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');role=null;view=null;mySeat=netSeat=-1;AN.free=false;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;saveRender();$('joinErr').textContent=msg||'';if(msg&&$('joinD'))$('joinD').open=true;status(msg||'');}
+function showSetup(msg){replayForget();if(V.st!=='off')voiceStop('',true);V.note='';nameOv('');role=null;view=null;mySeat=netSeat=-1;AN.free=false;AN.pt=null;setHash('');$('game').hidden=true;sheet(false);document.documentElement.classList.remove('ingame');$('setup').hidden=false;saveRender();$('joinErr').textContent=msg||'';if(msg&&$('joinD'))$('joinD').open=true;status(msg||'');}
 function showState(g){const prevLen=view?view.moves.join(','):null,prevRes=view?JSON.stringify(view.result):'',prevSeat=view?view.mySeatSeen:-2;
   view={...g,recvAt:Date.now(),mySeatSeen:mySeat};anEvents(g);if(g.an)anaNetView(g);else AN.free=false;
   guestSave();
@@ -730,7 +730,7 @@ const netSim=r=>(role==='host'||role==='guest'||role==='watch')&&!anaNet()&&simH
 const meSt=r=>netSim(r)&&mySeat>=0?{...r.st,turn:mySeat}:r.st;
 function remaining(){const c=view.clock.slice();if(view.tc&&view.running&&!view.result){const r=replay(view,view.moves,view.result);if(!r.over&&!simHold(view,r))c[view.runSeat??r.st.turn]-=view.elapsed+(Date.now()-view.recvAt);}return c;}
 const fmt=ms=>{ms=Math.max(0,ms);const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
-function isMyTurn(r){const ready=!!view.started&&!view.paused;return (!anaNet()||anCan())&&mySeat>=0&&!r.over&&(netSim(r)?!view.myHold:r.st.turn===mySeat)&&!sending&&!!view.names[1-mySeat]&&ready;}
+function isMyTurn(r){const ready=!!view.started&&!view.paused;return mySeat>=0&&!r.over&&(netSim(r)?!view.myHold:r.st.turn===mySeat)&&!sending&&!!view.names[1-mySeat]&&ready;}
 
 // Navigation through the moves: for everyone once the game is over, for spectators at any time.
 // navAt=null follows the game live; otherwise the board shows the position after navAt moves.
@@ -766,7 +766,7 @@ function anaSib(d){const p=view.moves,k=p.length;if(!k)return;const par=anaNode(
 // for the boards: the codes of the other variations of the move shown, and the switch to one of them
 function anaAlts(){if(!ana()||!view.moves.length)return [];const p=view.moves,par=anaNode(p.slice(0,-1));return par?par.c.map(x=>x.m).filter(m=>m!==p[p.length-1]):[];}
 function anaAltGo(code){if(!ana()||!view.moves.length)return;anaSet(view.moves.slice(0,-1).concat(code));}
-function anaPlay(code){const n=anaNode(view.moves);if(!n)return;if(anaNet()){if(anCan())anaNetSet(view.moves.concat(code));return;}if(!n.c.some(x=>x.m===code))n.c.push({m:code,c:[]});anaSet(view.moves.concat(code));}
+function anaPlay(code){const n=anaNode(view.moves);if(!n)return;if(anaNet()){anaNetSet(view.moves.concat(code));return;}if(!n.c.some(x=>x.m===code))n.c.push({m:code,c:[]});anaSet(view.moves.concat(code));}
 // The main line (the first child at each branching)
 function anaMainLine(){const p=[];let n=view.tree;while(n.c.length){n=n.c[0];p.push(n.m);}return p;}
 // ---------- the shared analysis: a game by link, once over ----------
@@ -784,7 +784,20 @@ function anaMainLine(){const p=[];let n=view.tree;while(n.c.length){n=n.c[0];p.p
 // new host; a host's reload keeps only its own control. Mochalunt tables have none (the match goes on).
 // Choices of the steering session (24.11.2026), made without Thibault: the owner is the host; nobody has control at
 // the end, the first to touch takes it; a button to ask for it; the free walk through the tree.
-const AN={free:false,fp:null,evN:null,note:null,reqK:''};
+// Private moves (request of Thibault, 25.11.2026): without control, anyone at the table walks the tree on their own
+// (AN.free) and plays their own moves there. Those are private variations, kept on this page only (AN.pt, a tree by the
+// moves' codes: a private move equal to a public one at the same place is the same node), merged with the shared tree
+// for the view (their nodes marked pv) and shown as such in the moves' list and the bar. « Back to live » keeps them.
+// Whatever is shown publicly joins the shared tree: on getting control (given, taken back, taken by a first touch), the
+// position on this page becomes the public one, and the path to it (private moves included) everyone's. The moves of the
+// one in control reach everyone's tree; a private walk stays where it is. Choices of the steering session, made without
+// Thibault: equal moves are one node; a spectator during a game in progress has no private analysis (no table yet).
+const AN={free:false,fp:null,evN:null,note:null,reqK:'',pt:null};
+// the view's tree: the shared one, with my private nodes grafted (pv: 1) when I have any
+function anMerge(shared){if(!AN.pt)return shared;const out=JSON.parse(JSON.stringify(shared));
+  const add=(d,s)=>{for(const x of s.c){let y=d.c.find(z=>z.m===x.m);if(!y){y={m:x.m,c:[],pv:1};d.c.push(y);}add(y,x);}};add(out,AN.pt);return out;}
+function anGraft(p){if(!AN.pt)AN.pt={c:[]};let n=AN.pt;for(const m of p){let x=n.c.find(y=>y.m===m);if(!x){x={m,c:[]};n.c.push(x);}n=x;}}
+const anPriv=p=>{if(!anaNet()||!AN.pt)return false;const n=anaNode(p);return !!(n&&n.pv);};
 const anaNet=()=>!!view&&!!view.tree&&(role==='host'||role==='guest'||role==='watch');
 const seatN=()=>anaNet()?netSeat:mySeat;   // my seat at the table (the network's), whatever the analysis does to mySeat
 const anMe=()=>role==='host'?H.peerId:(peer&&peer.id)||'';
@@ -793,12 +806,12 @@ const anCan=()=>{const a=anA();return !!a&&(!a.ctl||a.ctl===anMe());};   // I ma
 const anName=(a,id)=>{const w=a&&(a.who||[]).find(x=>x.id===id);return w&&w.n?w.n:t('anon');};
 function anTreeHas(tree,p){let n=tree;for(const m of p){n=n&&n.c.find(x=>x.m===m);if(!n)return false;}return true;}
 // the view of a shared analysis from the state g: the position followed (the live one, or my own walk)
-function anaNetView(g){const a=g.an;if(!a.ctl||a.ctl===anMe())AN.free=false;let p=a.path;if(AN.free){if(AN.fp&&anTreeHas(a.tree,AN.fp))p=AN.fp;else AN.free=false;}
-  view={...g,recvAt:Date.now(),mySeatSeen:view?view.mySeatSeen:mySeat,g0:g,tree:a.tree,moves:p.slice(),gameResult:g.result||null,draw:null};
+function anaNetView(g){const a=g.an;if(a.ctl&&a.ctl===anMe())AN.free=false;const tree=anMerge(a.tree);let p=a.path;if(AN.free){if(AN.fp&&anTreeHas(tree,AN.fp))p=AN.fp;else AN.free=false;}
+  view={...g,recvAt:Date.now(),mySeatSeen:view?view.mySeatSeen:mySeat,g0:g,tree,moves:p.slice(),gameResult:g.result||null,draw:null};
   view.result=anaMain(p)?view.gameResult:null;}
 // a path set on this page (anaSet): sent to the host and shown at once when I may act, my own walk otherwise
 function anaNetSet(p){const a=anA();if(!a)return;const me=anMe();if(busy==='hint')stopAI();hintMv=null;
-  if(a.ctl&&a.ctl!==me){AN.free=true;AN.fp=p.slice();anaNetView(view.g0);resetUi();renderGame();return;}
+  if(a.ctl&&a.ctl!==me){if(!anTreeHas(a.tree,p))anGraft(p);AN.free=true;AN.fp=p.slice();anaNetView(view.g0);resetUi();renderGame();return;}
   AN.free=false;if(role==='host'){anOp(me,{op:'set',p});return;}
   if(!(C.conn&&C.conn.open))return;C.conn.send({t:'an',op:'set',p});
   anaNetView({...view.g0,an:{...a,ctl:me,path:p.slice()}});resetUi();renderGame();}   // a new move: grafted on this copy of the tree (renderGame)
@@ -808,7 +821,10 @@ function anSend(d){if(role==='host')anOp(anMe(),d);else if(C.conn&&C.conn.open)C
 // for a request to the one who can answer it
 function anEvents(g){const a=g.an;if(!a){AN.evN=null;AN.note=null;AN.reqK='';AN.busy=false;AN.pick=false;return;}const ev=a.ev,n=ev?ev.n:0,me=anMe();
   if(AN.evN!==null&&n!==AN.evN&&ev){
-    if(ev.to===me&&ev.by!==me){AN.note={k:'an_you',at:Date.now()};AN.free=false;tone(660,.18,.05);}
+    if(ev.to===me){if(ev.by!==me){AN.note={k:'an_you',at:Date.now()};tone(660,.18,.05);}
+      // control is mine: the position on my screen becomes the public one (shown at once, sent to the host)
+      const fp=AN.free&&AN.fp?AN.fp.slice():null;AN.free=false;
+      if(fp&&a.ctl===me&&fp.join(',')!==a.path.join(',')){g.an={...a,path:fp};setTimeout(()=>{const b=anA();if(b&&b.ctl===me)anSend({op:'set',p:fp});},0);}}
     else if(ev.from===me&&ev.by!==me&&ev.k==='take')AN.note={k:'an_taken',n:anName(a,ev.by),at:Date.now()};
     if(AN.note)setTimeout(()=>{if(view&&!$('game').hidden)renderGame();},4100);}
   AN.evN=n;const rk=(a.ctl===me||role==='host')?a.req.filter(x=>x!==me).join(','):'';if(rk&&rk!==AN.reqK&&rk.length>AN.reqK.length)tone(520,.12,.05);AN.reqK=rk;}
@@ -885,7 +901,7 @@ function anRender(r){const box=$('anCard');if(!box)return;if($('anOpenTxt')&&anP
       ul.appendChild(li);}}
   // one command: take it (nobody has it), give it back (I have it), take it back (the owner), ask for it / cancel the request
   const B=$('anMainB'),[k,op]=!a.ctl?['an_takeFree','ask']:isC?['an_drop','drop']:own?['an_take','take']:asked?['an_unask','unask']:['an_ask','ask'];
-  B.textContent=t(k);B.className=!a.ctl||op==='take'||op==='ask'&&!asked&&a.ctl?'primary':'';B.onclick=()=>{if(op==='take'||op==='ask')AN.free=false;anSend({op});};
+  B.textContent=t(k);B.className=!a.ctl||op==='take'||op==='ask'&&!asked&&a.ctl?'primary':'';B.onclick=()=>anSend({op});
   // « Inviter au vocal »: the lines offer « Inviter » (a call at a time: not while I am in one; the busy ones marked)
   const others=(a.who||[]).some(w=>w.id!==me),vb=$('anVoiceB');vb.hidden=!voiceOk()||V.st!=='off'||!others;if(!others||V.st!=='off')AN.pick=false;
   vb.textContent=t(AN.pick?'cancel':'an_vInv');vb.className=AN.pick?'':'';$('anPickTxt').hidden=!pick;$('anPickTxt').textContent=t('an_vPick');
@@ -894,9 +910,9 @@ function anRender(r){const box=$('anCard');if(!box)return;if($('anOpenTxt')&&anP
 // own message, with « Vous avez le contrôle » before it for a few seconds
 function anBar(r){const a=anA();if(!a)return;const me=anMe(),own=role==='host',isC=!!a.ctl&&a.ctl===me,S=barLast,asked=a.req.includes(me);
   const req=a.req.filter(x=>x!==me&&(a.who||[]).some(w=>w.id===x));
-  const askB=own?{label:t('an_take'),primary:true,on:()=>{AN.free=false;anSend({op:'take'});}}:asked?{label:t('an_unask'),on:()=>anSend({op:'unask'})}:{label:t('an_ask'),primary:true,on:()=>anSend({op:'ask'})};
+  const askB=own?{label:t('an_take'),primary:true,on:()=>anSend({op:'take'})}:asked?{label:t('an_unask'),on:()=>anSend({op:'unask'})}:{label:t('an_ask'),primary:true,on:()=>anSend({op:'ask'})};
   if((isC||own)&&req.length){const q=req[0];status(t('an_reqAsk',{n:anName(a,q)}),'turn',[{label:t('decline'),on:()=>anSend({op:'no',to:q})},{label:t('an_give'),primary:true,on:()=>anSend({op:'give',to:q})}]);return;}
-  if(AN.free){status(t('an_free',{n:anName(a,a.ctl)}),'',[{label:t('an_live'),primary:true,on:anLive},{...askB,primary:false}]);return;}
+  if(AN.free){status(t((anPriv(view.moves)?'an_priv':'an_free')+(a.ctl?'':'N'),{n:anName(a,a.ctl)}),'',[{label:t('an_live'),primary:true,on:anLive},{...askB,primary:false}]);return;}
   if(a.ctl&&!isC){const tk=AN.note&&AN.note.k==='an_taken'&&Date.now()-AN.note.at<4000;status((tk?t('an_taken',{n:AN.note.n}):t(asked?'an_asked':'an_by',{n:anName(a,a.ctl)}))+(r.over&&S.txt?' '+S.txt:''),r.over?S.cls:'',[askB]);return;}
   if(AN.note&&Date.now()-AN.note.at<4000)status(t(AN.note.k,{n:AN.note.n||''})+(S.txt?' '+S.txt:''),S.cls||'turn',S.btns);}
 // Players' names: on one device « Player 1/2 »; against the computer « You » / « The computer »
@@ -1038,6 +1054,7 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
   const AL=A?anaLine():null,rl=A&&AL.length>view.moves.length?GAME.replay(view,AL):r;
   const nv=A||canNav(r),cur=A?view.moves.length:navAt===null?r.log.length:navAt,go=A?anaGo:navGo;
   rl.log.forEach((e,j)=>{const li=document.createElement('li');if(nv){li.className='go'+(j+1===cur?' cur':'');li.onclick=()=>go(j+1);}const a=document.createElement('span');a.className='n';a.textContent=GAME.logNum?GAME.logNum(j,e):(j+1)+'.';
+    if(A&&anPriv(AL.slice(0,j+1))){li.classList.add('priv');li.title=t('an_privT');}
     if(A){const par=anaNode(AL.slice(0,j));if(par&&par.c.length>1){const x=document.createElement('span');x.className='alt';x.textContent='◆'+par.c.length;x.title=t('altN',{n:par.c.length});a.appendChild(x);}}
     const b=document.createElement('span');b.textContent=nm(e.p);b.style.overflow='hidden';b.style.textOverflow='ellipsis';b.style.whiteSpace='nowrap';
     const c=document.createElement('span'),cn=GAME.logNode&&GAME.logNode(e,rl);if(cn)c.append(cn);else c.textContent=GAME.logText?GAME.logText(e,r):e.txt;li.append(a,b,c);const ds=GAME.logDesc&&GAME.logDesc(e);if(ds){const x=document.createElement('span');x.className='desc';x.textContent=ds;li.appendChild(x);}ol.appendChild(li);});
