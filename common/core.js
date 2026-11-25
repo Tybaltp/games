@@ -132,7 +132,8 @@ const I18C={fr:{
  an_owner:"propriétaire",an_ctlTag:"a le contrôle",an_reqTag:"demande le contrôle",an_youTag:"vous",
  an_invite:"Inviter à analyser",an_open:"Ouvrir la table d'analyse",an_openTxt:"Ceux à qui vous donnez le lien rejoignent cette analyse et la suivent en direct ; vous en gardez le contrôle et pouvez le leur donner. La table vit dans votre navigateur : elle se ferme si vous la quittez.",
  lg_ctl:"{n} a le contrôle du plateau.",lg_ctlA:"Un observateur anonyme a le contrôle du plateau.",lg_ctlNone:"Personne n'a plus le contrôle du plateau.",
- an_vInv:"🎙 Inviter au vocal",an_vPick:"Choisissez la personne à inviter :",an_vCall:"Inviter",an_vCallTo:"Inviter {n} au vocal",an_busy:"en appel",an_vBusy:"{n} est déjà en appel."
+ an_vInv:"🎙 Inviter au vocal",an_vPick:"Choisissez la personne à inviter :",an_vCall:"Inviter",an_vCallTo:"Inviter {n} au vocal",an_busy:"en appel",an_vBusy:"{n} est déjà en appel.",
+ an_tab:"Analyser dans un nouvel onglet",an_tabT:"Une copie de la partie et de ses variantes, pour votre propre analyse : les autres n'en voient rien.",an_tabNo:"Le navigateur a bloqué le nouvel onglet. Autorisez les fenêtres de ce site, puis recommencez.",an_tabGone:"Cette copie de la partie n'est plus disponible : rouvrez-la depuis la partie."
 },en:{
  ht_title:"How to play",ht_skip:"Skip",ht_done:"Let's play",ht_never:"Don't show again",ht_prev:"Previous",ht_next:"Next",
  fullscreen:"Full screen (tap again to leave it)", computer:"The computer",level:"Level",lv_n:"Level {n}",lv_rand:"Level {n}, at random",lv_top:"Level {n}, the strongest",lv_one:"level {a}",lv_two:"levels {a} and {b}",lv_run:"levels {a} to {b}",lv_and:" and ",lv_grp:"{l}: {d}",lv_sep:"; ",lvd_rand:"at random",lv_rg:"{a} to {b}",lv_cnt:"{n} levels, from 0 to {m}.",eng_line:"Engine: {e}",undo:"Undo last move",undoS:"Undo",hintPlayS:"Play",hint:"Hint",hintPlay:"Play this move",dismiss:"Dismiss",reset:"Reset",pend_mv:"Move: {m}",pend_again:"Click again to play this move.",pend_againT:"Tap again to play this move.",st_yourTurn:"Your move.",st_turn:"{n} to move.",hint_move:"Hint: {m}",st_aiThinking:"The computer is thinking…",hintBusy:"Looking for a hint…",aiSlow:"Slow device for this level: this may take a while.",hintSlow:"Slow device for this search: it may take a while.",playNow:"Play now",hintNow:"Show now",ai_eq:"Computer: balanced position (depth {d}).",ai_better:"Computer: thinks it is better (depth {d}).",ai_much:"Computer: thinks it is clearly better (depth {d}).",ai_worse:"Computer: thinks it is worse (depth {d}).",ai_muchWorse:"Computer: thinks it is clearly worse (depth {d}).",ai_win:"Computer: sees a forced win.",ai_lost:"Computer: knows it is lost.",ai_forced:"Computer: forced move.",leaveQ:"A game is in progress. Leave it?",st_waitHost:"Move sent, waiting for the table…",nav_first:"Start of the game (Home, or Shift + ←)",nav_prev:"Previous move (←)",nav_next:"Next move (→)",nav_last:"End of the line (End, or Shift + →)",nav_brP:"Previous branching (↑)",nav_brN:"Next branching (↓)",nav_altU:"Previous variation of this move (Shift + ↑)",nav_altD:"Next variation of this move (Shift + ↓)",altN:"{n} variations of this move",opts:"Options",nav_pos:"Move {k} / {n}",home:"Home",sepN:" — ",report:"Report a problem",rp_subj:"{g}: problem",rp_body:"Describe the problem here:",rp_info:"Details added by the page",rp_mode:"Mode",rp_moves:"Moves",rp_long:"list too long for an email; export the game as SGF and attach the file",rp_none:"no game open",turnPhone:"Turn your phone upright to play.",rematch:"Rematch",accept:"Accept",decline:"Decline",rm_ask:"{n} offers a new game, sides swapped.",rm_wait:"Waiting for {n}'s answer.",close:"Close",rm_no:"{n} declined.",rm_away:"{n} is no longer connected.",
@@ -167,7 +168,8 @@ const I18C={fr:{
  an_owner:"owner",an_ctlTag:"has control",an_reqTag:"asks for control",an_youTag:"you",
  an_invite:"Invite to analyse",an_open:"Open the analysis table",an_openTxt:"Those you give the link to join this analysis and follow it live; you keep control and can give it to them. The table lives in your browser: it closes if you leave it.",
  lg_ctl:"{n} has control of the board.",lg_ctlA:"An anonymous spectator has control of the board.",lg_ctlNone:"Nobody has control of the board any more.",
- an_vInv:"🎙 Invite to voice chat",an_vPick:"Choose who to invite:",an_vCall:"Invite",an_vCallTo:"Invite {n} to voice chat",an_busy:"in a call",an_vBusy:"{n} is already in a call."
+ an_vInv:"🎙 Invite to voice chat",an_vPick:"Choose who to invite:",an_vCall:"Invite",an_vCallTo:"Invite {n} to voice chat",an_busy:"in a call",an_vBusy:"{n} is already in a call.",
+ an_tab:"Analyse in a new tab",an_tabT:"A copy of the game and its variations, for your own analysis: nobody else sees it.",an_tabNo:"The browser blocked the new tab. Allow pop-ups for this site, then try again.",an_tabGone:"This copy of the game is no longer available: open it again from the game."
 },es:{
  ht_title:"Cómo jugar",ht_skip:"Saltar",ht_done:"¡A jugar!",ht_never:"No volver a mostrar",ht_prev:"Anterior",ht_next:"Siguiente",
  fullscreen:"Pantalla completa (toca de nuevo para salir)", computer:"El ordenador",level:"Nivel",lv_n:"Nivel {n}",lv_rand:"Nivel {n}, al azar",lv_top:"Nivel {n}, el más fuerte",lv_one:"nivel {a}",lv_two:"niveles {a} y {b}",lv_run:"niveles {a} a {b}",lv_and:" y ",lv_grp:"{l}: {d}",lv_sep:"; ",lvd_rand:"al azar",lv_rg:"de {a} a {b}",lv_cnt:"{n} niveles, de 0 a {m}.",eng_line:"Motor: {e}",undo:"Deshacer la última jugada",undoS:"Deshacer",hintPlayS:"Jugar",hint:"Sugerencia",hintPlay:"Jugar esta jugada",dismiss:"Ignorar",reset:"Reiniciar",pend_mv:"Jugada: {m}",pend_again:"Haz clic de nuevo para hacer esta jugada.",pend_againT:"Toca de nuevo para hacer esta jugada.",st_yourTurn:"Te toca jugar.",st_turn:"Le toca a {n}.",hint_move:"Sugerencia: {m}",st_aiThinking:"El ordenador está pensando…",hintBusy:"Buscando una sugerencia…",aiSlow:"Dispositivo lento para este nivel: el cálculo puede tardar.",hintSlow:"Dispositivo lento para esta búsqueda: puede tardar.",playNow:"Jugar ahora",hintNow:"Mostrar ahora",ai_eq:"Ordenador: posición equilibrada (profundidad {d}).",ai_better:"Ordenador: se cree mejor (profundidad {d}).",ai_much:"Ordenador: se cree claramente mejor (profundidad {d}).",ai_worse:"Ordenador: se cree peor (profundidad {d}).",ai_muchWorse:"Ordenador: se cree claramente peor (profundidad {d}).",ai_win:"Ordenador: ve una victoria forzada.",ai_lost:"Ordenador: se sabe perdido.",ai_forced:"Ordenador: jugada forzada.",leaveQ:"Hay una partida en curso. ¿Salir de ella?",st_waitHost:"Jugada enviada, esperando a la mesa…",nav_first:"Inicio de la partida (Inicio, o Mayús + ←)",nav_prev:"Jugada anterior (←)",nav_next:"Jugada siguiente (→)",nav_last:"Fin de la línea (Fin, o Mayús + →)",nav_brP:"Bifurcación anterior (↑)",nav_brN:"Bifurcación siguiente (↓)",nav_altU:"Variante anterior de esta jugada (Mayús + ↑)",nav_altD:"Variante siguiente de esta jugada (Mayús + ↓)",altN:"{n} variantes de esta jugada",opts:"Opciones",nav_pos:"Jugada {k} / {n}",home:"Inicio",sepN:" — ",report:"Informar de un fallo",rp_subj:"{g}: fallo",rp_body:"Describe el fallo aquí:",rp_info:"Datos añadidos por la página",rp_mode:"Modo",rp_moves:"Jugadas",rp_long:"lista demasiado larga para un correo; exporta la partida en SGF y adjunta el archivo",rp_none:"ninguna partida abierta",turnPhone:"Pon el teléfono en vertical para jugar.",rematch:"Revancha",accept:"Aceptar",decline:"Rechazar",rm_ask:"{n} propone una nueva partida, con los bandos cambiados.",rm_wait:"Esperando la respuesta de {n}.",close:"Cerrar",rm_no:"{n} ha rechazado.",rm_away:"{n} ya no está conectado.",
@@ -202,7 +204,8 @@ const I18C={fr:{
  an_owner:"propietario",an_ctlTag:"tiene el control",an_reqTag:"pide el control",an_youTag:"tú",
  an_invite:"Invitar a analizar",an_open:"Abrir la mesa de análisis",an_openTxt:"Quienes reciban el enlace se unen a este análisis y lo siguen en directo; tú conservas el control y puedes dárselo. La mesa vive en tu navegador: se cierra si la abandonas.",
  lg_ctl:"{n} tiene el control del tablero.",lg_ctlA:"Un observador anónimo tiene el control del tablero.",lg_ctlNone:"Ya nadie tiene el control del tablero.",
- an_vInv:"🎙 Invitar al chat de voz",an_vPick:"Elige a quién invitar:",an_vCall:"Invitar",an_vCallTo:"Invitar a {n} al chat de voz",an_busy:"en llamada",an_vBusy:"{n} ya está en una llamada."
+ an_vInv:"🎙 Invitar al chat de voz",an_vPick:"Elige a quién invitar:",an_vCall:"Invitar",an_vCallTo:"Invitar a {n} al chat de voz",an_busy:"en llamada",an_vBusy:"{n} ya está en una llamada.",
+ an_tab:"Analizar en una pestaña nueva",an_tabT:"Una copia de la partida y sus variantes, para tu propio análisis: nadie más la ve.",an_tabNo:"El navegador ha bloqueado la pestaña nueva. Permite las ventanas emergentes de este sitio y vuelve a intentarlo.",an_tabGone:"Esta copia de la partida ya no está disponible: vuelve a abrirla desde la partida."
 }};
 let I18N=I18C;
 let lang=(()=>{try{return JSON.parse(localStorage.getItem('games-lang'))||JSON.parse(localStorage.getItem('volo-lang'));}catch(e){return null;}})()||(l=>l.startsWith('fr')?'fr':l.startsWith('es')?'es':'en')((navigator.language||'fr').toLowerCase());
@@ -861,6 +864,36 @@ function anHostOpen(){if(!anPre())return;stopAI();hintMv=null;
     an:{tree:JSON.parse(JSON.stringify(view.tree)),path,ctl:null,req:[],ev:null}};
   H.code=newCode(7);H.wcode=null;H.guestCid=null;H.game=g;H.turnStart=Date.now();g.an.ctl=PID(H.code);   // the opener has control
   hostStart(null);hostBroadcast();$('inviteBox').open=true;}
+// --- « Analyser dans un nouvel onglet » (request of Thibault, 25.11.2026) ---
+// A copy of the game for the one who clicks, in a new tab of this page: an analysis on one screen (as a file read),
+// with no link to the table; nobody else sees anything. It carries the whole tree (variations too), the names and the
+// rules, and opens on the position shown on this page. Choices of the steering session, made without Thibault: offered to
+// everyone at a shared analysis (owner, controller, spectators) and to a spectator during a game in progress, never to
+// a player during their own game. The copy goes by a one-use key K('antab-<id>'), named by the new tab's address
+// (#an-<id>), read then deleted there; the click itself opens the tab (no pop-up blocker in the way).
+const anTabOk=()=>!!view&&(anaNet()?!!anA():role==='watch'&&seatN()<0);
+const AT_PRE=()=>K('antab-');
+function anTabClean(){try{const pre=AT_PRE(),old=Date.now()-10*60e3;for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith(pre)){const d=LS.get(k,null);if(!d||!(d.at>old))LS.del(k);}}}catch(e){}}
+function anTab(){if(!anTabOk())return;const A=ana(),err=$('anTabErr');err.hidden=true;anTabClean();
+  const main=A?anaMainLine():view.moves.slice(),path=A?view.moves.slice():view.moves.slice(0,navAt===null?view.moves.length:navAt);
+  const tree=A?JSON.parse(JSON.stringify(view.tree)):(()=>{const root={c:[]};let n=root;for(const m of main){const x={m,c:[]};n.c.push(x);n=x;}return root;})();
+  const names=[0,1].map(s=>view.names&&view.names[s]||''),id=Math.random().toString(36).slice(2,12).padEnd(8,'0'),k=AT_PRE()+id;
+  LS.set(k,{at:Date.now(),rules:GAME.rules(view),names,cn:names.map(x=>!!x),tree,main,path,result:(A?view.gameResult:view.result)||null});
+  if(!LS.get(k,null)){err.textContent=t('an_tabGone');err.hidden=false;return;}
+  const w=window.open(location.pathname+location.search+'#an-'+id,'_blank');
+  if(!w){LS.del(k);err.textContent=t('an_tabNo');err.hidden=false;return;}
+  try{w.opener=null;}catch(e){}}
+// the new tab: the copy read (and deleted), opened as an analysis on one screen, at the position shown by the other page
+function anTabRead(id){const k=AT_PRE()+id,d=LS.get(k,null);LS.del(k);anTabClean();
+  const ok=d&&d.tree&&Array.isArray(d.tree.c)&&Array.isArray(d.main)&&Array.isArray(d.path)&&Array.isArray(d.names);
+  if(!ok){setHash('');status(t('an_tabGone'));return;}
+  try{const rules=GAME.rules(d.rules||{});anaLocal(rules,d.names.map(x=>String(x||'')),d.cn||[false,false],d.tree,d.main,d.result||null,'');
+    if(anTreeHas(view.tree,d.path)&&d.path.join(',')!==view.moves.join(','))anaSet(d.path.slice());}
+  catch(e){setHash('');status(t('an_tabGone'));}}
+function anTabRender(){const cd=$('anTabCard');if(!cd)return;const on=anTabOk(),tbl=on&&anaNet(),row=$('anTabRow'),err=$('anTabErr');
+  cd.hidden=!on||tbl;if(!on){err.hidden=true;return;}
+  const home=tbl?$('anCard'):cd;if(row.parentNode!==home){home.appendChild(row);home.appendChild(err);}
+  const b=$('anTabB');b.textContent=t('an_tab');b.title=t('an_tabT');$('anTabTxt').textContent=t('an_tabT');}
 // --- the card « Table d'analyse » (side panel) and the bar ---
 function anUi(){if($('anCard')||!$('endCard'))return;
   const mk=(tag,id,cls,par)=>{const e=document.createElement(tag);if(id)e.id=id;if(cls)e.className=cls;if(tag==='button')e.type='button';par.appendChild(e);return e;};   // no innerHTML: the test pages' DOM has none
@@ -868,6 +901,9 @@ function anUi(){if($('anCard')||!$('endCard'))return;
   mk('summary','anSum','',d);mk('p','anCtlTxt','hint',d);mk('p','anPickTxt','hint',d).hidden=true;mk('ul','anWho','anwho',d);const bx=mk('div','anBtns','confirm',d);mk('button','anMainB','',bx);
   mk('button','anVoiceB','',bx).onclick=()=>{AN.pick=!AN.pick;renderGame();};
   $('endCard').after(d);
+  // « Analyser dans un nouvel onglet »: in the card « Table d'analyse » at a table, in its own card for a spectator of a game
+  const tc=document.createElement('div');tc.id='anTabCard';tc.className='card';tc.hidden=true;mk('p','anTabTxt','hint',tc);
+  mk('button','anTabB','',mk('div','anTabRow','confirm',tc)).onclick=anTab;mk('p','anTabErr','hint',tc).hidden=true;d.after(tc);
   // an analysis on one screen (a file, Libre play, a game over against the computer or face to face): the invitation
   // section offers to open it as a table
   const ib=$('inviteBox');if(ib){const o=mk('div','anOpenBox','',ib);o.hidden=true;mk('p','anOpenTxt','hint',o);mk('button','anOpenB','primary',mk('div','','confirm',o)).onclick=anHostOpen;}}
@@ -1015,7 +1051,7 @@ function renderGame(){if(!view)return;pendSeen();if(role==='ai')LS.set(AK(),{vie
     if(net){const ws=Array.isArray(view.wnames)?view.wnames:[],n=view.watchers||0;
       const items=n?ws.map(x=>x||t('anon')).sort((a,b)=>a.localeCompare(b)):[];
       const txt=!n?t('noSpect'):t('watchersT',{n})+(lang==='fr'?'\u00a0: ':': ')+items.join(', ');if(wl.textContent!==txt)wl.textContent=txt;}}
-  anRender(r);chatRender();voiceRender();chatFit();chatMode();
+  anRender(r);anTabRender();chatRender();voiceRender();chatFit();chatMode();
   $('endCard').hidden=!r.over&&role!=='file'&&!(A&&(role==='local'||role==='ai'||anaNet()));   // the analysis of a game over keeps the way to a new one   // a game read from a file: always the way back home
   {const me=seatN(),pl=me>=0&&(role==='host'||role==='guest'||role==='ai'||solo()),rm=role==='ai'||solo()?null:view.rematch,opp=view.names[1-me]||t(me?'p1':'p2');
     const away=role==='host'?!view.guestOn:role==='guest'&&!(C.conn&&C.conn.open);   // the opponent gone after the end: no rematch for now
@@ -1450,13 +1486,16 @@ function sgfLoad(txt){let T;try{T=sgfParse(String(txt).replace(/^\uFEFF/,''));}c
   const r=GAME.replay(rules,codes);
   const bs=G&&G.black?G.black(r.st):0,names=[],cn=[];names[bs]=v('PB')||t('p1');names[1-bs]=v('PW')||t('p2');cn[bs]=!!v('PB');cn[1-bs]=!!v('PW');   // a name not in the file: « Player 1 » in the language shown
   const re=/^([BW])\+([RT])/i.exec(v('RE')||''),result=r.over?null:re?{winner:re[1].toUpperCase()==='B'?bs:1-bs,reason:re[2].toUpperCase()==='T'?'time':'resign'}:/^(0|draw)$/i.test(v('RE')||'')?{winner:-1,reason:'agree'}:null;
-  // unfinished: Libre play from the main line's last position (both sides, hints); finished: from the first position.
-  // Both are analyses: a move played anywhere adds a variation.
+  anaLocal(rules,names,cn,tree,codes,result,v('DT')||'');return '';}
+// An analysis on one screen from a tree (a file read, or a copy of a game: « Analyser dans un nouvel onglet »).
+// Unfinished: Libre play from the main line's last position (both sides, hints); finished: from the first position.
+// Both are analyses: a move played anywhere adds a variation.
+function anaLocal(rules,names,cn,tree,codes,result,dt){const r=GAME.replay(rules,codes);
   if(!r.over&&!result){stopAI();navAt=null;role='test';C.stop=true;setHash('test');
-    view={...soloView(rules,null),names,customNames:cn,moves:codes,tree,gameResult:null};LS.set(TK(),view);hintMv=null;showGame();testTurn();return '';}
+    view={...soloView(rules,null),names,customNames:cn,moves:codes,tree,gameResult:null};LS.set(TK(),view);hintMv=null;showGame();testTurn();return;}
   stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
-  view={...soloView(rules,null),names,customNames:cn,moves:[],tree,gameResult:result,result:null,sgfDT:v('DT')||''};navAt=null;
-  resetUi();hintMv=null;showGame();renderGame();return '';}
+  view={...soloView(rules,null),names,customNames:cn,moves:[],tree,gameResult:result,result:null,sgfDT:dt||''};navAt=null;
+  resetUi();hintMv=null;showGame();renderGame();}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
 function sgfUi(){
   // at the end of the options
@@ -1528,6 +1567,8 @@ function init(){GAME.home();saveMigrate();saveRender();
   status('');
   // #ai-<id>, #local-<id>: that game; #ai, #local (older addresses): the latest of that mode
   {const m=/^#(ai|local)(?:-([a-z0-9]{6,12}))?$/.exec(location.hash);if(m){const id=m[2]||(saveList().find(e=>e.mode===m[1])||{}).id;if(id&&(m[1]==='ai'?aiResume(id):localResume(id)))return;setHash('');}}
+  // #an-<id>: a copy of a game, opened by « Analyser dans un nouvel onglet » on another tab of this page
+  {const ma=/^#an-([a-z0-9]{6,16})$/.exec(location.hash);if(ma){anTabRead(ma[1]);return;}}
   // #sgf=<file>: a game file of the site (a relative path on this server) opened for analysis, at its first position (24.11.2026)
   {const ms=/^#sgf=([\w\-./%]+\.sgf)$/.exec(location.hash),u=ms&&decodeURIComponent(ms[1]);if(u&&!u.includes('..')&&!u.startsWith('/')){
     fetch(u).then(r=>{if(!r.ok)throw 0;return r.text();}).then(tx=>{const e=sgfLoad(tx);if(e)status(e);}).catch(()=>status(t('sgfBad')));return;}}
