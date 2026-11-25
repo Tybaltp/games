@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=53">
+<link rel="stylesheet" href="common/games.css?v=54">
 <style>
 /* Pente palette (light, dark), fonts, board and stones; the shared layout is in common/games.css */
 :root{
@@ -399,7 +399,7 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
  const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=99"></script>
+<script src="common/core.js?v=101"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====

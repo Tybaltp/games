@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=53">
+<link rel="stylesheet" href="common/games.css?v=54">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -232,7 +232,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=99"></script>
+<script src="common/core.js?v=101"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -313,7 +313,7 @@ function DBEngine(){
 }
 // Diagonal Blocks strings, merged over the shared ones (core.js)
 const DB_I18N={fr:{
- lvd_gr:"un coup d'avance, avec une part de hasard",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",lvd_mc:"recherche Monte-Carlo, {n} simulations par coup",lvd_mcE:"recherche Monte-Carlo, {n} simulations par coup, fin de partie calculée exactement",lvd_nnE:"réseau de neurones, {n} simulations par coup, fin de partie calculée exactement",
+ lvd_gr:"un coup d'avance, avec une part de hasard",lvd_gr0:"un coup d'avance, presque au hasard",lvd_grLow:"un coup d'avance, avec très peu de hasard",lvd_mcT:"recherche Monte-Carlo, {n} tirages par coup",lvd_nn0:"réseau de neurones, intuition seule, fin de partie calculée exactement",lvd_nnV:"réseau de neurones, {n} visites par coup, fin de partie calculée exactement",lvt_easy:"facile",lvt_mid:"moyen",lvt_strong:"fort",lvt_top:"très fort",lvd_beam:"{n} coups d'avance, sur les meilleurs candidats",lvd_mc:"recherche Monte-Carlo, {n} simulations par coup",lvd_mcE:"recherche Monte-Carlo, {n} simulations par coup, fin de partie calculée exactement",lvd_nnE:"réseau de neurones, {n} simulations par coup, fin de partie calculée exactement",
  needConfirm:"Confirmer chaque coup",cbcOpt:"Pose case par case",cbcTip:"Placez vos pièces une case après l'autre : touchez un coin libre, puis n'importe quelle case marquée ; les cases forcées se remplissent seules, et la pièce reconnue n'attend plus que votre confirmation. Touchez une case déjà posée pour l'enlever. Une fois la pièce reconnue, les flèches la décalent sans quitter son coin d'accroche.",cbcHint:"Touchez une case pour l'ajouter ou l'enlever.",st_playC:"Touchez un coin, ou choisissez une pièce.",st_playCN:"{n} : touchez un coin, ou choisissez une pièce.",boardOpt:"Plateau",b_cut:"Coins coupés (184 cases)",b_full:"Plateau plein (196 cases)",startOpt:"Départ",s_swap:"Échange",s_none:"Sans échange",s_swap2:"Swap 2",rt_full:"plateau plein",rt_none:"sans échange",rt_swap2:"Swap 2",st_swap2:"Votre couleur : les verts (vous jouez) ou les roses (l'autre joue) ?",takeGreen:"Prendre les verts",takeGreenS:"Verts",takePink:"Prendre les roses",takePinkS:"Roses",swap2Mv:"Prendre les roses : votre adversaire pose la pièce verte suivante",st_swap2Wait:"{n} choisit sa couleur : les verts ou les roses.",st_s2g:"Swap 2 : posez la première pièce verte, sur sa case de départ.",st_s2p:"Posez maintenant la première pièce rose, sur sa case de départ. Votre adversaire choisira ensuite sa couleur.",st_s2gN:"{n} : posez la première pièce verte, sur sa case de départ (Swap 2).",st_s2pN:"{n} : posez la première pièce rose, sur sa case de départ.",st_s2Wait:"{n} pose la première pièce verte et la première rose.",st_s2pink:"{n} prend les roses : à vous de poser la pièce verte suivante.",st_s2pinkMe:"Vous avez pris les roses.",st_s2pinkW:"{n} a pris les roses.",title:"Diagonal Blocks",lede:"Posez vos polyominos coin contre coin, couvrez le plus de cases.",by:"Inspiré de Blokus, un jeu de Bernard Tavitian.",rm_ask:"{n} propose une nouvelle partie, premier joueur inversé.",placeHint:"Posez la pièce sur le plateau.",st_play:"Choisissez une pièce dans votre réserve.",st_playN:"{n} : choisissez une pièce dans votre réserve.",swap:"Échanger",myPieces:"Vos pièces",rotate:"Tourner (R)",flip:"Retourner de gauche à droite (H)",flipV:"Retourner de haut en bas (V)",trayHint:"Choisissez une pièce ; R la tourne, H et V la retournent ; posée, les flèches la décalent sans quitter son coin d'accroche.",piecesOf:"Pièces de {n}",cells:"cases",pcs:"pièces",draw:"Partie nulle : {why}.",st_swap:"Échangez (vous prenez la pièce verte posée et sa couleur) ou gardez les pièces roses.",keepPink:"Garder les pièces roses",sc0:"Vert",sc1:"Rose",keepPinkS:"Garder",st_swapWait:"{n} choisit : échanger, ou garder les pièces roses.",st_swapped:"{n} a échangé : il prend la première pièce. Posez la vôtre sur votre case de départ.",st_swappedW:"{n} a échangé les couleurs.",st_swappedMe:"Vous avez échangé les couleurs.",st_stuck:"{n} ne peut plus poser : passe forcée jusqu'à la fin.",st_meStuck:"Vous ne pouvez plus poser : vous passez, {n} continue seul.",swapMv:"Échanger : prendre la première pièce et sa couleur",swapLog:"⇄ échange",w_score:"{a} cases contre {b}",w_tie:"{a} cases chacun",rules:`<summary>Règles en bref</summary><ul>
  <li><b>But</b> : couvrir le plus de cases possible. Chaque joueur a sa couleur, vert ou rose, et 21 pièces de 1 à 5 carrés, toutes différentes (89 carrés en tout). On peut tourner et retourner les pièces.</li>
  <li><b>Plateau</b> : 14 × 14, chaque coin privé de 3 cases (la case du coin et ses deux voisines sur le bord), soit 184 cases. Deux cases de départ : la verte en haut à gauche, la rose en bas à droite.</li>
@@ -325,7 +325,7 @@ const DB_I18N={fr:{
  <li><b>Score</b> : chaque joueur marque un point par case du plateau couverte. Le plus grand score gagne ; en cas d'égalité la partie est nulle.</li></ul>
  <p class="hint" style="margin-top:.6em">Adaptation à deux joueurs de Diagonal Blocks (Dave Dyer) ; dimensions du plateau et règle d'échange retenues pour ce site.</p>`
 },en:{
- lvd_gr:"one move ahead, with some randomness",lvd_beam:"{n} moves ahead, on the best candidates",lvd_mc:"Monte Carlo search, {n} simulations a move",lvd_mcE:"Monte Carlo search, {n} simulations a move, exact endgame",lvd_nnE:"neural network, {n} simulations a move, exact endgame",
+ lvd_gr:"one move ahead, with some randomness",lvd_gr0:"one move ahead, almost at random",lvd_grLow:"one move ahead, with very little randomness",lvd_mcT:"Monte Carlo search, {n} playouts a move",lvd_nn0:"neural network, intuition only, exact endgame",lvd_nnV:"neural network, {n} visits a move, exact endgame",lvt_easy:"easy",lvt_mid:"medium",lvt_strong:"strong",lvt_top:"very strong",lvd_beam:"{n} moves ahead, on the best candidates",lvd_mc:"Monte Carlo search, {n} simulations a move",lvd_mcE:"Monte Carlo search, {n} simulations a move, exact endgame",lvd_nnE:"neural network, {n} simulations a move, exact endgame",
  needConfirm:"Confirm each move",cbcOpt:"Place cell by cell",cbcTip:"Place your pieces one cell after another: tap a free corner, then any marked cell; the cells that must follow fill in on their own, and once the piece is recognised you only confirm it. Tap a cell already placed to take it off. Once the piece is recognised, the arrows shift it without leaving its corner.",cbcHint:"Tap a cell to add it or take it off.",st_playC:"Tap a corner, or choose a piece.",st_playCN:"{n}: tap a corner, or choose a piece.",boardOpt:"Board",b_cut:"Cut corners (184 cells)",b_full:"Full board (196 cells)",startOpt:"Opening",s_swap:"Swap",s_none:"No swap",s_swap2:"Swap 2",rt_full:"full board",rt_none:"no swap",rt_swap2:"Swap 2",st_swap2:"Your colour: green (you play next) or pink (they do)?",takeGreen:"Take green",takeGreenS:"Green",takePink:"Take pink",takePinkS:"Pink",swap2Mv:"Take pink: your opponent places the next green piece",st_swap2Wait:"{n} chooses a colour: green or pink.",st_s2g:"Swap 2: place the first green piece, on its start cell.",st_s2p:"Now place the first pink piece, on its start cell. Your opponent will then choose a colour.",st_s2gN:"{n}: place the first green piece, on its start cell (Swap 2).",st_s2pN:"{n}: place the first pink piece, on its start cell.",st_s2Wait:"{n} places the first green piece and the first pink one.",st_s2pink:"{n} takes pink: your turn to place the next green piece.",st_s2pinkMe:"You took pink.",st_s2pinkW:"{n} took pink.",title:"Diagonal Blocks",lede:"Place your polyominoes corner to corner, cover the most squares.",by:"Inspired by Blokus, a game by Bernard Tavitian.",rm_ask:"{n} offers a new game, first player swapped.",placeHint:"Place the piece on the board.",st_play:"Choose a piece from your reserve.",st_playN:"{n}: choose a piece from your reserve.",swap:"Swap",myPieces:"Your pieces",rotate:"Rotate (R)",flip:"Flip left to right (H)",flipV:"Flip top to bottom (V)",trayHint:"Pick a piece; R rotates it, H and V flip it; once placed, the arrows shift it without leaving its corner.",piecesOf:"{n}'s pieces",cells:"cells",pcs:"pieces",st_swap:"Swap (you take the green piece on the board and its colour) or keep the pink pieces.",keepPink:"Keep the pink pieces",sc0:"Green",sc1:"Pink",keepPinkS:"Keep",st_swapWait:"{n} chooses: swap, or keep the pink pieces.",st_swapped:"{n} swapped and takes the first piece. Place yours on your start cell.",st_swappedW:"{n} swapped colours.",st_swappedMe:"You swapped colours.",st_stuck:"{n} cannot place any more: forced pass until the end.",st_meStuck:"You cannot place any more: you pass, {n} plays on alone.",swapMv:"Swap: take the first piece and its colour",swapLog:"⇄ swap",w_score:"{a} cells to {b}",w_tie:"{a} cells each",rules:`<summary>Rules in brief</summary><ul>
  <li><b>Goal</b>: cover as many cells as possible. Each player has a colour, green or pink, and 21 pieces of 1 to 5 squares, all different (89 squares in all). Pieces may be rotated and flipped.</li>
  <li><b>Board</b>: 14 × 14, with 3 cells removed at each corner (the corner cell and its two neighbours on the edge), that is 184 cells. Two start cells: the green one top left, the pink one bottom right.</li>
@@ -337,7 +337,7 @@ const DB_I18N={fr:{
  <li><b>Score</b>: each player scores one point per board cell covered. The highest score wins; a tie is a draw.</li></ul>
  <p class="hint" style="margin-top:.6em">Two-player adaptation of Diagonal Blocks (Dave Dyer); board size and swap rule chosen for this site.</p>`
 },es:{
- lvd_gr:"una jugada de antelación, con algo de azar",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",lvd_mc:"búsqueda Monte Carlo, {n} simulaciones por jugada",lvd_mcE:"búsqueda Monte Carlo, {n} simulaciones por jugada, final calculado con exactitud",lvd_nnE:"red neuronal, {n} simulaciones por jugada, final calculado con exactitud",
+ lvd_gr:"una jugada de antelación, con algo de azar",lvd_gr0:"una jugada de antelación, casi al azar",lvd_grLow:"una jugada de antelación, con muy poco azar",lvd_mcT:"búsqueda Monte Carlo, {n} partidas simuladas por jugada",lvd_nn0:"red neuronal, solo intuición, final calculado con exactitud",lvd_nnV:"red neuronal, {n} visitas por jugada, final calculado con exactitud",lvt_easy:"fácil",lvt_mid:"medio",lvt_strong:"fuerte",lvt_top:"muy fuerte",lvd_beam:"{n} jugadas de antelación, sobre las mejores candidatas",lvd_mc:"búsqueda Monte Carlo, {n} simulaciones por jugada",lvd_mcE:"búsqueda Monte Carlo, {n} simulaciones por jugada, final calculado con exactitud",lvd_nnE:"red neuronal, {n} simulaciones por jugada, final calculado con exactitud",
  needConfirm:"Confirmar cada jugada",cbcOpt:"Colocar casilla a casilla",cbcTip:"Coloca tus piezas casilla a casilla: toca una esquina libre y luego cualquier casilla marcada; las casillas obligadas se rellenan solas, y una vez reconocida la pieza solo queda confirmarla. Toca una casilla ya colocada para quitarla. Una vez reconocida la pieza, las flechas la desplazan sin dejar su esquina.",cbcHint:"Toca una casilla para añadirla o quitarla.",st_playC:"Toca una esquina, o elige una pieza.",st_playCN:"{n}: toca una esquina, o elige una pieza.",boardOpt:"Tablero",b_cut:"Esquinas cortadas (184 casillas)",b_full:"Tablero completo (196 casillas)",startOpt:"Salida",s_swap:"Intercambio",s_none:"Sin intercambio",s_swap2:"Swap 2",rt_full:"tablero completo",rt_none:"sin intercambio",rt_swap2:"Swap 2",st_swap2:"Tu color: ¿el verde (juegas tú) o el rosa (juega el otro)?",takeGreen:"Tomar el verde",takeGreenS:"Verde",takePink:"Tomar el rosa",takePinkS:"Rosa",swap2Mv:"Tomar el rosa: tu adversario coloca la pieza verde siguiente",st_swap2Wait:"{n} elige su color: el verde o el rosa.",st_s2g:"Swap 2: coloca la primera pieza verde, en su casilla de salida.",st_s2p:"Coloca ahora la primera pieza rosa, en su casilla de salida. Tu adversario elegirá luego su color.",st_s2gN:"{n}: coloca la primera pieza verde, en su casilla de salida (Swap 2).",st_s2pN:"{n}: coloca la primera pieza rosa, en su casilla de salida.",st_s2Wait:"{n} coloca la primera pieza verde y la primera rosa.",st_s2pink:"{n} toma el rosa: te toca colocar la pieza verde siguiente.",st_s2pinkMe:"Has tomado el rosa.",st_s2pinkW:"{n} ha tomado el rosa.",title:"Diagonal Blocks",lede:"Coloca tus poliominós esquina con esquina y cubre el mayor número de casillas.",by:"Inspirado en Blokus, un juego de Bernard Tavitian.",rm_ask:"{n} propone una nueva partida, con el primer jugador invertido.",placeHint:"Coloca la pieza en el tablero.",st_play:"Elige una pieza de tu reserva.",st_playN:"{n}: elige una pieza de tu reserva.",swap:"Intercambiar",myPieces:"Tus piezas",rotate:"Girar (R)",flip:"Voltear de izquierda a derecha (H)",flipV:"Voltear de arriba abajo (V)",trayHint:"Elige una pieza; R la gira, H y V la voltean; colocada, las flechas la desplazan sin dejar su esquina.",piecesOf:"Piezas de {n}",cells:"casillas",pcs:"piezas",st_swap:"Intercambia (tomas la pieza verde colocada y su color) o quédate con las piezas rosas.",keepPink:"Quedarse con las piezas rosas",sc0:"Verde",sc1:"Rosa",keepPinkS:"Quedarse",st_swapWait:"{n} elige: intercambiar, o quedarse con las piezas rosas.",st_swapped:"{n} ha intercambiado: se queda con la primera pieza. Coloca la tuya en tu casilla de salida.",st_swappedW:"{n} ha intercambiado los colores.",st_swappedMe:"Has intercambiado los colores.",st_stuck:"{n} ya no puede colocar: pasa forzosamente hasta el final.",st_meStuck:"Ya no puedes colocar: pasas, {n} sigue solo.",swapMv:"Intercambiar: tomar la primera pieza y su color",swapLog:"⇄ intercambio",w_score:"{a} casillas contra {b}",w_tie:"{a} casillas cada uno",rules:`<summary>Reglas en breve</summary><ul>
  <li><b>Objetivo</b>: cubrir el mayor número posible de casillas. Cada jugador tiene su color, verde o rosa, y 21 piezas de 1 a 5 cuadrados, todas distintas (89 cuadrados en total). Las piezas se pueden girar y voltear.</li>
  <li><b>Tablero</b>: 14 × 14, con 3 casillas quitadas en cada esquina (la casilla de la esquina y sus dos vecinas del borde), es decir 184 casillas. Dos casillas de salida: la verde arriba a la izquierda, la rosa abajo a la derecha.</li>
@@ -1513,7 +1513,7 @@ const topOf = r => { let b = 0; for (let k = 1; k < r.N.length; k++) if (r.N[k] 
 // move so far (a fast move), every 16 evaluations, for « Play now ». {m, value, depth (plies of the main line), nodes}
 async function searchS(S, opt, tell) {
   const s = new Search(game, S, new Set(), cache);
-  s.begin({sims: opt.sims, cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null, forced: 0});
+  s.begin({sims: Math.max(1, opt.sims), cpuct: opt.cpuct ?? 1.5, fpu: opt.fpu ?? .2, noise: null, forced: 0});
   let k = 0;
   while (!s.done()) { const leaf = s.step(); if (leaf) { s.deliver(await evalNet(leaf)); if (tell && (++k & 15) === 0 && s.root.N) tell(s.root.moves[topOf(s.root)]); } }
   const m = s.root.moves[s.pick(opt.temp || 0)]; let d = 0, n = s.root;
@@ -1549,12 +1549,12 @@ return {search, searchS, state, toMove, load, X, F, Search, evals: () => evals};
 // (level 1 beats random play by 83 %), and the one two below by 84 % or more. random = a random legal move. A level is
 // an amount of work, never a time (16.11.2026). Hints: MC9, the former level 9 (median 4.8 s on the reference Mac,
 // outils/aitools/res/budgets-2026-11-16.md).
-// Level 10 (20.11.2026, the former level 9 back as level 9; 23.11.2026, Thibault: 800 visits instead of 1600): network n° 270 of ~/Jeux/ia (23.11.2026: 88.0 % against n° 214, 200 games, 200 visits; n° 250 before it, 76.8 % against n° 170, 200 games, network alone, 400 visits) (8 blocks × 64 channels, the six variants), a PUCT search of sims
+// Level 10 (20.11.2026, the former level 9 back as level 9; 23.11.2026, Thibault: 800 visits instead of 1600): network n° 332 of ~/Jeux/ia (24.11.2026: 63.2 % against n° 270 at the site settings, 800 visits + endgame solver, 200 games, variants 1, 2, 4, 5; 93.0 % against n° 214) (8 blocks × 64 channels, the six variants), a PUCT search of sims
 // root visits (no tree kept from one move to the next), after the exact endgame solver of MC9 (solve: its options;
 // a proved result is played, else the network searches). net: the weights file next to the page. At 800 visits it made
 // 63 % against MC9 (150 games, the six variants, clear at 99 %); 1600 visits (20 to 23.11.2026) were not measured. When the network
 // cannot load (offline, old browser), MC9 answers instead.
-const NN_NET='dblocks-net.onnx?v=270';
+const NN_NET='dblocks-net.onnx?v=332';
 // the full board's first pieces and swap (ptab, DiagAI; 22.11.2026): 8 first pieces and 21 Swap 2 pairs, those MC9 plays,
 // each measured at level 8 (100 and 50 games, outils/aitools/res/diagonalblocks/plein/); swapF, decided without a measure
 const PT_FULL={first:{"32.33.46.47.60":0.695,"32.46.47.60.61":0.655,"33.46.47.60.61":0.81,"60.61.62.63.64":0.71,"60.61.62.76.77":0.605,"60.61.74.75":0.505,"60.61.75.76.77":0.555,"60.61.75.76.89":0.775},pair:{"32.33.46.47.60|105.106.120.121.135":0.49,"32.33.46.47.60|105.119.120.134.135":0.59,"32.33.46.47.60|106.119.120.121.135":0.47,"32.33.46.47.60|106.119.120.134.135":0.56,"32.33.46.47.60|106.120.133.134.135":0.52,"32.33.46.47.60|107.119.120.121.135":0.77,"32.46.47.60.61|105.106.120.134.135":0.68,"32.46.47.60.61|105.119.120.121.135":0.54,"32.46.47.60.61|106.119.120.121.135":0.67,"32.46.47.60.61|106.119.120.134.135":0.5,"32.46.47.60.61|106.120.133.134.135":0.56,"32.46.47.60.61|107.119.120.121.135":0.46,"33.46.47.60.61|105.106.120.134.135":0.75,"33.46.47.60.61|105.119.120.121.135":0.6,"33.46.47.60.61|106.119.120.121.135":0.36,"33.46.47.60.61|106.119.120.134.135":0.69,"33.46.47.60.61|106.120.133.134.135":0.46,"33.46.47.60.61|107.119.120.121.135":0.48,"60.61.74.75|105.106.120.134.135":0.39,"60.61.74.75|106.119.120.121.135":0.86,"60.61.74.75|106.120.133.134.135":0.78},swapF:-3.6};
@@ -1563,7 +1563,7 @@ const FULL={ptab:PT_FULL};
 // against MC9 before (200 games, the three openings), for 10 % more time per move; 60 and 150 measured no better, 25 % slower
 const FULL9={...FULL,cellsIn:40,cells:100};
 const MC={algo:'mcts',cells:60,cut:4,tries:8,rand:2,pwC:2,pwA:.5,scale:3,temp:0,openPick:6};
-// the former level 9 (47 000 simulations + exact endgame): hints, and the network's stand-in when it cannot load
+// the former level 9 (47 000 simulations + exact endgame): the network's stand-in when it cannot load (no more hints, 24.11.2026)
 const MC9={...MC,sims:47000,c:.2,cellsIn:20,endgame:80,solveNodes:100000,puct:1,endLoss:1,full:FULL9};
 // The network's level opens by the tables (22.11.2026, Thibault, until a table measured with the network): the first piece
 // and the swap as MC9 with openTab (FIRST, level 6, cut corners) and ptab (PT_FULL, level 8, full board); openOnly: else
@@ -1576,23 +1576,42 @@ const PT_NN=/*PT_NN*/{"first":{"60":0.25,"32.33.45.46.60":0.25,"47.60.61.62.76":
 // Since 23.11.2026 (Thibault: no trust in a table measured with a biased network), level 10 opens and swaps by the
 // network itself, all six variants; PT_NN and NN_OPEN are kept for the record (dblocks/opening), no level uses them.
 const NN_OPEN={...MC9,openTab:true,openOnly:true,swapTab:PT_NN};
+// The ladder of 24.11.2026 (Thibault): levels 1, 3, 5 and 7 of the former ladder kept as levels 0 to 3, then the
+// network n° 332 at 0 (its intuition alone: the move of highest prior), 100, 200, 400, 800 and 1200 root visits, each
+// after the exact endgame solver. Hints: the strongest level (no more MC9, Thibault); MC9 only answers when the network
+// cannot load. Not measured as a ladder.
+const SOLVE={endgame:80,solveNodes:100000,endLoss:1};
+const NNL=sims=>({algo:'nn',sims,net:NN_NET,solve:SOLVE});
 const LEVELS={
-  l0:{random:true},
-  l1:{algo:'greedy',cells:40,temp:1000,openPick:6},
-  l2:{algo:'greedy',cells:40,temp:4,openPick:6},
-  l3:{algo:'greedy',cells:40,temp:1.5,openPick:6},
-  l4:{algo:'greedy',cells:40,temp:.7,openPick:6},
-  l5:{algo:'greedy',cells:40,temp:.2,openPick:6},
-  l6:{algo:'beam',depth:2,cells:40,widths:[12,8],cellsIn:10,openPick:6},
-  l7:{...MC,sims:1800,c:.4,cellsIn:10,full:FULL},
-  l8:{...MC,sims:5000,c:.2,cellsIn:20,full:FULL},
-  l9:MC9,
-  l10:{algo:'nn',sims:800,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}}};
-const HINT={...MC9};
+  l0:{algo:'greedy',cells:40,temp:1000,openPick:6},
+  l1:{algo:'greedy',cells:40,temp:1.5,openPick:6},
+  l2:{algo:'greedy',cells:40,temp:.2,openPick:6},
+  l3:{...MC,sims:1800,c:.4,cellsIn:10,full:FULL},
+  l4:NNL(0),
+  l5:NNL(100),
+  l6:NNL(200),
+  l7:NNL(400),
+  l8:NNL(800),
+  l9:NNL(1200)};
+const HINT=LEVELS.l9;
+// the words of the levels, in the menu (24.11.2026, Thibault): easy, medium, strong, very strong
+const LV_TAG={l1:'lvt_easy',l3:'lvt_mid',l6:'lvt_strong',l9:'lvt_top'};
 // The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
 const ENGINE={fr:"recherche arborescente Monte-Carlo et réseau de neurones",en:"Monte Carlo tree search and neural network",es:"búsqueda en árbol Monte Carlo y red neuronal"};
-const levelDesc=o=>o.algo==='nn'?['lvd_nnE',o.sims]:o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mc',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:['lvd_gr'];
+const levelDesc=o=>o.algo==='nn'?(o.sims?['lvd_nnV',o.sims]:['lvd_nn0']):o.algo==='mcts'?[o.endgame?'lvd_mcE':'lvd_mcT',o.sims]:o.algo==='beam'?['lvd_beam',o.depth]:
+  [o.temp>=100?'lvd_gr0':o.temp<=.3?'lvd_grLow':'lvd_gr'];
+// under each level selector, what the chosen level is (its word, then its engine and work), in place of core's engine line
+function lvLine(sel){const lb=sel.closest('label'),p=lb&&lb.nextElementSibling;if(!p||!p.classList.contains('engline'))return;
+  const k=sel.value,o=LEVELS[k];if(!o)return;const d=levelDesc(o),n=typeof d[1]==='number'?d[1].toLocaleString(lang==='en'?'en-US':lang==='es'?'es-ES':'fr-FR'):'';
+  p.textContent=t(d[0],{n}).replace(/^./,c=>c.toUpperCase());}
+// the word of a level in the menu, after its number as core's « le plus fort » (« Niveau 1, facile »; the strongest: « très fort » in its place)
+function lvMenu(sel){[...sel.options].forEach((o,i)=>{const g=LV_TAG[o.value];if(g)o.textContent=t('lv_n',{n:i})+', '+t(g);});}
+// core sets the value of both selectors without a change event (the other selector, a game restored): caught here too
+const VAL=typeof HTMLSelectElement!=='undefined'&&Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+for(const id of ['aLevel','gLevel']){const sel=document.getElementById(id);if(!sel)continue;sel.addEventListener('change',()=>lvLine(sel));
+  if(VAL&&VAL.set)Object.defineProperty(sel,'value',{configurable:true,get(){return VAL.get.call(this);},set(v){VAL.set.call(this,v);lvLine(this);}});
+  if(typeof MutationObserver!=='undefined')new MutationObserver(()=>{lvMenu(sel);lvLine(sel);}).observe(sel,{childList:true});}
 // the engine's state (colour to move in turn) as a plain object for the worker
 const aiPos=st=>{const es=st.es;return {b:Array.from(es.b),used:es.used.slice(),cnt:es.cnt.slice(),turn:es.turn,sw:es.sw,n:es.n,over:es.over,stuck:es.stuck.slice(),
   ...(es.full&&{full:1}),...(es.rs&&{rs:es.rs})};};
@@ -1634,7 +1653,7 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
   pendText:mv=>[mv.t==='s'?t(view&&view.start==='swap2'?'swap2Mv':'swapMv'):t('pend_mv',{m:txtOf(mv)}),t('confirmMv')],
   noReset:mv=>mv.t==='p'&&!ui.cbc.length,   // a placement is dropped from the reserve (the picked piece again, or another piece)
   pendBtns:mv=>mv.t==='p'&&ui.piece>=0?turnBtns():[],
-  levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
+  levels:LEVELS,levelDefault:'l3',engine:ENGINE,levelDesc,hintLevel:HINT,
   wasm:{id:'diagonalblocks',v:1},
   aiSrc,aiPos,aiSearch:(st,opt)=>(pageAI=pageAI||DiagAI()).search(aiPos(st),opt.algo==='nn'?MC9:opt),   // no worker: no network either
   evalInfo:dbEvalInfo,

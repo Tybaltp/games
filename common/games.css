@@ -415,3 +415,11 @@ html.htshown header .seg{position:relative;z-index:61}
   html.ingame .rotatemsg p::before{content:"⟳";display:block;font-size:2.4rem;margin-bottom:8px;color:var(--accent)}}
 /* board coordinates, the same drawing in every game: monospace, semi-bold, the page's --lab colour (set for both themes) */
 svg .coord{font-family:var(--f-mono);font-weight:600;fill:var(--lab);pointer-events:none;-webkit-user-select:none;user-select:none}
+/* the shared analysis (core.js: anRender): those at the table, who has control */
+.ancard .anwho{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
+.ancard .anwho li{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;font-size:.9rem;padding:4px 8px;border-radius:8px;min-height:30px}
+.ancard .anwho li.ctl{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.ancard .anwho .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ancard .anwho .tag{color:var(--muted);font-size:.8rem}
+.ancard .anwho button{margin-left:auto;padding:3px 12px;font-size:.82rem}
+.ancard #anCtlTxt{color:var(--ink)}

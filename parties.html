@@ -1,0 +1,33 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{const t=JSON.parse(localStorage.getItem("games-theme"));if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<title>Parties de l'ordinateur</title>
+<style>
+:root{--bg:#f3f5f6;--panel:#fff;--ink:#18232b;--muted:#5b6a74;--line:#d9e0e4;--acc:#2f9e5b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11181d;--panel:#18222a;--ink:#e4eaee;--muted:#93a3ad;--line:#2a3842;--acc:#4cc27d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#11181d;--panel:#18222a;--ink:#e4eaee;--muted:#93a3ad;--line:#2a3842;--acc:#4cc27d;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:28px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+h1{margin:0;font-size:1.6rem}p{margin:0;color:var(--muted)}
+select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+a,span.off{display:block;text-align:center;padding:12px 0;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);text-decoration:none;font-weight:600}
+a:hover{border-color:var(--acc);color:var(--acc)}a:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+span.off{color:var(--muted);opacity:.5;font-weight:400}
+</style></head><body><div class="wrap">
+<p><a href="index.html" style="display:inline;border:0;padding:0;background:none;color:var(--muted);font-weight:400">← Jeux</a></p>
+<h1>L'ordinateur contre lui-même</h1>
+<label for="g"><select id="g"></select></label>
+<p id="txt"></p>
+<ol id="list"></ol>
+<p>Chaque partie s'ouvre au premier coup, dans la page du jeu, en mode analyse.</p>
+</div><script>
+const D={"volo": {"name": "Volo", "txt": "Réseau n° 110 contre lui-même, 2 000 visites par coup. La partie 1 est son jeu pur ; chacune des suivantes s’écarte des précédentes au premier coup où une autre possibilité vaut presque autant.", "files": ["volo-01.sgf", "volo-02.sgf", "volo-03.sgf", "volo-04.sgf", "volo-05.sgf", "volo-06.sgf", "volo-07.sgf", "volo-08.sgf", "volo-09.sgf", "volo-10.sgf"]}, "gyges": {"name": "Gygès", "txt": "Niveau 9 contre lui-même, règle avancée (remplacement).", "files": ["gyges-01.sgf", "gyges-02.sgf", "gyges-03.sgf", "gyges-04.sgf", "gyges-05.sgf", "gyges-06.sgf", "gyges-07.sgf", "gyges-08.sgf", "gyges-09.sgf", "gyges-10.sgf"]}, "tintas": {"name": "Tintas", "txt": "Niveau 12 contre lui-même.", "files": ["tintas-01.sgf", "tintas-02.sgf", "tintas-03.sgf", "tintas-04.sgf", "tintas-05.sgf", "tintas-06.sgf", "tintas-07.sgf", "tintas-08.sgf", "tintas-09.sgf", "tintas-10.sgf"]}};
+const sel=document.getElementById('g');
+for(const k in D){const o=document.createElement('option');o.value=k;o.textContent=D[k].name;sel.appendChild(o);}
+const h=location.hash.slice(1);if(D[h])sel.value=h;
+function show(){const k=sel.value,x=D[k];document.getElementById('txt').textContent=x.txt;history.replaceState(null,'','#'+k);
+  let s='';for(let i=1;i<=10;i++){const f=k+'-'+String(i).padStart(2,'0')+'.sgf';
+    s+=x.files.includes(f)?`<li><a href="${k}.html#sgf=parties/${f}">${i}</a></li>`:`<li><span class="off" title="pas encore jouée">${i}</span></li>`;}
+  document.getElementById('list').innerHTML=s;}
+sel.addEventListener('change',show);show();
+</script></body></html>

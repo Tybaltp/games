@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=53">
+<link rel="stylesheet" href="common/games.css?v=54">
 <style>
 /* Arimaa palette (light, dark) and board; the shared layout is in common/games.css */
 :root{
@@ -168,7 +168,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=99"></script>
+<script src="common/core.js?v=101"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Arimaa rules engine =====
@@ -386,13 +386,25 @@ function rewindStep(n){if(!view||ui.pending)return;const r=replay(view,view.move
   let b=r.st.b,used=0,k=0;for(;k<ui.acts.length;k++){const x=E.apply(b,ui.acts[k]);if(used+x.n>=n)break;used+=x.n;b=x.b;}
   if(k>=ui.acts.length)return;const a=ui.acts[k];ui.acts=ui.acts.slice(0,k);clearSel();ui.sel=a.k==='m'?a.f:a.a;renderGame();}
 // position of the turn being prepared
-function preview(r){let b=r.st.b,used=0;const caps=[],toks=[],mv=[];for(const a of ui.acts){const x=E.apply(b,a);b=x.b;used+=x.n;caps.push(...x.caps);toks.push(...x.toks);mv.push(...x.mv);}return {b,used,caps,toks,mv};}
+function preview(r){return previewOf(r,ui.acts);}
+function previewOf(r,acts){let b=r.st.b,used=0;const caps=[],toks=[],mv=[];for(const a of acts){const x=E.apply(b,a);b=x.b;used+=x.n;caps.push(...x.caps);toks.push(...x.toks);mv.push(...x.mv);}return {b,used,caps,toks,mv};}
 function endState(r,pv){if(!pv.used)return 'none';if(E.bkey(pv.b)===E.bkey(r.st.b))return 'same';if((r.st.reps.get(E.bkey(pv.b)+(1-r.st.turn))||0)>=2)return 'rep';return 'ok';}
 function setupBoard(r){if(!ui.setup)ui.setup=E.DEFAULT[mySeat].split('');const b=r.st.b.slice();E.SETUP_SQ[mySeat].forEach((i,k)=>{b[i]=(E.LET.indexOf(ui.setup[k])+1)*E.sgn(mySeat);});return b;}
 // core's renderGame: the board, then the bar under it for my turn (turnStatus) and the opponent's (waitStatus)
 let shownD=null;   // position shown (live or navigated), for the captured pieces under the players
+// The actions of a turn's code (« m…,P…,L… ») played from b, or null
+function codeActs(b,s,code){const out=[];let cur=b,used=0;
+  for(const part of String(code).split(',')){const a=E.actions(cur,s,4-used).find(x=>E.code(x)===part);if(!a)return null;const x=E.apply(cur,a);out.push(a);cur=x.b;used+=x.n;}
+  return out;}
 function arBoard({r,d,mine}){shownD=d;const o={setup:r.st.n<2,pv:null,es:'none'};
+  // the computer's suggestion (Sharp, GAME.hintLevel): a whole turn, drawn like a turn being prepared, its steps numbered
+  // 1 to 4 (not clickable); a setup, the arrangement on the home rows
+  const hint=navAt===null&&mine&&hintOn()?String(hintMv):null;
   if(navAt!==null)drawBoard({real:d.st.b,shown:d.st.b,last:d.last});
+  else if(hint&&o.setup&&/^S[RCDHME]{16}$/.test(hint)){const b=r.st.b.slice();E.SETUP_SQ[mySeat].forEach((i,k)=>{b[i]=(E.LET.indexOf(hint[k+1])+1)*E.sgn(mySeat);});
+    drawBoard({real:r.st.b,shown:b,setup:true});}
+  else if(hint&&!o.setup&&codeActs(r.st.b,mySeat,hint)){const pv=previewOf(r,codeActs(r.st.b,mySeat,hint));
+    drawBoard({real:r.st.b,shown:pv.b,pv,last:{det:turnDetail(r.st.b,mySeat,hint),caps:[],prep:true,hint:true}});}
   else if(mine&&o.setup)drawBoard({real:r.st.b,shown:setupBoard(r),setup:true});
   else if(mine){const pv=preview(r);o.pv=pv;o.es=endState(r,pv);
     const cur=ui.acts.length?{det:turnDetail(r.st.b,mySeat,ui.acts.map(E.code).join(',')),caps:[],prep:true}:ui.sel>=0||ui.enemy>=0?null:r.last;
@@ -456,6 +468,7 @@ function hoverPreview(pv){const i=ui.hover,acts=hoverActs(pv.b,pv.used,i);if(!ac
   let b=pv.b,n=0;const caps=[];for(const a of acts){const x=E.apply(b,a);b=x.b;n+=x.n;caps.push(...x.caps);}
   return {b,caps,n,to:i,walk:acts[0].k==='m'?[acts[0].f].concat(acts.map(a=>a.t)):null};}
 function clickSq(i){if(!view||ui.pending)return;const r=replay(view,view.moves,view.result);if(!isMyTurn(r))return;
+  if(hintMv||busy==='hint'){if(busy==='hint')stopAI();hintMv=null;}   // a click on the board drops the suggestion, then acts as usual
   if(r.st.n<2){setupBoard(r);const k=E.SETUP_SQ[mySeat].indexOf(i);if(k<0){ui.swap=-1;renderGame();return;}
     if(ui.swap<0)ui.swap=k;else if(ui.swap===k)ui.swap=-1;else{const a=ui.setup[ui.swap];ui.setup[ui.swap]=ui.setup[k];ui.setup[k]=a;ui.swap=-1;}
     renderGame();return;}
@@ -535,7 +548,7 @@ function lastPath(g,P,k,end,prep,top){const col=P.own?'var(--hl)':'var(--bink)',
     el('circle',{cx:x,cy:y,r:8,fill:P.own?'var(--hl)':'var(--bink)',stroke:'var(--wood)','stroke-width':1.5},b);
     const tx=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace','font-size':11,'font-weight':600,fill:'#06211f'},b);tx.textContent=n;});}
 function lastOver(g,L,shown,top){lastEnds=new Map();stepSpots=new Set();if(!L||!L.det)return;
-  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,top);for(const i of P.pts)if(!lastEnds.has(i))lastEnds.set(i,k);});
+  L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];lastPath(g,P,k,!!shown[end],!!L.prep,L.hint?null:top);for(const i of P.pts)if(!lastEnds.has(i))lastEnds.set(i,k);});
   L.det.paths.forEach((P,k)=>{const end=P.pts[P.pts.length-1];if(shown[end])lastEnds.set(end,k);});
   for(const [c,w] of L.caps){if(!shown[c])piece(g,c,w,.3);ring(g,c,{c:'var(--danger)',w:2.5});}}
 function lpFocus(k){lpK=k;const svg=$('svg');svg.classList.toggle('lpfocus',k>=0);svg.querySelectorAll('.lp,.lpn').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));}
@@ -739,7 +752,7 @@ const GAME={id:'arimaa',howto:{n:4,scene:arHowto,titled:true},size:'arimaa',code
   legal:(st,code)=>legalCode(st,code)?code:null,
   enc:c=>c,describe,newUi,preparing:prepared,cancel:cancelPrep,
   board:arBoard,turnStatus:arTurnStatus,waitStatus:arWaitStatus,
-  hintable:()=>false,   // no Hint button (core offers it otherwise, now that there is a computer)
+  // Hint (Suggestion): a whole turn (or the setup) by Sharp at its strongest level (HINT = l8, 8 steps deep)
   levels:LEVELS,engine:ENGINE,levelDesc,hintLevel:HINT,
   aiSrc,aiPos:st=>({b:Array.from(st.b),turn:st.turn,n:st.n,reps:Array.from(st.reps)}),aiOpt:v=>({hist:sharpHist(v)}),
   aiSearch:()=>null,    // no worker (some file:// setups): no computer move

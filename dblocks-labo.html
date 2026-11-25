@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
-<link rel="stylesheet" href="common/games.css?v=53">
+<link rel="stylesheet" href="common/games.css?v=54">
 <style>
 /* Diagonal Blocks palette (light, dark), board and piece tray; the shared layout is in common/games.css */
 :root{
@@ -233,7 +233,7 @@ html:root{--accImgL:url(../img/accueil/dblocks.svg);--accImgD:url(../img/accueil
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=99"></script>
+<script src="common/core.js?v=101"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -1521,7 +1521,12 @@ async function searchS(S, opt, tell) {
   let tot = 0; for (const x of s.root.N) tot += x; let pb = 0; for (let k = 1; k < s.root.P.length; k++) if (s.root.P[k] > s.root.P[pb]) pb = k;
   const m = s.root.moves[tot && opt.sims >= 1 ? s.pick(opt.temp || 0) : pb]; let d = 0, n = s.root;
   while (n && n.N) { const b = topOf(n); if (!n.N[b]) break; d++; n = n.ch[b]; }
-  return {m, value: s.value(), depth: d, nodes: s.sims};
+  // labo : sans recherche, la valeur est celle de la position d'après le coup (du point de vue de celui qui le joue)
+  let value = s.value();
+  if (!(tot && opt.sims >= 1)) { const T = F.play(S, m);
+    if (T.ov) value = Math.sign(F.diff(T, S.tm));
+    else { const L2 = []; F.gen(T, L2); const o = await evalNet({S: T, moves: L2}); value = F.side(T) === F.side(S) ? o.value : -o.value; } }
+  return {m, value, depth: d, nodes: s.sims};
 }
 // the answer in the page's form (as DiagAI().search): the score a logit of the winning chances, nn: true (evalInfo)
 async function search(P, opt, tell) {
@@ -1655,16 +1660,30 @@ const GAME={id:'dblk',seatCol:s=>E.colorOf(replay(view,view.moves,view.result).s
    $('laboV').textContent=cf.v===0?'0 (réseau seul, sans recherche)':cf.v;};
  const box=document.createElement('div');box.id='labo';
  box.style.cssText='margin:6px 0 10px;padding:8px 12px;border:1px solid var(--line,#888);border-radius:8px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:.92rem';
- box.innerHTML='<b>Labo, réseau n° 286 (niveau 10)</b><button type="button" id="laboNew" style="font:inherit;font-size:.85rem;padding:2px 10px;border-radius:6px;border:1px solid var(--accent,#888);background:transparent;color:inherit;cursor:pointer">Nouvelle partie</button><label style="display:flex;gap:8px;align-items:center">Visites <input id="laboR" type="range" min="0" max="1000" step="10" style="width:180px"> <span id="laboV" style="font-variant-numeric:tabular-nums;min-width:3ch"></span></label><label style="display:flex;gap:6px;align-items:center"><input id="laboS" type="checkbox"> Solveur exact de fin</label><span id="laboL" style="display:flex;gap:4px;flex-wrap:wrap"></span><span style="opacity:.7">Réglage valable dès le coup suivant. Échelle : chaque marche double les visites.</span>';
+ box.innerHTML='<b>Labo, réseau n° 286 (niveau 10)</b><button type="button" id="laboNew" style="font:inherit;font-size:.85rem;padding:2px 10px;border-radius:6px;border:1px solid var(--accent,#888);background:transparent;color:inherit;cursor:pointer">Nouvelle partie</button><label style="display:flex;gap:8px;align-items:center">Visites <input id="laboR" type="range" min="0" max="1000" step="10" style="width:180px"> <span id="laboV" style="font-variant-numeric:tabular-nums;min-width:3ch"></span></label><label style="display:flex;gap:6px;align-items:center"><input id="laboS" type="checkbox"> Solveur exact de fin</label><label style="display:flex;gap:6px;align-items:center"><input id="laboE" type="checkbox"> Évaluation du réseau</label><span id="laboEv" style="flex-basis:100%;display:flex;gap:10px;align-items:center;font-variant-numeric:tabular-nums"></span><span id="laboL" style="display:flex;gap:4px;flex-wrap:wrap"></span><span style="opacity:.7">Réglage valable dès le coup suivant. Échelle : chaque marche double les visites.</span>';
  const hd=document.querySelector('header');hd.after(box);
  const LAD=[0,25,50,100,200,400,800],mark=()=>{for(const x of $('laboL').children)x.style.outline=+x.dataset.v===cf.v?'2px solid currentColor':'';};
  LAD.forEach((v,i)=>{const b=document.createElement('button');b.type='button';b.dataset.v=v;b.textContent='M'+(i+1)+' · '+v;
    b.style.cssText='font:inherit;font-size:.85rem;padding:2px 8px;border-radius:6px;border:1px solid var(--line,#888);background:transparent;color:inherit;cursor:pointer';
    b.onclick=()=>{cf.v=v;$('laboR').value=v;apply();mark();};$('laboL').appendChild(b);});
  $('laboR').value=cf.v;$('laboS').checked=cf.s;setTimeout(mark);
+ // l'évaluation de l'ordinateur après chacun de ses coups : le réseau (r.nn, score = logit de ses chances), ou le solveur
+ if(cf.e===undefined)cf.e=true;let lastEv=null;
+ const evShow=()=>{const el=$('laboEv');el.hidden=!cf.e;if(!cf.e)return;
+   if(!lastEv){el.innerHTML='<span style="opacity:.7">Évaluation : après le prochain coup de l’ordinateur.</span>';return;}
+   if(lastEv.txt){el.innerHTML='<b>'+lastEv.txt+'</b>';return;}
+   const p=Math.round(100*lastEv.p),bar=`<span style="display:inline-block;width:160px;height:10px;border-radius:5px;overflow:hidden;background:var(--line,#888)"><span style="display:block;height:100%;width:${p}%;background:var(--accent,#c90)"></span></span>`;
+   el.innerHTML=`Chances de gain selon le réseau : <b>${p} %</b> ${bar}`;};
+ const ev0=GAME.evalInfo;GAME.evalInfo=(r,st)=>{if(r&&!r.forced&&(r.nn||r.depth===99)){const s=r.score;   // depth 99 : un résultat du solveur
+     
+     lastEv=r.nn?{p:1/(1+Math.exp(-s))}:s>500?{txt:'Solveur : gain prouvé pour l’ordinateur'}:s<-500?{txt:'Solveur : perte prouvée pour l’ordinateur, de '+(-(s+1000))+' case'+(-(s+1000)>1?'s':'')}:{txt:'Solveur : nulle prouvée'};evShow();}
+   return null;};   // labo : l'avis de l'ordinateur n'est plus affiché dans les options, le bandeau le remplace
+ self.laboEvReset=()=>{lastEv=null;evShow();};
+ $('laboE').checked=cf.e;$('laboE').onchange=e=>{cf.e=e.target.checked;apply();evShow();};evShow();
  self.laboSet=(v,s)=>{cf.v=v;cf.s=s;$('laboR').value=v;$('laboS').checked=s;apply();mark();};self.laboCf=()=>cf;
  $('laboR').oninput=e=>{cf.v=+e.target.value;apply();mark();};$('laboS').onchange=e=>{cf.s=e.target.checked;apply();};apply();}
 GAME.levelDefault='l10';
+GAME.hintLevel={algo:'nn',sims:800,net:NN_NET,solve:{endgame:80,solveNodes:100000,endLoss:1}};   // labo : la Suggestion par le n° 286, toujours à 800 visites, solveur de fin compris
 coreStart();
 // labo : la fenêtre de départ (règles, premier joueur, visites, solveur), puis la partie contre le n° 286
 {const LAD=[0,25,50,100,200,400,800];let pr={board:'cut',start:'swap',first:'me'};try{pr={...pr,...JSON.parse(localStorage.getItem('dblk-labo-start')||'{}')};}catch(e){}
@@ -1691,7 +1710,7 @@ coreStart();
  const open=()=>{v=self.laboCf().v;$('lmB').value=pr.board;$('lmS').value=pr.start;$('lmF').value=pr.first;$('lmX').checked=self.laboCf().s;show();ov.hidden=false;$('lmGo').focus();};
  let prev=null;   // la partie d'attente montrée derrière la fenêtre au chargement (vous au trait, rien ne calcule)
  $('lmGo').onclick=()=>{pr={board:$('lmB').value,start:$('lmS').value,first:$('lmF').value};try{localStorage.setItem('dblk-labo-start',JSON.stringify(pr));}catch(e){}
-   self.laboSet(v,$('lmX').checked);
+   self.laboSet(v,$('lmX').checked);self.laboEvReset();
    const lv=$('aLevel');lv.value='l10';lv.dispatchEvent(new Event('change'));
    const zs=$('aStart');if(![...zs.options].some(o=>o.value==='swap2')){const o=document.createElement('option');o.value='swap2';o.textContent='Swap 2';zs.appendChild(o);}
    $('aBoard').value=pr.board;zs.value=pr.start;$('aFirst').value=pr.first;
