@@ -786,6 +786,8 @@ const KS=AISearch({moves,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,p
 // the root: every move, ordered by the evaluation after it (exact, unlike the policy below the root)
 function rootMoves(S){const p=S[TM];return moves(S,0).map(x=>{const T=play(S,x.m);return {m:x.m,s:T[WN]>=0?result(T,p):evalS(T,p)+x.s*.01};}).sort((a,b)=>b.s-a.s);}
 function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
+  // opt.solve {n, budget, ms, r}: a forced win found by the solver (below) is played first, the shortest (off at every level)
+  if(opt.solve){const v=solve(P,opt.solve);if(v&&v.win)return {move:v.move,score:1000,depth:v.n,forced:false,policy:false,nodes:0,solved:v.n};}
   if(opt.random){const L=gen(S);if(!L.length)return null;   // level 0: a legal move at random, as the network's search draws them
     return {move:mvOf(L[(Math.random()*L.length)|0]),score:0,depth:0,forced:L.length===1,policy:true,nodes:0};}
   KS.start(opt.nodes);const C=opt.algo==='greedy'&&!opt.exact?moves(S,0):rootMoves(S);if(!C.length)return null;let r;
@@ -795,8 +797,103 @@ function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
   const mv=mvOf(r.m);
   // policy: the score is the policy's, not an evaluation (no opinion to show)
   return {move:mv,score:r.s,depth:r.depth,forced:!!r.forced,policy:opt.algo==='greedy'&&!opt.exact,nodes:KS.nodes()};}
+// ----- the short-win solver: opt.solve (26.11.2026; off at every level until Thibault decides) -----
+// SAFETY, to read before changing anything below. A « win » is a proof only because the DEFENDER's nodes (AND) try
+// EVERY move of gen(), the true generator, pass included: never filter or prune them, never stop on « looks harmless ».
+// Ordering them is fine. Only the ATTACKER's moves (OR) are restricted: an attacker move left out costs a win not
+// found, never a false win. The one shortcut on the defender's side is exact (the mask test, proved at AND below).
+// A budget run out gives « not found », never a partial win. The proof checker (check, below) replays the attacker's
+// strategy against every defender move of VoloEngine itself.
+//
+// solve(P,o): does the side to move (the attacker, SA) force a win in at most o.n of its own moves, whatever the
+// other side (SD) plays? Iterative deepening n = 1, 2, … : the first n found is the shortest within the attacker's
+// bound. o: {n (5), budget (move generations, 30000), ms (time cap besides, 5000), r (3: the bound below)}.
+// Returns {win:true, n, move (as search's), m (the fast move), gens, ms}, or {win:false, out:'none' (no win found
+// up to n) | 'budget', n (the depth fully searched), gens, ms}; null if the game is over.
+//
+// The attacker's bound (Thibault, 26.11.2026): a flight joins its flock to up to 3 others (a lone bird landing between
+// 3 flocks), so F flocks take at least ceil((F − 1)/3) flights; an addition makes one more flock and costs a move.
+// A move leaving F' flocks with k moves after it is tried only if ceil((F' − 1)/r) ≤ k. Not covered by r = 3 (a
+// win then not found, never a false one): a segment of L ≥ 2 birds can join L + 2 flocks or so; a cut by the defender
+// can remove attacker birds. r = 1 (each flight joins two flocks) is tighter and faster, and misses more.
+let SA=0,SD=1,SR=3,SV=null;
+const ZA=new Int32Array(N*4+6);{let z=0x2545F491;for(let i=0;i<ZA.length;i++){z^=z<<13;z^=z>>>17;z^=z<<5;ZA[i]=z;}}
+// Zobrist key, 53 bits (32 + 21) in one number: the birds, the side to move, a pass just played
+function zkey(S){let a=0,b=0;for(let i=0;i<N;i++){const v=S[i];if(v){const j=(i*2+v-1)*2;a^=ZA[j];b^=ZA[j+1];}}
+  let j=N*4+S[TM]*2;a^=ZA[j];b^=ZA[j+1];if(S[PS]){a^=ZA[N*4+4];b^=ZA[N*4+5];}
+  return (a>>>0)*2097152+(b>>>11);}
+const encM=m=>(m.t==='x'?'x':m.t==='p'?'p'+m.at:'f'+m.cells.join('.')+'>'+m.d+'.'+m.k)+(m.keep>=0?'k'+m.keep:'');
+// a flight's zone: the points its birds pass over or land on, the segment's own points left out (all must be free)
+function zoneOf(m){const z=[];for(const c of m.cells){let y=c;for(let j=0;j<m.k;j++){y=NB[y*6+m.d];if(!m.cells.includes(y))z.push(y);}}return z;}
+// the points a move newly occupies
+const landOf=m=>m.t==='p'?[m.at]:m.t==='f'?m.cells.map(c=>dest(m,c)):[];
+const need=F=>F<=1?0:Math.ceil((F-1)/SR);
+function sgen(S){const V=SV;if(++V.gens>V.budget||((V.gens&15)===0&&Date.now()>V.end))throw V;return gen(S);}
+function ttPut(k,w,m,nf){const e=SV.tt.get(k);
+  if(!e){SV.tt.set(k,{w:w||0,m:m||null,me:m?encM(m):'',nf:nf||0});return;}
+  if(w&&(!e.w||w<e.w)){e.w=w;if(m){e.m=m;e.me=encM(m);}}if(nf>e.nf)e.nf=nf;}
+const kill=(K,ply,em)=>{const t=K[ply]||(K[ply]={});t[em]=(t[em]||0)+1;};
+// OR: the attacker to move in S wins in at most n of its moves: its winning move, or null
+function OR(S,n,ply){const k=zkey(S),e=SV.tt.get(k);
+  if(e){if(e.w&&e.w<=n)return e.m;if(e.nf>=n)return null;}
+  const G=sgen(S),kids=[];
+  for(const m of G){const T=play(S,m),w=T[WN];if(w===SA){ttPut(k,1,m,0);return m;}if(w<0)kids.push([m,T]);}
+  if(n<=1){ttPut(k,0,null,1);return null;}
+  // the defender's winning flights if the attacker did not move (exact, as the mask test at AND): an attacker move
+  // that removes none of the defender's birds and lands nowhere in one of their zones leaves that win on: skipped
+  const WD=wins(S,SD),km=SV.kA[ply]||{},cand=[];
+  for(const [m,T] of kids){if(WD.length&&m.keep<0){const L=landOf(m);if(WD.some(z=>!L.some(y=>z.includes(y))))continue;}
+    const F=flocks(T,SA);if(need(F)>n-1)continue;const em=encM(m);
+    // the table's move, killers, then fewer flocks, flights before additions
+    cand.push({m,T,s:(e&&e.me===em?-1e6:0)-(km[em]||0)*1e3+F*4+(m.t==='p'?2:0),em});}
+  cand.sort((a,b)=>a.s-b.s);
+  for(const c of cand)if(AND(c.T,n-1,ply+1)){kill(SV.kA,ply,c.em);ttPut(k,n,c.m,0);return c.m;}
+  ttPut(k,0,null,n);return null;}
+const SBF=new Int8Array(LEN),CR=new Uint8Array(N);
+// p's winning flights in S if p were to move (whoever is): their zones
+// (a flight wins when p's birds are one flock after it: no region choice then, as in expand and apply)
+function wins(S,p){const V=SV;if(++V.gens>V.budget)throw V;flocks(S,p);const W=[];
+  for(const m of flights(S,p,[])){SBF.set(S);base(SBF,m,p+1);if(connected(SBF,p))W.push(zoneOf(m));}return W;}
+// AND: the defender to move in T, the attacker must win in at most j more of its moves. EVERY defender move is tried.
+// The mask test (exact): W, the attacker's winning flights in T if the defender did not move. After a defender move d
+// that removes no attacker bird (keep < 0) and lands nowhere in a flight f's zone, f is still legal (its legality
+// reads only the attacker's birds and the points of its zone; d only adds birds at its landing points, and empties
+// others) and still wins (the attacker's birds are those of T; the flock win is tested before regions).
+function AND(T,j,ply){const k=zkey(T),e=SV.tt.get(k);
+  if(e){if(e.w&&e.w<=j)return true;if(e.nf>=j)return false;}
+  const G=sgen(T),kids=[],kd=SV.kD[ply]||{};
+  for(const d of G){const U=play(T,d),w=U[WN];if(w===SA)continue;
+    if(w>=0){kill(SV.kD,ply,encM(d));ttPut(k,0,null,j);return false;}   // the defender wins, or a draw
+    kids.push({d,U,em:encM(d),s:0});}
+  const W=wins(T,SA);CR.fill(0);for(const z of W)for(const y of z)CR[y]=1;
+  // order (all are tried): killers, cuts, counter-threats (the defender's flocks after), landing on a critical point
+  for(const c of kids){const F=flocks(c.U,SD);let crit=0;for(const y of landOf(c.d))if(CR[y])crit=1;
+    c.s=-(kd[c.em]||0)*1e4-(c.d.keep>=0?2e3:0)-(F<=2?1e3:0)-crit*100+F;}
+  kids.sort((a,b)=>a.s-b.s);
+  for(const c of kids){let ok=false;
+    if(W.length&&c.d.keep<0){const L=landOf(c.d);ok=W.some(z=>!L.some(y=>z.includes(y)));}
+    if(!ok)ok=!!OR(c.U,j,ply+1);
+    if(!ok){kill(SV.kD,ply,c.em);ttPut(k,0,null,j);return false;}}
+  ttPut(k,j,null,0);return true;}
+// tt: a table to keep from one call to the next (the checker's: same attacker, same r)
+function solveS(S,o,tt){const t0=Date.now(),nMax=o.n||5;let done=0;
+  SA=S[TM];SD=1-SA;SR=o.r||3;SV={gens:0,budget:o.budget||30000,end:t0+(o.ms||5000),tt:tt||new Map(),kA:[],kD:[]};
+  const res=(x)=>Object.assign(x,{gens:SV.gens,ms:Date.now()-t0});
+  try{const F=flocks(S,SA);
+    for(let n=1;n<=nMax;n++){if(need(F)>n){done=n;continue;}const m=OR(S,n,0);if(m)return res({win:true,n,move:mvOf(m),m});done=n;}
+    return res({win:false,out:'none',n:done});}
+  catch(x){if(x!==SV)throw x;return res({win:false,out:'budget',n:done});}}
+function solve(P,o){const S=fromPos(P);return S[WN]>=0?null:solveS(S,o||{});}
+// The proof checker (tests; on the page, optional): with VoloEngine's own rules (E.gen, E.apply, E.outcome), no fast
+// rules, mask or table, it replays the attacker's strategy (asked of the solver at each of its turns) against every
+// defender move. true: the attacker wins in at most n of its moves. o: as solve's, for the strategy's searches.
+function check(P,n,o){o=Object.assign({budget:1e7,ms:6e5},o||{});const A0=P[N],tt=new Map();let nodes=0;
+  const atk=(s,k)=>{nodes++;const r=solveS(fromPos(s),{...o,n:k},tt);if(!r.win)return false;const em=encM(r.m),mv=E.gen(s).find(x=>encM(x)===em);
+    if(!mv)return false;const t=E.apply(s,mv).st,oc=E.outcome(t,A0,mv);if(oc)return oc.w===A0;return k>1&&def(t,k-1);};
+  const def=(s,k)=>{for(const d of E.gen(s)){const t=E.apply(s,d).st,oc=E.outcome(t,1-A0,d);if(oc){if(oc.w!==A0)return false;continue;}if(!atk(t,k))return false;}return true;};
+  const ok=atk(Int8Array.from(Array.from(P).slice(0,N+2)),n);return {ok,nodes};}
 return {N,LEN,TM,PS,WN,RAYS,fromPos,flocks,count,connected,flights,placements,areas,regions,expand,gen,apply,play,dest,LAB,SZF,
-  feats,evalS,result,moves,rootMoves,playout,search,K:KS,setEV:o=>{EV={...EV,...o};},setPW:o=>{PW={...PW,...o};},EV:()=>EV,PW:()=>PW};
+  feats,evalS,result,moves,rootMoves,playout,search,solve,check,encM,K:KS,setEV:o=>{EV={...EV,...o};},setPW:o=>{PW={...PW,...o};},EV:()=>EV,PW:()=>PW};
 }
 /*AIEND*/
 /*NN*/
@@ -1520,10 +1617,12 @@ const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',seatCol:s=>s?'mq_2':
     '\nconst VE={},VAS={},VNS={},vRad=P=>P.length<=57?4:P.length<=87?5:6,vEng=k=>VE[k]||(VE[k]=VoloEngine(k)),vAI=k=>VAS[k]||(VAS[k]=VoloAI(vEng(k)));'+
     '\nfunction aiSearch(pos,opt){return vAI(vRad(pos)).search(pos,opt);}'+
     // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
+    // opt.solve (off at every level): a forced win found by VoloAI's solver is played first;
     // if the network cannot load (offline, old browser), the MCTS 3 s level answers instead
     '\nconst vNN=k=>VNS[k]||(VNS[k]=VoloNN(vEng(k),VoloAI(vEng(k)),'+JSON.stringify(location.href)+')),NN_FALLBACK='+JSON.stringify(MCTS3)+';'+
     '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
-    'const k=vRad(m.st);vNN(k).search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>vAI(k).search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
+    'const k=vRad(m.st),sv=m.opt.solve&&vAI(k).solve(m.st,m.opt.solve);if(sv&&sv.win){self.postMessage({id:m.id,r:{move:sv.move,score:1000,depth:sv.n,forced:false,policy:false}});return;}'+
+    'vNN(k).search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>vAI(k).search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
   aiOpt:voProgress,
   aiPos:st=>Array.from(st),aiSearch:(st,opt)=>{const e=engOfPos(st);pageAI=pageAI||{};return (pageAI[e.RAD]=pageAI[e.RAD]||VoloAI(e)).search(Array.from(st),opt.algo==='nn'?MCTS3:opt);},   // no worker: no network either
   evalInfo:voEvalInfo,
