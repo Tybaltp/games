@@ -399,7 +399,7 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
  const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=102"></script>
+<script src="common/core.js?v=103"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====

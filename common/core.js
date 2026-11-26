@@ -591,7 +591,7 @@ function voiceRelay(conn,d){const g=H.game;if(!g||!g.an||typeof d.to!=='string')
 function voiceBusy(){if(!anaNet()||!anA())return;const on=V.st!=='off';if(on!==!!AN.busy){AN.busy=on;anSend({op:'busy',on});}}
 function voiceInvite(id){if(V.st!=='off'||!anaNet()||!id||id===anMe())return;AN.pick=false;V={st:'out',note:'',with:id};voiceTo(id,'ask');voiceUi();}
 function voiceUi(){voiceBusy();if(view&&!$('game').hidden)renderGame();}
-function voiceStop(note,tell){const v=V;if(v.st==='on')mVoiceSet(true);if(tell&&v.st!=='off')voiceSend('bye');clearTimeout(v.to);
+function voiceStop(note,tell){if(COQ)return;const v=V;if(v.st==='on')mVoiceSet(true);if(tell&&v.st!=='off')voiceSend('bye');clearTimeout(v.to);
   try{v.call&&v.call.close();}catch(e){}try{v.stream&&v.stream.getTracks().forEach(k=>k.stop());}catch(e){}
   if(v.audio){try{v.audio.srcObject=null;v.audio.remove();}catch(e){}}
   V={st:'off',note:note||''};voiceUi();}
@@ -605,14 +605,14 @@ function voiceCall(c){V.call=c;c.on('stream',rs=>{if(V.call!==c)return;clearTime
     if(pl&&pl.catch)pl.catch(()=>{const f=()=>{if(V.audio&&V.audio.paused)V.audio.play().catch(()=>{});};document.addEventListener('pointerdown',f,{once:true});document.addEventListener('keydown',f,{once:true});});   // autoplay refused (a call started by itself): at the first touch
     V.st='on';mVoiceSet(true);voiceUi();});
   c.on('close',()=>{if(V.call===c)voiceStop(t('vEnd'),false);});c.on('error',()=>{if(V.call===c)voiceStop(t('vFail'),true);});}
-function voiceIncoming(c){const exp=V.with||role==='host'&&H.guestConn&&H.guestConn.peer;if(V.st!=='conn'||!V.stream||!exp||c.peer!==exp){try{c.close();}catch(e){}return;}
+function voiceIncoming(c){if(COQ){try{c.close();}catch(e){}return;}const exp=V.with||role==='host'&&H.guestConn&&H.guestConn.peer;if(V.st!=='conn'||!V.stream||!exp||c.peer!==exp){try{c.close();}catch(e){}return;}
   c.answer(V.stream);voiceCall(c);}
-function voiceAsk(){if(V.st!=='off'||!voiceNet())return;V={st:'out',note:''};voiceSend('ask');voiceUi();}
-function voiceAnswer(yes){if(V.st!=='in')return;if(!yes){mVoiceSet(false);voiceSend('no');V={st:'off',note:''};voiceUi();return;}
+function voiceAsk(){if(COQ){coqVoice('ask');return;}if(V.st!=='off'||!voiceNet())return;V={st:'out',note:''};voiceSend('ask');voiceUi();}
+function voiceAnswer(yes){if(COQ){coqVoice(yes?'yes':'no');return;}if(V.st!=='in')return;if(!yes){mVoiceSet(false);voiceSend('no');V={st:'off',note:''};voiceUi();return;}
   V.st='conn';voiceUi();voiceMic().then(st=>{if(!st)return;voiceSend('yes');
     if(V.with&&vCaller()){clearTimeout(V.to);V.to=setTimeout(()=>{if(V.st==='conn')voiceStop(t('vFail'),true);},15000);}   // a table's call: I call once the other one has its microphone (go)
     else voiceConnect();},()=>voiceStop(t('vMic'),true));}
-function voiceOnMsg(op,from){
+function voiceOnMsg(op,from){if(COQ){if(!from&&(op==='ask'||op==='reask'))voiceSend('no');return;}   // in the coquille: the call is the coquille's (an older page's offer: declined)
   // a table's call: from someone else than the one I am talking to: busy; a players' offer while I am in a table's call: busy
   if(from&&V.st!=='off'&&V.with!==from){if(op==='ask')voiceTo(from,'busy');return;}
   if(!from&&V.with){if(op==='ask')try{if(role==='host'&&H.guestConn)H.guestConn.send({t:'voice',op:'no'});else if(C.conn)C.conn.send({t:'voice',op:'no'});}catch(e){}return;}
@@ -625,9 +625,9 @@ function voiceOnMsg(op,from){
   else if(op==='go'&&V.st==='conn'&&V.stream)voiceConnect();
   else if(op==='bye'){if(V.st!=='off')voiceStop(t('vEnd'),false);mVoiceSet(false);}}
 const voiceVol=()=>{const v=LS.get('games-voicevol',80);return typeof v==='number'?v:80;};
-function voiceMute(){if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
-function voiceRender(){const tbl=seatN()<0&&anaNet(),b=$('voiceBox'),pl=(seatN()>=0&&(role==='host'||role==='guest')||tbl&&(!!V.with||!!V.note))&&voiceOk();b.hidden=!pl;if(!pl)return;   // a spectator at a table: their call, or how the last one ended
-  const o=vNm(),st=V.st,there=!!(view&&view.names[1-seatN()])&&(role==='guest'||!!view.guestOn);
+function voiceMute(){if(COQ){coqVoice('mute');return;}if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
+function voiceRender(){const tbl=seatN()<0&&anaNet(),b=$('voiceBox'),pl=COQ?seatN()>=0&&(role==='host'||role==='guest')&&CV.ok:(seatN()>=0&&(role==='host'||role==='guest')||tbl&&(!!V.with||!!V.note))&&voiceOk();b.hidden=!pl;if(!pl)return;   // a spectator at a table: their call, or how the last one ended
+  const o=vNm(),st=V.st,there=COQ?CV.link:!!(view&&view.names[1-seatN()])&&(role==='guest'||!!view.guestOn);
   if(st==='off'&&V.note&&!there&&!tbl)V.note='';
   $('voiceAsk').hidden=st!=='off'||tbl;$('voiceAsk').disabled=!there;
   $('voiceTxt').hidden=!(st==='out'||st==='in'||st==='conn'||st==='on'||V.note);
@@ -1561,6 +1561,21 @@ function init(){GAME.home();saveMigrate();saveRender();
   const wr=LS.get(K('p2p-watch'),null);if(wr&&wr.code===m[2]){clientStart(m[2],wr.name||'',true);return;}
   clientStart(m[2],'',true);nameOv('watch');}
 
+// ---------- La coquille : this page inside the match's page (mochalunt.html, <page>.html?coquille#m…) ----------
+// The coquille keeps what goes on from table to table: its own link between the two players, the voice (the microphone and
+// the call are the coquille's, so a new table does not cut them), the score and the way to the next table. The page keeps
+// its game, its table (PeerJS), its chat. Messages (postMessage, same origin): to the coquille ready {k,kind,title},
+// go {k,kind} (the next table, or the result), leave, voice {op,v} (ask, cancel, yes, no, hang, mute, vol); from it
+// voice {st,note,muted,mic,link,ok} (shown in the voice box as V) and ring.
+const COQ=(()=>{try{return /[?&]coquille(&|$)/.test(location.search)&&!!window.parent&&window.parent!==window;}catch(e){return false;}})();
+let CV={ok:false,link:false};   // the coquille's voice: possible here (a player), the link to the other player up
+function coqPost(m){if(!COQ)return;try{window.parent.postMessage({coq:1,...m},location.origin&&location.origin!=='null'?location.origin:'*');}catch(e){}}
+function coqVoice(op,v){coqPost({t:'voice',op,v});}
+if(COQ)window.addEventListener('message',e=>{if(e.source!==window.parent||!e.data||e.data.coq!==2)return;const d=e.data;
+  if(d.t==='voice'){CV={ok:!!d.ok,link:!!d.link};const was=V.st;V={st:d.st||'off',note:d.note?t(d.note,{n:vNm()}):'',muted:!!d.muted,stream:d.mic?true:null};
+    if(was!==V.st||view)voiceUi();}
+  else if(d.t==='ring')tone(520,.12,.05);});
+
 // ---------- Mochalunt matches (see mochalunt.html) ----------
 // A match: the same two players over the tables of the plan, one game each, played in order. Its record is kept on each
 // device under mochalunt-<code>: {code, excl (the game left out, -1: none), j1 ('c' the creator, 'i' the invitee: the
@@ -1580,15 +1595,15 @@ const mSave=()=>{if(MATCH)LS.set('mochalunt-'+MATCH.code,MATCH);};
 // the score, by role: 1 a win, ½ a draw
 function mScore(rec){const p={c:0,i:0};for(const k in rec.res||{}){const w=rec.res[k].w;if(w==='d'){p.c+=.5;p.i+=.5;}else if(w)p[w]+=1;}return p;}
 const mNum=x=>String(x).replace('.',lang==='en'?'.':',');
-function mGo(k,kind){const P=mPlan(MATCH);if(V.st==='on'||MATCH.vc&&MATCH.vc.k===MTK)mVoiceSet(true);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
+function mGo(k,kind){if(COQ){coqPost({t:'go',k,kind});return;}const P=mPlan(MATCH);if(V.st==='on'||MATCH.vc&&MATCH.vc.k===MTK)mVoiceSet(true);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
   location.href=k>=P.length?'mochalunt.html#res-'+MATCH.code:P[k].page+'.html#m'+kind+'-'+MATCH.code+'-'+k;}
 // The voice between the two players goes on from table to table: on, it is noted in the record ({k: the table, at});
 // at the next table (or the same one, reloaded) within 15 min, the guest offers it again by itself ('reask') and the
 // host, which has the same note, accepts it by itself. Hanging up, declining or a 'bye' removes the note.
 const mVoiceFresh=()=>!!(MATCH&&MATCH.me&&MTW==='t'&&MATCH.vc&&(MATCH.vc.k===MTK||MATCH.vc.k===MTK-1)&&Date.now()-MATCH.vc.at<15*60e3);
-function mVoiceSet(on){if(!MATCH||!MATCH.me||MTW!=='t')return;if(on)MATCH.vc={k:MTK,at:Date.now()};else if(MATCH.vc)delete MATCH.vc;else return;mSave();}
+function mVoiceSet(on){if(COQ||!MATCH||!MATCH.me||MTW!=='t')return;if(on)MATCH.vc={k:MTK,at:Date.now()};else if(MATCH.vc)delete MATCH.vc;else return;mSave();}
 let mVoiceTried=false;
-function mVoiceAuto(){if(mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!voiceOk()||!voiceNet()||!mVoiceFresh())return;
+function mVoiceAuto(){if(COQ||mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!voiceOk()||!voiceNet()||!mVoiceFresh())return;
   mVoiceTried=true;V={st:'out',note:''};voiceSend('reask');voiceUi();}
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
@@ -1647,7 +1662,11 @@ function mStart(kind,code,k){MATCH=LS.get('mochalunt-'+code,null);MTK=k;MTW=kind
   if(!MATCH){status(t('m_unknown'));return true;}
   MATCH.res=MATCH.res||{};if(MATCH.excl===undefined&&kind==='v'){status(t('m_unknown'));return true;}
   const P=MATCH.excl===undefined?null:mPlan(MATCH);
-  if(P&&(k>=P.length||P[k].id!==GAME.id)){if(k<P.length)location.replace(P[k].page+'.html'+location.hash);else location.replace('mochalunt.html#res-'+code);return true;}
+  // a table to play or to watch, opened on its own (an older link, a tab left open): into the match's coquille
+  if(!COQ&&kind!=='v'&&typeof location.replace==='function'){location.replace('mochalunt.html#m'+kind+'-'+code+'-'+k+'~'+(location.pathname.split('/').pop()||'').replace(/\.html$/,''));return true;}
+  if(P&&(k>=P.length||P[k].id!==GAME.id)){if(COQ){if(k<P.length)location.replace(P[k].page+'.html'+location.search+location.hash);else coqPost({t:'go',k,kind});}
+    else if(k<P.length)location.replace(P[k].page+'.html'+location.hash);else location.replace('mochalunt.html#res-'+code);return true;}
+  if(COQ)coqPost({t:'ready',k,kind,title:document.title});
   const tc=code+'t'+k;
   if(kind==='v'){const res=MATCH.res[k];if(!res){status(t('m_unknown'));return true;}stopAI();role='file';mySeat=-1;C.stop=true;
     const names=res.seats.map(ro=>res.names&&res.names[ro]||ro);
@@ -1872,12 +1891,13 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
         ArrowUp:()=>sh?anaSib(-1):anaBr(-1),ArrowDown:()=>sh?anaSib(1):anaBr(1)}[ky];if(!f)return;e.preventDefault();f();return;}
     const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:sh?0:k-1,ArrowRight:sh?null:k+1,Home:0,End:null}[ky];if(go===undefined)return;e.preventDefault();navGo(go);});
   // Home: leave the game and come back to the game's own start page
-  $('homeBtn').onclick=()=>{try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();setHash('');location.reload();};
+  $('homeBtn').onclick=()=>{if(COQ){coqPost({t:'leave'});return;}try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();setHash('');location.reload();};
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
   // (by link or in free play: against the computer or face to face, the game waits in « Parties en cours »)
   const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden&&role!=='ai'&&role!=='local';
   $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
   $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
+  if(COQ)$('crumbHome').target='_top';   // in the coquille: the site's home in the whole window
   if($('testForm'))$('testForm').addEventListener('submit',e=>{e.preventDefault();HT.want=true;startTest(GAME.form('t'));});
   if($('faceForm'))$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tc=tcRead('fTc',K('local-tc'));HT.want=true;
     startLocal(GAME.form('f'),tc);});
@@ -1891,9 +1911,9 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
   $('loadForm').addEventListener('submit',e=>{e.preventDefault();const x=$('sgfFile').files&&$('sgfFile').files[0];if(!x){$('sgfErr').textContent=t('sgfNoFile');return;}
     x.text().then(txt=>{const er=sgfLoad(txt);$('sgfErr').textContent=er||'';});});
   $('chatForm').onsubmit=e=>{e.preventDefault();chatSend();};$('chatName').onclick=()=>{sheet(false);chatUp(false);nameOv('watch');};
-  $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
-  $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>{voiceStop(t('vEnd'),true);mVoiceSet(false);};
-  {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
+  $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(COQ){coqVoice('cancel');return;}if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
+  $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>{if(COQ){coqVoice('hang');return;}voiceStop(t('vEnd'),true);mVoiceSet(false);};
+  {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(COQ)coqVoice('vol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
   $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});
   {const cb=document.createElement('button');cb.type='button';cb.id='chatBtn';cb.className='chatbtn';cb.textContent='💬';cb.hidden=true;$('optBtn').before(cb);cb.onclick=()=>chatUp(true);
     const bg=document.createElement('div');bg.className='sheetbg chatbg';bg.id='chatBg';bg.hidden=true;bg.onclick=()=>chatUp(false);document.body.appendChild(bg);
