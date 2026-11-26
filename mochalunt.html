@@ -437,7 +437,9 @@ function play(kind,code,k,hint){let rec=recOf(code);
   CQ.k=k;CQ.page=page;passShow(rec,k,page);
   const url=page+'.html?coquille#m'+kind+'-'+code+'-'+k;
   if(!CQ.fr){const f=document.createElement('iframe');f.allow='clipboard-write; autoplay; fullscreen';f.src=url;$('vPlay').appendChild(f);CQ.fr=f;
-    f.addEventListener('load',()=>{coqBg();setTimeout(passHide,4000);});}   // (ready, from the game, hides it sooner)
+    // a link to another site (a game's rules): in the whole window, as on the game's own page
+    f.addEventListener('load',()=>{coqBg();setTimeout(passHide,4000);try{f.contentDocument.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');
+      if(a&&!a.target&&a.origin&&a.origin!==location.origin&&/^https?:$/.test(a.protocol))a.target='_top';},true);}catch(x){}});}   // (ready, from the game, hides it sooner)
   else try{CQ.fr.contentWindow.location.replace(url);}catch(e){CQ.fr.src=url;}
   COQ.push();}
 // between two tables: the table, the game's card, the score

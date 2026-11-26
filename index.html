@@ -166,7 +166,9 @@ if(window.COQ_SHELL==='site'){(()=>{
   // the frame's surroundings (a phone's safe area) in the page's own background
   const bg=()=>{try{w.style.background=getComputedStyle(f.contentDocument.body).backgroundColor;}catch(e){}};
   let vbox=false,other='',want=null;
-  f.addEventListener('load',()=>{vbox=false;sync();bg();COQ.push();});setInterval(sync,250);
+  // a link to another site, in the page: in the whole window, as without the coquille (many sites refuse a frame)
+  const outer=e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(a&&!a.target&&a.origin&&a.origin!==location.origin&&/^https?:$/.test(a.protocol))a.target='_top';};
+  f.addEventListener('load',()=>{vbox=false;sync();bg();COQ.push();try{f.contentDocument.addEventListener('click',outer,true);}catch(e){}});setInterval(sync,250);
   // an address typed or pasted that differs only after the # (the same page): no reload of this page, so the frame goes there
   addEventListener('hashchange',()=>{const q=/^\?([a-z0-9][a-z0-9-]*)/.exec(location.search),p=q&&q[1]!=='solo'?q[1]:null;
     try{f.contentWindow.location.replace((p?p+'.html':'index.html')+location.hash);}catch(e){f.src=(p?p+'.html':'index.html')+location.hash;}});
