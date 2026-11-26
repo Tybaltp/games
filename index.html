@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Jeux</title>
-<script src="common/theme.js?v=5"></script>
+<script src="common/theme.js?v=6"></script>
+<script>
+// La coquille du site: this page opened on its own (not in a frame, over http) keeps the whole site in a frame
+// (?<page>#… in the address: that page, else the home) and stays open from page to page (see the end of the page)
+window.COQ_SHELL=window.top===window&&/^https?:$/.test(location.protocol)&&!/[?&]solo(&|$)/.test(location.search)?'site':null;
+if(window.COQ_SHELL)document.documentElement.classList.add('coqsite');
+</script>
+<script src="common/coquille.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="common/cards.css?v=10">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap">
@@ -48,6 +55,15 @@ details.how li{margin:.35em 0}
 .mline{margin:18px 0 0;color:var(--muted)}.mline a{color:var(--ink);font-weight:650}.mline a:hover{color:var(--accent)}
 footer{margin-top:32px;font-size:.85rem}footer a{color:var(--muted)}footer a:hover{color:var(--accent)}
 details.how .warn{margin:.8em 0 .3em;padding:8px 12px;border:1px solid var(--warn-line);background:var(--warn);border-radius:8px}
+.coqsite body{overflow:hidden}.coqsite main{display:none}
+#coqW{position:fixed;inset:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);background:var(--bg)}
+#coqW iframe{display:block;width:100%;height:100%;border:0}
+/* the call, when the page in the frame does not show it (common/coquille.js) */
+.vpill{position:fixed;z-index:60;left:50%;bottom:max(16px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:calc(100% - 32px);
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 6px 20px rgb(0 0 0/.18);font:.9rem system-ui,-apple-system,sans-serif}
+.vpill[hidden]{display:none}.vpill span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vpill button{flex:none;font:inherit;font-size:.85rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.vpill button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}.vpill button[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -129,6 +145,42 @@ apply();
 document.getElementById('reportLink').onclick=e=>{e.preventDefault();const T=I18N[lang],v=(document.querySelector('link[href*="cards.css"]').getAttribute('href').match(/v=(\d+)/)||[])[1]||'?';
   const b=[T.rp_body,'','','— '+T.rp_info+' —','index.html · cards.css v'+v,navigator.userAgent,innerWidth+'×'+innerHeight+' @'+(devicePixelRatio||1)+' · '+lang+' · '+(document.documentElement.dataset.theme||'auto')];
   location.href='mailto:'+['tybaltp','games'].join('.')+String.fromCharCode(64)+['gmail','com'].join('.')+'?subject='+encodeURIComponent(T.rp_subj)+'&body='+encodeURIComponent(b.join('\n'));};
+</script>
+<script>
+// ---------- La coquille du site ----------
+// The page in the frame changes as usual (links, its own scripts): each change is an entry of the browser's history,
+// so Back and Forward go from page to page inside the frame while this page stays; the address follows the frame
+// (./?volo#host-…, ./ for the home), and a reload or a copied address opens the same page. What this page keeps from
+// page to page (common/coquille.js): the voice between the two players of a game by link (its own link, ids
+// coq-<code>-<seat>, from the table the page tells: common/core.js « La coquille »), shown in the page's voice box,
+// or in a bar at the bottom when the page in the frame does not show it.
+if(window.COQ_SHELL==='site'){(()=>{
+  const dir=location.pathname.replace(/[^/]*$/,''),m=/^\?([a-z0-9][a-z0-9-]*)/.exec(location.search),pg=m&&m[1]!=='solo'?m[1]:null;
+  const w=document.createElement('div');w.id='coqW';const f=document.createElement('iframe');f.allow='microphone; clipboard-write; autoplay; fullscreen';
+  f.src=pg?pg+'.html'+location.hash:'index.html';w.appendChild(f);document.body.appendChild(w);
+  function sync(){let L;try{L=f.contentWindow.location;if(!L||L.protocol==='about:')return;}catch(e){return;}
+    if(L.origin!==location.origin)return;const file=L.pathname.split('/').pop()||'index.html';
+    const url=file==='index.html'&&!L.hash?dir:dir+'?'+file.replace(/\.html$/,'')+L.hash;   // (the frame's own query is not kept)
+    if(url!==location.pathname+location.search+location.hash)try{history.replaceState(null,'',url);}catch(e){}
+    try{const tt=f.contentDocument.title;if(tt&&document.title!==tt)document.title=tt;}catch(e){}}
+  // the frame's surroundings (a phone's safe area) in the page's own background
+  const bg=()=>{try{w.style.background=getComputedStyle(f.contentDocument.body).backgroundColor;}catch(e){}};
+  let vbox=false,other='',want=null;
+  f.addEventListener('load',()=>{vbox=false;sync();bg();COQ.push();});setInterval(sync,250);
+  // an address typed or pasted that differs only after the # (the same page): no reload of this page, so the frame goes there
+  addEventListener('hashchange',()=>{const q=/^\?([a-z0-9][a-z0-9-]*)/.exec(location.search),p=q&&q[1]!=='solo'?q[1]:null;
+    try{f.contentWindow.location.replace((p?p+'.html':'index.html')+location.hash);}catch(e){f.src=(p?p+'.html':'index.html')+location.hash;}});
+  addEventListener('storage',e=>{if(e.key==='games-theme')setTimeout(bg,80);});
+  COQ.frame=()=>f;COQ.covered=()=>vbox;COQ.others=()=>other||COQ.t('opp');
+  const link=()=>{if(want&&typeof Peer!=='undefined')COQ.linkStart(want);};
+  addEventListener('message',e=>{if(e.source!==f.contentWindow||!e.data||e.data.coq!==1)return;const d=e.data;
+    if(d.t==='table'){vbox=!!d.vbox;if(d.other)other=String(d.other).slice(0,24);
+      if(typeof d.code==='string'&&/^[a-z0-9]{4,16}$/.test(d.code)&&(d.seat===0||d.seat===1)){want={me:'coq-'+d.code+'-'+d.seat,other:'coq-'+d.code+'-'+(1-d.seat),dial:d.seat===1,rec:'coquille-'+d.code};link();}
+      COQ.push();}
+    else if(d.t==='voice')COQ.op(d.op,d.v);});
+  // PeerJS, for the link (the home page itself does without it)
+  if(typeof Peer==='undefined'){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js';s.onload=link;
+    s.onerror=()=>{const u=document.createElement('script');u.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';u.onload=link;document.head.appendChild(u);};document.head.appendChild(s);}})();}
 </script>
 </body>
 </html>
