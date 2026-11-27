@@ -786,7 +786,7 @@ const KS=AISearch({moves,play,turn:S=>S[TM],done:S=>S[WN]>=0,result,eval:evalS,p
 // the root: every move, ordered by the evaluation after it (exact, unlike the policy below the root)
 function rootMoves(S){const p=S[TM];return moves(S,0).map(x=>{const T=play(S,x.m);return {m:x.m,s:T[WN]>=0?result(T,p):evalS(T,p)+x.s*.01};}).sort((a,b)=>b.s-a.s);}
 function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
-  // opt.solve {n, budget, ms, r}: a forced win found by the solver (below) is played first, the shortest (off at every level)
+  // opt.solve {n, budget, ms, widen}: a forced win found by the solver (below) is played first, the shortest (LEVELS)
   if(opt.solve){const v=solve(P,opt.solve);if(v&&v.win)return {move:v.move,score:1000,depth:v.n,forced:false,policy:false,nodes:0,solved:v.n};}
   if(opt.random){const L=gen(S);if(!L.length)return null;   // level 0: a legal move at random, as the network's search draws them
     return {move:mvOf(L[(Math.random()*L.length)|0]),score:0,depth:0,forced:L.length===1,policy:true,nodes:0};}
@@ -797,7 +797,7 @@ function search(P,opt){const S=fromPos(P);if(S[WN]>=0)return null;
   const mv=mvOf(r.m);
   // policy: the score is the policy's, not an evaluation (no opinion to show)
   return {move:mv,score:r.s,depth:r.depth,forced:!!r.forced,policy:opt.algo==='greedy'&&!opt.exact,nodes:KS.nodes()};}
-// ----- the short-win solver: opt.solve (26.11.2026; off at every level until Thibault decides) -----
+// ----- the short-win solver: opt.solve (26.11.2026; on from level 3, Thibault, 27.11.2026: LEVELS) -----
 // SAFETY, to read before changing anything below. A « win » is a proof only because the DEFENDER's nodes (AND) try
 // EVERY move of gen(), the true generator, pass included: never filter or prune them, never stop on « looks harmless ».
 // Ordering them is fine. Only the ATTACKER's moves (OR) are restricted: an attacker move left out costs a win not
@@ -1505,30 +1505,44 @@ return {search, load, X, Search};
 // neural network of ~/volo-ia with a PUCT search of `sims` simulations (same strength wherever it finishes them: about
 // 500 to 1000 network evaluations a second on a recent computer; no time cap, 16.11.2026: a slower device takes longer
 // and plays the same) · temp, choice temperature (0: the most visited move) · net, the weights file next to the page.
-// The network (25.11.2026, Thibault): n° 52 of the flights run (runs/volo, flights coded by direction, 2 281 policy
-// outputs; grafted from n° 110 of the sizes run, trained on 13, 11 and 9 rows), its best proved (59 % against n° 44,
-// 55 % against n° 34, 59 % against n° 26; n° 44: 87 % against n° 110); the ladder below is kept as calibrated with n° 130.
-const NN_NET='volo-net.onnx?v=v52';
+// The network (27.11.2026, Thibault): n° 150 of the flights run (runs/volo, flights coded by direction, trained on 13,
+// 11 and 9 rows), first of the final tournament (ia/notes/volo-solveur, § 4: the run plateaued from n° 80 on; n° 150
+// beats n° 52, the former one, 56 % over 400 games); the ladder below is kept as calibrated with n° 130.
+const NN_NET='volo-net.onnx?v=v150';
 // The ladder (v1, network n° 130, 17.11.2026, outils/aitools/res/volo/niveaux.md, 100 to 300 games a pair): each level
 // beats the one below by 65-83 % (wins + half the draws), and the one two below by 85 % or more. Level 0: a legal move
 // at random. Levels 1 to 3: one simulation, the move drawn from the network's policy at temperature temp (Search.pick).
 // MCTS3, the former 3 s level: what answers when the network cannot load; its simulations are what the reference Mac
 // (M3 Pro) did in those 3 s (outils/aitools/res/budgets-2026-11-16.md).
 const MCTS3={algo:'mcts',sims:3000,cut:0,cellsIn:12,scale:1,c:.5};
+// The solver at each level (Thibault, 27.11.2026; opt.solve, below: wins in at most n of its moves, bound F−1 widened
+// to the slacks of widen, budget in move generations, ms the time cap): none at levels 0 to 2; level 3, wins in one move;
+// then deeper, wider and longer up to the strongest level, the solver at its fullest (F−3, 30 000, 5 s; about 3 s at
+// most on the reference Mac, the budget stops it first). A first scale, to be recalibrated.
+const SV3={n:1,widen:[1]};
+const SV4={n:2,widen:[1],budget:2000,ms:100};
+const SV5={n:2,widen:[1,2],budget:3000,ms:150};
+const SV6={n:3,widen:[1],budget:5000,ms:250};
+const SV7={n:3,widen:[1,2],budget:8000,ms:400};
+const SV8={n:4,widen:[1,2],budget:12000,ms:600};
+const SV9={n:4,widen:[1,2,3],budget:16000,ms:800};
+const SV10={n:5,widen:[1,2],budget:30000,ms:1000};
+const SV11={n:5,widen:[1,2,3],budget:30000,ms:2000};
+const SV12={n:5,widen:[1,2,3],budget:30000,ms:5000};
 const LEVELS={
   l0:{random:true},
   l1:{algo:'nn',sims:1,temp:1.5,net:NN_NET},
   l2:{algo:'nn',sims:1,temp:.9,net:NN_NET},
-  l3:{algo:'nn',sims:1,temp:.6,net:NN_NET},
-  l4:{algo:'nn',sims:1,net:NN_NET},
-  l5:{algo:'nn',sims:6,net:NN_NET},
-  l6:{algo:'nn',sims:10,net:NN_NET},
-  l7:{algo:'nn',sims:22,net:NN_NET},
-  l8:{algo:'nn',sims:50,net:NN_NET},
-  l9:{algo:'nn',sims:130,net:NN_NET},
-  l10:{algo:'nn',sims:300,net:NN_NET},
-  l11:{algo:'nn',sims:700,net:NN_NET},
-  l12:{algo:'nn',sims:3000,net:NN_NET}};
+  l3:{algo:'nn',sims:1,temp:.6,net:NN_NET,solve:SV3},
+  l4:{algo:'nn',sims:1,net:NN_NET,solve:SV4},
+  l5:{algo:'nn',sims:6,net:NN_NET,solve:SV5},
+  l6:{algo:'nn',sims:10,net:NN_NET,solve:SV6},
+  l7:{algo:'nn',sims:22,net:NN_NET,solve:SV7},
+  l8:{algo:'nn',sims:50,net:NN_NET,solve:SV8},
+  l9:{algo:'nn',sims:130,net:NN_NET,solve:SV9},
+  l10:{algo:'nn',sims:300,net:NN_NET,solve:SV10},
+  l11:{algo:'nn',sims:700,net:NN_NET,solve:SV11},
+  l12:{algo:'nn',sims:3000,net:NN_NET,solve:SV12}};
 const HINT={algo:'nn',sims:2000,net:NN_NET};   // the simulations of 5 s at most on the reference Mac
 // The engine (decisions of 15.11.2026): its kind (no versions since 21.11.2026), under the level and in
 // « Signaler un défaut » · levelDesc: what a level does, for the help text under « Ordinateur » (common/core.js)
@@ -1622,14 +1636,14 @@ const GAME={howto:{n:3,scene:voHowto,titled:true},id:'volo',seatCol:s=>s?'mq_2':
     '\nconst VE={},VAS={},VNS={},vRad=P=>P.length<=57?4:P.length<=87?5:6,vEng=k=>VE[k]||(VE[k]=VoloEngine(k)),vAI=k=>VAS[k]||(VAS[k]=VoloAI(vEng(k)));'+
     '\nfunction aiSearch(pos,opt){return vAI(vRad(pos)).search(pos,opt);}'+
     // the network's search is async, core's worker handler is not: requests with algo 'nn' are answered here (same reply);
-    // opt.solve (off at every level): a forced win found by VoloAI's solver is played first;
+    // opt.solve (from level 3, LEVELS): a forced win found by VoloAI's solver is played first;
     // if the network cannot load (offline, old browser), the MCTS 3 s level answers instead
     '\nconst vNN=k=>VNS[k]||(VNS[k]=VoloNN(vEng(k),VoloAI(vEng(k)),'+JSON.stringify(location.href)+')),NN_FALLBACK='+JSON.stringify(MCTS3)+';'+
     '\nObject.defineProperty(self,"onmessage",{configurable:true,set(h){self.addEventListener("message",e=>{const m=e.data;if(!m.opt||m.opt.algo!=="nn")return h(e);'+
     'const k=vRad(m.st),sv=m.opt.solve&&vAI(k).solve(m.st,m.opt.solve);if(sv&&sv.win){self.postMessage({id:m.id,r:{move:sv.move,score:1000,depth:sv.n,forced:false,policy:false}});return;}'+
     'vNN(k).search(m.st,m.opt,r=>self.aiBest(r,m.id)).catch(()=>vAI(k).search(m.st,NN_FALLBACK)).then(r=>self.postMessage({id:m.id,r:r&&{move:r.move,score:r.score,depth:r.depth,forced:r.forced,policy:r.policy}}));});}});',
   aiOpt:voProgress,
-  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>{const e=engOfPos(st);pageAI=pageAI||{};return (pageAI[e.RAD]=pageAI[e.RAD]||VoloAI(e)).search(Array.from(st),opt.algo==='nn'?MCTS3:opt);},   // no worker: no network either
+  aiPos:st=>Array.from(st),aiSearch:(st,opt)=>{const e=engOfPos(st);pageAI=pageAI||{};return (pageAI[e.RAD]=pageAI[e.RAD]||VoloAI(e)).search(Array.from(st),opt.algo==='nn'?{...MCTS3,solve:opt.solve}:opt);},   // no worker: no network either (the solver still)
   evalInfo:voEvalInfo,
   home:()=>{syncE();drawBoard(E.init(),{});}};
 // the size chosen redraws the home board and is kept (one choice for every form)
