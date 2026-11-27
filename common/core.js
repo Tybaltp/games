@@ -1343,10 +1343,17 @@ function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)retur
   view.result={winner:1-tt,reason:'time'};resetUi();renderGame();}
 let localTick=0;
 // Home: "Create a game", then the opponent (link, computer, face to face, free play), then that choice's options
-let homeK='';
+let homeK='',homeFromPop=false;
 // Home, one card: '' (Play, Analyse, the game to resume, the codes) · 'play' (the game mode, then its options; the name for
 // a link or the computer) · 'ana' (create a game in free play, or load an SGF file) · 'free' · 'load'
-function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
+// Each step further in (a card, then Create / Load) is an entry in the browser's history ({hs: the step, m: the mode}):
+// Back comes back to the step before, Forward goes again (homeFrom, from popstate or from the page started again)
+const homeDepth=k=>!k?0:k==='free'||k==='load'?2:1;
+function homeHist(k){const st={hs:k,m:$('modeSel').value},cur=history.state&&history.state.hs||'';if(homeDepth(k)<=homeDepth(cur)&&k!==cur)return;
+  try{if(homeDepth(k)>homeDepth(cur))history.pushState(st,'',location.href);else history.replaceState(st,'',location.href);}catch(e){}}
+function homeFrom(st){const k=st&&typeof st.hs==='string'?st.hs:'',ms=$('modeSel');if(st&&st.m&&[...ms.options].some(o=>o.value===st.m))ms.value=st.m;homeFromPop=true;try{homeStep(k);}finally{homeFromPop=false;}}
+function homeBack(){if(history.state&&history.state.hs){history.back();return;}homeStep(homeK==='free'||homeK==='load'?'ana':'');}
+function homeStep(k){if(!homeFromPop)homeHist(k);homeK=k;const mode=$('modeSel').value,play=k==='play';
   $('homeMain').hidden=k!=='';$('newHead').hidden=k==='';$('anaPick').hidden=k!=='ana';
   $('modeWrap').hidden=$('modeTxt').hidden=!play;$('modeTxt').textContent=mode==='ai'?aiHelp():t('m_'+mode+'Txt');$('nameWrap').hidden=!(play&&(mode==='link'||mode==='ai'));
   const F={link:'createForm',ai:'aiForm',face:'faceForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=!(play&&mode===x);
@@ -1486,7 +1493,7 @@ function sgfLoad(txt){let T;try{T=sgfParse(String(txt).replace(/^\uFEFF/,''));}c
   // Both are analyses: a move played anywhere adds a variation.
   if(!r.over&&!result){stopAI();navAt=null;role='test';C.stop=true;setHash('test');
     view={...soloView(rules,null),names,customNames:cn,moves:codes,tree,gameResult:null};LS.set(TK(),view);hintMv=null;showGame();testTurn();return '';}
-  stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
+  stopAI();role='file';mySeat=-1;C.stop=true;setHash(/^#sgf=/.test(location.hash)?location.hash.slice(1):'file');   // #file: so that Back comes back to the game's home
   view={...soloView(rules,null),names,customNames:cn,moves:[],tree,gameResult:result,result:null,sgfDT:v('DT')||''};navAt=null;
   resetUi();hintMv=null;showGame();renderGame();return '';}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
@@ -1563,6 +1570,8 @@ function init(){GAME.home();saveMigrate();saveRender();
   // #sgf=<file>: a game file of the site (a relative path on this server) opened for analysis, at its first position (24.11.2026)
   {const ms=/^#sgf=([\w\-./%]+\.sgf)$/.exec(location.hash),u=ms&&decodeURIComponent(ms[1]);if(u&&!u.includes('..')&&!u.startsWith('/')){
     fetch(u).then(r=>{if(!r.ok)throw 0;return r.text();}).then(tx=>{const e=sgfLoad(tx);if(e)status(e);}).catch(()=>status(t('sgfBad')));return;}}
+  if(location.hash==='#file')setHash('');
+  if(!location.hash&&history.state&&history.state.hs){const st=history.state;setTimeout(()=>{if(!location.hash&&!role&&!view)homeFrom(st);},0);}   // back from a game: its panel   // a file loaded by hand is not kept: the game's home
   if(location.hash==='#test'){const sv=LS.get(TK(),null);startTest(GAME.rules(sv||{}));if(sv&&sv.moves){view={...sv,names:sv.customNames?sv.names:view.names};testTurn();}return;}
   {const mm=/^#m([twv])-([a-z0-9]+)-(\d+)$/.exec(location.hash);if(mm&&mStart(mm[1],mm[2],+mm[3]))return;}
   const m=/^#(join|watch|host)-([a-z0-9-]+)$/.exec(location.hash);if(!m)return;m[2]=cleanCode(m[2]);const saved=LS.get(netKey('host',m[2]),null),sg=LS.get(netKey('guest',m[2]),null);
@@ -1936,7 +1945,7 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
   const gameOff=()=>{try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();};
   $('homeBtn').onclick=()=>{if(COQKIND==='match'){coqPost({t:'leave'});return;}gameOff();setHash('');location.reload();};
   // Back (or Forward) between the game's home and a game: the page starts again at that address (a game is taken up from its save)
-  window.addEventListener('popstate',()=>{if(MTW)return;gameOff();location.reload();});
+  window.addEventListener('popstate',e=>{if(MTW)return;if(!location.hash&&!role&&!view){homeFrom(e.state);return;}gameOff();location.reload();});
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
   // (by link or in free play: against the computer or face to face, the game waits in « Parties en cours »)
   const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden&&role!=='ai'&&role!=='local';
@@ -1947,7 +1956,7 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
   if($('faceForm'))$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tc=tcRead('fTc',K('local-tc'));HT.want=true;
     startLocal(GAME.form('f'),tc);});
   $('playBtn').onclick=()=>homeStep('play');$('anaBtn').onclick=()=>homeStep('ana');
-  $('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
+  $('newBack').onclick=homeBack;
   document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
   // the game mode: the modes this game has (no computer without its AI), the last one chosen
   {const ms=$('modeSel'),opts=()=>[...ms.children].map(o=>o.getAttribute('value'));if(!$('aiForm'))for(const o of [...ms.children])if(o.getAttribute('value')==='ai')ms.removeChild(o);

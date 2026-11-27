@@ -26,7 +26,7 @@
   const base=homeStep;homeStep=function(k){base(k);const h=$i('newTitle');
     if(k==='play'){h.dataset.i18n='m_'+ms.value;h.textContent=t(h.dataset.i18n);}
     $i('modeTxt').dataset.i18n='m_'+ms.value+'Txt';};
-  $i('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
+  $i('newBack').onclick=homeBack;   // (the socle: by the browser's history when the step is in it)
   // le bouton plein écran existe partout où le navigateur le permet (le socle ne le met que sur écran tactile)
   {const D=document,R=D.documentElement;if(!$i('fsBtn')&&D.fullscreenEnabled&&R.requestFullscreen){const f=D.createElement('button');f.type='button';f.className='fsbtn';f.id='fsBtn';
     f.setAttribute('data-i18n-t','fullscreen');f.title=t('fullscreen');f.setAttribute('aria-label',f.title);

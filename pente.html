@@ -399,7 +399,7 @@ function aiSearch(p,o){o=o||{};const n=o.nodes;TELL=null;
  if(typeof aiBest==='function')TELL=(m,sc,d)=>aiBest({move:{t:'m',i:m},score:Math.round(sc),depth:d});
  const r=think(p.toMove,n,o);TELL=null;return {move:{t:'m',i:r.move},score:r.score,depth:r.depth,nodes:r.nodes};}
 </script>
-<script src="common/core.js?v=107"></script>
+<script src="common/core.js?v=109"></script>
 <script src="common/codes.js?v=9"></script>
 <script>
 // ===== Pente on the shared code (common/core.js) =====
@@ -781,7 +781,7 @@ const GAME={id:'pente',seatCol:s=>{const m=view?view.moves:[],c1=m[1]==='B'||m[1
   evalInfo:res=>evalInfo(res)};
 coreStart();
 </script>
-<script src="common/accueil.js?v=1"></script>
+<script src="common/accueil.js?v=2"></script>
 <script>
 // Cadrage continu du fond (Pente) : en grand écran, l'image entière, à 24 px du bord droit (règle commune) ; plus la fenêtre est
 // étroite par rapport à l'image (t de 0 à 1), plus on zoome et on glisse : au téléphone (t = 1), les lignes 2,75 à 12 du plateau

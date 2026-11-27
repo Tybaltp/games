@@ -182,7 +182,7 @@ html:root{--accRight:0px}
 <div class="sheetbg" id="sheetBg" hidden></div>
 </section>
 </div>
-<script src="common/core.js?v=107"></script>
+<script src="common/core.js?v=109"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -669,5 +669,5 @@ coreStart();
 // New game on this device or against the computer: a new random board (core would keep the finished game's)
 $('newGame').onclick=()=>{if(role==='ai'){startAI(1-mySeat,GAME.form('a'));return;}if(role==='test'){startTest(GAME.form('t'));return;}if(role==='local'){startLocal(GAME.form('f'),view.tc);return;}rmSend('ask');};
 </script>
-<script src="common/accueil.js?v=1"></script>
+<script src="common/accueil.js?v=2"></script>
 </body></html>
