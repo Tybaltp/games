@@ -481,7 +481,10 @@ function hostAway(s,back){const g=H.game;if(!g||!g.started||s<0)return;const r=r
   if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);}
 function hostReject(conn,why){try{conn.send({t:'reject',why});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},800);}
 // A spectator's arrival, said once per name (they may reconnect, the host may change)
-function hostWatchLog(n){const g=H.game;if(!n)return;if(!g.wseen)g.wseen=[];if(g.wseen.includes(n))return;g.wseen.push(n);if(g.wseen.length>50)g.wseen.shift();hostLog('lg_watch',{n},true);}
+// A Mochalunt match is one table for its games: who already came to it (its chat goes on from table to table) is not
+// announced again at the next game
+const mSeen=(g,n)=>!!g.match&&(g.chat||[]).some(x=>(x.k==='lg_join'||x.k==='lg_watch')&&x.a&&x.a.n===n);
+function hostWatchLog(n){const g=H.game;if(!n)return;if(!g.wseen)g.wseen=[];if(g.wseen.includes(n)||mSeen(g,n))return;g.wseen.push(n);if(g.wseen.length>50)g.wseen.shift();hostLog('lg_watch',{n},true);}
 // conn takes seat s (known: the player of that seat comes back; took: a request accepted, the name kept)
 function hostSeat(conn,d,s,known,took){const g=H.game;
   if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
@@ -553,7 +556,7 @@ const CHATMAX=100,chatClean=v=>String(v||'').replace(/\s+/g,' ').trim().slice(0,
 // The chat also carries the game's log, written by the host ({k: i18n key, a: its values}, shown to everyone, in each
 // one's language): a player or a named spectator joins, the game starts, a rematch, the result.
 function hostLog(k,a,quiet){const g=H.game;if(!g.chat)g.chat=[];g.chat.push({k,a:a||{}});if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);if(!quiet)hostBroadcast();}
-function hostJoinLog(conn){if(conn&&conn.jpend&&conn.seat>=0){conn.jpend=false;hostLog('lg_join',{n:H.game.names[conn.seat]},true);}}
+function hostJoinLog(conn){if(conn&&conn.jpend&&conn.seat>=0){conn.jpend=false;const g=H.game,n=g.names[conn.seat];if(g.match&&(g.match.k>0||mSeen(g,n)))return;hostLog('lg_join',{n},true);}}
 // A Mochalunt table (its chat goes on from the previous one) also shows them before its game starts.
 function chatReveal(){const g=H.game;if(!g||!g.chat)return;if(g.anOnly){for(const x of g.chat)if(x.w)x.v=1;return;}const o=replay(g,g.moves,g.result).over;
   if(!o){g.endLog=false;if(!(g.match&&!g.started))return;}
