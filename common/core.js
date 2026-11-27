@@ -414,7 +414,9 @@ const INST=Date.now().toString(36)+'.'+Math.round(performance.now()*1000).toStri
 const newCode=n=>Object.keys(CODE_GAMES).find(k=>CODE_GAMES[k].id===GAME.id)+rnd(n-2);
 const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+MATCH.code+'-'+MTK;   // a match table keeps its own address
-  try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
+  // from the game's home to a game (the computer, two on one screen, a table): a new entry, so that Back comes back to
+  // the game's home (popstate, below), not to the page before
+  const nw=h?'#'+h:location.pathname+location.search;try{if(h&&!location.hash&&!MTW)history.pushState(null,'',nw);else history.replaceState(null,'',nw);}catch(e){}gameHref=h?location.href:'';}
 // The page closes or reloads (pagehide, or Home): the host saves, says bye to everyone and leaves the matchmaking service
 // (the direct links stay, for bye to go out) so that the guest can take the table under its id at once; a guest or a
 // spectator says bye too (absent at once)
@@ -481,7 +483,10 @@ function hostAway(s,back){const g=H.game;if(!g||!g.started||s<0)return;const r=r
   if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);}
 function hostReject(conn,why){try{conn.send({t:'reject',why});}catch(e){}setTimeout(()=>{try{conn.close();}catch(e){}},800);}
 // A spectator's arrival, said once per name (they may reconnect, the host may change)
-function hostWatchLog(n){const g=H.game;if(!n)return;if(!g.wseen)g.wseen=[];if(g.wseen.includes(n))return;g.wseen.push(n);if(g.wseen.length>50)g.wseen.shift();hostLog('lg_watch',{n},true);}
+// A Mochalunt match is one table for its games: who already came to it (its chat goes on from table to table) is not
+// announced again at the next game
+const mSeen=(g,n)=>!!g.match&&(g.chat||[]).some(x=>(x.k==='lg_join'||x.k==='lg_watch')&&x.a&&x.a.n===n);
+function hostWatchLog(n){const g=H.game;if(!n)return;if(!g.wseen)g.wseen=[];if(g.wseen.includes(n)||mSeen(g,n))return;g.wseen.push(n);if(g.wseen.length>50)g.wseen.shift();hostLog('lg_watch',{n},true);}
 // conn takes seat s (known: the player of that seat comes back; took: a request accepted, the name kept)
 function hostSeat(conn,d,s,known,took){const g=H.game;
   if(H.guestConn&&H.guestConn!==conn){try{H.guestConn.close();}catch(e){}}
@@ -516,7 +521,9 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
     conn.wname=nmClean(d.name);hostWatchLog(conn.wname);H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
   // a name chosen once connected (the frame over the board): a spectator's (empty: anonymous), the guest's
   if(d.t==='wname'){if(H.watchers.has(conn)){conn.wname=nmClean(d.name);hostWatchLog(conn.wname);hostBroadcast();}return;}
-  if(d.t==='chat'){if(conn===H.guestConn&&conn.seat>=0)hostChat(g.names[conn.seat],false,d.m);else if(H.watchers.has(conn)&&conn.wname)hostChat(conn.wname,true,d.m);return;}
+  if(d.t==='chat'){if(conn===H.guestConn&&conn.seat>=0)hostChat(g.names[conn.seat],false,d.m,{i:d.i});else if(H.watchers.has(conn)&&conn.wname)hostChat(conn.wname,true,d.m);return;}
+  // a match: the guest, arrived, gives the messages this table does not have (written or received while the two were apart)
+  if(d.t==='chatmerge'){if(conn===H.guestConn&&conn.seat>=0&&g.match&&Array.isArray(d.L)){let ch=false;for(const x of d.L.slice(-50))if(x&&chatIdOk(x.i)&&hostChatAdd(x.n,false,x.m,{i:x.i,r:x.r}))ch=true;if(ch)hostBroadcast();}return;}
   if(d.t==='an'){if(H.conns.has(conn))anOp(conn.peer,d);return;}   // the shared analysis: anyone at the table
   if(d.t==='voice'&&d.to){if(H.conns.has(conn))voiceRelay(conn,d);return;}   // a table's call
   if(conn!==H.guestConn)return;
@@ -551,17 +558,25 @@ const CHATMAX=100,chatClean=v=>String(v||'').replace(/\s+/g,' ').trim().slice(0,
 // The chat also carries the game's log, written by the host ({k: i18n key, a: its values}, shown to everyone, in each
 // one's language): a player or a named spectator joins, the game starts, a rematch, the result.
 function hostLog(k,a,quiet){const g=H.game;if(!g.chat)g.chat=[];g.chat.push({k,a:a||{}});if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);if(!quiet)hostBroadcast();}
-function hostJoinLog(conn){if(conn&&conn.jpend&&conn.seat>=0){conn.jpend=false;hostLog('lg_join',{n:H.game.names[conn.seat]},true);}}
+function hostJoinLog(conn){if(conn&&conn.jpend&&conn.seat>=0){conn.jpend=false;const g=H.game,n=g.names[conn.seat];if(g.match&&(g.match.k>0||mSeen(g,n)))return;hostLog('lg_join',{n},true);}}
 // A Mochalunt table (its chat goes on from the previous one) also shows them before its game starts.
 function chatReveal(){const g=H.game;if(!g||!g.chat)return;if(g.anOnly){for(const x of g.chat)if(x.w)x.v=1;return;}const o=replay(g,g.moves,g.result).over;
   if(!o){g.endLog=false;if(!(g.match&&!g.started))return;}
   else if(!g.endLog){g.endLog=true;hostLog(o.w<0?'draw':'wins',o.w<0?{why:o.why}:{n:g.names[o.w]||'',why:o.why},true);}
   for(const x of g.chat){if(x.w)x.v=1;delete x.h;}}
-function hostChat(n,w,m){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return;if(!g.chat)g.chat=[];let c;if(!w){c=Math.max(0,g.names.indexOf(n));if(g.match&&g.match.seats)c=g.match.seats[c]==='c'?0:1;}else{const o=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=o?o.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push({n,w:w?1:0,m,c});
-  if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);hostBroadcast();}
-function chatSend(){const i=$('chatIn'),m=chatClean(i.value);if(!m||!view)return;
-  if(role==='host')hostChat(view.names[seatN()]||nickGet()||t('p1'),false,m);
-  else if(C.conn&&C.conn.open&&(role==='guest'||(role==='watch'&&C.name)))C.conn.send({t:'chat',m});else return;
+// A message has an id (i), made where it is written: the same message, come twice (by the table and by the coquille of a
+// match, or merged when a player joins), is kept once. o: {i: the id, r: the author's role in the match ('c'|'i')}
+const chatId=()=>Math.random().toString(36).slice(2,10),chatIdOk=i=>typeof i==='string'&&/^[a-z0-9]{4,12}$/.test(i);
+function hostChatAdd(n,w,m,o){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return false;if(!g.chat)g.chat=[];const i=o&&chatIdOk(o.i)?o.i:g.match?chatId():null;if(i&&g.chat.some(x=>x.i===i))return false;
+  let c;if(!w){if(o&&(o.r==='c'||o.r==='i')&&g.match)c=o.r==='c'?0:1;else{c=Math.max(0,g.names.indexOf(n));if(g.match&&g.match.seats)c=g.match.seats[c]==='c'?0:1;}}else{const x=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=x?x.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push(i?{n,w:w?1:0,m,c,i}:{n,w:w?1:0,m,c});
+  if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);return true;}
+function hostChat(n,w,m,o){if(hostChatAdd(n,w,m,o))hostBroadcast();}
+function chatSend(){const i=$('chatIn'),m=chatClean(i.value);if(!m||!view)return;const mp=mPlayer(),id=mp?chatId():undefined,n=mp?(seatN()>=0&&view.names[seatN()])||MATCH.name||nickGet():'';
+  if(role==='host')hostChat(view.names[seatN()]||nickGet()||t('p1'),false,m,{i:id,r:mp?MATCH.me:null});
+  else if(C.conn&&C.conn.open&&(role==='guest'||(role==='watch'&&C.name)))C.conn.send(id?{t:'chat',m,i:id}:{t:'chat',m});
+  else if(mp&&n)mChatKeep({n:nmClean(n),w:0,m,c:MATCH.me==='c'?0:1,i:id});   // a match: the table is not there, the coquille carries it
+  else return;
+  if(mp&&n)coqPost({t:'chat',x:{n:nmClean(n),m,i:id,r:MATCH.me}});   // to the other player, wherever they are in the match
   i.value='';CH.seen=-2;}   // one's own message: seen
 let CH={seen:-1,key:''};
 // Voice chat, between the two players only (never the spectators): one proposes ({t:'voice',op:'ask'}), the other accepts
@@ -591,7 +606,7 @@ function voiceRelay(conn,d){const g=H.game;if(!g||!g.an||typeof d.to!=='string')
 function voiceBusy(){if(!anaNet()||!anA())return;const on=V.st!=='off';if(on!==!!AN.busy){AN.busy=on;anSend({op:'busy',on});}}
 function voiceInvite(id){if(V.st!=='off'||!anaNet()||!id||id===anMe())return;AN.pick=false;V={st:'out',note:'',with:id};voiceTo(id,'ask');voiceUi();}
 function voiceUi(){voiceBusy();if(view&&!$('game').hidden)renderGame();}
-function voiceStop(note,tell){const v=V;if(v.st==='on')mVoiceSet(true);if(tell&&v.st!=='off')voiceSend('bye');clearTimeout(v.to);
+function voiceStop(note,tell){if(coqV())return;const v=V;if(v.st==='on')mVoiceSet(true);if(tell&&v.st!=='off')voiceSend('bye');clearTimeout(v.to);
   try{v.call&&v.call.close();}catch(e){}try{v.stream&&v.stream.getTracks().forEach(k=>k.stop());}catch(e){}
   if(v.audio){try{v.audio.srcObject=null;v.audio.remove();}catch(e){}}
   V={st:'off',note:note||''};voiceUi();}
@@ -605,14 +620,14 @@ function voiceCall(c){V.call=c;c.on('stream',rs=>{if(V.call!==c)return;clearTime
     if(pl&&pl.catch)pl.catch(()=>{const f=()=>{if(V.audio&&V.audio.paused)V.audio.play().catch(()=>{});};document.addEventListener('pointerdown',f,{once:true});document.addEventListener('keydown',f,{once:true});});   // autoplay refused (a call started by itself): at the first touch
     V.st='on';mVoiceSet(true);voiceUi();});
   c.on('close',()=>{if(V.call===c)voiceStop(t('vEnd'),false);});c.on('error',()=>{if(V.call===c)voiceStop(t('vFail'),true);});}
-function voiceIncoming(c){const exp=V.with||role==='host'&&H.guestConn&&H.guestConn.peer;if(V.st!=='conn'||!V.stream||!exp||c.peer!==exp){try{c.close();}catch(e){}return;}
+function voiceIncoming(c){if(coqV()&&!V.with){try{c.close();}catch(e){}return;}const exp=V.with||role==='host'&&H.guestConn&&H.guestConn.peer;if(V.st!=='conn'||!V.stream||!exp||c.peer!==exp){try{c.close();}catch(e){}return;}
   c.answer(V.stream);voiceCall(c);}
-function voiceAsk(){if(V.st!=='off'||!voiceNet())return;V={st:'out',note:''};voiceSend('ask');voiceUi();}
-function voiceAnswer(yes){if(V.st!=='in')return;if(!yes){mVoiceSet(false);voiceSend('no');V={st:'off',note:''};voiceUi();return;}
+function voiceAsk(){if(coqV()){coqVoice('ask');return;}if(V.st!=='off'||!voiceNet())return;V={st:'out',note:''};voiceSend('ask');voiceUi();}
+function voiceAnswer(yes){if(coqV()){coqVoice(yes?'yes':'no');return;}if(V.st!=='in')return;if(!yes){mVoiceSet(false);voiceSend('no');V={st:'off',note:''};voiceUi();return;}
   V.st='conn';voiceUi();voiceMic().then(st=>{if(!st)return;voiceSend('yes');
     if(V.with&&vCaller()){clearTimeout(V.to);V.to=setTimeout(()=>{if(V.st==='conn')voiceStop(t('vFail'),true);},15000);}   // a table's call: I call once the other one has its microphone (go)
     else voiceConnect();},()=>voiceStop(t('vMic'),true));}
-function voiceOnMsg(op,from){
+function voiceOnMsg(op,from){if(coqV()&&!from){if(op==='ask'||op==='reask')voiceSend('no');return;}   // in the coquille: the call is the coquille's (an older page's offer: declined)
   // a table's call: from someone else than the one I am talking to: busy; a players' offer while I am in a table's call: busy
   if(from&&V.st!=='off'&&V.with!==from){if(op==='ask')voiceTo(from,'busy');return;}
   if(!from&&V.with){if(op==='ask')try{if(role==='host'&&H.guestConn)H.guestConn.send({t:'voice',op:'no'});else if(C.conn)C.conn.send({t:'voice',op:'no'});}catch(e){}return;}
@@ -625,9 +640,9 @@ function voiceOnMsg(op,from){
   else if(op==='go'&&V.st==='conn'&&V.stream)voiceConnect();
   else if(op==='bye'){if(V.st!=='off')voiceStop(t('vEnd'),false);mVoiceSet(false);}}
 const voiceVol=()=>{const v=LS.get('games-voicevol',80);return typeof v==='number'?v:80;};
-function voiceMute(){if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
-function voiceRender(){const tbl=seatN()<0&&anaNet(),b=$('voiceBox'),pl=(seatN()>=0&&(role==='host'||role==='guest')||tbl&&(!!V.with||!!V.note))&&voiceOk();b.hidden=!pl;if(!pl)return;   // a spectator at a table: their call, or how the last one ended
-  const o=vNm(),st=V.st,there=!!(view&&view.names[1-seatN()])&&(role==='guest'||!!view.guestOn);
+function voiceMute(){if(coqV()){coqVoice('mute');return;}if(!V.stream)return;V.muted=!V.muted;V.stream.getAudioTracks().forEach(k=>{k.enabled=!V.muted;});voiceUi();}
+function voiceRender(){const tbl=seatN()<0&&anaNet(),b=$('voiceBox'),pl=coqV()?seatN()>=0&&(role==='host'||role==='guest')&&CV.ok:(seatN()>=0&&(role==='host'||role==='guest')||tbl&&(!!V.with||!!V.note))&&voiceOk();coqTell(pl);b.hidden=!pl;if(!pl)return;   // a spectator at a table: their call, or how the last one ended
+  const o=vNm(),st=V.st,there=coqV()?CV.link:!!(view&&view.names[1-seatN()])&&(role==='guest'||!!view.guestOn);
   if(st==='off'&&V.note&&!there&&!tbl)V.note='';
   $('voiceAsk').hidden=st!=='off'||tbl;$('voiceAsk').disabled=!there;
   $('voiceTxt').hidden=!(st==='out'||st==='in'||st==='conn'||st==='on'||V.note);
@@ -701,7 +716,7 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
   else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);clearTimeout(C.nt);try{peer.destroy();}catch(e){}clientRefused(d.why);}
   else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();
     if(C.hold&&(d.game.myHold===C.hold.code||d.game.moves.length))C.hold=null;
-    showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}mVoiceAuto();}
+    showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}mVoiceAuto();mChatMerge();}
   else if(d.t==='nack'){sending=false;if(C.hold){C.hold=null;if(view)view.myHold=null;resetUi();}if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
 
 // Refused by the table: two players already there (t_refused), a request declined (seat_no) or lapsed (seat_gone):
@@ -1328,10 +1343,17 @@ function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)retur
   view.result={winner:1-tt,reason:'time'};resetUi();renderGame();}
 let localTick=0;
 // Home: "Create a game", then the opponent (link, computer, face to face, free play), then that choice's options
-let homeK='';
+let homeK='',homeFromPop=false,liveGame=()=>false,gameHref='',leaveOk=false;
 // Home, one card: '' (Play, Analyse, the game to resume, the codes) · 'play' (the game mode, then its options; the name for
 // a link or the computer) · 'ana' (create a game in free play, or load an SGF file) · 'free' · 'load'
-function homeStep(k){homeK=k;const mode=$('modeSel').value,play=k==='play';
+// Each step further in (a card, then Create / Load) is an entry in the browser's history ({hs: the step, m: the mode}):
+// Back comes back to the step before, Forward goes again (homeFrom, from popstate or from the page started again)
+const homeDepth=k=>!k?0:k==='free'||k==='load'?2:1;
+function homeHist(k){const st={hs:k,m:$('modeSel').value},cur=history.state&&history.state.hs||'';if(homeDepth(k)<=homeDepth(cur)&&k!==cur)return;
+  try{if(homeDepth(k)>homeDepth(cur))history.pushState(st,'',location.href);else history.replaceState(st,'',location.href);}catch(e){}}
+function homeFrom(st){const k=st&&typeof st.hs==='string'?st.hs:'',ms=$('modeSel');if(st&&st.m&&[...ms.options].some(o=>o.value===st.m))ms.value=st.m;homeFromPop=true;try{homeStep(k);}finally{homeFromPop=false;}}
+function homeBack(){if(history.state&&history.state.hs){history.back();return;}homeStep(homeK==='free'||homeK==='load'?'ana':'');}
+function homeStep(k){if(!homeFromPop)homeHist(k);homeK=k;const mode=$('modeSel').value,play=k==='play';
   $('homeMain').hidden=k!=='';$('newHead').hidden=k==='';$('anaPick').hidden=k!=='ana';
   $('modeWrap').hidden=$('modeTxt').hidden=!play;$('modeTxt').textContent=mode==='ai'?aiHelp():t('m_'+mode+'Txt');$('nameWrap').hidden=!(play&&(mode==='link'||mode==='ai'));
   const F={link:'createForm',ai:'aiForm',face:'faceForm'};for(const x in F)if($(F[x]))$(F[x]).hidden=!(play&&mode===x);
@@ -1471,7 +1493,7 @@ function sgfLoad(txt){let T;try{T=sgfParse(String(txt).replace(/^\uFEFF/,''));}c
   // Both are analyses: a move played anywhere adds a variation.
   if(!r.over&&!result){stopAI();navAt=null;role='test';C.stop=true;setHash('test');
     view={...soloView(rules,null),names,customNames:cn,moves:codes,tree,gameResult:null};LS.set(TK(),view);hintMv=null;showGame();testTurn();return '';}
-  stopAI();role='file';mySeat=-1;C.stop=true;setHash('');
+  stopAI();role='file';mySeat=-1;C.stop=true;setHash(/^#sgf=/.test(location.hash)?location.hash.slice(1):'file');   // #file: so that Back comes back to the game's home
   view={...soloView(rules,null),names,customNames:cn,moves:[],tree,gameResult:result,result:null,sgfDT:v('DT')||''};navAt=null;
   resetUi();hintMv=null;showGame();renderGame();return '';}
 // The two commands, added to every page: « Load a game » under « Create a game », « Export the game (SGF) » under the moves
@@ -1548,6 +1570,8 @@ function init(){GAME.home();saveMigrate();saveRender();
   // #sgf=<file>: a game file of the site (a relative path on this server) opened for analysis, at its first position (24.11.2026)
   {const ms=/^#sgf=([\w\-./%]+\.sgf)$/.exec(location.hash),u=ms&&decodeURIComponent(ms[1]);if(u&&!u.includes('..')&&!u.startsWith('/')){
     fetch(u).then(r=>{if(!r.ok)throw 0;return r.text();}).then(tx=>{const e=sgfLoad(tx);if(e)status(e);}).catch(()=>status(t('sgfBad')));return;}}
+  if(location.hash==='#file')setHash('');
+  if(!location.hash&&history.state&&history.state.hs){const st=history.state;setTimeout(()=>{if(!location.hash&&!role&&!view)homeFrom(st);},0);}   // back from a game: its panel   // a file loaded by hand is not kept: the game's home
   if(location.hash==='#test'){const sv=LS.get(TK(),null);startTest(GAME.rules(sv||{}));if(sv&&sv.moves){view={...sv,names:sv.customNames?sv.names:view.names};testTurn();}return;}
   {const mm=/^#m([twv])-([a-z0-9]+)-(\d+)$/.exec(location.hash);if(mm&&mStart(mm[1],mm[2],+mm[3]))return;}
   const m=/^#(join|watch|host)-([a-z0-9-]+)$/.exec(location.hash);if(!m)return;m[2]=cleanCode(m[2]);const saved=LS.get(netKey('host',m[2]),null),sg=LS.get(netKey('guest',m[2]),null);
@@ -1560,6 +1584,30 @@ function init(){GAME.home();saveMigrate();saveRender();
   if(m[1]==='join'){const back=!!(sg&&sg.code===m[2]);clientStart(m[2],back&&sg.name||nickGet()||t('p2'),false);if(!back)C.ask=HT.want=true;return;}
   const wr=LS.get(K('p2p-watch'),null);if(wr&&wr.code===m[2]){clientStart(m[2],wr.name||'',true);return;}
   clientStart(m[2],'',true);nameOv('watch');}
+
+// ---------- La coquille : this page inside the match's page (mochalunt.html, <page>.html?coquille#m…) ----------
+// The coquille keeps what goes on from table to table: its own link between the two players, the voice (the microphone and
+// the call are the coquille's, so a new table does not cut them), the score and the way to the next table. The page keeps
+// its game, its table (PeerJS), its chat. Messages (postMessage, same origin): to the coquille ready {k,kind,title},
+// go {k,kind} (the next table, or the result), leave, voice {op,v} (ask, cancel, yes, no, hang, mute, vol); from it
+// voice {st,note,muted,mic,link,ok} (shown in the voice box as V) and ring.
+// The coquille around this page: 'match' (mochalunt.html), 'site' (index.html), '' (none); the parent says it (COQ_SHELL)
+const COQKIND=(()=>{try{if(!window.parent||window.parent===window)return '';const k=window.parent.COQ_SHELL;return k==='match'||k==='site'?k:/[?&]coquille(&|$)/.test(location.search)?'match':'';}catch(e){return '';}})();
+const ENCOQ=!!COQKIND;
+const coqV=()=>ENCOQ&&!anaNet();   // the players' voice goes through the coquille (a shared analysis table keeps its own calls)
+// what the coquille needs for the voice: the link game's table (its code, my seat, the other's name; code null: none)
+// and whether this page shows the voice box (if not, the coquille shows the call in its own bar)
+let coqK='';
+function coqTell(pl){if(!ENCOQ)return;const net=(role==='host'||role==='guest')&&seatN()>=0&&!anaNet()&&!!view,code=net?(role==='host'?H.code:C.code)||null:null,o=net?vNm():'';
+  const k=[code,seatN(),o,!!pl].join('|');if(k===coqK)return;coqK=k;coqPost({t:'table',code,seat:seatN(),other:o,vbox:!!pl});}   // the seat: the same whoever hosts
+let CV={ok:false,link:false};   // the coquille's voice: possible here (a player), the link to the other player up
+function coqPost(m){if(!ENCOQ)return;try{window.parent.postMessage({coq:1,...m},location.origin&&location.origin!=='null'?location.origin:'*');}catch(e){}}
+function coqVoice(op,v){coqPost({t:'voice',op,v});}
+if(ENCOQ)window.addEventListener('message',e=>{if(e.source!==window.parent||!e.data||e.data.coq!==2)return;const d=e.data;
+  if(d.t==='voice'){CV={ok:!!d.ok,link:!!d.link};const was=V.st;V={st:d.st||'off',note:d.note?t(d.note,{n:vNm()}):'',muted:!!d.muted,stream:d.mic?true:null};
+    if(was!==V.st||view)voiceUi();}
+  else if(d.t==='ring')tone(520,.12,.05);
+  else if(d.t==='chat')mChatIn(d.x);});
 
 // ---------- Mochalunt matches (see mochalunt.html) ----------
 // A match: the same two players over the tables of the plan, one game each, played in order. Its record is kept on each
@@ -1580,20 +1628,36 @@ const mSave=()=>{if(MATCH)LS.set('mochalunt-'+MATCH.code,MATCH);};
 // the score, by role: 1 a win, ½ a draw
 function mScore(rec){const p={c:0,i:0};for(const k in rec.res||{}){const w=rec.res[k].w;if(w==='d'){p.c+=.5;p.i+=.5;}else if(w)p[w]+=1;}return p;}
 const mNum=x=>String(x).replace('.',lang==='en'?'.':',');
-function mGo(k,kind){const P=mPlan(MATCH);if(V.st==='on'||MATCH.vc&&MATCH.vc.k===MTK)mVoiceSet(true);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
+function mGo(k,kind){if(COQKIND==='match'){coqPost({t:'go',k,kind});return;}const P=mPlan(MATCH);if(V.st==='on'||MATCH.vc&&MATCH.vc.k===MTK)mVoiceSet(true);C.stop=true;try{peer&&peer.destroy();}catch(e){}wpeerStop();
   location.href=k>=P.length?'mochalunt.html#res-'+MATCH.code:P[k].page+'.html#m'+kind+'-'+MATCH.code+'-'+k;}
 // The voice between the two players goes on from table to table: on, it is noted in the record ({k: the table, at});
 // at the next table (or the same one, reloaded) within 15 min, the guest offers it again by itself ('reask') and the
 // host, which has the same note, accepts it by itself. Hanging up, declining or a 'bye' removes the note.
 const mVoiceFresh=()=>!!(MATCH&&MATCH.me&&MTW==='t'&&MATCH.vc&&(MATCH.vc.k===MTK||MATCH.vc.k===MTK-1)&&Date.now()-MATCH.vc.at<15*60e3);
-function mVoiceSet(on){if(!MATCH||!MATCH.me||MTW!=='t')return;if(on)MATCH.vc={k:MTK,at:Date.now()};else if(MATCH.vc)delete MATCH.vc;else return;mSave();}
+function mVoiceSet(on){if(ENCOQ||!MATCH||!MATCH.me||MTW!=='t')return;if(on)MATCH.vc={k:MTK,at:Date.now()};else if(MATCH.vc)delete MATCH.vc;else return;mSave();}
 let mVoiceTried=false;
-function mVoiceAuto(){if(mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!voiceOk()||!voiceNet()||!mVoiceFresh())return;
+function mVoiceAuto(){if(ENCOQ||mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!voiceOk()||!voiceNet()||!mVoiceFresh())return;
   mVoiceTried=true;V={st:'out',note:''};voiceSend('reask');voiceUi();}
+// The chat goes on across the match, the two players at the same table or not: a message also goes to the coquille,
+// which carries it to the other player's (common/coquille.js); there it joins the table's chat (this page hosts it), or
+// is kept in the record, marked p (waiting), until a table has it: the guest gives the waiting ones to its host
+// (chatmerge), the first at a table starts its chat with them.
+const mPlayer=()=>COQKIND==='match'&&!!MATCH&&!!MATCH.me&&MTW==='t';
+const mChatWait=L=>(MATCH&&MATCH.chat||[]).filter(x=>x.p&&x.i&&!L.some(y=>y.i===x.i));
+function mChatKeep(e){if(!MATCH||(MATCH.chat||[]).some(y=>y.i===e.i))return;MATCH.chat=[...(MATCH.chat||[]),{...e,p:1}].slice(-CHATMAX);mSave();
+  if(view&&Array.isArray(view.chat)&&!view.chat.some(y=>y.i===e.i)){view.chat=[...view.chat,{...e}];chatRender();}}
+function mChatIn(x){if(!mPlayer()||!x||!chatIdOk(x.i))return;const n=nmClean(x.n),m=chatClean(x.m);if(!n||!m)return;
+  if(role==='host'&&H.game){hostChat(n,false,m,{i:x.i,r:x.r});return;}
+  if(view&&Array.isArray(view.chat)&&view.chat.some(y=>y.i===x.i))return;
+  if(role==='guest'&&C.conn&&C.conn.open)return;   // the other hosts this table: it comes by the table
+  mChatKeep({n,w:0,m,c:x.r==='c'?0:1,i:x.i});}
+const mSent=new Set();
+function mChatMerge(){if(!mPlayer()||role!=='guest'||!C.conn||!C.conn.open||!view)return;const L=mChatWait(view.chat||[]).filter(x=>!mSent.has(x.i));if(!L.length)return;
+  L.forEach(x=>mSent.add(x.i));try{C.conn.send({t:'chatmerge',L:L.map(x=>({n:x.n,m:x.m,i:x.i,r:x.c===0?'c':'i'}))});}catch(e){}}
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
   return {size:GAME.size,...GAME.rules(G.rules||{}),hold:null,tc,first:'host',names:[MATCH.name,''],moves:[],clock:[tc.base,tc.base],running:false,result:null,started:false,
-    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,ed:MATCH.ed||null,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
+    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v).map(({p,...x})=>x),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,ed:MATCH.ed||null,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
 // The chooser takes the first seat or the second (c: 1 first, 2 second); the seats are swapped when needed
 function mChoose(s,c){const g=H.game,m=g.match;if(!m||m.chosen||g.started||!g.names[0]||!g.names[1])return;if(m.seats[s]!==mChooser(m,m.k))return;
   if((s===0)!==(c===1)){g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();m.seats.reverse();g.ready.reverse();mySeat=1-mySeat;
@@ -1611,7 +1675,9 @@ function mSync(r){const m=view&&view.match;if(!m||!MATCH)return;let ch=false;
   if(MATCH.me&&MTW==='t'&&!MATCH.on&&view.names[0]&&view.names[1]){MATCH.on=1;ch=true;}
   for(const k in m.res||{})if(!MATCH.res[k]){MATCH.res[k]=m.res[k];ch=true;}
   const nm={};m.seats.forEach((ro,s)=>{if(view.names[s])nm[ro]=view.names[s];});if(JSON.stringify({...MATCH.names,...nm})!==JSON.stringify(MATCH.names||{})){MATCH.names={...MATCH.names,...nm};ch=true;}
-  if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length&&JSON.stringify(view.chat)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=view.chat.slice(-CHATMAX);ch=true;}
+  // a message seen while the other player is not at this table waits (p) until the two are together at a table
+  if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length){const both=!!(view.names[0]&&view.names[1])&&(role==='host'?!!H.guestConn:role==='guest'&&!!C.conn&&C.conn.open),old=MATCH.chat||[];
+    const L=[...view.chat.map(x=>{if(!x.i||both)return x;const o=old.find(y=>y.i===x.i);return o&&!o.p?x:{...x,p:1};}),...mChatWait(view.chat)].slice(-CHATMAX);if(JSON.stringify(L)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=L;ch=true;}}
   if(r.over&&!MATCH.res[MTK]){MATCH.res[MTK]={w:r.over.w<0?'d':m.seats[r.over.w],why:r.over.why,moves:view.moves.slice(),names:{...MATCH.names},seats:m.seats.slice(),rules:GAME.rules(view)};ch=true;}
   if(ch)mSave();}
 // The match card (side panel): the table, the score, the seat choice, the tables (finished ones open read only)
@@ -1647,7 +1713,11 @@ function mStart(kind,code,k){MATCH=LS.get('mochalunt-'+code,null);MTK=k;MTW=kind
   if(!MATCH){status(t('m_unknown'));return true;}
   MATCH.res=MATCH.res||{};if(MATCH.excl===undefined&&kind==='v'){status(t('m_unknown'));return true;}
   const P=MATCH.excl===undefined?null:mPlan(MATCH);
-  if(P&&(k>=P.length||P[k].id!==GAME.id)){if(k<P.length)location.replace(P[k].page+'.html'+location.hash);else location.replace('mochalunt.html#res-'+code);return true;}
+  // a table to play or to watch, opened on its own (an older link, a tab left open): into the match's coquille
+  if(COQKIND!=='match'&&kind!=='v'&&typeof location.replace==='function'){location.replace('mochalunt.html#m'+kind+'-'+code+'-'+k+'~'+(location.pathname.split('/').pop()||'').replace(/\.html$/,''));return true;}
+  if(P&&(k>=P.length||P[k].id!==GAME.id)){if(COQKIND==='match'){if(k<P.length)location.replace(P[k].page+'.html'+location.search+location.hash);else coqPost({t:'go',k,kind});}
+    else if(k<P.length)location.replace(P[k].page+'.html'+location.hash);else location.replace('mochalunt.html#res-'+code);return true;}
+  if(COQKIND==='match')coqPost({t:'ready',k,kind,title:document.title});
   const tc=code+'t'+k;
   if(kind==='v'){const res=MATCH.res[k];if(!res){status(t('m_unknown'));return true;}stopAI();role='file';mySeat=-1;C.stop=true;
     const names=res.seats.map(ro=>res.names&&res.names[ro]||ro);
@@ -1872,17 +1942,26 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
         ArrowUp:()=>sh?anaSib(-1):anaBr(-1),ArrowDown:()=>sh?anaSib(1):anaBr(1)}[ky];if(!f)return;e.preventDefault();f();return;}
     const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:sh?0:k-1,ArrowRight:sh?null:k+1,Home:0,End:null}[ky];if(go===undefined)return;e.preventDefault();navGo(go);});
   // Home: leave the game and come back to the game's own start page
-  $('homeBtn').onclick=()=>{try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();setHash('');location.reload();};
+  const gameOff=()=>{try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();};
+  $('homeBtn').onclick=()=>{if(COQKIND==='match'){coqPost({t:'leave'});return;}gameOff();setHash('');location.reload();};
+  // Back (or Forward) between the game's home and a game: the page starts again at that address (a game is taken up from its save)
+  // leaving a game in progress by Back: asked first (the game's address is put back, then left once it is confirmed)
+  window.addEventListener('popstate',e=>{if(MTW)return;if(!location.hash&&!role&&!view){homeFrom(e.state);return;}
+    if(!leaveOk&&gameHref&&location.href!==gameHref&&liveGame()){try{history.pushState(null,'',gameHref);}catch(x){}if(confirm(t('leaveQ'))){leaveOk=true;history.back();}return;}
+    gameOff();location.reload();});
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
   // (by link or in free play: against the computer or face to face, the game waits in « Parties en cours »)
-  const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden&&role!=='ai'&&role!=='local';
+  // a game in progress: a player's (a table, the computer, face to face), begun and not over
+  liveGame=()=>{if(!view||mySeat<0||$('game').hidden||!$('endCard').hidden)return false;if(role==='ai'||role==='local')return view.moves.length>0&&!replay(view,view.moves,view.result).over;
+    return (role==='host'||role==='guest')&&!!view.started&&!replay(view,view.moves,view.result).over;};
   $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
   $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
+  if(COQKIND==='match')$('crumbHome').target='_parent';   // in a match's coquille: the site's home in place of the match's page
   if($('testForm'))$('testForm').addEventListener('submit',e=>{e.preventDefault();HT.want=true;startTest(GAME.form('t'));});
   if($('faceForm'))$('faceForm').addEventListener('submit',e=>{e.preventDefault();const tc=tcRead('fTc',K('local-tc'));HT.want=true;
     startLocal(GAME.form('f'),tc);});
   $('playBtn').onclick=()=>homeStep('play');$('anaBtn').onclick=()=>homeStep('ana');
-  $('newBack').onclick=()=>homeStep(homeK==='free'||homeK==='load'?'ana':'');
+  $('newBack').onclick=homeBack;
   document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>homeStep(b.dataset.pick));
   // the game mode: the modes this game has (no computer without its AI), the last one chosen
   {const ms=$('modeSel'),opts=()=>[...ms.children].map(o=>o.getAttribute('value'));if(!$('aiForm'))for(const o of [...ms.children])if(o.getAttribute('value')==='ai')ms.removeChild(o);
@@ -1891,9 +1970,9 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
   $('loadForm').addEventListener('submit',e=>{e.preventDefault();const x=$('sgfFile').files&&$('sgfFile').files[0];if(!x){$('sgfErr').textContent=t('sgfNoFile');return;}
     x.text().then(txt=>{const er=sgfLoad(txt);$('sgfErr').textContent=er||'';});});
   $('chatForm').onsubmit=e=>{e.preventDefault();chatSend();};$('chatName').onclick=()=>{sheet(false);chatUp(false);nameOv('watch');};
-  $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
-  $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>{voiceStop(t('vEnd'),true);mVoiceSet(false);};
-  {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
+  $('voiceAsk').onclick=voiceAsk;$('voiceCancel').onclick=()=>{if(coqV()){coqVoice('cancel');return;}if(V.st==='out'){voiceSend('cancel');V={st:'off',note:''};voiceUi();}};
+  $('voiceYes').onclick=()=>voiceAnswer(true);$('voiceNo').onclick=()=>voiceAnswer(false);$('voiceMute').onclick=voiceMute;$('voiceHang').onclick=()=>{if(coqV()){coqVoice('hang');return;}voiceStop(t('vEnd'),true);mVoiceSet(false);};
+  {const r=$('voiceVol');r.value=voiceVol();r.addEventListener('input',()=>{LS.set('games-voicevol',+r.value);if(coqV())coqVoice('vol',+r.value);if(V.audio)V.audio.volume=(+r.value)/100;});}
   $('chatBox').addEventListener('toggle',()=>{if(view){chatRender();sheetAttn();}chatFit();});
   {const cb=document.createElement('button');cb.type='button';cb.id='chatBtn';cb.className='chatbtn';cb.textContent='💬';cb.hidden=true;$('optBtn').before(cb);cb.onclick=()=>chatUp(true);
     const bg=document.createElement('div');bg.className='sheetbg chatbg';bg.id='chatBg';bg.hidden=true;bg.onclick=()=>chatUp(false);document.body.appendChild(bg);

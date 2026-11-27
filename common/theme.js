@@ -1,3 +1,11 @@
+// La coquille du site (index.html): a page of the site opened on its own (a link received, a bookmark, a new tab) goes
+// into it at once, at the same address (./?<page>#…); not over file://, not 404.html, not a page in a sub-folder, not in
+// a frame, not with ?solo (a page on its own, for tests)
+(function(){try{if(window.top!==window||!/^https?:$/.test(location.protocol)||/[?&]solo(&|$)/.test(location.search))return;
+  const me=document.currentScript&&document.currentScript.src,root=me?me.replace(/common\/theme\.js.*$/,''):'',here=location.href.split(/[?#]/)[0];
+  if(!root||here.replace(/[^/]*$/,'')!==root)return;const f=here.slice(root.length);
+  if(!/^[a-z0-9][a-z0-9-]*\.html$/.test(f)||f==='index.html'||f==='404.html')return;
+  location.replace(root+'?'+f.replace(/\.html$/,'')+location.hash);}catch(e){}})();
 // Light or dark: the device's setting by default; the header button switches between light and dark (two states, SVG icons
 // of fixed size, sun = light, moon = dark: a character was drawn tiny by Android's fonts) and the choice is kept in
 // games-theme for every page of the site (an old « auto » stored there counts as no choice). Loaded in <head>, so a page

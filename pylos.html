@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr" data-band="bas"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pylos</title>
-<script src="common/theme.js?v=5"></script>
+<script src="common/theme.js?v=6"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -390,7 +390,7 @@ const MOTEUR=(()=>{
  return{rules,geo,init,legalMoves,legal,apply,finished,replay,enc,describe};
 })();
 </script>
-<script src="common/core.js?v=102"></script>
+<script src="common/core.js?v=110"></script>
 <script src="common/codes.js?v=9"></script>
 <script src="common/ai.js?v=3"></script>
 <script>
@@ -835,5 +835,5 @@ const GAME={id:'pylos',seatCol:s=>s?'cDark':'cLight',   // Clair (seat 0) / Fonc
 for(const p of ['c','a','f','t'])if($(p+'Variant')){$(p+'Variant').value=homeVariant();$(p+'Variant').addEventListener('change',e=>LS.set('pylos-variant',e.target.value));}
 coreStart();
 </script>
-<script src="common/accueil.js?v=1"></script>
+<script src="common/accueil.js?v=2"></script>
 </body></html>
