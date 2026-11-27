@@ -26,7 +26,7 @@ const COQ=(()=>{
   const lg=()=>{const l=get('games-lang','fr');return TX[l]?l:'fr';};
   const t=(k,p)=>{let s=TX[lg()][k]||TX.fr[k]||k;for(const x in p||{})s=s.split('{'+x+'}').join(p[x]);return s;};
   const ORG=location.origin&&location.origin!=='null'?location.origin:'*';
-  const L={peer:null,conn:null,pend:null,last:0,tries:0,o:null};
+  const L={peer:null,conn:null,pend:null,last:0,tries:0,o:null,out:[],got:[]};
   let V={st:'off',note:''};
   const api={frame:()=>null,others:()=>t('opp'),onPill:null,t};
   const up=()=>!!(L.conn&&L.conn.open);
@@ -46,12 +46,20 @@ const COQ=(()=>{
     p.on('error',e=>{if(L.peer!==p||e.type!=='unavailable-id')return;try{p.destroy();}catch(x){}L.peer=null;if(++L.tries<60)setTimeout(()=>{if(L.o===o&&!L.peer)open();},3000);});}
   function dial(){const o=L.o;if(!o||!o.dial||!L.peer||!L.peer.open||up()||L.pend)return;const c=L.peer.connect(o.other,{reliable:true});L.pend=c;adopt(c);
     setTimeout(()=>{if(L.pend===c){L.pend=null;if(!c.open)try{c.close();}catch(e){}}},5000);}
-  function adopt(c){c.on('open',()=>{if(L.pend===c)L.pend=null;if(L.conn&&L.conn!==c)try{L.conn.close();}catch(e){}L.conn=c;L.last=Date.now();push();auto();});
-    c.on('data',d=>{if(c!==L.conn||!d)return;L.last=Date.now();if(d.t==='voice')onMsg(d.op);});
+  function adopt(c){c.on('open',()=>{if(L.pend===c)L.pend=null;if(L.conn&&L.conn!==c)try{L.conn.close();}catch(e){}L.conn=c;L.last=Date.now();push();auto();L.out.forEach(x=>send({t:'chat',x}));});
+    c.on('data',d=>{if(c!==L.conn||!d)return;L.last=Date.now();if(d.t==='voice')onMsg(d.op);else if(d.t==='chat')chatIn(d.x);else if(d.t==='chatok')L.out=L.out.filter(x=>x.i!==d.i);});
     c.on('close',()=>{if(L.conn===c){L.conn=null;lost();}});c.on('error',()=>{});}
   function linkStop(){if(!L.o&&!L.peer)return;try{L.peer&&L.peer.destroy();}catch(e){}L.peer=L.conn=L.pend=null;L.o=null;push();}
   setInterval(()=>{if(up()){send({t:'ping'});if(Date.now()-L.last>6000){const c=L.conn;L.conn=null;try{c.close();}catch(e){}lost();}}else dial();
     if(V.st==='on'&&Date.now()-(noted()||0)>30e3)note(true);},1000);
+  // ---- the chat of a match, the two players at different tables: a message from the page goes to the other's coquille
+  // (kept until it says it has it, sent again once the link is back), which gives it to its page; no page there, or one
+  // still loading: it is kept in the record (rec: chat, marked p, waiting) and given again to each page that says ready
+  function chat(x){if(!x||!x.i||!L.o)return;if(!L.out.some(y=>y.i===x.i))L.out.push(x);if(L.out.length>50)L.out.shift();send({t:'chat',x});}
+  function chatIn(x){if(!x||typeof x.i!=='string')return;send({t:'chatok',i:x.i});if(L.got.some(y=>y.i===x.i))return;L.got.push(x);if(L.got.length>50)L.got.shift();
+    toFrame({t:'chat',x});if(api.frame())return;const o=L.o;if(!o||!o.rec)return;const r=get(o.rec,null);if(!r)return;const C=Array.isArray(r.chat)?r.chat:[];
+    if(C.some(y=>y.i===x.i))return;r.chat=[...C,{n:String(x.n||'').slice(0,24),w:0,m:String(x.m||'').slice(0,200),c:x.r==='c'?0:1,i:x.i,p:1}].slice(-100);put(o.rec,r);}
+  function ready(){L.got.forEach(x=>toFrame({t:'chat',x}));}   // the page, just loaded: what came lately (it keeps each once)
   // ---- the voice
   const noted=()=>{const o=L.o,r=o&&o.rec&&get(o.rec,null);return r&&r.svc&&r.svc.at||null;};
   function note(on){const o=L.o;if(!o||!o.rec)return;const r=get(o.rec,null)||{};if(on)r.svc={at:Date.now()};else if(r.svc)delete r.svc;else return;put(o.rec,r);}
@@ -103,5 +111,5 @@ const COQ=(()=>{
       else{A.hidden=B.hidden=true;clearTimeout(noteTo);noteTo=setTimeout(()=>{if(V.st==='off'){V.note='';pill();}},5000);}}
     if(api.onPill)api.onPill(show);}
   addEventListener('storage',e=>{if(e.key==='games-lang')pill();});
-  Object.assign(api,{linkStart,linkStop,linkUp:up,op,push,state:()=>V});
+  Object.assign(api,{linkStart,linkStop,linkUp:up,op,push,chat,ready,state:()=>V});
   return api;})();

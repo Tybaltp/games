@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>if(typeof Peer==='undefined')document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');</script>
 <link rel="stylesheet" href="common/cards.css?v=10">
-<script src="common/coquille.js?v=1"></script>
+<script src="common/coquille.js?v=2"></script>
 <script>window.COQ_SHELL='match';   // the games' pages in its frame speak to it (common/core.js, « La coquille »)</script>
 <style>
 /* ice blue, as the home page */
@@ -453,10 +453,11 @@ function coqFrameOff(){if(!CQ.fr)return;try{CQ.fr.remove();}catch(e){}CQ.fr=null
 // the frame's surroundings (the safe area of a phone) in the game's own background
 function coqBg(){try{$('vPlay').style.background=getComputedStyle(CQ.fr.contentDocument.body).backgroundColor;}catch(e){}}
 addEventListener('message',e=>{if(!CQ.fr||e.source!==CQ.fr.contentWindow||!e.data||e.data.coq!==1)return;const d=e.data;
-  if(d.t==='ready'){passHide();coqBg();if(d.title)document.title=d.title;COQ.push();try{CQ.fr.contentWindow.focus();}catch(x){}}
+  if(d.t==='ready'){passHide();coqBg();if(d.title)document.title=d.title;COQ.push();COQ.ready();try{CQ.fr.contentWindow.focus();}catch(x){}}
   else if(d.t==='go'){const k=+d.k;if(Number.isInteger(k)&&k>=0)play(CQ.kind,CQ.code,k);}
   else if(d.t==='leave')location.href=location.pathname;
-  else if(d.t==='voice')COQ.op(d.op,d.v);});
+  else if(d.t==='voice')COQ.op(d.op,d.v);
+  else if(d.t==='chat')COQ.chat(d.x);});
 // the language or the theme changed in the game: this page follows
 addEventListener('storage',e=>{if(e.key==='games-lang'){const l=LS.get('games-lang',lang);if(l!==lang&&I18N[l]){lang=l;texts();}}else if(e.key==='games-theme')setTimeout(coqBg,80);});
 

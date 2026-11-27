@@ -516,7 +516,9 @@ function hostOnData(conn,d){if(!d||typeof d!=='object')return;conn.lastSeen=Date
     conn.wname=nmClean(d.name);hostWatchLog(conn.wname);H.conns.add(conn);H.watchers.add(conn);conn.send({t:'welcome',role:'watch',seat:-1});hostBroadcast();return;}
   // a name chosen once connected (the frame over the board): a spectator's (empty: anonymous), the guest's
   if(d.t==='wname'){if(H.watchers.has(conn)){conn.wname=nmClean(d.name);hostWatchLog(conn.wname);hostBroadcast();}return;}
-  if(d.t==='chat'){if(conn===H.guestConn&&conn.seat>=0)hostChat(g.names[conn.seat],false,d.m);else if(H.watchers.has(conn)&&conn.wname)hostChat(conn.wname,true,d.m);return;}
+  if(d.t==='chat'){if(conn===H.guestConn&&conn.seat>=0)hostChat(g.names[conn.seat],false,d.m,{i:d.i});else if(H.watchers.has(conn)&&conn.wname)hostChat(conn.wname,true,d.m);return;}
+  // a match: the guest, arrived, gives the messages this table does not have (written or received while the two were apart)
+  if(d.t==='chatmerge'){if(conn===H.guestConn&&conn.seat>=0&&g.match&&Array.isArray(d.L)){let ch=false;for(const x of d.L.slice(-50))if(x&&chatIdOk(x.i)&&hostChatAdd(x.n,false,x.m,{i:x.i,r:x.r}))ch=true;if(ch)hostBroadcast();}return;}
   if(d.t==='an'){if(H.conns.has(conn))anOp(conn.peer,d);return;}   // the shared analysis: anyone at the table
   if(d.t==='voice'&&d.to){if(H.conns.has(conn))voiceRelay(conn,d);return;}   // a table's call
   if(conn!==H.guestConn)return;
@@ -557,11 +559,19 @@ function chatReveal(){const g=H.game;if(!g||!g.chat)return;if(g.anOnly){for(cons
   if(!o){g.endLog=false;if(!(g.match&&!g.started))return;}
   else if(!g.endLog){g.endLog=true;hostLog(o.w<0?'draw':'wins',o.w<0?{why:o.why}:{n:g.names[o.w]||'',why:o.why},true);}
   for(const x of g.chat){if(x.w)x.v=1;delete x.h;}}
-function hostChat(n,w,m){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return;if(!g.chat)g.chat=[];let c;if(!w){c=Math.max(0,g.names.indexOf(n));if(g.match&&g.match.seats)c=g.match.seats[c]==='c'?0:1;}else{const o=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=o?o.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push({n,w:w?1:0,m,c});
-  if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);hostBroadcast();}
-function chatSend(){const i=$('chatIn'),m=chatClean(i.value);if(!m||!view)return;
-  if(role==='host')hostChat(view.names[seatN()]||nickGet()||t('p1'),false,m);
-  else if(C.conn&&C.conn.open&&(role==='guest'||(role==='watch'&&C.name)))C.conn.send({t:'chat',m});else return;
+// A message has an id (i), made where it is written: the same message, come twice (by the table and by the coquille of a
+// match, or merged when a player joins), is kept once. o: {i: the id, r: the author's role in the match ('c'|'i')}
+const chatId=()=>Math.random().toString(36).slice(2,10),chatIdOk=i=>typeof i==='string'&&/^[a-z0-9]{4,12}$/.test(i);
+function hostChatAdd(n,w,m,o){const g=H.game;m=chatClean(m);n=nmClean(n);if(!m||!n)return false;if(!g.chat)g.chat=[];const i=o&&chatIdOk(o.i)?o.i:g.match?chatId():null;if(i&&g.chat.some(x=>x.i===i))return false;
+  let c;if(!w){if(o&&(o.r==='c'||o.r==='i')&&g.match)c=o.r==='c'?0:1;else{c=Math.max(0,g.names.indexOf(n));if(g.match&&g.match.seats)c=g.match.seats[c]==='c'?0:1;}}else{const x=g.chat.find(x=>x.w&&x.n===n&&x.c!=null);c=x?x.c:2+new Set(g.chat.filter(x=>x.w&&x.m).map(x=>x.n)).size%6;}g.chat.push(i?{n,w:w?1:0,m,c,i}:{n,w:w?1:0,m,c});
+  if(g.chat.length>CHATMAX)g.chat.splice(0,g.chat.length-CHATMAX);return true;}
+function hostChat(n,w,m,o){if(hostChatAdd(n,w,m,o))hostBroadcast();}
+function chatSend(){const i=$('chatIn'),m=chatClean(i.value);if(!m||!view)return;const mp=mPlayer(),id=mp?chatId():undefined,n=mp?(seatN()>=0&&view.names[seatN()])||MATCH.name||nickGet():'';
+  if(role==='host')hostChat(view.names[seatN()]||nickGet()||t('p1'),false,m,{i:id,r:mp?MATCH.me:null});
+  else if(C.conn&&C.conn.open&&(role==='guest'||(role==='watch'&&C.name)))C.conn.send(id?{t:'chat',m,i:id}:{t:'chat',m});
+  else if(mp&&n)mChatKeep({n:nmClean(n),w:0,m,c:MATCH.me==='c'?0:1,i:id});   // a match: the table is not there, the coquille carries it
+  else return;
+  if(mp&&n)coqPost({t:'chat',x:{n:nmClean(n),m,i:id,r:MATCH.me}});   // to the other player, wherever they are in the match
   i.value='';CH.seen=-2;}   // one's own message: seen
 let CH={seen:-1,key:''};
 // Voice chat, between the two players only (never the spectators): one proposes ({t:'voice',op:'ask'}), the other accepts
@@ -701,7 +711,7 @@ function clientOnData(d){if(!d||typeof d!=='object')return;C.lastSeen=Date.now()
   else if(d.t==='reject'){C.stop=true;C.conn=null;clearTimeout(C.t);clearTimeout(C.nt);try{peer.destroy();}catch(e){}clientRefused(d.why);}
   else if(d.t==='state'){sending=false;C.lostSince=0;if(C.pending&&d.game.moves.length>C.pending.n)pendClear();
     if(C.hold&&(d.game.myHold===C.hold.code||d.game.moves.length))C.hold=null;
-    showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}mVoiceAuto();}
+    showState(C.hold&&!d.game.myHold?{...d.game,myHold:C.hold.code}:d.game);if(C.pending){pendView();sending=true;renderGame();}mVoiceAuto();mChatMerge();}
   else if(d.t==='nack'){sending=false;if(C.hold){C.hold=null;if(view)view.myHold=null;resetUi();}if(C.pending){if(C.pending.base)view=C.pending.base;pendClear();}C.nackAt=Date.now();setTimeout(()=>{if(view)renderGame();},5000);status(t('st_nack'));renderGame();}}
 
 // Refused by the table: two players already there (t_refused), a request declined (seat_no) or lapsed (seat_gone):
@@ -1582,7 +1592,8 @@ function coqVoice(op,v){coqPost({t:'voice',op,v});}
 if(ENCOQ)window.addEventListener('message',e=>{if(e.source!==window.parent||!e.data||e.data.coq!==2)return;const d=e.data;
   if(d.t==='voice'){CV={ok:!!d.ok,link:!!d.link};const was=V.st;V={st:d.st||'off',note:d.note?t(d.note,{n:vNm()}):'',muted:!!d.muted,stream:d.mic?true:null};
     if(was!==V.st||view)voiceUi();}
-  else if(d.t==='ring')tone(520,.12,.05);});
+  else if(d.t==='ring')tone(520,.12,.05);
+  else if(d.t==='chat')mChatIn(d.x);});
 
 // ---------- Mochalunt matches (see mochalunt.html) ----------
 // A match: the same two players over the tables of the plan, one game each, played in order. Its record is kept on each
@@ -1613,10 +1624,26 @@ function mVoiceSet(on){if(ENCOQ||!MATCH||!MATCH.me||MTW!=='t')return;if(on)MATCH
 let mVoiceTried=false;
 function mVoiceAuto(){if(ENCOQ||mVoiceTried||role!=='guest'||mySeat<0||V.st!=='off'||!voiceOk()||!voiceNet()||!mVoiceFresh())return;
   mVoiceTried=true;V={st:'out',note:''};voiceSend('reask');voiceUi();}
+// The chat goes on across the match, the two players at the same table or not: a message also goes to the coquille,
+// which carries it to the other player's (common/coquille.js); there it joins the table's chat (this page hosts it), or
+// is kept in the record, marked p (waiting), until a table has it: the guest gives the waiting ones to its host
+// (chatmerge), the first at a table starts its chat with them.
+const mPlayer=()=>COQKIND==='match'&&!!MATCH&&!!MATCH.me&&MTW==='t';
+const mChatWait=L=>(MATCH&&MATCH.chat||[]).filter(x=>x.p&&x.i&&!L.some(y=>y.i===x.i));
+function mChatKeep(e){if(!MATCH||(MATCH.chat||[]).some(y=>y.i===e.i))return;MATCH.chat=[...(MATCH.chat||[]),{...e,p:1}].slice(-CHATMAX);mSave();
+  if(view&&Array.isArray(view.chat)&&!view.chat.some(y=>y.i===e.i)){view.chat=[...view.chat,{...e}];chatRender();}}
+function mChatIn(x){if(!mPlayer()||!x||!chatIdOk(x.i))return;const n=nmClean(x.n),m=chatClean(x.m);if(!n||!m)return;
+  if(role==='host'&&H.game){hostChat(n,false,m,{i:x.i,r:x.r});return;}
+  if(view&&Array.isArray(view.chat)&&view.chat.some(y=>y.i===x.i))return;
+  if(role==='guest'&&C.conn&&C.conn.open)return;   // the other hosts this table: it comes by the table
+  mChatKeep({n,w:0,m,c:x.r==='c'?0:1,i:x.i});}
+const mSent=new Set();
+function mChatMerge(){if(!mPlayer()||role!=='guest'||!C.conn||!C.conn.open||!view)return;const L=mChatWait(view.chat||[]).filter(x=>!mSent.has(x.i));if(!L.length)return;
+  L.forEach(x=>mSent.add(x.i));try{C.conn.send({t:'chatmerge',L:L.map(x=>({n:x.n,m:x.m,i:x.i,r:x.c===0?'c':'i'}))});}catch(e){}}
 // The table's game, made by whoever hosts it first
 function mTableGame(){const G=mPlan(MATCH)[MTK],tc=G.tc;
   return {size:GAME.size,...GAME.rules(G.rules||{}),hold:null,tc,first:'host',names:[MATCH.name,''],moves:[],clock:[tc.base,tc.base],running:false,result:null,started:false,
-    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,ed:MATCH.ed||null,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
+    ready:[false,false],th:[hh(MYID),null],paused:false,ver:0,chat:[...(MATCH.chat||[]).filter(x=>!x.w||x.v).map(({p,...x})=>x),{k:'lg_table',a:{k:MTK+1,g:G.name}}].slice(-CHATMAX),match:{code:MATCH.code,k:MTK,excl:MATCH.excl,j1:MATCH.j1,ed:MATCH.ed||null,seats:[MATCH.me,mOther(MATCH.me)],chosen:false}};}
 // The chooser takes the first seat or the second (c: 1 first, 2 second); the seats are swapped when needed
 function mChoose(s,c){const g=H.game,m=g.match;if(!m||m.chosen||g.started||!g.names[0]||!g.names[1])return;if(m.seats[s]!==mChooser(m,m.k))return;
   if((s===0)!==(c===1)){g.first=g.first==='host'?'guest':'host';g.names.reverse();g.th.reverse();m.seats.reverse();g.ready.reverse();mySeat=1-mySeat;
@@ -1634,7 +1661,9 @@ function mSync(r){const m=view&&view.match;if(!m||!MATCH)return;let ch=false;
   if(MATCH.me&&MTW==='t'&&!MATCH.on&&view.names[0]&&view.names[1]){MATCH.on=1;ch=true;}
   for(const k in m.res||{})if(!MATCH.res[k]){MATCH.res[k]=m.res[k];ch=true;}
   const nm={};m.seats.forEach((ro,s)=>{if(view.names[s])nm[ro]=view.names[s];});if(JSON.stringify({...MATCH.names,...nm})!==JSON.stringify(MATCH.names||{})){MATCH.names={...MATCH.names,...nm};ch=true;}
-  if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length&&JSON.stringify(view.chat)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=view.chat.slice(-CHATMAX);ch=true;}
+  // a message seen while the other player is not at this table waits (p) until the two are together at a table
+  if(MATCH.me&&MTW==='t'&&Array.isArray(view.chat)&&view.chat.length){const both=!!(view.names[0]&&view.names[1])&&(role==='host'?!!H.guestConn:role==='guest'&&!!C.conn&&C.conn.open),old=MATCH.chat||[];
+    const L=[...view.chat.map(x=>{if(!x.i||both)return x;const o=old.find(y=>y.i===x.i);return o&&!o.p?x:{...x,p:1};}),...mChatWait(view.chat)].slice(-CHATMAX);if(JSON.stringify(L)!==JSON.stringify(MATCH.chat||[])){MATCH.chat=L;ch=true;}}
   if(r.over&&!MATCH.res[MTK]){MATCH.res[MTK]={w:r.over.w<0?'d':m.seats[r.over.w],why:r.over.why,moves:view.moves.slice(),names:{...MATCH.names},seats:m.seats.slice(),rules:GAME.rules(view)};ch=true;}
   if(ch)mSave();}
 // The match card (side panel): the table, the score, the seat choice, the tables (finished ones open read only)
