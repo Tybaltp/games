@@ -416,7 +416,7 @@ const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+MATCH.code+'-'+MTK;   // a match table keeps its own address
   // from the game's home to a game (the computer, two on one screen, a table): a new entry, so that Back comes back to
   // the game's home (popstate, below), not to the page before
-  const nw=h?'#'+h:location.pathname+location.search;try{if(h&&!location.hash&&!MTW)history.pushState(null,'',nw);else history.replaceState(null,'',nw);}catch(e){}}
+  const nw=h?'#'+h:location.pathname+location.search;try{if(h&&!location.hash&&!MTW)history.pushState(null,'',nw);else history.replaceState(null,'',nw);}catch(e){}gameHref=h?location.href:'';}
 // The page closes or reloads (pagehide, or Home): the host saves, says bye to everyone and leaves the matchmaking service
 // (the direct links stay, for bye to go out) so that the guest can take the table under its id at once; a guest or a
 // spectator says bye too (absent at once)
@@ -1343,7 +1343,7 @@ function localFlag(){const r=replay(view,view.moves,view.result);if(r.over)retur
   view.result={winner:1-tt,reason:'time'};resetUi();renderGame();}
 let localTick=0;
 // Home: "Create a game", then the opponent (link, computer, face to face, free play), then that choice's options
-let homeK='',homeFromPop=false;
+let homeK='',homeFromPop=false,liveGame=()=>false,gameHref='',leaveOk=false;
 // Home, one card: '' (Play, Analyse, the game to resume, the codes) · 'play' (the game mode, then its options; the name for
 // a link or the computer) · 'ana' (create a game in free play, or load an SGF file) · 'free' · 'load'
 // Each step further in (a card, then Create / Load) is an entry in the browser's history ({hs: the step, m: the mode}):
@@ -1945,10 +1945,15 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
   const gameOff=()=>{try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();};
   $('homeBtn').onclick=()=>{if(COQKIND==='match'){coqPost({t:'leave'});return;}gameOff();setHash('');location.reload();};
   // Back (or Forward) between the game's home and a game: the page starts again at that address (a game is taken up from its save)
-  window.addEventListener('popstate',e=>{if(MTW)return;if(!location.hash&&!role&&!view){homeFrom(e.state);return;}gameOff();location.reload();});
+  // leaving a game in progress by Back: asked first (the game's address is put back, then left once it is confirmed)
+  window.addEventListener('popstate',e=>{if(MTW)return;if(!location.hash&&!role&&!view){homeFrom(e.state);return;}
+    if(!leaveOk&&gameHref&&location.href!==gameHref&&liveGame()){try{history.pushState(null,'',gameHref);}catch(x){}if(confirm(t('leaveQ'))){leaveOk=true;history.back();}return;}
+    gameOff();location.reload();});
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
   // (by link or in free play: against the computer or face to face, the game waits in « Parties en cours »)
-  const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden&&role!=='ai'&&role!=='local';
+  // a game in progress: a player's (a table, the computer, face to face), begun and not over
+  liveGame=()=>{if(!view||mySeat<0||$('game').hidden||!$('endCard').hidden)return false;if(role==='ai'||role==='local')return view.moves.length>0&&!replay(view,view.moves,view.result).over;
+    return (role==='host'||role==='guest')&&!!view.started&&!replay(view,view.moves,view.result).over;};
   $('crumbHome').onclick=e=>{if(liveGame()&&!confirm(t('leaveQ')))e.preventDefault();};
   $('crumbGame').onclick=e=>{e.preventDefault();if(liveGame()&&!confirm(t('leaveQ')))return;$('homeBtn').click();};
   if(COQKIND==='match')$('crumbHome').target='_parent';   // in a match's coquille: the site's home in place of the match's page
