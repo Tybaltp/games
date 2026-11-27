@@ -1002,6 +1002,7 @@ function solveRoot(S,opt){const c=S.tm,o=1-c;
   try{buf(0);const L0=MB[0],V0=SB[0],n=legal(S,c,L0);markOpp(S,o);for(let i=0;i<n;i++)V0[i]=cheap(S,c,L0[i],S.n<12);order(L0,V0,n);
     const L=Array.from(L0.subarray(0,n));
     const val=(m,al,be)=>{const T=play(copy(S),m);return T.ov?T.cnt[c]-T.cnt[o]:T.tm===c?nega2(T,al,be,1):-nega2(T,-be,-al,1);};
+    if(opt.prune)return solvePrune(S,opt,L,val);
     for(const m of L)if(val(m,0,1)>=1)return {m,s:1001,depth:99,solved:sNodes};
     for(const m of L)if(val(m,-1,0)>=0)return {m,s:0,depth:99,solved:sNodes};
     if(!opt.endLoss)return null;
@@ -1009,6 +1010,27 @@ function solveRoot(S,opt){const c=S.tm,o=1-c;
     let bm=L[0],best=val(L[0],-999,0);for(let i=1;i<L.length;i++){const v=val(L[i],best,0);if(v>best){best=v;bm=L[i];}}
     return {m:bm,s:best-1000,depth:99,solved:sNodes};}
   catch(e){if(e instanceof SolveStop)return null;throw e;}}
+// opt.prune (labo, 23.11.2026): each move by itself, against the window (-1,1) (win, draw or loss in one search), with at
+// most opt.moveNodes nodes of its own and solveNodes for all: a win is played; when every move is settled, as above (a
+// draw, else endLoss); else {lost}: the moves proved lost, which the network's search then leaves out (none if all lose)
+function solvePrune(S,opt,L,val){const tot=opt.solveNodes||200000,per=opt.moveNodes||tot;let used=0,open=false,draw=-1;const lost=[];
+  for(const m of L){const left=tot-used;if(left<=0){open=true;break;}sNodes=0;sMax=Math.min(per,left);
+    try{const v=val(m,-1,1);if(v>=1)return {m,s:1001,depth:99,solved:used+sNodes};if(v<=-1)lost.push(m);else if(draw<0)draw=m;}
+    catch(e){if(!(e instanceof SolveStop))throw e;open=true;}
+    used+=Math.min(sNodes,sMax);}
+  if(!open&&draw>=0)return {m:draw,s:0,depth:99,solved:used};
+  if(!open&&opt.endLoss){sNodes=0;sMax=Math.max(0,tot-used);
+    try{let bm=L[0],best=val(L[0],-999,0);for(let i=1;i<L.length;i++){const v=val(L[i],best,0);if(v>best){best=v;bm=L[i];}}
+      return {m:bm,s:best-1000,depth:99,solved:used+sNodes};}catch(e){if(!(e instanceof SolveStop))throw e;}}
+  return lost.length&&lost.length<L.length?{lost}:null;}
+// a position inside the network's search (labo, 23.11.2026): its exact result for the colour to move, 1, 0 or -1, when
+// both sides together can add at most opt.cells cells and the proof takes at most opt.nodes nodes; {v: null} otherwise.
+// nodes: the work done (the transposition tables are kept from one call to the next); ub: that bound on the cells
+function solveLeaf(P,opt){const S=fromPos(P);if(S.ov||S.n<2)return {v:null,nodes:0};useBoard(S.full);const c=S.tm,o=1-c;
+  const ub=Math.min(rem(S.u[c]),region(S,c))+(S.st[o]?0:Math.min(rem(S.u[o]),region(S,o)));if(ub>opt.cells)return {v:null,nodes:0,ub};
+  sNodes=0;sMax=opt.nodes||5000;
+  try{const v=nega2(S,-1,1,0);return {v:v>=1?1:v<=-1?-1:0,nodes:sNodes,ub};}
+  catch(e){if(e instanceof SolveStop)return {v:null,nodes:sMax,ub};throw e;}}
 // ----- the page's position (aiPos) and moves -----
 function fromPos(P){const S=blank();for(let i=0;i<N;i++)S.b[i]=P.b[i];S.u=[P.used[0],P.used[1]];S.cnt=[P.cnt[0],P.cnt[1]];S.tm=P.turn;S.sw=P.sw?1:0;
   S.n=P.n;S.st=[P.stuck[0]?1:0,P.stuck[1]?1:0];S.ov=P.over?1:0;S.full=P.full?1:0;S.rs=P.rs|0;return S;}
@@ -1024,7 +1046,7 @@ const K=AISearch({moves:gen,play:(S,m)=>play(copy(S),m),turn:S=>seatOf(S,S.tm),d
 // opt.swapTab: the ptab of the cut-corner board with the swap (rs 0) only, instead of the level's own (NN_OPEN)
 function search(P,opt){if(P.full&&opt.full)opt={...opt,...opt.full};else if(!P.full&&!P.rs&&opt.swapTab)opt={...opt,ptab:opt.swapTab};if(!opt.ev)return search1(P,opt);
   const E0=EV;EV={...EV,...opt.ev};try{return search1(P,opt);}finally{EV=E0;}}
-function search1(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;useBoard(S.full);
+function search1(P,opt){const S=fromPos(P);let r=null,lost=null;if(S.ov)return null;useBoard(S.full);
   // random (level 0): a move at random among all the legal ones, the swap included (each placement once)
   if(opt.random){const L=new Int32Array(NPMAX),n=legal(S,S.tm,L),k=n+(canSwap(S)?1:0);if(!k)return null;const i=(Math.random()*k)|0;
     return {move:toMove(i<n?L[i]:-1),score:0,depth:0,random:true};}
@@ -1035,9 +1057,9 @@ function search1(P,opt){const S=fromPos(P);let r=null;if(S.ov)return null;useBoa
   if(!r){K.start(opt.nodes);let C=gen(S,opt.cells||40);if(canSwap(S))C=C.filter(x=>x.m>=0);
     if(!C.length)return null;
     if(C.length===1)r={m:C[0].m,s:C[0].s,depth:0,forced:true};
-    else{if(opt.endgame)r=solveRoot(S,opt);if(!r){TELL=typeof aiBest==='function';r=K[opt.algo](S,C,opt);TELL=false;}}}
-  return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.solved||K.nodes(),solved:!!r.solved};}
-return {search,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fits,toMove,idOf,firstValue,NP,PK:PKA,PCl,
+    else{if(opt.endgame)r=solveRoot(S,opt);if(r&&r.lost){lost=r.lost;r=null;}if(!r){TELL=typeof aiBest==='function';r=K[opt.algo](S,C,opt);TELL=false;}}}
+  return {move:toMove(r.m),score:r.s,depth:r.depth,forced:!!r.forced,nodes:r.solved||K.nodes(),solved:!!r.solved,...(lost&&{lost:lost.map(toMove)})};}
+return {search,solveLeaf,fromPos,gen,play,copy,blank,evalS,result,legal,hasMove,canSwap,fits,toMove,idOf,firstValue,NP,PK:PKA,PCl,
   setEV:o=>{EV={...EV,...o};},setSwap:v=>{SWAP=v;},EV:()=>EV,K};
 }
 /*AIEND*/
