@@ -414,7 +414,9 @@ const INST=Date.now().toString(36)+'.'+Math.round(performance.now()*1000).toStri
 const newCode=n=>Object.keys(CODE_GAMES).find(k=>CODE_GAMES[k].id===GAME.id)+rnd(n-2);
 const cleanCode=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 function setHash(h){if(h&&typeof MATCH!=='undefined'&&MATCH&&MTW)h='m'+MTW+'-'+MATCH.code+'-'+MTK;   // a match table keeps its own address
-  try{history.replaceState(null,'',h?'#'+h:location.pathname+location.search);}catch(e){}}
+  // from the game's home to a game (the computer, two on one screen, a table): a new entry, so that Back comes back to
+  // the game's home (popstate, below), not to the page before
+  const nw=h?'#'+h:location.pathname+location.search;try{if(h&&!location.hash&&!MTW)history.pushState(null,'',nw);else history.replaceState(null,'',nw);}catch(e){}}
 // The page closes or reloads (pagehide, or Home): the host saves, says bye to everyone and leaves the matchmaking service
 // (the direct links stay, for bye to go out) so that the guest can take the table under its id at once; a guest or a
 // spectator says bye too (absent at once)
@@ -1931,7 +1933,10 @@ function coreStart(){reportUi();againUi();anUi();if(window.ResizeObserver&&$('no
         ArrowUp:()=>sh?anaSib(-1):anaBr(-1),ArrowDown:()=>sh?anaSib(1):anaBr(1)}[ky];if(!f)return;e.preventDefault();f();return;}
     const n=view.moves.length,k=navAt===null?n:navAt,go={ArrowLeft:sh?0:k-1,ArrowRight:sh?null:k+1,Home:0,End:null}[ky];if(go===undefined)return;e.preventDefault();navGo(go);});
   // Home: leave the game and come back to the game's own start page
-  $('homeBtn').onclick=()=>{if(COQKIND==='match'){coqPost({t:'leave'});return;}try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();setHash('');location.reload();};
+  const gameOff=()=>{try{stopAI();}catch(e){}netBye();C.stop=true;clearTimeout(C.t);try{peer&&peer.destroy();}catch(e){}peer=null;wpeerStop();};
+  $('homeBtn').onclick=()=>{if(COQKIND==='match'){coqPost({t:'leave'});return;}gameOff();setHash('');location.reload();};
+  // Back (or Forward) between the game's home and a game: the page starts again at that address (a game is taken up from its save)
+  window.addEventListener('popstate',()=>{if(MTW)return;gameOff();location.reload();});
   // Header breadcrumb: games -> the index; game name -> this game's start page; confirm before leaving a game in progress
   // (by link or in free play: against the computer or face to face, the game waits in « Parties en cours »)
   const liveGame=()=>!!view&&mySeat>=0&&!!view.started&&$('endCard').hidden&&!$('game').hidden&&role!=='ai'&&role!=='local';
